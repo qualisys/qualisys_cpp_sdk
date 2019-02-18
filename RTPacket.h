@@ -2,7 +2,7 @@
 #define RTPACKET_H
 
 #include <stdio.h>
-
+#include <stdint.h>
 
 #ifdef EXPORT_DLL
     #define DLL_EXPORT __declspec(dllexport)
@@ -13,7 +13,6 @@
 
 #define MAJOR_VERSION           1
 #define MINOR_VERSION           19
-#define BIG_ENDIAN              false
 
 #define MAX_CAMERA_COUNT        256
 #define MAX_ANALOG_DEVICE_COUNT 64
@@ -146,11 +145,11 @@ public:
 
     unsigned int     GetSize();
     EPacketType      GetType();
-    unsigned __int64 GetTimeStamp();
+    unsigned long long GetTimeStamp();
     unsigned int     GetFrameNumber();
     static unsigned int     GetSize(char* pData, bool bBigEndian = false);
     static EPacketType      GetType(char* pData, bool bBigEndian = false);
-    static unsigned __int64 GetTimeStamp(char* pData, bool bBigEndian = false);
+    static unsigned long long GetTimeStamp(char* pData, bool bBigEndian = false);
     static unsigned int     GetFrameNumber(char* pData, bool bBigEndian = false);
 
     unsigned int     GetComponentCount();
@@ -221,7 +220,7 @@ public:
     bool             GetTimecodeType(unsigned int nTimecodeIndex, CRTPacket::ETimecodeType &timecodeType);
     bool             GetTimecodeSMPTE(unsigned int nTimecodeIndex, int &hours, int &minutes, int &seconds, int &frame);
     bool             GetTimecodeIRIG(unsigned int nTimecodeIndex, int &year, int &day, int &hours, int &minutes, int &seconds, int &tenths);
-    bool             GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned __int64 &cameraTime);
+    bool             GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned long long &cameraTime);
 
     unsigned int     GetImageCameraCount();
     unsigned int     GetImageCameraId(unsigned int nCameraIndex);
@@ -272,8 +271,8 @@ private:
     long             SetByteOrder(long* pnData);
     int              SetByteOrder(int* pnData);
     unsigned int     SetByteOrder(unsigned int* pnData);
-    __int64          SetByteOrder(__int64* pnData);
-    unsigned __int64 SetByteOrder(unsigned __int64* pnData);
+    long long        SetByteOrder(long long* pnData);
+    unsigned long long SetByteOrder(unsigned long long* pnData);
 
 private:
     char*          mpData;

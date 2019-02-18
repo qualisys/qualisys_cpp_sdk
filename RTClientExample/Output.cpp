@@ -1,6 +1,5 @@
 #include "Output.h"
 #include "RTProtocol.h"
-#include <windows.h>
 #include <stdio.h>
 #include <conio.h>
 #include <math.h>
@@ -1208,8 +1207,7 @@ void COutput::ResetCounters()
 void COutput::PrintEvent(CRTPacket::EEvent eEvent)
 {
     char pStr[256];
-
-    if (CRTProtocol::GetEventString(eEvent, pStr, 256))
+    if (CRTProtocol::GetEventString(eEvent, pStr))
     {
         printf("%s\n", pStr);
     }
