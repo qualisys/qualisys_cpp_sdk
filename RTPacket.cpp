@@ -1,8 +1,18 @@
-#include "RTPacket.h"
+#define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+
 #include <memory.h>
 #include <float.h>
-#include <Winsock2.h>
+#include <stdint.h>
+#include <math.h>
 
+#ifdef _WIN32
+#include <Winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
+#include "RTPacket.h"
 
 CRTPacket::CRTPacket(int nMajorVersion, int nMinorVersion, bool bBigEndian)
 {
@@ -37,7 +47,7 @@ void CRTPacket::SetEndianness(bool bBigEndian)
 
 void CRTPacket::ClearData()
 {
-    mpData                    = NULL;
+    mpData                    = nullptr;
     mnComponentCount          = 0;
     mn2DCameraCount           = 0;
     mn2DLinCameraCount        = 0;
@@ -86,7 +96,7 @@ void CRTPacket::SetData(char* ptr)
         // Reset all component data pointers
         for (nComponent = 1; nComponent < ComponentNone; nComponent++)
         {
-            mpComponentData[nComponent - 1] = NULL;
+            mpComponentData[nComponent - 1] = nullptr;
         }
 
         char*        pCurrentComponent = mpData + 24;
@@ -268,7 +278,7 @@ void CRTPacket::SetData(char* ptr)
 
 void CRTPacket::GetData(char* &ptr, unsigned int &nSize)
 {
-    if (mpData == NULL)
+    if (mpData == nullptr)
     {
         nSize = 0;
     }
@@ -281,7 +291,7 @@ void CRTPacket::GetData(char* &ptr, unsigned int &nSize)
 
 unsigned int CRTPacket::GetSize()
 {
-    if (mpData == NULL)
+    if (mpData == nullptr)
     {
         return 0;
     }
@@ -305,11 +315,11 @@ CRTPacket::EPacketType CRTPacket::GetType()
     return (EPacketType)*((unsigned int*)(mpData + 4));
 }
 
-unsigned __int64 CRTPacket::GetTimeStamp()
+unsigned long long CRTPacket::GetTimeStamp()
 {
     if (GetType() == PacketData)
     {
-        return SetByteOrder((__int64*)(mpData + 8));
+        return SetByteOrder((long long*)(mpData + 8));
     }
     return 0;
 }
@@ -345,15 +355,15 @@ CRTPacket::EPacketType CRTPacket::GetType(char* pData, bool bBigEndian)
     return (EPacketType)*((unsigned int*)(pData + 4));
 }
 
-unsigned __int64 CRTPacket::GetTimeStamp(char* pData, bool bBigEndian)
+unsigned long long CRTPacket::GetTimeStamp(char* pData, bool bBigEndian)
 {
     if (GetType(pData, bBigEndian) == PacketData)
     {
         if (bBigEndian)
         {
-            return ((unsigned __int64)(ntohl((long)*((__int64*)(pData + 8)))) <<  32) + ntohl(*((__int64*)(pData + 8)) >> 32);
+            return ((unsigned long long)(ntohl((long)*((long long*)(pData + 8)))) <<  32) + ntohl(*((long long*)(pData + 8)) >> 32);
         }
-        return *((__int64*)(pData + 8));
+        return *((long long*)(pData + 8));
     }
     return 0;
 }
@@ -382,7 +392,7 @@ unsigned int CRTPacket::GetComponentSize(EComponentType eComponent)
     {
         return 0;
     }
-    if (mpComponentData[eComponent - 1] == NULL)
+    if (mpComponentData[eComponent - 1] == nullptr)
     {
         return 0;
     }
@@ -395,7 +405,7 @@ char* CRTPacket::GetErrorString()
     {
         return mpData + 8;
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -405,7 +415,7 @@ char* CRTPacket::GetCommandString()
     {
         return mpData + 8;
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -415,7 +425,7 @@ char* CRTPacket::GetCommandString(char* pData, bool bBigEndian)
     {
         return pData + 8;
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -425,7 +435,7 @@ char* CRTPacket::GetXMLString()
     {
         return mpData + 8;
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -477,14 +487,14 @@ unsigned short CRTPacket::GetDropRate()
 {
     for (int i = 0; i <= 1; i++)
     {
-        if (mpComponentData[i] != NULL)
+        if (mpComponentData[i] != nullptr)
         {
             return SetByteOrder((unsigned short*)(mpComponentData[i] + 12));
         }
     }
     for (int i = 4; i <= 11; i++)
     {
-        if (mpComponentData[i] != NULL)
+        if (mpComponentData[i] != nullptr)
         {
             return SetByteOrder((unsigned short*)(mpComponentData[i] + 12));
         }
@@ -496,14 +506,14 @@ unsigned short CRTPacket::GetOutOfSyncRate()
 {
     for (int i = 0; i <= 1; i++)
     {
-        if (mpComponentData[i] != NULL)
+        if (mpComponentData[i] != nullptr)
         {
             return SetByteOrder((unsigned short*)(mpComponentData[i] + 14));
         }
     }
     for (int i = 4; i <= 11; i++)
     {
-        if (mpComponentData[i] != NULL)
+        if (mpComponentData[i] != nullptr)
         {
             return SetByteOrder((unsigned short*)(mpComponentData[i] + 14));
         }
@@ -631,7 +641,7 @@ unsigned int CRTPacket::Get3DMarkerCount()
     
     char* pData = mpComponentData[Component3d - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -659,7 +669,7 @@ bool CRTPacket::Get3DMarker(unsigned int nMarkerIndex, float &fX, float &fY, flo
         fY = (float)SetByteOrder((double*)(pData + 24 + nMarkerIndex * 24));
         fZ = (float)SetByteOrder((double*)(pData + 32 + nMarkerIndex * 24));
     }
-    return (_isnan(fX) == 0);
+    return (isnan(fX) == 0);
 }
 
 
@@ -670,7 +680,7 @@ unsigned int CRTPacket::Get3DResidualMarkerCount()
 {
     char* pData = mpComponentData[Component3dRes - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -700,7 +710,7 @@ bool CRTPacket::Get3DResidualMarker(unsigned int nMarkerIndex, float &fX, float 
         fZ        = (float)SetByteOrder((double*)(pData + 32 + nMarkerIndex * 32));
         fResidual =        SetByteOrder((float*) (pData + 40 + nMarkerIndex * 32));
     }
-    return (_isnan(fX) == 0);
+    return (isnan(fX) == 0);
 }
 
 
@@ -711,7 +721,7 @@ unsigned int CRTPacket::Get3DNoLabelsMarkerCount()
 {
     char* pData = mpComponentData[Component3dNoLabels - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -752,7 +762,7 @@ unsigned int CRTPacket::Get3DNoLabelsResidualMarkerCount()
 {
     char* pData = mpComponentData[Component3dNoLabelsRes - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -796,7 +806,7 @@ unsigned int CRTPacket::Get6DOFBodyCount()
 {
     char* pData = mpComponentData[Component6d - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -843,7 +853,7 @@ unsigned int CRTPacket::Get6DOFResidualBodyCount()
 {
     char* pData = mpComponentData[Component6dRes - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -893,7 +903,7 @@ unsigned int CRTPacket::Get6DOFEulerBodyCount()
 {
     char* pData = mpComponentData[Component6dEuler - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -939,7 +949,7 @@ unsigned int CRTPacket::Get6DOFEulerResidualBodyCount()
 {
     char* pData = mpComponentData[Component6dEulerRes - 1];
 
-    if (pData == NULL)
+    if (pData == nullptr)
     {
         return 0;
     }
@@ -1023,7 +1033,7 @@ bool CRTPacket::GetGazeVector(unsigned int nVectorIndex, unsigned int nSampleInd
             (float)SetByteOrder((float*)(mpGazeVectorData[nVectorIndex] + 8 + k * sizeof(float) + nSampleIndex * 24));
     }
 
-    return (_isnan(sGazeVector.fPosX) == 0);
+    return (isnan(sGazeVector.fPosX) == 0);
 }
 
 bool CRTPacket::GetGazeVector(unsigned int nVectorIndex, SGazeVector* pGazeVectorBuf, unsigned int nBufSize)
@@ -1110,7 +1120,7 @@ bool CRTPacket::GetTimecodeIRIG(unsigned int nTimecodeIndex, int &year, int &day
     return false;
 }
 
-bool CRTPacket::GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned __int64 &cameraTime)
+bool CRTPacket::GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned long long &cameraTime)
 {
     if (mnTimecodeCount <= nTimecodeIndex)
     {
@@ -1121,8 +1131,8 @@ bool CRTPacket::GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned __in
     {
         if (timecodeType == TimecodeCamerTime)
         {
-            cameraTime = ((__int64)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 4))) << 32 |
-                          (__int64)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8));
+            cameraTime = ((long long)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 4))) << 32 |
+                          (long long)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8));
             return true;
         }
     }
@@ -1288,7 +1298,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, float* pDataBuf
         if (mnMajorVersion == 1 && mnMinorVersion == 0)
         {
             nSize = nChannelCount;
-            if (nBufSize < nSize || pDataBuf == NULL)
+            if (nBufSize < nSize || pDataBuf == nullptr)
             {
                 nSize = 0;
             }
@@ -1300,7 +1310,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, float* pDataBuf
         else
         {
             nSize = nChannelCount * GetAnalogSampleCount(nDeviceIndex);
-            if (nBufSize < nSize || pDataBuf == NULL)
+            if (nBufSize < nSize || pDataBuf == nullptr)
             {
                 nSize = 0;
             }
@@ -1323,7 +1333,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, unsigned int nC
     {
         if (mnMajorVersion == 1 && mnMinorVersion == 0)
         {
-            if (nBufSize == 0 || pDataBuf == NULL)
+            if (nBufSize == 0 || pDataBuf == nullptr)
             {
                 nSampleCount = 0;
             }
@@ -1336,7 +1346,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, unsigned int nC
         else
         {
             nSampleCount = GetAnalogSampleCount(nDeviceIndex);
-            if (nBufSize < nSampleCount || pDataBuf == NULL)
+            if (nBufSize < nSampleCount || pDataBuf == nullptr)
             {
                 nSampleCount = 0;
             }
@@ -1370,7 +1380,7 @@ bool CRTPacket::GetAnalogData(unsigned int nDeviceIndex, unsigned int nChannelIn
                 fAnalogValue = SetByteOrder((float*)(mpAnalogData[nDeviceIndex] + 16 +
                                (nChannelIndex * nSampleCount + nSampleIndex) * sizeof(float)));
             }
-            if (_isnan(fAnalogValue) == 0)
+            if (isnan(fAnalogValue) == 0)
             {
                 return true;
             }
@@ -1413,7 +1423,7 @@ unsigned int CRTPacket::GetAnalogSingleData(unsigned int nDeviceIndex, float* pD
     if (nDeviceIndex < mnAnalogSingleDeviceCount)
     {
         nSize = GetAnalogSingleChannelCount(nDeviceIndex);
-        if (nBufSize < nSize || pDataBuf == NULL)
+        if (nBufSize < nSize || pDataBuf == nullptr)
         {
             nSize = 0;
         }
@@ -1433,7 +1443,7 @@ bool CRTPacket::GetAnalogSingleData(unsigned int nDeviceIndex, unsigned int nCha
         if (nChannelIndex < GetAnalogSingleChannelCount(nDeviceIndex))
         {
             fValue = SetByteOrder(((float*)(mpAnalogSingleData[nDeviceIndex] + 8 + nChannelIndex * sizeof(float))));
-            return (_isnan(fValue) == 0);
+            return (isnan(fValue) == 0);
         }
     }
     return false;
@@ -1504,7 +1514,7 @@ unsigned int CRTPacket::GetForceData(unsigned int nPlateIndex, SForce* pForceBuf
         else
         {
             nSize = GetForceCount(nPlateIndex);
-            if (nBufSize < nSize || pForceBuf == NULL)
+            if (nBufSize < nSize || pForceBuf == nullptr)
             {
                 nSize = 0;
             }
@@ -1535,7 +1545,7 @@ bool CRTPacket::GetForceData(unsigned int nPlateIndex, unsigned int nForceIndex,
                         (float)SetByteOrder((double*)(mpForceData[nPlateIndex] + k * sizeof(double)));
 
                     // Not a valid force if one of the values is not a valid float.
-                    if (_isnan(*(((float*)&sForce) + k)) != 0)
+                    if (isnan(*(((float*)&sForce) + k)) != 0)
                     {
                         return false; 
                     }
@@ -1553,7 +1563,7 @@ bool CRTPacket::GetForceData(unsigned int nPlateIndex, unsigned int nForceIndex,
                         SetByteOrder((float*)(mpForceData[nPlateIndex] + 12 + k * sizeof(float) + nForceIndex * sizeof(SForce)));
 
                     // Not a valid force if one of the values is not a valid float.
-                    if (_isnan(*(((float*)&sForce) + k)) != 0)
+                    if (isnan(*(((float*)&sForce) + k)) != 0)
                     {
                         return false; 
                     }
@@ -1596,7 +1606,7 @@ bool CRTPacket::GetSkeletonSegments(unsigned int nSkeletonIndex, SSkeletonSegmen
         return false;
     }
 
-    if (nBufSize < segmentCount * 32 || segmentBuffer == NULL)
+    if (nBufSize < segmentCount * 32 || segmentBuffer == nullptr)
     {
         segmentCount = 0;
         return false;
@@ -1688,7 +1698,7 @@ bool CRTPacket::GetForceSingleData(unsigned int nPlateIndex, SForce &sForce)
                 SetByteOrder((float*)(mpForceSingleData[nPlateIndex] + 4 + k * sizeof(float)));
 
             // Not a valid force if one of the values is not a valid float.
-            if (_isnan(*(((float*)&sForce) + k)) != 0)
+            if (isnan(*(((float*)&sForce) + k)) != 0)
             {
                 return false; 
             }
@@ -1713,12 +1723,11 @@ float CRTPacket::SetByteOrder(float* pfData)
 
 double CRTPacket::SetByteOrder(double* pfData)
 {
-    unsigned __int64 nTmp;
+    unsigned long long nTmp;
 
     if (mbBigEndian)
     {
-        nTmp = (((unsigned __int64)(ntohl((long)*((unsigned __int64*)pfData))) <<  32) +
-            ntohl(*((unsigned __int64*)pfData) >> 32));
+        nTmp = (((unsigned long long)(ntohl((long)*((unsigned long long*)pfData))) << 32) + ntohl(*((unsigned long long*)pfData) >> 32));
         return *((double*)&nTmp);
     }
     return *pfData;
@@ -1769,20 +1778,20 @@ unsigned int CRTPacket::SetByteOrder(unsigned int* pnData)
     return *pnData;
 } // SetByteOrder
 
-__int64 CRTPacket::SetByteOrder(__int64* pnData)
+long long CRTPacket::SetByteOrder(long long* pnData)
 {
     if (mbBigEndian)
     {
-        return ((unsigned __int64)(ntohl((long)*pnData)) <<  32) + ntohl(*pnData >> 32);
+        return ((unsigned long long)(ntohl((long)*pnData)) << 32) + ntohl(*pnData >> 32);
     }
     return *pnData;
 } // SetByteOrder
 
-unsigned __int64 CRTPacket::SetByteOrder(unsigned __int64* pnData)
+unsigned long long CRTPacket::SetByteOrder(unsigned long long* pnData)
 {
     if (mbBigEndian)
     {
-        return ((unsigned __int64)(ntohl((long)*pnData)) <<  32) + ntohl(*pnData >> 32);
+        return ((unsigned long long)(ntohl((long)*pnData)) << 32) + ntohl(*pnData >> 32);
     }
     return *pnData;
 } // SetByteOrder
