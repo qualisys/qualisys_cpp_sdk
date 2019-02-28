@@ -27,23 +27,23 @@ void CRTPacket::GetVersion(unsigned int &nMajorVersion, unsigned int &nMinorVers
 {
     nMajorVersion = mnMajorVersion;
     nMinorVersion = mnMinorVersion;
-};
+}
 
 void CRTPacket::SetVersion(unsigned int nMajorVersion, unsigned int nMinorVersion)
 {
     mnMajorVersion = nMajorVersion;
     mnMinorVersion = nMinorVersion;
-};
+}
 
 bool CRTPacket::GetEndianness()
 {
     return mbBigEndian;
-};
+}
 
 void CRTPacket::SetEndianness(bool bBigEndian)
 {
     mbBigEndian = bBigEndian;
-};
+}
 
 void CRTPacket::ClearData()
 {
@@ -154,7 +154,7 @@ void CRTPacket::SetData(char* ptr)
             }
             if (nComponentType == ComponentAnalog)
             {
-                if (mnMajorVersion == 1 && mnMinorVersion == 0)
+                if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
                 {
                     mnAnalogDeviceCount = 1;
                 }
@@ -163,7 +163,7 @@ void CRTPacket::SetData(char* ptr)
                     mnAnalogDeviceCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
                 }
 
-                if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                if ((mnMajorVersion > 1) || (mnMinorVersion > 7))
                 {
                     mpAnalogData[0] = pCurrentComponent + 12;
                 }
@@ -211,7 +211,7 @@ void CRTPacket::SetData(char* ptr)
                 }
                 for (nDevice = 1; nDevice < mnForcePlateCount; nDevice++)
                 {
-                    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+                    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
                     {
                         mpForceData[nDevice] = mpForceData[nDevice - 1] + 72;
                     }
@@ -295,7 +295,7 @@ unsigned int CRTPacket::GetSize()
     {
         return 0;
     }
-    if (mbBigEndian || (mnMajorVersion == 1 && mnMinorVersion == 0))
+    if (mbBigEndian || ((mnMajorVersion == 1) && (mnMinorVersion == 0)))
     {
         return ntohl(*((unsigned int*)mpData));
     }
@@ -308,7 +308,7 @@ CRTPacket::EPacketType CRTPacket::GetType()
     {
         return PacketNone;
     }
-    if (mbBigEndian || (mnMajorVersion == 1 && mnMinorVersion == 0))
+    if (mbBigEndian || ((mnMajorVersion == 1) && (mnMinorVersion == 0)))
     {
         return (EPacketType)ntohl(*(unsigned int*)(mpData + 4));
     }
@@ -542,7 +542,7 @@ unsigned int CRTPacket::Get2DMarkerCount(unsigned int nCameraIndex)
 
 unsigned char CRTPacket::Get2DStatusFlags(unsigned int nCameraIndex)
 {
-    if (mn2DCameraCount > nCameraIndex && (mnMajorVersion > 1 || mnMinorVersion > 7))
+    if (mn2DCameraCount > nCameraIndex && ((mnMajorVersion > 1) || (mnMinorVersion > 7)))
     {
         return *((unsigned char*)(mp2DData[nCameraIndex] + 4));
     }
@@ -595,7 +595,7 @@ unsigned int CRTPacket::Get2DLinMarkerCount(unsigned int nCameraIndex)
 
 unsigned char CRTPacket::Get2DLinStatusFlags(unsigned int nCameraIndex)
 {
-    if (mn2DLinCameraCount > nCameraIndex && (mnMajorVersion > 1 || mnMinorVersion > 7))
+    if (mn2DLinCameraCount > nCameraIndex && ((mnMajorVersion > 1) || (mnMinorVersion > 7)))
     {
         return *((unsigned char*)(mp2DLinData[nCameraIndex] + 4));
     }
@@ -1197,7 +1197,7 @@ bool CRTPacket::GetImageCrop(unsigned int nCameraIndex, float &fCropLeft, float 
 
 unsigned int CRTPacket::GetImageSize(unsigned int nCameraIndex)
 {
-    if (mnMajorVersion == 1 && mnMinorVersion < 8 || mnImageCameraCount <= nCameraIndex)
+    if (((mnMajorVersion == 1) && (mnMinorVersion < 8)) || mnImageCameraCount <= nCameraIndex)
     {
         return 0;
     }
@@ -1207,7 +1207,7 @@ unsigned int CRTPacket::GetImageSize(unsigned int nCameraIndex)
 
 unsigned int CRTPacket::GetImage(unsigned int nCameraIndex, char* pDataBuf, unsigned int nBufSize)
 {
-    if (mnMajorVersion == 1 && mnMinorVersion < 8 || mnImageCameraCount <= nCameraIndex)
+    if (((mnMajorVersion == 1) && (mnMinorVersion < 8)) || mnImageCameraCount <= nCameraIndex)
     {
         return 0;
     }
@@ -1234,7 +1234,7 @@ unsigned int CRTPacket::GetAnalogDeviceCount()
 
 unsigned int CRTPacket::GetAnalogDeviceId(unsigned int nDeviceIndex)
 {
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return 1;
     }
@@ -1249,7 +1249,7 @@ unsigned int CRTPacket::GetAnalogChannelCount(unsigned int nDeviceIndex)
 {
     char* pData = mpComponentData[ComponentAnalog - 1];
 
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return SetByteOrder((unsigned int*)(pData + 8));
     }
@@ -1262,7 +1262,7 @@ unsigned int CRTPacket::GetAnalogChannelCount(unsigned int nDeviceIndex)
 
 unsigned int CRTPacket::GetAnalogSampleCount(unsigned int nDeviceIndex)
 {
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return 1;
     }
@@ -1275,7 +1275,7 @@ unsigned int CRTPacket::GetAnalogSampleCount(unsigned int nDeviceIndex)
 
 unsigned int CRTPacket::GetAnalogSampleNumber(unsigned int nDeviceIndex)
 {
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return GetFrameNumber();
     }
@@ -1295,7 +1295,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, float* pDataBuf
     {
         unsigned int nChannelCount = GetAnalogChannelCount(nDeviceIndex);
 
-        if (mnMajorVersion == 1 && mnMinorVersion == 0)
+        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
         {
             nSize = nChannelCount;
             if (nBufSize < nSize || pDataBuf == nullptr)
@@ -1331,7 +1331,7 @@ unsigned int CRTPacket::GetAnalogData(unsigned int nDeviceIndex, unsigned int nC
 
     if (nDeviceIndex < mnAnalogDeviceCount && nChannelIndex < nChannelCount)
     {
-        if (mnMajorVersion == 1 && mnMinorVersion == 0)
+        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
         {
             if (nBufSize == 0 || pDataBuf == nullptr)
             {
@@ -1371,7 +1371,7 @@ bool CRTPacket::GetAnalogData(unsigned int nDeviceIndex, unsigned int nChannelIn
         if (GetAnalogChannelCount(nDeviceIndex) > nChannelIndex &&
             nSampleCount  > nSampleIndex)
         {
-            if (mnMajorVersion == 1 && mnMinorVersion == 0)
+            if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
             {
                 fAnalogValue = (float)SetByteOrder((double*)(mpAnalogData[nDeviceIndex] + nChannelIndex * sizeof(double)));
             }
@@ -1473,7 +1473,7 @@ unsigned int CRTPacket::GetForceCount(unsigned int nPlateIndex)
     {
         return 0;
     }
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return 1;
     }
@@ -1486,7 +1486,7 @@ unsigned int CRTPacket::GetForceNumber(unsigned int nPlateIndex)
     {
         return 0;
     }
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
     {
         return GetFrameNumber();
     }
@@ -1499,7 +1499,7 @@ unsigned int CRTPacket::GetForceData(unsigned int nPlateIndex, SForce* pForceBuf
 
     if (nPlateIndex < mnForcePlateCount)
     {
-        if (mnMajorVersion == 1 && mnMinorVersion == 0)
+        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
         {
             if (nPlateIndex == 0)
             {
@@ -1535,7 +1535,7 @@ bool CRTPacket::GetForceData(unsigned int nPlateIndex, unsigned int nForceIndex,
 {
     if (nPlateIndex < mnForcePlateCount)
     {
-        if (mnMajorVersion == 1 && mnMinorVersion == 0)
+        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
         {
             if (nPlateIndex == 0 && nForceIndex == 0)
             {
