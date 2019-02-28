@@ -8,8 +8,9 @@
 #include <string>
 #include <map>
 
-
+#ifdef _WIN32
 #pragma warning (disable : 4251)
+#endif
 
 
 #ifdef EXPORT_DLL
@@ -242,6 +243,20 @@ private:
 
     struct SSettingsGeneralExternalTimebase
     {
+        SSettingsGeneralExternalTimebase():
+            bEnabled(false),
+            eSignalSource(SourceControlPort),
+            bSignalModePeriodic(false),
+            nFreqMultiplier(0),
+            nFreqDivisor(0),
+            nFreqTolerance(0),
+            fNominalFrequency(0.0f),
+            bNegativeEdge(false),
+            nSignalShutterDelay(0),
+            fNonPeriodicTimeout(0.0f)
+        {
+        }
+
         bool          bEnabled;
         ESignalSource eSignalSource;
         bool          bSignalModePeriodic;
@@ -267,7 +282,7 @@ private:
             eRtProcessingActions(EProcessingActions::ProcessingNone),
             eReprocessingActions(EProcessingActions::ProcessingNone)
         {
-            sExternalTimebase = {0};
+            sExternalTimebase = { };
             sCameraSystem = { Unknown };
         }
 

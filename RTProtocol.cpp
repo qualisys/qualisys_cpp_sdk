@@ -142,7 +142,6 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
             }
             else if (eType == CRTPacket::PacketCommand)
             {
-                auto commandString = mpoRTPacket->GetCommandString();
                 const std::string welcomeMessage("QTM RT Interface connected");
                 if (strncmp(welcomeMessage.c_str(), mpoRTPacket->GetCommandString(), welcomeMessage.size()) == 0)
                 {
@@ -1298,7 +1297,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
 			strcpy(maErrorStr, "Data receive timeout.");
             return 0;
         }
-        if (nRecved < sizeof(int) * 2)
+        if (nRecved < (int)(sizeof(int) * 2))
         {
             // QTM header not received.
 			strcpy(maErrorStr, "Couldn't read header bytes.");
@@ -1416,7 +1415,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
 CRTPacket* CRTProtocol::GetRTPacket()
 {
     return mpoRTPacket;
-};
+}
 
 
 bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const
@@ -1598,7 +1597,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
     }
     unsigned int nMultiplier;
     tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%d", &nMultiplier) == 1)
+    if (sscanf(tStr.c_str(), "%u", &nMultiplier) == 1)
     {
         msGeneralSettings.sExternalTimebase.nFreqMultiplier = nMultiplier;
     }
@@ -1613,7 +1612,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
     }
     unsigned int nDivisor;
     tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%d", &nDivisor) == 1)
+    if (sscanf(tStr.c_str(), "%u", &nDivisor) == 1)
     {
         msGeneralSettings.sExternalTimebase.nFreqDivisor = nDivisor;
     }
@@ -1628,7 +1627,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
     }
     unsigned int nTolerance;
     tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%d", &nTolerance) == 1)
+    if (sscanf(tStr.c_str(), "%u", &nTolerance) == 1)
     {
         msGeneralSettings.sExternalTimebase.nFreqTolerance = nTolerance;
     }
@@ -1686,7 +1685,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
     }
     unsigned int nDelay;
     tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%d", &nDelay) == 1)
+    if (sscanf(tStr.c_str(), "%u", &nDelay) == 1)
     {
         msGeneralSettings.sExternalTimebase.nSignalShutterDelay = nDelay;
     }
@@ -3663,7 +3662,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobal
             SSettingsSkeletonSegment segment;
 
             segment.name = oXML.GetAttrib("Name");
-            if (segment.name.size() == 0 || sscanf(oXML.GetAttrib("ID").c_str(), "%d", &segment.id) != 1)
+            if (segment.name.size() == 0 || sscanf(oXML.GetAttrib("ID").c_str(), "%u", &segment.id) != 1)
             {
                 return false;
             }
@@ -4597,6 +4596,8 @@ bool CRTProtocol::SetCameraVideoSettings(
             case VideoResolution480p:
                 oXML.AddElem("Video_Resolution", "480p");
                 break;
+            case VideoResolutionNone:
+                break;
         }
     }
     if (eVideoAspectRatio)
@@ -4611,6 +4612,8 @@ bool CRTProtocol::SetCameraVideoSettings(
                 break;
             case VideoAspectRatio1x1:
                 oXML.AddElem("Video_Aspect_Ratio", "1x1");
+                break;
+            case VideoAspectRatioNone:
                 break;
         }
     }
@@ -4959,8 +4962,7 @@ char* CRTProtocol::GetErrorString()
 
 bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 {
-    int         nSize;
-    int         nCmdStrLen = (int)strlen(pCmdStr);
+    auto nCmdStrLen = strlen(pCmdStr);
     static char aSendBuffer[5000];
 
     if (nCmdStrLen > sizeof(aSendBuffer))
@@ -4972,7 +4974,7 @@ bool CRTProtocol::SendString(const char* pCmdStr, int nType)
     //
     // Header size + length of the string + terminating null char
     //
-    nSize = 8 + nCmdStrLen + 1;
+    unsigned int nSize = 8 + (unsigned int)nCmdStrLen + 1;
 
     memcpy(aSendBuffer + 8, pCmdStr, nCmdStrLen + 1);
 

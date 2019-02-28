@@ -85,7 +85,7 @@ bool CMarkup::SetDoc(const char* szDoc)
     memset(mtIndent, ' ', sizeof(mtIndent));
     mtIndent[999] = 0;
 	return bWellFormed;
-};
+}
 
 bool CMarkup::IsWellFormed()
 {
@@ -1249,4 +1249,4 @@ bool CMarkup::TokenPos::Match(const char* szName) const
 	int nLen = nR - nL + 1;
 	return ((strncmp(&szDoc[nL], szName, nLen) == 0)
 		&& (szName[nLen] == '\0' || strchr(" =/[", szName[nLen])));
-};
+}
