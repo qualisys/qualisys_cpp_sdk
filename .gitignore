@@ -30,3 +30,19 @@
 *.exe
 *.out
 *.app
+
+# Compiled Visual Studio files
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.idb
+*.ipch
+*.db
+*.opendb
+*.db-shm
+*.db-wal
+*.suo
+*.exp
+
+.vs
