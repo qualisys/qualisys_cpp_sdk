@@ -4,7 +4,7 @@
 
 bool CInput::CheckKeyPressed()
 {
-    return (GetKeyState(VK_RETURN) & 0x8000);
+    return (GetKeyState(VK_ESCAPE) & 0x8000);
 }
 
 

@@ -12,7 +12,7 @@
 
 
 #define MAJOR_VERSION           1
-#define MINOR_VERSION           19
+#define MINOR_VERSION           20
 
 #define MAX_CAMERA_COUNT        256
 #define MAX_ANALOG_DEVICE_COUNT 64

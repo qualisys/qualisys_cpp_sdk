@@ -1151,36 +1151,37 @@ bool CMarkup::x_AddElem(const char* szName, const char* szValue, bool bInsert, b
 	return true;
 }
 
-std::string CMarkup::Format(const char *fmt, ...) 
-{ 
-    using std::string;
-    using std::vector;
-
-    string retStr("");
-
-    if (NULL != fmt)
-    {
-		va_list marker;
-
-        // initialize variable arguments
-        va_start(marker, fmt); 
-
-        // Get formatted string length adding one for NULL
-#ifdef _WIN32
-		size_t len = _vscprintf(fmt, marker) + 1;
-#else
-		va_list argcopy; 
-		va_copy(argcopy, marker);
-		auto len = vsnprintf(NULL, 0, fmt, marker) + 1;
-		va_end(argcopy);
+#ifndef _WIN32
+int _vscprintf(const char* format, va_list pargs)
+{
+    int retval;
+    va_list argcopy;
+    va_copy(argcopy, pargs);
+    retval = vsnprintf(NULL, 0, format, argcopy);
+    va_end(argcopy);
+    return retval;
+}
 #endif
 
+std::string CMarkup::Format(const char *fmt, ...)
+{
+    std::string retStr;
+    if (NULL != fmt)
+    {
+        va_list marker;
+
+        // initialize variable arguments
+        va_start(marker, fmt);
+
+        // Get formatted string length adding one for NULL
+        int len = _vscprintf(fmt, marker) + 1;
+
         // Create a char vector to hold the formatted string.
-        vector<char> buffer(len, '\0');
+        std::vector<char> buffer(len, '\0');
 #ifdef _WIN32
-        int nWritten = _vsnprintf_s(&buffer[0], buffer.size(), len, fmt, marker);    
+        int nWritten = _vsnprintf_s(&buffer[0], buffer.size(), len, fmt, marker);
 #else
-		int nWritten = vsnprintf(&buffer[0], len, fmt, marker);
+        int nWritten = vsnprintf(&buffer[0], len, fmt, marker);
 #endif
         if (nWritten > 0)
         {
@@ -1188,10 +1189,9 @@ std::string CMarkup::Format(const char *fmt, ...)
         }
 
         // Reset variable arguments
-        va_end(marker); 
+        va_end(marker);
     }
-
-    return retStr; 
+    return retStr;
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const

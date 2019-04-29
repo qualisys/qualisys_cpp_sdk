@@ -4,6 +4,7 @@
 #include <conio.h>
 #include <math.h>
 #include <float.h>
+#include <locale.h>
 
 
 #define WRITE_ANALOG_HEADERS_TO_FILE

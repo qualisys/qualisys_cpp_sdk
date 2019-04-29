@@ -91,13 +91,6 @@ public:
         ModelMiqusVideoColor = 20
     };
 
-    enum ECameraSystemType
-    {
-        Unknown = 0,
-        Oqus = 1,
-        Miqus = 2
-    };
-
     enum ECameraMode
     {
         ModeMarker          = 0,
@@ -127,7 +120,7 @@ public:
         ModeShutterOut = 1, // A pulse per frame is sent
         ModeMultiplier,
         ModeDivisor,
-        ModeActualFreq,
+        ModeIndependentFreq,
         ModeMeasurementTime,
         ModeFixed100Hz
     };
@@ -184,7 +177,8 @@ public:
     };
 
 
-private:
+    unsigned int GetSystemFrequency() const;
+public:
     struct SSettingsGeneralCamera
     {
         unsigned int nID;
@@ -236,11 +230,6 @@ private:
         int          autoWhiteBalance;
     };
 
-    struct SSettingsGeneralCameraSystem
-    {
-        ECameraSystemType eType;
-    };
-
     struct SSettingsGeneralExternalTimebase
     {
         SSettingsGeneralExternalTimebase():
@@ -283,7 +272,6 @@ private:
             eReprocessingActions(EProcessingActions::ProcessingNone)
         {
             sExternalTimebase = { };
-            sCameraSystem = { Unknown };
         }
 
         unsigned int nCaptureFrequency;
@@ -292,7 +280,6 @@ private:
         bool bStartOnTrigNO;
         bool bStartOnTrigNC;
         bool bStartOnTrigSoftware;
-        SSettingsGeneralCameraSystem sCameraSystem;
         SSettingsGeneralExternalTimebase sExternalTimebase;
         EProcessingActions eProcessingActions;   // Binary flags.
         EProcessingActions eRtProcessingActions; // Binary flags.
@@ -483,6 +470,7 @@ public:
         unsigned int &nSignalShutterDelay, float         &fNonPeriodicTimeout) const;
 
     unsigned int GetCameraCount() const;
+    std::vector<SSettingsGeneralCamera> GetDevices() const;
 
     bool GetCameraSettings(
         unsigned int nCameraIndex, unsigned int &nID,     ECameraModel &eModel, 
@@ -577,8 +565,6 @@ public:
     bool         GetSkeleton(unsigned int skeletonIndex, SSettingsSkeleton* skeleton);
     bool         GetSkeletonSegment(unsigned int skeletonIndex, unsigned int segmentIndex, SSettingsSkeletonSegment* segment);// parentIndex = -1 => No parent.
 
-    ECameraSystemType GetCameraSystemType() const;
-
 
     bool SetSystemSettings(
         const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
@@ -622,7 +608,6 @@ public:
 
     char* GetErrorString();
 
-
 private:
     bool SendString(const char* pCmdStr, int nType);
     bool SendCommand(const char* pCmdStr);
@@ -654,6 +639,7 @@ private:
     SSettingsForce                msForceSettings;
     std::vector<SImageCamera>     mvsImageSettings;
     std::vector<SSettingsSkeleton> mSkeletonSettings;
+    char                          mSendBuffer[5000];
     char                          maErrorStr[1024];
     unsigned short                mnBroadcastPort;
     FILE*                         mpFileBuffer;

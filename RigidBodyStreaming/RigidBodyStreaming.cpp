@@ -13,6 +13,7 @@ int main(int argc, char **argv)
     {
         CRTProtocol rtProtocol;
 
+        //Example code for how to use discovery calls.
         //if (rtProtocol.DiscoverRTServer(4534, false))
         //{
         //    sleep(1);
@@ -32,8 +33,6 @@ int main(int argc, char **argv)
         //{
         //    printf("%s", rtProtocol.GetErrorString());
         //}
-
-        //return 0;
 
         const char           serverAddr[] = "127.0.0.1";
         const unsigned short basePort = 22222;
@@ -74,9 +73,10 @@ int main(int argc, char **argv)
                     sleep(1);
                     continue;
                 }
-            }
+                streamFrames = true;
 
-            printf("Streaming 6DOF data\n\n");
+                printf("Starting to streaming 6DOF data\n\n");
+            }
 
             CRTPacket::EPacketType packetType;
 

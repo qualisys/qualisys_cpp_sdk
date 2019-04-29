@@ -408,7 +408,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeActualFreq:
+                        case CRTProtocol::ModeIndependentFreq:
                             printf("  Sync Out%d Mode:   Actual Frequency = %d\n", portNumber, nSyncOutValue);
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
