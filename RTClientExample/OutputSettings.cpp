@@ -1,6 +1,5 @@
 #include "Output.h"
 #include "RTProtocol.h"
-#include <windows.h>
 #include <stdio.h>
 #include <conio.h>
 #include <math.h>
@@ -44,7 +43,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
     printf("Start on trigger NC (Normally Closed): %s\n", bStartOnTriggerNC ? "True" : "False");
     printf("Start on software trigger: %s\n\n", bStartOnTrigSoftware ? "True" : "False");
 
-    _TCHAR* processings[3] = { "----- Processing Actions-----", "----- Real-Time Processing Actions-----", "----- Reprocessing Actions-----" };
+    const char* processings[3] = { "----- Processing Actions-----", "----- Real-Time Processing Actions-----", "----- Reprocessing Actions-----" };
 
     unsigned int majorVersion;
     unsigned int minorVersion;
@@ -409,7 +408,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeActualFreq:
+                        case CRTProtocol::ModeIndependentFreq:
                             printf("  Sync Out%d Mode:   Actual Frequency = %d\n", portNumber, nSyncOutValue);
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");

@@ -10,10 +10,9 @@ COperations::COperations(CInput* poInput, COutput* poOutput, CRTProtocol* poRTPr
 
 void COperations::DiscoverRTServers(char* tServerAddr, int nServerAddrLen, unsigned short* pnPort)
 {
-    char           pMessage[256];
-    unsigned int   nAddr;
-    unsigned short nBasePort;
-
+	unsigned int nAddr;
+	unsigned short nBasePort;
+	std::string message;
     if (mpoRTProtocol->DiscoverRTServer(0, false)) // Use random UDP server port.
     {
         unsigned int nResponsCount = mpoRTProtocol->GetNumberOfDiscoverResponses();
@@ -28,7 +27,7 @@ void COperations::DiscoverRTServers(char* tServerAddr, int nServerAddrLen, unsig
 
         for (unsigned int nResponse = 0; nResponse < nResponsCount; nResponse++)
         {
-            if (mpoRTProtocol->GetDiscoverResponse(nResponse, nAddr, nBasePort, pMessage, sizeof(pMessage)))
+            if (mpoRTProtocol->GetDiscoverResponse(nResponse, nAddr, nBasePort, message))
             {
                 if (nBasePort > 0)
                 {
@@ -38,12 +37,11 @@ void COperations::DiscoverRTServers(char* tServerAddr, int nServerAddrLen, unsig
                     {
                         printf("%-2d : ", nResponse + 1);
                     }
-                    printf("%-15s %d - %s\n", tAddrStr, nBasePort, pMessage);
+                    printf("%-15s %d - %s\n", tAddrStr, nBasePort, message.c_str());
                 }
                 else
                 {
-                    printf("%d.%d.%d.%d\t- %s\n", 0xff & nAddr, 0xff & (nAddr >> 8), 0xff & (nAddr >> 16),
-                        0xff & (nAddr >> 24), pMessage);
+                    printf("%d.%d.%d.%d\t- %s\n", 0xff & nAddr, 0xff & (nAddr >> 8), 0xff & (nAddr >> 16), 0xff & (nAddr >> 24), message.c_str());
                 }
             }
             else
@@ -56,7 +54,7 @@ void COperations::DiscoverRTServers(char* tServerAddr, int nServerAddrLen, unsig
     {
         printf("\nSelect QTM RT Server to connect to (1 - %d): ", mpoRTProtocol->GetNumberOfDiscoverResponses());
         int nSelection = mpoInput->ReadInt(0);
-        if (mpoRTProtocol->GetDiscoverResponse(nSelection - 1, nAddr, *pnPort, pMessage, sizeof(pMessage)))
+        if (mpoRTProtocol->GetDiscoverResponse(nSelection - 1, nAddr, *pnPort, message))
         {
             sprintf_s(tServerAddr, nServerAddrLen, "%d.%d.%d.%d", 0xff & nAddr, 0xff & (nAddr >> 8), 0xff & (nAddr >> 16), 0xff & (nAddr >> 24));
         }

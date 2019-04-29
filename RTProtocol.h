@@ -6,11 +6,11 @@
 #include "Network.h"
 #include <vector>
 #include <string>
-#include <TCHAR.H>
 #include <map>
 
-
+#ifdef _WIN32
 #pragma warning (disable : 4251)
+#endif
 
 
 #ifdef EXPORT_DLL
@@ -49,8 +49,13 @@ public:
 
     struct SComponentOptions
     {
-        const char* mAnalogChannels = nullptr;
-        bool mSkeletonGlobalData = false;
+		SComponentOptions() :
+			mAnalogChannels(nullptr),
+			mSkeletonGlobalData(false)
+		{
+		}
+        char* mAnalogChannels;
+        bool mSkeletonGlobalData;
     };
 
     enum EStreamRate
@@ -86,13 +91,6 @@ public:
         ModelMiqusVideoColor = 20
     };
 
-    enum ECameraSystemType
-    {
-        Unknown = 0,
-        Oqus = 1,
-        Miqus = 2
-    };
-
     enum ECameraMode
     {
         ModeMarker          = 0,
@@ -122,7 +120,7 @@ public:
         ModeShutterOut = 1, // A pulse per frame is sent
         ModeMultiplier,
         ModeDivisor,
-        ModeActualFreq,
+        ModeIndependentFreq,
         ModeMeasurementTime,
         ModeFixed100Hz
     };
@@ -173,13 +171,14 @@ public:
 
     struct SDiscoverResponse
     {
-        char           pMessage[128];
+        char           message[128];
         unsigned int   nAddr;
         unsigned short nBasePort;
     };
 
 
-private:
+    unsigned int GetSystemFrequency() const;
+public:
     struct SSettingsGeneralCamera
     {
         unsigned int nID;
@@ -231,13 +230,22 @@ private:
         int          autoWhiteBalance;
     };
 
-    struct SSettingsGeneralCameraSystem
-    {
-        ECameraSystemType eType;
-    };
-
     struct SSettingsGeneralExternalTimebase
     {
+        SSettingsGeneralExternalTimebase():
+            bEnabled(false),
+            eSignalSource(SourceControlPort),
+            bSignalModePeriodic(false),
+            nFreqMultiplier(0),
+            nFreqDivisor(0),
+            nFreqTolerance(0),
+            fNominalFrequency(0.0f),
+            bNegativeEdge(false),
+            nSignalShutterDelay(0),
+            fNonPeriodicTimeout(0.0f)
+        {
+        }
+
         bool          bEnabled;
         ESignalSource eSignalSource;
         bool          bSignalModePeriodic;
@@ -263,8 +271,7 @@ private:
             eRtProcessingActions(EProcessingActions::ProcessingNone),
             eReprocessingActions(EProcessingActions::ProcessingNone)
         {
-            sExternalTimebase = {0};
-            sCameraSystem = { Unknown };
+            sExternalTimebase = { };
         }
 
         unsigned int nCaptureFrequency;
@@ -273,7 +280,6 @@ private:
         bool bStartOnTrigNO;
         bool bStartOnTrigNC;
         bool bStartOnTrigSoftware;
-        SSettingsGeneralCameraSystem sCameraSystem;
         SSettingsGeneralExternalTimebase sExternalTimebase;
         EProcessingActions eProcessingActions;   // Binary flags.
         EProcessingActions eRtProcessingActions; // Binary flags.
@@ -399,11 +405,10 @@ public:
     CRTProtocol();
     ~CRTProtocol();
 
-    bool       Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort = NULL, int nMajorVersion = MAJOR_VERSION,
-                       int nMinorVersion = MINOR_VERSION, bool bBigEndian = BIG_ENDIAN);
+    bool       Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort = nullptr, int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false);
     unsigned short GetUdpServerPort();
     void       Disconnect();
-    bool       Connected();
+    bool       Connected() const;
     bool       SetVersion(int nMajorVersion, int nMinorVersion);
     bool       GetVersion(unsigned int &nMajorVersion, unsigned int &nMinorVersion);
     bool       GetQTMVersion(char* pVersion, unsigned int nVersionLen);
@@ -411,18 +416,17 @@ public:
     bool       CheckLicense(const char* pLicenseCode);
     bool       DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResponses, unsigned short nDiscoverPort = DEFAULT_AUTO_DESCOVER_PORT);
     int        GetNumberOfDiscoverResponses();
-    bool       GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, unsigned short &nBasePort,
-                                   char* pMessage, int nMessageLen);
+    bool       GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, unsigned short &nBasePort, std::string& message);
 
-    bool       GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions = SComponentOptions());
+	bool       GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions = { });
     bool       StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
-                            unsigned int nComponentType, const SComponentOptions& componentOptions = SComponentOptions());
+                            unsigned int nComponentType, const SComponentOptions& componentOptions = { });
     bool       StreamFramesStop();
     bool       GetState(CRTPacket::EEvent &eEvent, bool bUpdate = true, int nTimeout = WAIT_FOR_DATA_TIMEOUT);
     bool       GetCapture(const char* pFileName, bool bC3D);
     bool       SendTrig();
     bool       SetQTMEvent(const char* pLabel);
-    bool       TakeControl(const char* pPassword = NULL);
+    bool       TakeControl(const char* pPassword = nullptr);
     bool       ReleaseControl();
     bool       IsControlling();
     bool       NewMeasurement();
@@ -431,20 +435,19 @@ public:
     bool       StartRTOnFile();
     bool       StopCapture();
     bool       LoadCapture(const char* pFileName);
-    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = NULL, int nSizeOfNewFileName = 0);
+    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
     bool       LoadProject(const char* pFileName);
     bool       Reprocess();
 
-    static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr, int nStrLen);
+    static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr);
     static bool ConvertRateString(const char* pRate, EStreamRate &eRate, unsigned int &nRateArg);
     static unsigned int ConvertComponentString(const char* pComponentType);
-    static bool GetComponentString(char* pComponentStr, int nComponentStrLen, unsigned int nComponentType, const SComponentOptions& options = SComponentOptions());
+    static bool GetComponentString(char* pComponentStr, unsigned int nComponentType, const SComponentOptions& options = SComponentOptions());
 
-    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true,
-                               int nTimeout = WAIT_FOR_DATA_TIMEOUT);    // nTimeout < 0 : Blocking receive
+    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = WAIT_FOR_DATA_TIMEOUT);    // nTimeout < 0 : Blocking receive
     CRTPacket* GetRTPacket();
 
-    bool       ReadXmlBool(CMarkup& xml, const std::string& element, bool& value) const;
+    bool       ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
     bool       ReadCameraSystemSettings();
     bool       Read3DSettings(bool &bDataAvailable);
     bool       Read6DOFSettings(bool &bDataAvailable);
@@ -467,6 +470,7 @@ public:
         unsigned int &nSignalShutterDelay, float         &fNonPeriodicTimeout) const;
 
     unsigned int GetCameraCount() const;
+    std::vector<SSettingsGeneralCamera> GetDevices() const;
 
     bool GetCameraSettings(
         unsigned int nCameraIndex, unsigned int &nID,     ECameraModel &eModel, 
@@ -561,8 +565,6 @@ public:
     bool         GetSkeleton(unsigned int skeletonIndex, SSettingsSkeleton* skeleton);
     bool         GetSkeletonSegment(unsigned int skeletonIndex, unsigned int segmentIndex, SSettingsSkeletonSegment* segment);// parentIndex = -1 => No parent.
 
-    ECameraSystemType GetCameraSystemType() const;
-
 
     bool SetSystemSettings(
         const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
@@ -606,21 +608,17 @@ public:
 
     char* GetErrorString();
 
-
 private:
     bool SendString(const char* pCmdStr, int nType);
     bool SendCommand(const char* pCmdStr);
-    bool SendCommand(const char* pCmdStr, char* pCommandResponseStr, unsigned int nCommandResponseLen, unsigned int timeout = WAIT_FOR_DATA_TIMEOUT);
+    bool SendCommand(const char* pCmdStr, char* pCommandResponseStr, unsigned int timeout = WAIT_FOR_DATA_TIMEOUT);
     bool SendXML(const char* pCmdStr);
-    void AddXMLElementBool(CMarkup* oXML, _TCHAR* tTag, const bool* pbValue,
-                           _TCHAR* tTrue = _T("True"), _TCHAR* tFalse = _T("False"));
-    void AddXMLElementBool(CMarkup* oXML, _TCHAR* tTag, const bool bValue,
-                           _TCHAR* tTrue = _T("True"), _TCHAR* tFalse = _T("False"));
-    void AddXMLElementInt(CMarkup* oXML, _TCHAR* tTag, const int* pnValue);
-    void AddXMLElementUnsignedInt(CMarkup* oXML, _TCHAR* tTag, const unsigned int* pnValue);
-    void AddXMLElementFloat(CMarkup* oXML, _TCHAR* tTag, const float* pfValue, unsigned int pnDecimals = 6);
-    std::string Format(const char *fmt, ...) const;
-    bool CompareNoCase(std::string tStr1, const _TCHAR* tStr2) const;
+    void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
+    void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
+    void AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue);
+    void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue);
+    void AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
+    bool CompareNoCase(std::string tStr1, const char* tStr2) const;
 
 private:
     CNetwork*                     mpoNetwork;
@@ -640,7 +638,8 @@ private:
     std::vector<SAnalogDevice>    mvsAnalogDeviceSettings;
     SSettingsForce                msForceSettings;
     std::vector<SImageCamera>     mvsImageSettings;
-    std::vector<SSettingsSkeleton>        mSkeletonSettings;
+    std::vector<SSettingsSkeleton> mSkeletonSettings;
+    char                          mSendBuffer[5000];
     char                          maErrorStr[1024];
     unsigned short                mnBroadcastPort;
     FILE*                         mpFileBuffer;
