@@ -38,7 +38,9 @@
 #define closesocket close
 #define ioctlsocket ioctl
 #define SOCKADDR sockaddr
+//#define SD_RECEIVE SHUT_RD
 #define SD_SEND SHUT_WR
+//#define SD_BOTH SHUT_RDWR
 
 #endif
 

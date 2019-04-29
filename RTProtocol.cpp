@@ -46,6 +46,11 @@ namespace
 
 }
 
+unsigned int CRTProtocol::GetSystemFrequency() const
+{
+    return msGeneralSettings.nCaptureFrequency;
+}
+
 CRTProtocol::CRTProtocol()
 {
     mpoNetwork      = new CNetwork();
@@ -964,7 +969,7 @@ bool CRTProtocol::LoadProject(const char* pFileName)
     {
         sprintf(tTemp, "LoadProject %s", pFileName);
 
-        if (SendCommand(tTemp, pResponseStr))
+        if (SendCommand(tTemp, pResponseStr, 20000000)) // Timeout 20 s
         {
             if (strcmp(pResponseStr, "Project loaded") == 0)
             {
@@ -1861,27 +1866,6 @@ bool CRTProtocol::ReadCameraSystemSettings()
         oXML.OutOfElem(); // Processing_Actions
     }
 
-
-    // ==================== Camera ====================
-    msGeneralSettings.sCameraSystem.eType = ECameraSystemType::Unknown;
-    if (oXML.FindChildElem("Camera_System") && oXML.IntoElem())
-    {
-        if (oXML.FindChildElem("Type"))
-        {
-            tStr = oXML.GetChildData();
-            if (CompareNoCase(tStr, "oqus"))
-            {
-                msGeneralSettings.sCameraSystem.eType = ECameraSystemType::Oqus;
-            }
-            else if (CompareNoCase(tStr, "miqus"))
-            {
-                msGeneralSettings.sCameraSystem.eType = ECameraSystemType::Miqus;
-            }
-        }
-        oXML.OutOfElem();
-    }
-
-
     SSettingsGeneralCamera sCameraSettings;
 
     while (oXML.FindChildElem("Camera"))
@@ -2289,7 +2273,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
         }
         sCameraSettings.nOrientation = atoi(oXML.GetChildData().c_str());
 
-        // ==================== Marker exposure ====================
+        // ==================== Marker resolution ====================
         if (!oXML.FindChildElem("Marker_Res"))
         {
             return false;
@@ -2310,7 +2294,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
         oXML.OutOfElem(); // Marker_Res
 
-        // ==================== Marker resolution ====================
+        // ==================== Video resolution ====================
         if (!oXML.FindChildElem("Video_Res"))
         {
             return false;
@@ -2429,7 +2413,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
                     }
                     else if (tStr == "camera independent")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeActualFreq;
+                        sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
                     }
                     else if (tStr == "measurement time")
                     {
@@ -2446,7 +2430,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
                     if (sCameraSettings.eSyncOutMode[port] == ModeMultiplier ||
                         sCameraSettings.eSyncOutMode[port] == ModeDivisor ||
-                        sCameraSettings.eSyncOutMode[port] == ModeActualFreq)
+                        sCameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
                     {
                         if (!oXML.FindChildElem("Value"))
                         {
@@ -2481,7 +2465,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
             }
             else
             {
-                sCameraSettings.eSyncOutMode[port] = ModeActualFreq;
+                sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
                 sCameraSettings.nSyncOutValue[port] = 0;
                 sCameraSettings.fSyncOutDutyCycle[port] = 0;
                 sCameraSettings.bSyncOutNegativePolarity[port] = false;
@@ -3783,6 +3767,11 @@ unsigned int CRTProtocol::GetCameraCount() const
     return (unsigned int)msGeneralSettings.vsCameras.size();
 }
 
+std::vector<CRTProtocol::SSettingsGeneralCamera> CRTProtocol::GetDevices() const
+{
+    return msGeneralSettings.vsCameras;
+}
+
 
 bool CRTProtocol::GetCameraSettings(
     unsigned int nCameraIndex, unsigned int &nID,     ECameraModel &eModel,
@@ -4342,13 +4331,6 @@ bool CRTProtocol::GetSkeletonSegment(unsigned int skeletonIndex, unsigned int se
     return false;
 }
 
-
-CRTProtocol::ECameraSystemType CRTProtocol::GetCameraSystemType() const
-{
-    return msGeneralSettings.sCameraSystem.eType;
-}
-
-
 bool CRTProtocol::SetSystemSettings(
     const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
     const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
@@ -4671,7 +4653,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
             case ModeDivisor:
                 oXML.AddElem("Mode", "Divisor");
                 break;
-            case ModeActualFreq:
+            case ModeIndependentFreq:
                 oXML.AddElem("Mode", "Camera independent");
                 break;
             case ModeMeasurementTime:
@@ -4686,7 +4668,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
 
             if (*peSyncOutMode == ModeMultiplier ||
                 *peSyncOutMode == ModeDivisor ||
-                *peSyncOutMode == ModeActualFreq)
+                *peSyncOutMode == ModeIndependentFreq)
             {
                 if (pnSyncOutValue)
                 {
@@ -4962,10 +4944,10 @@ char* CRTProtocol::GetErrorString()
 
 bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 {
-    auto nCmdStrLen = strlen(pCmdStr);
-    static char aSendBuffer[5000];
+    int         nSize;
+    int         nCmdStrLen = (int)strlen(pCmdStr);
 
-    if (nCmdStrLen > sizeof(aSendBuffer))
+    if (nCmdStrLen > sizeof(mSendBuffer))
     {
 		strcpy(maErrorStr, "String is larger than send buffer.");
         return false;
@@ -4974,22 +4956,22 @@ bool CRTProtocol::SendString(const char* pCmdStr, int nType)
     //
     // Header size + length of the string + terminating null char
     //
-    unsigned int nSize = 8 + (unsigned int)nCmdStrLen + 1;
+    nSize = 8 + nCmdStrLen + 1;
 
-    memcpy(aSendBuffer + 8, pCmdStr, nCmdStrLen + 1);
+    memcpy(mSendBuffer + 8, pCmdStr, nCmdStrLen + 1);
 
     if ((mnMajorVersion == 1 && mnMinorVersion == 0) || mbBigEndian)
     {
-        *((unsigned int*)aSendBuffer)       = htonl(nSize);
-        *((unsigned int*)(aSendBuffer + 4)) = htonl(nType);
+        *((unsigned int*)mSendBuffer)       = htonl(nSize);
+        *((unsigned int*)(mSendBuffer + 4)) = htonl(nType);
     }
     else
     {
-        *((unsigned int*)aSendBuffer)       = nSize;
-        *((unsigned int*)(aSendBuffer + 4)) = nType;
+        *((unsigned int*)mSendBuffer)       = nSize;
+        *((unsigned int*)(mSendBuffer + 4)) = nType;
     }
 
-    if (mpoNetwork->Send(aSendBuffer, nSize) == false)
+    if (mpoNetwork->Send(mSendBuffer, nSize) == false)
     {
 		strcpy(maErrorStr, mpoNetwork->GetErrorString());
         return false;
