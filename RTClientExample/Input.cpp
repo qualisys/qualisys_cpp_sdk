@@ -4,7 +4,7 @@
 
 bool CInput::CheckKeyPressed()
 {
-    return (GetKeyState(VK_RETURN) & 0x8000);
+    return (GetKeyState(VK_ESCAPE) & 0x8000);
 }
 
 
@@ -219,9 +219,9 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
             do
             {
                 nAddType = ReadDataComponent(false, skeletonGlobalReferenceFrame);
-                nComponentType += nAddType;
+                nComponentType |= nAddType;
                 char tmpStr[128];
-                CRTProtocol::GetComponentString(tmpStr, 128, nAddType);
+                CRTProtocol::GetComponentString(tmpStr, nAddType);
                 printf("%s\n", tmpStr);
             } while (nAddType != 0);
 
@@ -505,7 +505,7 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
                                            CRTProtocol::EProcessingActions &eRtProcessingActions,
                                            CRTProtocol::EProcessingActions &eReprocessingActions)
 {
-    _TCHAR* processings[3] = { "Processing Actions", "Real-time Processing Actions", "Reprocessing Actions" };
+    const char* processings[3] = { "Processing Actions", "Real-time Processing Actions", "Reprocessing Actions" };
     CRTProtocol::EProcessingActions* processingActions[3] =
     {
         &eProcessingActions,

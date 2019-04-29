@@ -1,10 +1,10 @@
 #include "Output.h"
 #include "RTProtocol.h"
-#include <windows.h>
 #include <stdio.h>
 #include <conio.h>
 #include <math.h>
 #include <float.h>
+#include <locale.h>
 
 
 #define WRITE_ANALOG_HEADERS_TO_FILE
@@ -1208,8 +1208,7 @@ void COutput::ResetCounters()
 void COutput::PrintEvent(CRTPacket::EEvent eEvent)
 {
     char pStr[256];
-
-    if (CRTProtocol::GetEventString(eEvent, pStr, 256))
+    if (CRTProtocol::GetEventString(eEvent, pStr))
     {
         printf("%s\n", pStr);
     }
