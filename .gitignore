@@ -46,11 +46,6 @@
 *.exp
 
 .vs
-
-Release/Win32/RTClientSDK\.iobj
-
-Release/Win32/RTClientSDK\.ipdb
-
-Release/x64/RTClientSDK\.iobj
-
-Release/x64/RTClientSDK\.ipdb
+Debug
+Release
+*.user
