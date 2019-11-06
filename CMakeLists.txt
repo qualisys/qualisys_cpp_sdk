@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+include(GNUInstallDirs)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
 
@@ -25,12 +26,21 @@ set_target_properties(${PROJECT_NAME}
         DEBUG_POSTFIX "-d"
 )
 
-# example: RigidBodyStreaming
-add_executable(RigidBodyStreaming
-  RigidBodyStreaming/RigidBodyStreaming.cpp
+# ----------- INSTALL & EXPORT -----------
+
+# 'make install' to the correct locations (provided by GNUInstallDirs).
+install(
+	TARGETS ${PROJECT_NAME}
+	EXPORT ${PROJECT_NAME}-targets
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
 )
-target_link_libraries(RigidBodyStreaming
-  qualisys_cpp_sdk
+# Copy along headers
+set(INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+install(
+    CODE "file( GLOB HEADERS \"${CMAKE_CURRENT_SOURCE_DIR}/*.h*\" )"
+    CODE "file( INSTALL \${HEADERS} DESTINATION \"${INSTALL_INCLUDE_DIR}\" )"
 )
 
 # example: RigidBodyStreaming
