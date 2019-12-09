@@ -114,7 +114,7 @@ int main(int argc, char **argv)
                 }
             }
         }
-        rtProtocol.StopCapture();
+        rtProtocol.StreamFramesStop();
         rtProtocol.Disconnect();
     }
     catch (std::exception& e)
