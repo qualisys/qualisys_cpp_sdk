@@ -839,7 +839,7 @@ bool CRTPacket::Get6DOFBody(unsigned int nBodyIndex, float &fX, float &fY, float
         fZ = (float)SetByteOrder((double*)(pData + 32 + nBodyIndex * 96));
         for (int i = 0; i < 9; i++)
         {
-            afRotMatrix[i] = (float)SetByteOrder((double*)(pData + 40 + (i * 4) + nBodyIndex * 96));
+            afRotMatrix[i] = (float)SetByteOrder((double*)(pData + 40 + (i * 8) + nBodyIndex * 96));
         }
     }
     return true;

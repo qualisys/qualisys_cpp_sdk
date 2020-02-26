@@ -117,7 +117,7 @@ bool CInput::ReadOperation(EOperation &eOperation)
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 6)
     {
-        printf("7 : View Settings (General, 3D, 6DOF, GazeVector, Analog, Force, Image, Skeleton)\n");
+        printf("7 : View Settings (General, Calibration, 3D, 6DOF, GazeVector, Analog, Force, Image, Skeleton)\n");
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 6)
     {
@@ -924,8 +924,10 @@ bool CInput::ReadQTMCommand(EQTMCommand &eCommand)
     printf("  b : Trig\n");
     printf("  c : SetQTMEvent\n");
     printf("  d : Reprocess\n");
+    printf("  e : Calibrate\n");
+    printf("  f : Refine Calibration\n");
     printf("  q : Quit\n\n");
-    printf("Select 1 - c : ");
+    printf("Select 1 - e : ");
 
     eCommand = (EQTMCommand)(ReadChar('0') - '0');
     switch (eCommand)
@@ -942,11 +944,17 @@ bool CInput::ReadQTMCommand(EQTMCommand &eCommand)
         case 52 : // d
             eCommand = Reprocess;
             break;
+        case 53:  // e
+            eCommand = Calibrate;
+            break;
+        case 54:  // f
+            eCommand = CalibrateRefine;
+            break;
         default :
             break;
     }
     printf("\n");
-    if (eCommand < 1 || eCommand > Reprocess)
+    if (eCommand < 1 || eCommand > CalibrateRefine)
     {
         return false;
     }

@@ -16,6 +16,8 @@ public:
     void ResetCounters();
     void PrintEvent(CRTPacket::EEvent eEvent);
     void PrintGeneralSettings(CRTProtocol* poRTProtocol);
+    void PrintCalibrationSettings(CRTProtocol* poRTProtocol);
+    void PrintCalibrationSettings(const CRTProtocol::SCalibration &calibrationResult);
     void Print3DSettings(CRTProtocol* poRTProtocol);
     void Print6DOFSettings(CRTProtocol* poRTProtocol);
     void PrintGazeVectorSettings(CRTProtocol* poRTProtocol);
@@ -54,8 +56,8 @@ private:
     void PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void Print2DNoise(CRTPacket* poRTPacket);
 
-    static const int mcnMaxCameras = 20;  // How many cameras can be measured noise on
-    static const int mcnMaxMarkers = 20;  // How many markers can be measured noise on
+    static const int mcnMaxCameras = 30;  // How many cameras can be measured noise on
+    static const int mcnMaxMarkers = 30;  // How many markers can be measured noise on
     static const int mcnUseSamples = 100; // How many samples to calculate max noise upon 
     static const int mcnMaxNoise   = 30;  // Max noise in subpixels to display
 
@@ -87,6 +89,8 @@ private:
     int mnFrameNumberDiff;
     unsigned int mnMaxFrameNumberDiff;
     COORD mPrintPos;
+    unsigned int mFrameNumberResets;
+    unsigned int mTimestampResets;
 };
 
 

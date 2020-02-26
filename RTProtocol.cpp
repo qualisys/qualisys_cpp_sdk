@@ -5,13 +5,17 @@
 #include <cctype>
 #include <thread>
 #include <string.h>
+#include <sstream>
 #include <cmath>
 #include <algorithm>
 #include <locale>
+#include <vector>
+#include <iterator>
 
 #include "RTProtocol.h"
 #include "Markup.h"
 #include "Network.h"
+#include <stdexcept>
 
 #ifdef _WIN32
 #include <iphlpapi.h>
@@ -63,8 +67,8 @@ CRTProtocol::CRTProtocol()
     maErrorStr[0]   = 0;
     mnBroadcastPort = 0;
     mpFileBuffer    = nullptr;
-	mDataBuffSize = 65535;
-	maDataBuff = new char[mDataBuffSize];
+    mDataBuffSize = 65535;
+    maDataBuff = new char[mDataBuffSize];
     mbIsMaster = false;
 } // CRTProtocol
 
@@ -81,10 +85,17 @@ CRTProtocol::~CRTProtocol()
         delete mpoRTPacket;
         mpoRTPacket = nullptr;
     }
+    if (maDataBuff)
+    {
+        delete maDataBuff;
+        maDataBuff = nullptr;
+    }
+
 } // ~CRTProtocol
 
 
-bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort, int nMajorVersion, int nMinorVersion, bool bBigEndian)
+bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort,
+                          int nMajorVersion, int nMinorVersion, bool bBigEndian)
 {
     CRTPacket::EPacketType eType;
     char                   tTemp[100];
@@ -160,7 +171,7 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
                         {
                             if (mbBigEndian)
                             {
-								strcpy(tTemp, "ByteOrder BigEndian");
+                                strcpy(tTemp, "ByteOrder BigEndian");
                             }
                             else
                             {
@@ -324,7 +335,7 @@ bool CRTProtocol::CheckLicense(const char* pLicenseCode)
             {
                 return true;
             }
-			strcpy(maErrorStr, "Wrong license code.");
+            strcpy(maErrorStr, "Wrong license code.");
         }
         else
         {
@@ -343,7 +354,7 @@ bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResp
 {
     char pData[10];
     SDiscoverResponse sResponse;        
-    
+
     if (mnBroadcastPort == 0)
     {
         if (!mpoNetwork->CreateUDPSocket(nServerPort, true))
@@ -407,55 +418,63 @@ bool CRTProtocol::GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, 
     {
         nAddr     = mvsDiscoverResponseList[nIndex].nAddr;
         nBasePort = mvsDiscoverResponseList[nIndex].nBasePort;
-		message   = mvsDiscoverResponseList[nIndex].message;
+        message   = mvsDiscoverResponseList[nIndex].message;
         return true;
     }
+    return false;
+}
+
+bool CRTProtocol::GetCurrentFrame(const char* components)
+{
+    char pCommandStr[256];
+    strcpy(pCommandStr, "GetCurrentFrame ");
+    strcat(pCommandStr, components);
+
+    if (SendCommand(pCommandStr))
+    {
+        return true;
+    }
+	strcpy(maErrorStr, "GetCurrentFrame failed.");
+
     return false;
 }
 
 
 bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
-    char pCommandStr[256];
-    strcpy(pCommandStr, "GetCurrentFrame ");
+    char components[256];
 
-	std::string::size_type nCommandStrSize = strlen(pCommandStr);
-	if (GetComponentString(pCommandStr + (int)nCommandStrSize, nComponentType, componentOptions))
+	if (GetComponentString(components, nComponentType, componentOptions))
     {
-        if (SendCommand(pCommandStr))
-        {
-            return true;
-        }
-		strcpy(maErrorStr, "GetCurrentFrame failed.");
+        return GetCurrentFrame(components);
     }
     else
     {
-		strcpy(maErrorStr, "DataComponent missing.");
+        strcpy(maErrorStr, "DataComponent missing.");
     }
     return false;
 }
 
 
-bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
-                               unsigned int nComponentType, const SComponentOptions& componentOptions)
+bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr, const char* components)
 {
-    char pCommandStr[256];
+    std::ostringstream commandString;
 
     if (eRate == RateFrequencyDivisor)
     {
-        sprintf(pCommandStr, "StreamFrames FrequencyDivisor:%d ", nRateArg);
+        commandString << "StreamFrames FrequencyDivisor: " << nRateArg << " ";
     }
     else if (eRate == RateFrequency)
     {
-        sprintf(pCommandStr, "StreamFrames Frequency:%d ", nRateArg);
+        commandString << "StreamFrames Frequency:" << nRateArg << " ";
     }
     else if (eRate == RateAllFrames)
     {
-        sprintf(pCommandStr, "StreamFrames AllFrames ");
+        commandString << "StreamFrames AllFrames ";
     }
     else
     {
-		strcpy(maErrorStr, "No valid rate.");
+        commandString << "No valid rate.";
         return false;
     }
 
@@ -463,24 +482,40 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
     {
         if (pUDPAddr != nullptr && strlen(pUDPAddr) > 64)
         {
-			strcpy(maErrorStr, "UDP address string too long.");
+            strcpy(maErrorStr, "UDP address string too long.");
             return false;
         }
-        sprintf(pCommandStr, "%s UDP%s%s:%d ", pCommandStr, pUDPAddr != nullptr ? ":" : "", pUDPAddr != nullptr ? pUDPAddr : "", nUDPPort);
+        commandString << "UDP";
+        if (pUDPAddr != nullptr)
+        {
+            commandString << ":" << pUDPAddr;
+        }
+        commandString << ":" << nUDPPort << " ";
     }
 
-    std::string::size_type nCommandStrSize = strlen(pCommandStr);
-    if (GetComponentString(pCommandStr + (int)nCommandStrSize, nComponentType, componentOptions))
+    commandString << components;
+
+    if (SendCommand(commandString.str().c_str()))
     {
-        if (SendCommand(pCommandStr))
-        {
-            return true;
-        }
-		strcpy(maErrorStr, "StreamFrames failed.");
+        return true;
+    }
+    strcpy(maErrorStr, "StreamFrames failed.");
+
+    return false;
+}
+
+bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
+                               unsigned int nComponentType, const SComponentOptions& componentOptions)
+{
+    char components[256];
+
+    if (GetComponentString(components, nComponentType, componentOptions))
+    {
+        return StreamFrames(eRate, nRateArg, nUDPPort, pUDPAddr, components);
     }
     else
     {
-		strcpy(maErrorStr, "DataComponent missing.");
+        strcpy(maErrorStr, "DataComponent missing.");
     }
 
     return false;
@@ -493,7 +528,7 @@ bool CRTProtocol::StreamFramesStop()
     {
         return true;
     }
-	strcpy(maErrorStr, "StreamFrames Stop failed.");
+    strcpy(maErrorStr, "StreamFrames Stop failed.");
     return false;
 }
 
@@ -528,7 +563,7 @@ bool CRTProtocol::GetState(CRTPacket::EEvent &eEvent, bool bUpdate, int nTimeout
                 }
             } while (nReceived > 0);
         }
-		strcpy(maErrorStr, "GetLastEvent failed.");
+        strcpy(maErrorStr, "GetLastEvent failed.");
     }
     else
     {
@@ -544,7 +579,7 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
     CRTPacket::EPacketType eType;
     char                   pResponseStr[256];
 
-	mpFileBuffer = fopen(pFileName, "wb");
+    mpFileBuffer = fopen(pFileName, "wb");
     if (mpFileBuffer != nullptr)
     {
         if (bC3D)
@@ -563,16 +598,16 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                                 fclose(mpFileBuffer);
                                 return true;
                             }
-							strcpy(maErrorStr, "Writing C3D file failed.");
+                            strcpy(maErrorStr, "Writing C3D file failed.");
                         }
                         else
                         {
-							strcpy(maErrorStr, "Wrong packet type received.");
+                            strcpy(maErrorStr, "Wrong packet type received.");
                         }
                     }
                     else
                     {
-						strcpy(maErrorStr, "No packet received.");
+                        strcpy(maErrorStr, "No packet received.");
                     }
                 }
                 else
@@ -601,11 +636,11 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                                 fclose(mpFileBuffer);
                                 return true;
                             }
-							strcpy(maErrorStr, "Writing QTM file failed.");
+                            strcpy(maErrorStr, "Writing QTM file failed.");
                         }
                         else
                         {
-							strcpy(maErrorStr, "Wrong packet type received.");
+                            strcpy(maErrorStr, "Wrong packet type received.");
                         }
                     }
                     else
@@ -615,12 +650,12 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                 }
                 else
                 {
-					strcpy(maErrorStr, "GetCaptureQTM failed.");
+                    strcpy(maErrorStr, "GetCaptureQTM failed.");
                 }
             }
             else
             {
-				strcpy(maErrorStr, "GetCaptureQTM failed.");
+                strcpy(maErrorStr, "GetCaptureQTM failed.");
             }
         }
     }
@@ -650,7 +685,7 @@ bool CRTProtocol::SendTrig()
     }
     else
     {
-		strcpy(maErrorStr, "Trig failed.");
+        strcpy(maErrorStr, "Trig failed.");
     }
     return false;
 }
@@ -683,7 +718,7 @@ bool CRTProtocol::SetQTMEvent(const char* pLabel)
     }
     else
     {
-		strcpy(maErrorStr, "Event label too long.");
+        strcpy(maErrorStr, "Event label too long.");
     }
     return false;
 }
@@ -719,7 +754,7 @@ bool CRTProtocol::TakeControl(const char* pPassword)
     }
     else
     {
-		strcpy(maErrorStr, "TakeControl failed.");
+        strcpy(maErrorStr, "TakeControl failed.");
     }
     mbIsMaster = false;
     return false;
@@ -745,7 +780,7 @@ bool CRTProtocol::ReleaseControl()
     }
     else
     {
-		strcpy(maErrorStr, "ReleaseControl failed.");
+        strcpy(maErrorStr, "ReleaseControl failed.");
     }
     return false;
 } // ReleaseControl
@@ -775,7 +810,7 @@ bool CRTProtocol::NewMeasurement()
     }
     else
     {
-		strcpy(maErrorStr, "New failed.");
+        strcpy(maErrorStr, "New failed.");
     }
     return false;
 }
@@ -800,7 +835,7 @@ bool CRTProtocol::CloseMeasurement()
     }
     else
     {
-		strcpy(maErrorStr, "Close failed.");
+        strcpy(maErrorStr, "Close failed.");
     }
     return false;
 }
@@ -823,7 +858,7 @@ bool CRTProtocol::StartCapture()
     }
     else
     {
-		strcpy(maErrorStr, "Start failed.");
+        strcpy(maErrorStr, "Start failed.");
     }
     return false;
 }
@@ -850,7 +885,7 @@ bool CRTProtocol::StartRTOnFile()
     }
     else
     {
-		strcpy(maErrorStr, "Starting RT from file failed.");
+        strcpy(maErrorStr, "Starting RT from file failed.");
     }
     return false;
 }
@@ -873,7 +908,38 @@ bool CRTProtocol::StopCapture()
     }
     else
     {
-		strcpy(maErrorStr, "Stop failed.");
+        strcpy(maErrorStr, "Stop failed.");
+    }
+    return false;
+}
+
+
+bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, int timeout)
+{
+    char pResponseStr[256];
+
+    if (SendCommand(refine ? "calibrate refine" : "calibrate", pResponseStr))
+    {
+        if (strcmp(pResponseStr, "Starting calibration") == 0)
+        {
+            if (ReceiveCalibrationSettings(timeout))
+            {
+                GetCalibrationSettings(calibrationResult);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    if (pResponseStr)
+    {
+        sprintf(maErrorStr, "%s.", pResponseStr);
+    }
+    else
+    {
+        strcpy(maErrorStr, "Calibrate failed.");
     }
     return false;
 }
@@ -901,12 +967,12 @@ bool CRTProtocol::LoadCapture(const char* pFileName)
         }
         else
         {
-			strcpy(maErrorStr, "Load failed.");
+            strcpy(maErrorStr, "Load failed.");
         }
     }
     else
     {
-		strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "File name too long.");
     }
     return false;
 }
@@ -949,12 +1015,12 @@ bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNew
         }
         else
         {
-			strcpy(maErrorStr, "Save failed.");
+            strcpy(maErrorStr, "Save failed.");
         }
     }
     else
     {
-		strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "File name too long.");
     }
     return false;
 }
@@ -982,12 +1048,12 @@ bool CRTProtocol::LoadProject(const char* pFileName)
         }
         else
         {
-			strcpy(maErrorStr, "Load project failed.");
+            strcpy(maErrorStr, "Load project failed.");
         }
     }
     else
     {
-		strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "File name too long.");
     }
     return false;
 }
@@ -1010,7 +1076,7 @@ bool CRTProtocol::Reprocess()
     }
     else
     {
-		strcpy(maErrorStr, "Reprocess failed.");
+        strcpy(maErrorStr, "Reprocess failed.");
     }
     return false;
 }
@@ -1092,88 +1158,160 @@ bool CRTProtocol::ConvertRateString(const char* pRate, EStreamRate &eRate, unsig
     return eRate != RateNone;
 }
 
-
-unsigned int CRTProtocol::ConvertComponentString(const char* pComponentType)
+std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(const std::string componentsString)
 {
-    std::string componentString;
+    std::vector<std::pair<unsigned int, std::string>> components; // Vector containing pair (component, option string).
+    auto result = std::back_inserter(components);
+    std::istringstream iss(componentsString);
+    std::string item;
+    while (std::getline(iss, item, ' '))
+    {
+        unsigned int component;
+        std::string option;
+        if (GetComponent(item, component, option))
+        {
+            *result++ = std::make_pair(component, option);
+        }
+        else
+        {
+            // Parsing failed. Unrecognized component.
+            components.clear();
+            break;
+        }
+    }
+
+    return components;
+}
+
+bool CRTProtocol::GetComponent(std::string componentStr, unsigned int &component, std::string &option)
+{
+    // Make string lower case.
+    std::transform(componentStr.begin(), componentStr.end(), componentStr.begin(), ::tolower);
+    option = "";
+
+    if (componentStr == "2d")
+    {
+        component = CRTProtocol::cComponent2d;
+        return true;
+    }
+    if (componentStr == "2dlin")
+    {
+        component = CRTProtocol::cComponent2dLin;
+        return true;
+    }
+    if (componentStr == "3d")
+    {
+        component = CRTProtocol::cComponent3d;
+        return true;
+    }
+    if (componentStr == "3dres")
+    {
+        component = CRTProtocol::cComponent3dRes;
+        return true;
+    }
+    if (componentStr == "3dnolabels")
+    {
+        component = CRTProtocol::cComponent3dNoLabels;
+        return true;
+    }
+    if (componentStr == "3dnolabelsres")
+    {
+        component = CRTProtocol::cComponent3dNoLabelsRes;
+        return true;
+    }
+    if (componentStr == "analogsingle")
+    {
+        component = CRTProtocol::cComponentAnalogSingle;
+        return true;
+    }
+    if (componentStr.find("analogsingle:") != std::string::npos)
+    {
+        option = componentStr.substr(strlen("analogsingle:"));
+        component = CRTProtocol::cComponentAnalogSingle;
+        return true;
+    }
+    if (componentStr == "analog")
+    {
+        component = CRTProtocol::cComponentAnalog;
+        return true;
+    }
+    if (componentStr.find("analog:") != std::string::npos)
+    {
+        option = componentStr.substr(strlen("analog:"));
+        component = CRTProtocol::cComponentAnalog;
+        return true;
+    }
+    if (componentStr == "force")
+    {
+        component = CRTProtocol::cComponentForce;
+        return true;
+    }
+    if (componentStr == "forcesingle")
+    {
+        component = CRTProtocol::cComponentForceSingle;
+        return true;
+    }
+    if (componentStr == "6d")
+    {
+        component = CRTProtocol::cComponent6d;
+        return true;
+    }
+    if (componentStr == "6dres")
+    {
+        component = CRTProtocol::cComponent6dRes;
+        return true;
+    }
+    if (componentStr == "6deuler")
+    {
+        component = CRTProtocol::cComponent6dEuler;
+        return true;
+    }
+    if (componentStr == "6deulerres")
+    {
+        component = CRTProtocol::cComponent6dEulerRes;
+        return true;
+    }
+    if (componentStr == "image")
+    {
+        component = CRTProtocol::cComponentImage;
+        return true;
+    }
+    if (componentStr == "gazevector")
+    {
+        component = CRTProtocol::cComponentGazeVector;
+        return true;
+    }
+    if (componentStr == "timecode")
+    {
+        component = CRTProtocol::cComponentTimecode;
+        return true;
+    }
+    if (componentStr == "skeleton")
+    {
+        component = CRTProtocol::cComponentSkeleton;
+        return true;
+    }
+    if (componentStr == "skeleton:global")
+    {
+        option = "global";
+        component = CRTProtocol::cComponentSkeleton;
+        return true;
+    }
+    return false;
+}
+
+
+unsigned int CRTProtocol::ConvertComponentString(const char* componentsString)
+{
+    auto components = GetComponents(std::string(componentsString));
+
     unsigned int componentTypes = 0;
 
-    componentString.assign(pComponentType);
-    // Make string lower case.
-    std::transform(componentString.begin(), componentString.end(), componentString.begin(), ::tolower);
+    for (auto const& component : components)
+    {
+        componentTypes += component.first;
+    }
 
-    if (componentString.find("2d") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent2d;
-    }
-    if (componentString.find("2dlin") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent2dLin;
-    }
-    if (componentString.find("3d") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent3d;
-    }
-    if (componentString.find("3dres") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent3dRes;
-    }
-    if (componentString.find("3dnolabels") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent3dNoLabels;
-    }
-    if (componentString.find("3dnolabelsres") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent3dNoLabelsRes;
-    }
-    if (componentString.find("analog") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentAnalog;
-    }
-    if (componentString.find("analogsingle") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentAnalogSingle;
-    }
-    if (componentString.find("force") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentForce;
-    }
-    if (componentString.find("forcesingle") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentForceSingle;
-    }
-    if (componentString.find("6d") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent6d;
-    }
-    if (componentString.find("6dres") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent6dRes;
-    }
-    if (componentString.find("6deuler") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent6dEuler;
-    }
-    if (componentString.find("6deulerres") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponent6dEulerRes;
-    }
-    if (componentString.find("image") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentImage;
-    }
-    if (componentString.find("gazevector") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentGazeVector;
-    }
-    if (componentString.find("timecode") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentTimecode;
-    }
-    if (componentString.find("skeleton") != std::string::npos)
-    {
-        componentTypes += CRTProtocol::cComponentSkeleton;
-    }
     return componentTypes;
 }
 
@@ -1299,18 +1437,18 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         if (nRecved == 0)
         {
             // Receive timeout.
-			strcpy(maErrorStr, "Data receive timeout.");
+            strcpy(maErrorStr, "Data receive timeout.");
             return 0;
         }
         if (nRecved < (int)(sizeof(int) * 2))
         {
             // QTM header not received.
-			strcpy(maErrorStr, "Couldn't read header bytes.");
+            strcpy(maErrorStr, "Couldn't read header bytes.");
             return -1;
         }
         if (nRecved <= -1)
         {
-			strcpy(maErrorStr, "Socket Error.");
+            strcpy(maErrorStr, "Socket Error.");
             return -1;
         }
         nRecvedTotal += nRecved;
@@ -1329,7 +1467,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                 if (fwrite(maDataBuff + sizeof(int) * 2, 1, nRecvedTotal - sizeof(int) * 2, mpFileBuffer) !=
                     nRecvedTotal - sizeof(int) * 2)
                 {
-					strcpy(maErrorStr, "Failed to write file to disk.");
+                    strcpy(maErrorStr, "Failed to write file to disk.");
                     fclose(mpFileBuffer);
                     mpFileBuffer = nullptr;
                     return -1;
@@ -1340,20 +1478,20 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     nReadSize = nFrameSize - nRecvedTotal;
                     if (nFrameSize > mDataBuffSize)                                                                                                                                                                                                                                                                                             
                     {
-						nReadSize = mDataBuffSize;
+                        nReadSize = mDataBuffSize;
                     }
                     // As long as we haven't received enough data, wait for more
                     nRecved = mpoNetwork->Receive(&(maDataBuff[sizeof(int) * 2]), nReadSize, false, nTimeout);
                     if (nRecved <= 0)
                     {
-						strcpy(maErrorStr, "Socket Error.");
+                        strcpy(maErrorStr, "Socket Error.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
                         return -1;
                     }
                     if (fwrite(maDataBuff + sizeof(int) * 2, 1, nRecved, mpFileBuffer) != (size_t)nRecved)
                     {
-						strcpy(maErrorStr, "Failed to write file to disk.");
+                        strcpy(maErrorStr, "Failed to write file to disk.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
                         return -1;
@@ -1363,7 +1501,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             }
             else
             {
-				strcpy(maErrorStr, "Receive file buffer not opened.");
+                strcpy(maErrorStr, "Receive file buffer not opened.");
                 if (mpFileBuffer)
                 {
                     fclose(mpFileBuffer);
@@ -1376,11 +1514,11 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         {
             if (nFrameSize > mDataBuffSize)
             {
-				char* buf = new char[nFrameSize];
-				memcpy(buf, maDataBuff, mDataBuffSize);
-				delete maDataBuff;
-				maDataBuff = buf;
-				mDataBuffSize = nFrameSize;
+                char* buf = new char[nFrameSize];
+                memcpy(buf, maDataBuff, mDataBuffSize);
+                delete maDataBuff;
+                maDataBuff = buf;
+                mDataBuffSize = nFrameSize;
             }
 
             // Receive more data until we have read the whole packet
@@ -1390,7 +1528,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                 nRecved = mpoNetwork->Receive(&(maDataBuff[nRecvedTotal]), nFrameSize - nRecvedTotal, false, nTimeout);
                 if (nRecved <= 0)
                 {
-					strcpy(maErrorStr, "Socket Error.");
+                    strcpy(maErrorStr, "Socket Error.");
                     return -1;
                 }
                 nRecvedTotal += nRecved;
@@ -1398,6 +1536,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         }
 
         mpoRTPacket->SetData(maDataBuff);
+
         if (mpoRTPacket->GetEvent(meLastEvent)) // Update last event if there is an event
         {
             if (meLastEvent != CRTPacket::EventCameraSettingsChanged)
@@ -1411,7 +1550,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
     {
         return nRecvedTotal;
     }
-	strcpy(maErrorStr, "Packet truncated.");
+    strcpy(maErrorStr, "Packet truncated.");
 
     return -1;
 } // ReceiveRTPacket
@@ -1461,7 +1600,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
     if (!SendCommand("GetParameters General"))
     {
-		strcpy(maErrorStr, "GetParameters General failed");
+        strcpy(maErrorStr, "GetParameters General failed");
         return false;
     }
 
@@ -2019,15 +2158,15 @@ bool CRTProtocol::ReadCameraSystemSettings()
             return false;
         }
 
-		if (mnMajorVersion > 1 || mnMinorVersion > 11)
-		{
-			// ==================== Video frequency ====================
-			if (!oXML.FindChildElem("Video_Frequency"))
-			{
-				return false;
-			}
-			sCameraSettings.nVideoFrequency = atoi(oXML.GetChildData().c_str());
-		}
+        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        {
+            // ==================== Video frequency ====================
+            if (!oXML.FindChildElem("Video_Frequency"))
+            {
+                return false;
+            }
+            sCameraSettings.nVideoFrequency = atoi(oXML.GetChildData().c_str());
+        }
 
         // ==================== Video Resolution ====================
         if (oXML.FindChildElem("Video_Resolution"))
@@ -2503,25 +2642,25 @@ bool CRTProtocol::ReadCameraSystemSettings()
             sCameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
         }
 
-		if (oXML.FindChildElem("AutoExposure"))
-		{
-			oXML.IntoElem();
-			if (CompareNoCase(oXML.GetAttrib("Enabled"), "true"))
-			{
-				sCameraSettings.autoExposureEnabled = true;
-			}
-			float autoExposureCompensation;
-			if (sscanf(oXML.GetAttrib("Compensation").c_str(), "%f", &autoExposureCompensation) == 1)
-			{
-				sCameraSettings.autoExposureCompensation = autoExposureCompensation;
-			}
-			oXML.OutOfElem();
-		}
-		else
-		{
-			sCameraSettings.autoExposureEnabled = false;
-			sCameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
-		}
+        if (oXML.FindChildElem("AutoExposure"))
+        {
+            oXML.IntoElem();
+            if (CompareNoCase(oXML.GetAttrib("Enabled"), "true"))
+            {
+                sCameraSettings.autoExposureEnabled = true;
+            }
+            float autoExposureCompensation;
+            if (sscanf(oXML.GetAttrib("Compensation").c_str(), "%f", &autoExposureCompensation) == 1)
+            {
+                sCameraSettings.autoExposureCompensation = autoExposureCompensation;
+            }
+            oXML.OutOfElem();
+        }
+        else
+        {
+            sCameraSettings.autoExposureEnabled = false;
+            sCameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
+        }
 
         if (oXML.FindChildElem("AutoWhiteBalance"))
         {
@@ -2540,6 +2679,201 @@ bool CRTProtocol::ReadCameraSystemSettings()
     return true;
 } // ReadGeneralSettings
 
+
+bool ReadXmlFov(std::string name, CMarkup &oXML, CRTProtocol::SCalibrationFov &fov)
+{
+    if (!oXML.FindChildElem(name.c_str()))
+    {
+        return false;
+    }
+    fov.left = std::stoul(oXML.GetChildAttrib("left"));
+    fov.top = std::stoul(oXML.GetChildAttrib("top"));
+    fov.right = std::stoul(oXML.GetChildAttrib("right"));
+    fov.bottom = std::stoul(oXML.GetChildAttrib("bottom"));
+
+    return true;
+}
+
+
+bool CRTProtocol::ReadCalibrationSettings()
+{
+    if (!SendCommand("GetParameters Calibration"))
+    {
+        strcpy(maErrorStr, "GetParameters Calibration failed");
+        return false;
+    }
+
+    return ReceiveCalibrationSettings();
+}
+
+bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
+{
+    CRTPacket::EPacketType  eType;
+    CMarkup                 oXML;
+    std::string             tStr;
+
+    SCalibration settings;
+
+    auto received = ReceiveRTPacket(eType, true, timeout);
+    if (received <= 0)
+    {
+        if (received == 0)
+        {
+            // Receive timeout.
+            strcat(maErrorStr, " Expected XML packet.");
+        }
+        return false;
+    }
+
+    if (eType != CRTPacket::PacketXML)
+    {
+        if (eType == CRTPacket::PacketError)
+        {
+            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
+        }
+        else
+        {
+            sprintf(maErrorStr, "GetParameters Calibration returned wrong packet type. Got type %d expected type 2.", eType);
+        }
+        return false;
+    }
+     
+    oXML.SetDoc(mpoRTPacket->GetXMLString());
+
+    if (!oXML.FindChildElem("calibration"))
+    {
+        sprintf(maErrorStr, "Missing calibration element");
+        return false;
+    }    
+    oXML.IntoElem();
+
+    try
+    {
+        std::string resultStr = oXML.GetAttrib("calibrated");
+        std::transform(resultStr.begin(), resultStr.end(), resultStr.begin(), ::tolower);
+
+        settings.calibrated = (resultStr == "true");
+        settings.source = oXML.GetAttrib("source");
+        settings.created = oXML.GetAttrib("created");
+        settings.qtm_version = oXML.GetAttrib("qtm-version");
+        settings.type = oXML.GetAttrib("type");
+        settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
+        settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
+        settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
+        settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
+        settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
+
+        if (!oXML.FindChildElem("results"))
+        {
+            return false;
+        }
+
+        settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
+        settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
+
+        if (!oXML.FindChildElem("cameras"))
+        {
+            return false;
+        }
+        oXML.IntoElem();
+
+        while (oXML.FindChildElem("camera"))
+        {
+            oXML.IntoElem();
+            SCalibrationCamera camera;
+            camera.active = std::stod(oXML.GetAttrib("active")) != 0;
+
+            std::string calibratedStr = oXML.GetAttrib("calibrated");
+            std::transform(calibratedStr.begin(), calibratedStr.end(), calibratedStr.begin(), ::tolower);
+
+            camera.calibrated = (calibratedStr == "true");
+            camera.message = oXML.GetAttrib("message");
+
+            camera.point_count = std::stoul(oXML.GetAttrib("point-count"));
+            camera.avg_residual = std::stod(oXML.GetAttrib("avg-residual"));
+            camera.serial = std::stoul(oXML.GetAttrib("serial"));
+            camera.model = oXML.GetAttrib("model");
+            camera.view_rotation = std::stoul(oXML.GetAttrib("viewrotation"));
+            if (!ReadXmlFov("fov_marker", oXML, camera.fov_marker))
+            {
+                return false;
+            }
+            if (!ReadXmlFov("fov_marker_max", oXML, camera.fov_marker_max))
+            {
+                return false;
+            }
+            if (!ReadXmlFov("fov_video", oXML, camera.fov_video))
+            {
+                return false;
+            }
+            if (!ReadXmlFov("fov_video_max", oXML, camera.fov_video_max))
+            {
+                return false;
+            }
+            if (!oXML.FindChildElem("transform"))
+            {
+                return false;
+            }
+            camera.transform.x = std::stod(oXML.GetChildAttrib("x"));
+            camera.transform.y = std::stod(oXML.GetChildAttrib("y"));
+            camera.transform.z = std::stod(oXML.GetChildAttrib("z"));
+            camera.transform.r11 = std::stod(oXML.GetChildAttrib("r11"));
+            camera.transform.r12 = std::stod(oXML.GetChildAttrib("r12"));
+            camera.transform.r13 = std::stod(oXML.GetChildAttrib("r13"));
+            camera.transform.r21 = std::stod(oXML.GetChildAttrib("r21"));
+            camera.transform.r22 = std::stod(oXML.GetChildAttrib("r22"));
+            camera.transform.r23 = std::stod(oXML.GetChildAttrib("r23"));
+            camera.transform.r31 = std::stod(oXML.GetChildAttrib("r31"));
+            camera.transform.r32 = std::stod(oXML.GetChildAttrib("r32"));
+            camera.transform.r33 = std::stod(oXML.GetChildAttrib("r33"));
+
+            if (!oXML.FindChildElem("intrinsic"))
+            {
+                return false;
+            }
+
+            auto focalLength = oXML.GetChildAttrib("focallength");
+            try
+            {
+                camera.intrinsic.focal_length = std::stod(focalLength);
+            }
+            catch (const std::invalid_argument&)
+            {
+                camera.intrinsic.focal_length = 0;
+            }
+
+            camera.intrinsic.sensor_min_u = std::stod(oXML.GetChildAttrib("sensorMinU"));
+            camera.intrinsic.sensor_max_u = std::stod(oXML.GetChildAttrib("sensorMaxU"));
+            camera.intrinsic.sensor_min_v = std::stod(oXML.GetChildAttrib("sensorMinV"));
+            camera.intrinsic.sensor_max_v = std::stod(oXML.GetChildAttrib("sensorMaxV"));
+            camera.intrinsic.focal_length_u = std::stod(oXML.GetChildAttrib("focalLengthU"));
+            camera.intrinsic.focal_length_v = std::stod(oXML.GetChildAttrib("focalLengthV"));
+            camera.intrinsic.center_point_u = std::stod(oXML.GetChildAttrib("centerPointU"));
+            camera.intrinsic.center_point_v = std::stod(oXML.GetChildAttrib("centerPointV"));
+            camera.intrinsic.skew = std::stod(oXML.GetChildAttrib("skew"));
+            camera.intrinsic.radial_distortion_1 = std::stod(oXML.GetChildAttrib("radialDistortion1"));
+            camera.intrinsic.radial_distortion_2 = std::stod(oXML.GetChildAttrib("radialDistortion2"));
+            camera.intrinsic.radial_distortion_3 = std::stod(oXML.GetChildAttrib("radialDistortion3"));
+            camera.intrinsic.tangental_distortion_1 = std::stod(oXML.GetChildAttrib("tangentalDistortion1"));
+            camera.intrinsic.tangental_distortion_2 = std::stod(oXML.GetChildAttrib("tangentalDistortion2"));
+            oXML.OutOfElem(); // camera
+            settings.cameras.push_back(camera);
+        }
+        oXML.OutOfElem(); // cameras
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    oXML.OutOfElem(); // calibration
+
+    mCalibrationSettings = settings;
+
+    return true;
+} // ReadCalibrationSettings
+
+
 bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
 {
     CRTPacket::EPacketType eType;
@@ -2553,7 +2887,7 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
 
     if (!SendCommand("GetParameters 3D"))
     {
-		strcpy(maErrorStr, "GetParameters 3D failed");
+        strcpy(maErrorStr, "GetParameters 3D failed");
         return false;
     }
 
@@ -2671,7 +3005,7 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
         while (oXML.FindChildElem("Bone"))
         {
             oXML.IntoElem();
-			SSettingsBone bone = { };
+            SSettingsBone bone = { };
             bone.fromName = oXML.GetAttrib("From").c_str();
             bone.toName = oXML.GetAttrib("To").c_str();
 
@@ -2836,7 +3170,7 @@ bool CRTProtocol::ReadGazeVectorSettings(bool &bDataAvailable)
 
     if (!SendCommand("GetParameters GazeVector"))
     {
-		strcpy(maErrorStr, "GetParameters GazeVector failed");
+        strcpy(maErrorStr, "GetParameters GazeVector failed");
         return false;
     }
 
@@ -2914,7 +3248,7 @@ bool CRTProtocol::ReadAnalogSettings(bool &bDataAvailable)
 
     if (!SendCommand("GetParameters Analog"))
     {
-		strcpy(maErrorStr, "GetParameters Analog failed");
+        strcpy(maErrorStr, "GetParameters Analog failed");
         return false;
     }
 
@@ -3117,7 +3451,7 @@ bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
 
     if (!SendCommand("GetParameters Force"))
     {
-		strcpy(maErrorStr, "GetParameters Force failed");
+        strcpy(maErrorStr, "GetParameters Force failed");
         return false;
     }
 
@@ -3434,7 +3768,7 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
 
     if (!SendCommand("GetParameters Image"))
     {
-		strcpy(maErrorStr, "GetParameters Image failed");
+        strcpy(maErrorStr, "GetParameters Image failed");
         return false;
     }
 
@@ -3591,7 +3925,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobal
     }
     if (!SendCommand(cmd.c_str()))
     {
-		strcpy(maErrorStr, "GetParameters Skeleton failed");
+        strcpy(maErrorStr, "GetParameters Skeleton failed");
         return false;
     }
 
@@ -3738,6 +4072,12 @@ void CRTProtocol::GetSystemSettings(
     eProcessingActions = msGeneralSettings.eProcessingActions;
     eRtProcessingActions = msGeneralSettings.eRtProcessingActions;
     eReprocessingActions = msGeneralSettings.eReprocessingActions;
+}
+
+
+void CRTProtocol::GetCalibrationSettings(SCalibration &calibrationSettings) const
+{
+    calibrationSettings = mCalibrationSettings;
 }
 
 
@@ -4949,7 +5289,7 @@ bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 
     if (nCmdStrLen > sizeof(mSendBuffer))
     {
-		strcpy(maErrorStr, "String is larger than send buffer.");
+        strcpy(maErrorStr, "String is larger than send buffer.");
         return false;
     }
 
@@ -4973,7 +5313,7 @@ bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 
     if (mpoNetwork->Send(mSendBuffer, nSize) == false)
     {
-		strcpy(maErrorStr, mpoNetwork->GetErrorString());
+        strcpy(maErrorStr, mpoNetwork->GetErrorString());
         return false;
     }
 
@@ -5045,8 +5385,8 @@ bool CRTProtocol::SendXML(const char* pCmdStr)
             }
         }
         else
-		{        
-			strcpy(maErrorStr, "Missing command response packet.");
+        {        
+            strcpy(maErrorStr, "Missing command response packet.");
         }
     }
     else

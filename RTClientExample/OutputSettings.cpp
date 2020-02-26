@@ -457,6 +457,59 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
 	}
 }
 
+void COutput::PrintCalibrationSettings(CRTProtocol* poRTProtocol)
+{
+    CRTProtocol::SCalibration calibrationResult;
+
+    poRTProtocol->GetCalibrationSettings(calibrationResult);
+    PrintCalibrationSettings(calibrationResult);
+}
+
+void COutput::PrintCalibrationSettings(const CRTProtocol::SCalibration &calibrationResult)
+{
+    printf("\n================ Calibration Result ================\n\n");
+
+    printf("Result:              %s\n", calibrationResult.calibrated ? "Success" : "Failed");
+    printf("Source:              %s\n", calibrationResult.source.c_str());
+    printf("Created:             %s\n", calibrationResult.created.c_str());
+    printf("QTM version:         %s\n", calibrationResult.qtm_version.c_str());
+    printf("Type:                %s\n", calibrationResult.type.c_str());
+    printf("Wand length:         %f\n", calibrationResult.wand_length);
+    printf("Max frames:          %d\n", calibrationResult.max_frames);
+    printf("Short arm end:       %f\n", calibrationResult.short_arm_end);
+    printf("Long arm end:        %f\n", calibrationResult.long_arm_end);
+    printf("Long arm middle:     %f\n", calibrationResult.long_arm_middle);
+    printf("Result std dev:      %f\n", calibrationResult.result_std_dev);
+    printf("Result min max diff: %f\n", calibrationResult.result_min_max_diff);
+
+    int cameraIndex = 1;
+
+    for (const auto &camera : calibrationResult.cameras)
+    {
+        printf("\nCamera %d\n", cameraIndex++);
+        printf("---------------------------\n");
+        printf("Active:               %s\n", camera.active ? "True" : "False");
+        printf("Calibrated:           %s\n", camera.calibrated ? "True" : "False");
+        printf("Message:              %s\n", camera.message.c_str());
+        printf("Point count:          %d\n", camera.point_count);
+        printf("Average residual:     %f\n", camera.avg_residual);
+        printf("Serial:               %d\n", camera.serial);
+        printf("Model:                %s\n", camera.model.c_str());
+        printf("View rotation:        %d\n", camera.view_rotation);
+        printf("FOV marker:           %d, %d, %d, %d\n", camera.fov_marker.left, camera.fov_marker.top, camera.fov_marker.right, camera.fov_marker.bottom);
+        printf("FOV marker max:       %d, %d, %d, %d\n", camera.fov_marker_max.left, camera.fov_marker_max.top, camera.fov_marker_max.right, camera.fov_marker_max.bottom);
+        printf("FOV video:            %d, %d, %d, %d\n", camera.fov_video.left, camera.fov_video.top, camera.fov_video.right, camera.fov_video.bottom);
+        printf("FOV video max:        %d, %d, %d, %d\n", camera.fov_video_max.left, camera.fov_video_max.top, camera.fov_video_max.right, camera.fov_video_max.bottom);
+        printf("Transform:            x= %.2f, y= %.2f, z= %.2f, r11= %.2f, r12= %.2f, r13= %.2f, r21= %.2f, r22= %.2f, r23= %.2f, r31= %.2f, r32= %.2f, r33= %.2f\n",
+            camera.transform.x, camera.transform.y, camera.transform.z, camera.transform.r11, camera.transform.r12, camera.transform.r13,
+            camera.transform.r21, camera.transform.r22, camera.transform.r23, camera.transform.r31, camera.transform.r32, camera.transform.r33);
+        printf("Intrinsic:            FocalLength= %.2f, SensorMinU= %.2f, SensorMaxU= %.2f, SensorMinV= %.2f, SensorMaxV= %.2f\n", camera.intrinsic.focal_length, camera.intrinsic.sensor_min_u, camera.intrinsic.sensor_max_u, camera.intrinsic.sensor_min_v, camera.intrinsic.sensor_max_v);
+        printf("                      FocalLengthU= %.2f, FocalLengthV= %.2f, CenterPointU= %.2f, CenterPointV= %.2f, Skew= %.2f\n", camera.intrinsic.focal_length_u, camera.intrinsic.focal_length_v, camera.intrinsic.center_point_u, camera.intrinsic.center_point_v, camera.intrinsic.skew);
+        printf("                      RadialDistortion1= %.2f, RadialDistortion= 2%.2f, RadialDistortion3= %.2f, TangentalDistortion1= %.2f, TangentalDistortion2= %.2f\n", camera.intrinsic.radial_distortion_1, camera.intrinsic.radial_distortion_2, camera.intrinsic.radial_distortion_3, camera.intrinsic.tangental_distortion_1, camera.intrinsic.tangental_distortion_2);
+    }
+    printf("\n");
+}
+
 void COutput::Print3DSettings(CRTProtocol* poRTProtocol)
 {
     printf("\n================== 3D Settings ===================\n\n");

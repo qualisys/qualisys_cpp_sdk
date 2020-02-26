@@ -17,6 +17,8 @@ COutput::COutput()
     mbOutputModeScrolling = false;
     QueryPerformanceFrequency(&mPerformanceCounterFrequency);
     mOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    mFrameNumberResets = 0;
+    mTimestampResets = 0;
 }
 
 void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRTProtocol, CInput::EOperation operation, bool bOutputModeScrolling)
@@ -43,6 +45,15 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
 
     unsigned int       nFrameNumber = poRTPacket->GetFrameNumber();
     unsigned long long nTimeStamp   = poRTPacket->GetTimeStamp();
+
+    if (nTimeStamp == 0)
+    {
+        mTimestampResets++;
+    }
+    if (nFrameNumber == 1)
+    {
+        mFrameNumberResets++;
+    }
 
     if (nFrameNumber == 1 && mnLastFrameNumber != 0)
     {
@@ -82,11 +93,20 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
             mfMaxRecvTimeDiff = max(mfRecvTimeDiff, mfMaxRecvTimeDiff);
             mfMinRecvTimeDiff = min(mfRecvTimeDiff, mfMinRecvTimeDiff);
 
-            if (mnFrameNumberDiff > 1)
+            int missingFrames = mnFrameNumberDiff - 1;
+
+            if (missingFrames > 0)
             {
-                mnMissingFrames += mnFrameNumberDiff - 1;
-                printf("Missing %d frame%s. Frame number: %d", mnFrameNumberDiff, (mnFrameNumberDiff == 1) ? "" : "s", mnLastFrameNumber + 1);
-                printf(" to %d\n\n", nFrameNumber - 1);
+                mnMissingFrames += missingFrames;
+                printf("\nMissing %d frame%s (total %d). Frame number: %d", missingFrames, (missingFrames == 1) ? "" : "s", mnMissingFrames, mnLastFrameNumber + 1);
+                if (missingFrames > 1)
+                {
+                    printf(" to %d                \n\n", nFrameNumber - 1);
+                }
+                else
+                {
+                    printf("                             \n\n");
+                }
             }
         }
     }
@@ -100,6 +120,11 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
     if (operation != CInput::Noise2D && operation != CInput::Statistics)
     {
         PrintHeader(logfile, poRTPacket, bLogMinimum);
+    }
+
+    if (bLogMinimum)
+    {
+        return;
     }
 
     if (operation == CInput::Statistics)
@@ -166,11 +191,11 @@ void COutput::PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum
             if (mbWriteLogFileHeader)
             {
                 // Write log file header
-                fprintf(logfile, "Timestamp\tFrameNo\tFrameNoDiff\n");
+                fprintf(logfile, "Timestamp\tFrameNo\tFrameNoDiff\tRecvTime\n");
                 mbWriteLogFileHeader = false;
             }
-            fprintf(logfile, "%10I64d\t%d\t%d\n",
-                poRTPacket->GetTimeStamp(), mnLastFrameNumber, mnFrameNumberDiff);
+            fprintf(logfile, "%10I64d\t%d\t%d\t%f\n",
+                poRTPacket->GetTimeStamp(), mnLastFrameNumber, mnFrameNumberDiff, mfCurrentRecvTime);
             return;
         }
         else
@@ -251,6 +276,9 @@ void COutput::PrintStatistics(FILE* logfile, CRTPacket* poRTPacket)
     printf("Min time between frames = %d ms          \n", (int)(mfMinRecvTimeDiff * 1000 + 0.5));
     printf("Max time between frames = %d ms          \n\n", (int)(mfMaxRecvTimeDiff * 1000 + 0.5));
 
+    printf("Timestamp Reset Count    = %d            \n", mTimestampResets);
+    printf("Frame number Reset Count = %d            \n", mFrameNumberResets);
+
     mPrintPos.Y += 15;
 }
 
@@ -308,11 +336,17 @@ void COutput::PrintData2D(FILE* logfile, CRTPacket* poRTPacket)
                 nMarkCount = mcnMaxMarkers;
             }
 
-            for (unsigned int iMarker = 0; iMarker < nMarkCount; iMarker++)
+            unsigned int iMarker;
+            for (iMarker = 0; iMarker < nMarkCount; iMarker++)
             {
                 poRTPacket->Get2DMarker(iCamera, iMarker, nX, nY, nXD, nYD);
 
                 fprintf(logfile, "  X=%6d Y=%6d  Xsize=%4d Ysize=%4d\n", nX, nY, nXD, nYD);
+                mPrintPos.Y++;
+            }
+            for (; iMarker < mcnMaxMarkers; iMarker++)
+            {
+                fprintf(logfile, "                                               \n");
                 mPrintPos.Y++;
             }
         }
@@ -395,18 +429,12 @@ void COutput::PrintData3D(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poR
             fprintf(logfile, "------------------- 3D -------------------\n"); 
             for (unsigned int i = 0; i < poRTPacket->Get3DMarkerCount(); i++)
             {
-                const char* pTmpStr = poRTProtocol->Get3DLabelName(i);
-                if (pTmpStr)
-                {
-                    fprintf(logfile, "%10s:\t", pTmpStr);
-                }
-                else
-                {
-                    fprintf(logfile, "Unknown:\t");
-                }
+                const char* tmpStr = poRTProtocol->Get3DLabelName(i);
+                fprintf(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
+
                 if (poRTPacket->Get3DMarker(i, fX, fY, fZ))
                 {
-                    fprintf(logfile, "X=%f,\tY=%f,\tZ=%f", fX, fY, fZ);
+                    fprintf(logfile, "%9.3f %9.3f %9.3f", fX, fY, fZ);
                 }
                 fprintf(logfile, "\n");
             }
@@ -427,18 +455,12 @@ void COutput::PrintData3DRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* 
             for (unsigned int i = 0; i < poRTPacket->Get3DResidualMarkerCount(); i++)
 
             {
-                const char* pTmpStr = poRTProtocol->Get3DLabelName(i);
-                if (pTmpStr)
-                {
-                    fprintf(logfile, "%10s:\t", pTmpStr);
-                }
-                else
-                {
-                    fprintf(logfile, "Unknown:\t");
-                }
+                const char* tmpStr = poRTProtocol->Get3DLabelName(i);
+                fprintf(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
+
                 if (poRTPacket->Get3DResidualMarker(i, fX, fY, fZ, fResidual))
                 {
-                    fprintf(logfile, "X=%f,\tY=%f,\tZ=%f,\tResidual=%f", fX, fY, fZ, fResidual);
+                    fprintf(logfile, "%9.3f %9.3f %9.3f %9.3f", fX, fY, fZ, fResidual);
                 }
                 fprintf(logfile, "\n");
             }
@@ -460,7 +482,7 @@ void COutput::PrintData3DNoLabels(FILE* logfile, CRTPacket* poRTPacket)
             for (unsigned int i = 0; i < poRTPacket->Get3DNoLabelsMarkerCount(); i++)
             {
                 poRTPacket->Get3DNoLabelsMarker(i, fX, fY, fZ, nId);
-                fprintf(logfile, "Marker%4d:\tX=%f,\tY=%f,\tZ=%f\n", nId, fX, fY, fZ);
+                fprintf(logfile, "Marker%4d : %9.3f %9.3f %9.3f\n", nId, fX, fY, fZ);
             }
             fprintf(logfile, "\n");
         }
@@ -480,7 +502,7 @@ void COutput::PrintData3DNoLabelsRes(FILE* logfile, CRTPacket* poRTPacket)
             for (unsigned int i = 0; i < poRTPacket->Get3DNoLabelsResidualMarkerCount(); i++)
             {
                 poRTPacket->Get3DNoLabelsResidualMarker(i, fX, fY, fZ, nId, fResidual);
-                fprintf(logfile, "Marker%4d:\tX=%f,\tY=%f,\tZ=%f,\tResidual=%f\n", nId, fX, fY, fZ, fResidual);
+                fprintf(logfile, "Marker%4d : %9.3f %9.3f %9.3f%9.3f\n", nId, fX, fY, fZ, fResidual);
             }
             fprintf(logfile, "\n");
         }
@@ -509,7 +531,7 @@ void COutput::PrintData6D(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poR
                 }
                 poRTPacket->Get6DOFBody(i, fX, fY, fZ, afRotMatrix);
 
-                fprintf(logfile,  "%15s : %f\t%f\t%f\t -    %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t\n",
+                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f\n",
                     label, fX, fY, fZ, afRotMatrix[0], afRotMatrix[1], afRotMatrix[2], afRotMatrix[3],
                     afRotMatrix[4], afRotMatrix[5], afRotMatrix[6], afRotMatrix[7], afRotMatrix[8]);
             }
@@ -540,7 +562,7 @@ void COutput::PrintData6DRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* 
                 }
                 poRTPacket->Get6DOFResidualBody(i, fX, fY, fZ, afRotMatrix, fResidual);
 
-                fprintf(logfile,  "%15s : %f\t%f\t%f\t -    %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t -   %f\n",
+                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f   %9.3f\n",
                     label, fX, fY, fZ, afRotMatrix[0], afRotMatrix[1], afRotMatrix[2], afRotMatrix[3],
                     afRotMatrix[4], afRotMatrix[5], afRotMatrix[6], afRotMatrix[7], afRotMatrix[8], fResidual);
             }
@@ -570,7 +592,7 @@ void COutput::PrintData6DEuler(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol
                 }
                 poRTPacket->Get6DOFEulerBody(i, fX, fY, fZ, fAng1, fAng2, fAng3);
 
-                fprintf(logfile,  "%15s : %f\t%f\t%f\t -   %f\t%f\t%f\n", label, fX, fY, fZ, fAng1, fAng2, fAng3);
+                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f\n", label, fX, fY, fZ, fAng1, fAng2, fAng3);
             }
             fprintf(logfile, "\n");
         }
@@ -598,7 +620,7 @@ void COutput::PrintData6DEulerRes(FILE* logfile, CRTPacket* poRTPacket, CRTProto
                 }
                 poRTPacket->Get6DOFEulerResidualBody(i, fX, fY, fZ, fAng1, fAng2, fAng3, fResidual);
 
-                fprintf(logfile,  "%15s : %f\t%f\t%f\t -   %f\t%f\t%f\t -    %f\n",
+                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f   %9.3f\n",
                     label, fX, fY, fZ, fAng1, fAng2, fAng3, fResidual);
             }
             fprintf(logfile, "\n");
@@ -1202,7 +1224,6 @@ void COutput::ResetCounters()
     mnFrameNumberDiff      = 0;
     mnMaxFrameNumberDiff   = 0;
     mnLastTimeStamp        = 0;
-
 } // ResetCounters
 
 void COutput::PrintEvent(CRTPacket::EEvent eEvent)
