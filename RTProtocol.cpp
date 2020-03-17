@@ -5390,6 +5390,7 @@ bool CRTProtocol::SendCommand(const char* pCmdStr, char* pCommandResponseStr, un
             if (eType == CRTPacket::PacketError)
             {
                 strcpy(pCommandResponseStr, mpoRTPacket->GetErrorString());
+                strcpy(maErrorStr, pCommandResponseStr);
                 return false;
             }
         }
