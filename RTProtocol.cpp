@@ -1098,7 +1098,7 @@ bool CRTProtocol::GetEventString(CRTPacket::EEvent eEvent, char* pStr)
             break;
         case CRTPacket::EventCalibrationStarted: strcpy(pStr, "Calibration Started");
             break;
-        case CRTPacket::EventCalibrationStopped: strcpy(pStr, "Calibration Finished");
+        case CRTPacket::EventCalibrationStopped: strcpy(pStr, "Calibration Stopped");
             break;
         case CRTPacket::EventRTfromFileStarted: strcpy(pStr, "RT From File Started");
             break;
@@ -2108,6 +2108,10 @@ bool CRTProtocol::ReadCameraSystemSettings()
         {
             sCameraSettings.eModel = ModelMiqusVideoColor;
         }
+        else if (tStr == "miqus hybrid")
+        {
+            sCameraSettings.eModel = ModelMiqusHybrid;
+        }
         else
         {
             return false;
@@ -2711,23 +2715,41 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     CRTPacket::EPacketType  eType;
     CMarkup                 oXML;
     std::string             tStr;
+    SCalibration            settings;
+    int                     received;
+    CRTPacket::EEvent       event = CRTPacket::EventNone;
 
-    SCalibration settings;
-
-    auto received = ReceiveRTPacket(eType, true, timeout);
-    if (received <= 0)
+    do 
     {
-        if (received == 0)
+        received = ReceiveRTPacket(eType, false, timeout);
+
+        if (received <= 0)
         {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
+            if (received == 0)
+            {
+                // Receive timeout.
+                strcat(maErrorStr, " Expected XML packet.");
+            }
+            return false;
         }
-        return false;
-    }
+
+        if (eType == CRTPacket::PacketEvent)
+        {
+            mpoRTPacket->GetEvent(event);
+        }
+        else
+        {
+            event = CRTPacket::EventNone;
+        }
+    } while (event != CRTPacket::EventNone && event != CRTPacket::EventConnectionClosed);
 
     if (eType != CRTPacket::PacketXML)
     {
-        if (eType == CRTPacket::PacketError)
+        if (event != CRTPacket::EventNone)
+        {
+            sprintf(maErrorStr, "Calibration aborted.");
+        }
+        else if (eType == CRTPacket::PacketError)
         {
             sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
         }
@@ -2756,20 +2778,45 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
         settings.source = oXML.GetAttrib("source");
         settings.created = oXML.GetAttrib("created");
         settings.qtm_version = oXML.GetAttrib("qtm-version");
-        settings.type = oXML.GetAttrib("type");
-        settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
-        settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
-        settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
-        settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
-        settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
-
-        if (!oXML.FindChildElem("results"))
+        std::string typeStr = oXML.GetAttrib("type");
+        if (typeStr == "regular")
         {
-            return false;
+            settings.type = ECalibrationType::regular;
+        }
+        if (typeStr == "refine")
+        {
+            settings.type = ECalibrationType::refine;
+        }
+        if (typeStr == "fixed")
+        {
+            settings.type = ECalibrationType::fixed;
         }
 
-        settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
-        settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
+        if (settings.type == ECalibrationType::refine)
+        {
+            settings.refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
+        }
+        if (settings.type != ECalibrationType::fixed)
+        {
+            settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
+            settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
+            settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
+            settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
+            settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
+
+            if (!oXML.FindChildElem("results"))
+            {
+                return false;
+            }
+
+            settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
+            settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
+            if (settings.type == ECalibrationType::refine)
+            {
+                settings.result_refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
+                settings.result_consecutive = std::stoul(oXML.GetAttrib("consecutive"));
+            }
+        }
 
         if (!oXML.FindChildElem("cameras"))
         {

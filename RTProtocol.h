@@ -99,7 +99,8 @@ public:
         ModelMiqusM5         = 17,
         ModelMiqusSyncUnit   = 18,
         ModelMiqusVideo      = 19,
-        ModelMiqusVideoColor = 20
+        ModelMiqusVideoColor = 20,
+        ModelMiqusHybrid     = 21
     };
 
     enum ECameraMode
@@ -458,20 +459,30 @@ public:
         SCalibrationIntrinsic intrinsic;
     };
 
+    enum ECalibrationType
+    {
+        regular,
+        fixed,
+        refine
+    };
+
     struct SCalibration
     {
         bool calibrated = false;
         std::string source = "";
         std::string created = "";
         std::string qtm_version = "";
-        std::string type = "";
-        double wand_length = 0.0;
-        uint32_t max_frames = 0;
-        double short_arm_end = 0.0;
-        double long_arm_end = 0.0;
-        double long_arm_middle = 0.0;
-        double result_std_dev = 0.0;
-        double result_min_max_diff = 0.0;
+        ECalibrationType type = regular;
+        double refit_residual        = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
+        double wand_length           = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        uint32_t max_frames          = 0;                                        // Not for fixed calibration.
+        double short_arm_end         = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double long_arm_end          = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double long_arm_middle       = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_std_dev        = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_min_max_diff   = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_refit_residual = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
+        uint32_t result_consecutive  = 0;    // Only for refine calibration.
         std::vector<SCalibrationCamera> cameras;
     };
 

@@ -469,18 +469,21 @@ void COutput::PrintCalibrationSettings(const CRTProtocol::SCalibration &calibrat
 {
     printf("\n================ Calibration Result ================\n\n");
 
-    printf("Result:              %s\n", calibrationResult.calibrated ? "Success" : "Failed");
-    printf("Source:              %s\n", calibrationResult.source.c_str());
-    printf("Created:             %s\n", calibrationResult.created.c_str());
-    printf("QTM version:         %s\n", calibrationResult.qtm_version.c_str());
-    printf("Type:                %s\n", calibrationResult.type.c_str());
-    printf("Wand length:         %f\n", calibrationResult.wand_length);
-    printf("Max frames:          %d\n", calibrationResult.max_frames);
-    printf("Short arm end:       %f\n", calibrationResult.short_arm_end);
-    printf("Long arm end:        %f\n", calibrationResult.long_arm_end);
-    printf("Long arm middle:     %f\n", calibrationResult.long_arm_middle);
-    printf("Result std dev:      %f\n", calibrationResult.result_std_dev);
-    printf("Result min max diff: %f\n", calibrationResult.result_min_max_diff);
+    printf("Result:                %s\n", calibrationResult.calibrated ? "Success" : "Failed");
+    printf("Source:                %s\n", calibrationResult.source.c_str());
+    printf("Created:               %s\n", calibrationResult.created.c_str());
+    printf("QTM version:           %s\n", calibrationResult.qtm_version.c_str());
+    printf("Type:                  %s\n", calibrationResult.type == CRTProtocol::regular ? "Regular" : (calibrationResult.type == CRTProtocol::refine ? "Refine" : "Fixed"));
+    printf("Refit residual:        %f\n", calibrationResult.refit_residual);
+    printf("Wand length:           %f\n", calibrationResult.wand_length);
+    printf("Max frames:            %d\n", calibrationResult.max_frames);
+    printf("Short arm end:         %f\n", calibrationResult.short_arm_end);
+    printf("Long arm end:          %f\n", calibrationResult.long_arm_end);
+    printf("Long arm middle:       %f\n", calibrationResult.long_arm_middle);
+    printf("Result std dev:        %f\n", calibrationResult.result_std_dev);
+    printf("Result min max diff:   %f\n", calibrationResult.result_min_max_diff);
+    printf("Result refit residual: %f\n", calibrationResult.result_refit_residual);
+    printf("Result consecutive:    %d\n", calibrationResult.result_consecutive);
 
     int cameraIndex = 1;
 
