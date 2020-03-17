@@ -20,14 +20,25 @@
 #endif
 
 
-#define DEFAULT_AUTO_DESCOVER_PORT 22226
-#define WAIT_FOR_DATA_TIMEOUT      5000000 // 5 s
+//#define DEFAULT_AUTO_DESCOVER_PORT 22226
+//#define WAIT_FOR_DATA_TIMEOUT      5000000 // 5 s
 
 class CMarkup;
 
 class DLL_EXPORT CRTProtocol
 {
 public:
+    static const unsigned int cDefaultBasePort          = 22222;
+    static const unsigned int cDefaultTelnetPort        = cDefaultBasePort - 1;
+    static const unsigned int cDefaultLegacyPort        = cDefaultBasePort;     // Only supports version 1.0 of the protocol.
+    static const unsigned int cDefaultLittleEndianPort  = cDefaultBasePort + 1;
+    static const unsigned int cDefaultBigEndianPort     = cDefaultBasePort + 2;
+    static const unsigned int cDefaultOscPort           = cDefaultBasePort + 3;
+    static const unsigned int cDefaultAutoDescoverPort  = cDefaultBasePort + 4;
+
+    static const unsigned int cWaitForDataTimeout        = 5000000;   // 5 s
+    static const unsigned int cWaitForCalibrationTimeout = 600000000; // 10 min
+
     static const unsigned int cComponent3d            = 0x000001;
     static const unsigned int cComponent3dNoLabels    = 0x000002;
     static const unsigned int cComponentAnalog        = 0x000004;
@@ -88,7 +99,8 @@ public:
         ModelMiqusM5         = 17,
         ModelMiqusSyncUnit   = 18,
         ModelMiqusVideo      = 19,
-        ModelMiqusVideoColor = 20
+        ModelMiqusVideoColor = 20,
+        ModelMiqusHybrid     = 21
     };
 
     enum ECameraMode
@@ -386,6 +398,94 @@ public:
         float                   fCropBottom;
     };
 
+    struct SCalibrationFov
+    {
+        uint32_t left;
+        uint32_t top;
+        uint32_t right;
+        uint32_t bottom;
+    };
+
+    struct SCalibrationTransform
+    {
+        double x;
+        double y;
+        double z;
+        double r11;
+        double r12;
+        double r13;
+        double r21;
+        double r22;
+        double r23;
+        double r31;
+        double r32;
+        double r33;
+    };
+
+    struct SCalibrationIntrinsic
+    {
+        double focal_length;
+        double sensor_min_u;
+        double sensor_max_u;
+        double sensor_min_v;
+        double sensor_max_v;
+        double focal_length_u;
+        double focal_length_v;
+        double center_point_u;
+        double center_point_v;
+        double skew;
+        double radial_distortion_1;
+        double radial_distortion_2;
+        double radial_distortion_3;
+        double tangental_distortion_1;
+        double tangental_distortion_2;
+    };
+
+    struct SCalibrationCamera
+    {
+        bool active;
+        bool calibrated;
+        std::string message;
+        uint32_t point_count;
+        double avg_residual;
+        uint32_t serial;
+        std::string model;
+        uint32_t view_rotation;
+        SCalibrationFov fov_marker;
+        SCalibrationFov fov_marker_max;
+        SCalibrationFov fov_video;
+        SCalibrationFov fov_video_max;
+        SCalibrationTransform transform;
+        SCalibrationIntrinsic intrinsic;
+    };
+
+    enum ECalibrationType
+    {
+        regular,
+        fixed,
+        refine
+    };
+
+    struct SCalibration
+    {
+        bool calibrated = false;
+        std::string source = "";
+        std::string created = "";
+        std::string qtm_version = "";
+        ECalibrationType type = regular;
+        double refit_residual        = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
+        double wand_length           = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        uint32_t max_frames          = 0;                                        // Not for fixed calibration.
+        double short_arm_end         = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double long_arm_end          = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double long_arm_middle       = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_std_dev        = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_min_max_diff   = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
+        double result_refit_residual = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
+        uint32_t result_consecutive  = 0;    // Only for refine calibration.
+        std::vector<SCalibrationCamera> cameras;
+    };
+
 public:
     struct SSettingsSkeletonSegment : CRTPacket::SSkeletonSegment
     {
@@ -405,7 +505,8 @@ public:
     CRTProtocol();
     ~CRTProtocol();
 
-    bool       Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort = nullptr, int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false);
+    bool       Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort = nullptr,
+                       int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false);
     unsigned short GetUdpServerPort();
     void       Disconnect();
     bool       Connected() const;
@@ -414,15 +515,17 @@ public:
     bool       GetQTMVersion(char* pVersion, unsigned int nVersionLen);
     bool       GetByteOrder(bool &bBigEndian);
     bool       CheckLicense(const char* pLicenseCode);
-    bool       DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResponses, unsigned short nDiscoverPort = DEFAULT_AUTO_DESCOVER_PORT);
+    bool       DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResponses, unsigned short nDiscoverPort = cDefaultAutoDescoverPort);
     int        GetNumberOfDiscoverResponses();
     bool       GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, unsigned short &nBasePort, std::string& message);
 
-	bool       GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions = { });
+    bool       GetCurrentFrame(const char* components);
+    bool       GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions = { });
+    bool       StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr, const char* components);
     bool       StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
                             unsigned int nComponentType, const SComponentOptions& componentOptions = { });
     bool       StreamFramesStop();
-    bool       GetState(CRTPacket::EEvent &eEvent, bool bUpdate = true, int nTimeout = WAIT_FOR_DATA_TIMEOUT);
+    bool       GetState(CRTPacket::EEvent &eEvent, bool bUpdate = true, int nTimeout = cWaitForDataTimeout);
     bool       GetCapture(const char* pFileName, bool bC3D);
     bool       SendTrig();
     bool       SetQTMEvent(const char* pLabel);
@@ -434,6 +537,7 @@ public:
     bool       StartCapture();
     bool       StartRTOnFile();
     bool       StopCapture();
+    bool       Calibrate(const bool refine, SCalibration &calibrationResult, int timeout = cWaitForCalibrationTimeout);
     bool       LoadCapture(const char* pFileName);
     bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
     bool       LoadProject(const char* pFileName);
@@ -443,24 +547,31 @@ public:
     static bool ConvertRateString(const char* pRate, EStreamRate &eRate, unsigned int &nRateArg);
     static unsigned int ConvertComponentString(const char* pComponentType);
     static bool GetComponentString(char* pComponentStr, unsigned int nComponentType, const SComponentOptions& options = SComponentOptions());
+    static std::vector<std::pair<unsigned int, std::string>> GetComponents(const std::string componentsString);
+    static bool GetComponent(std::string componentStr, unsigned int &component, std::string &option);
 
-    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = WAIT_FOR_DATA_TIMEOUT);    // nTimeout < 0 : Blocking receive
+    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
+    
+
     CRTPacket* GetRTPacket();
 
-    bool       ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
-    bool       ReadCameraSystemSettings();
-    bool       Read3DSettings(bool &bDataAvailable);
-    bool       Read6DOFSettings(bool &bDataAvailable);
-    bool       ReadGazeVectorSettings(bool &bDataAvailable);
-    bool       ReadAnalogSettings(bool &bDataAvailable);
-    bool       ReadForceSettings(bool &bDataAvailable);
-    bool       ReadImageSettings(bool &bDataAvailable);
-    bool       ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobalData = false);
+    bool ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
+    bool ReadCameraSystemSettings();
+    bool ReadCalibrationSettings();
+    bool Read3DSettings(bool &bDataAvailable);
+    bool Read6DOFSettings(bool &bDataAvailable);
+    bool ReadGazeVectorSettings(bool &bDataAvailable);
+    bool ReadAnalogSettings(bool &bDataAvailable);
+    bool ReadForceSettings(bool &bDataAvailable);
+    bool ReadImageSettings(bool &bDataAvailable);
+    bool ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobalData = false);
 
     void GetSystemSettings(
         unsigned int &nCaptureFrequency, float &fCaptureTime,
         bool& bStartOnExtTrig, bool& trigNO, bool& trigNC, bool& trigSoftware,
         EProcessingActions &eProcessingActions, EProcessingActions &eRtProcessingActions, EProcessingActions &eReprocessingActions) const;
+
+    void GetCalibrationSettings(SCalibration &calibrationSettings) const;
 
     void GetExtTimeBaseSettings(
         bool         &bEnabled,            ESignalSource &eSignalSource,
@@ -611,7 +722,7 @@ public:
 private:
     bool SendString(const char* pCmdStr, int nType);
     bool SendCommand(const char* pCmdStr);
-    bool SendCommand(const char* pCmdStr, char* pCommandResponseStr, unsigned int timeout = WAIT_FOR_DATA_TIMEOUT);
+    bool SendCommand(const char* pCmdStr, char* pCommandResponseStr, unsigned int timeout = cWaitForDataTimeout);
     bool SendXML(const char* pCmdStr);
     void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
     void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
@@ -619,6 +730,7 @@ private:
     void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue);
     void AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
     bool CompareNoCase(std::string tStr1, const char* tStr2) const;
+    bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
 
 private:
     CNetwork*                     mpoNetwork;
@@ -639,11 +751,12 @@ private:
     SSettingsForce                msForceSettings;
     std::vector<SImageCamera>     mvsImageSettings;
     std::vector<SSettingsSkeleton> mSkeletonSettings;
+    SCalibration                  mCalibrationSettings;
     char                          mSendBuffer[5000];
     char                          maErrorStr[1024];
     unsigned short                mnBroadcastPort;
     FILE*                         mpFileBuffer;
-    std::vector< SDiscoverResponse > mvsDiscoverResponseList;
+    std::vector<SDiscoverResponse> mvsDiscoverResponseList;
 };
 
 

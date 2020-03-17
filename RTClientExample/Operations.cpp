@@ -111,9 +111,20 @@ void COperations::ViewSettings()
     {
         mpoOutput->PrintGeneralSettings(mpoRTProtocol);
     }
+ 
+    if (mpoRTProtocol->ReadCalibrationSettings() == false)
+    {
+        if (mpoRTProtocol->Connected())
+        {
+            printf("Read calibration settings failed. %s\n\n", mpoRTProtocol->GetErrorString());
+        }
+    }
+    else
+    {
+        mpoOutput->PrintCalibrationSettings(mpoRTProtocol);
+    }
 
     bool bDataAvailable;
-
     if (mpoRTProtocol->Read3DSettings(bDataAvailable) == false)
     {
         if (mpoRTProtocol->Connected())
@@ -490,7 +501,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
     unsigned int                nComponentType;
     char                        selectedAnalogChannels[256];
     CRTProtocol::EStreamRate    eStreamRate;
-    int                         nRateArgument;
+    int                         nRateArgument = 0;
     FILE*                       logfile = NULL;
     bool                        bStreamTCP, bStreamUDP, bLogToFile, bOnlyTimeAndFrameNumber;
     unsigned short              nUDPPort;
@@ -509,7 +520,6 @@ void COperations::DataTransfer(CInput::EOperation operation)
         nUDPPort = 0;
         tUDPAddress[0] = 0;
         eStreamRate = CRTProtocol::RateAllFrames;
-        nRateArgument = 0;
 
         mpoOutput->Reset2DNoiseCalc();
     }
@@ -909,13 +919,29 @@ void COperations::ControlQTM()
                 case CInput::Reprocess:
                     if (mpoRTProtocol->Reprocess())
                     {
-                        printf("Reprocess sent.\n\n");
+                        printf("Reprocessing started.\n\n");
                     }
                     else
                     {
                         printf("Reprocess failed. %s\n\n", mpoRTProtocol->GetErrorString());
                     }
                     break;
+                case CInput::Calibrate:
+                case CInput::CalibrateRefine:
+                    {
+                        CRTProtocol::SCalibration calibrationResult;
+
+                        if (mpoRTProtocol->Calibrate(eCommand == CInput::CalibrateRefine, calibrationResult))
+                        {
+                            printf("Calibration started...\n");
+                            mpoOutput->PrintCalibrationSettings(calibrationResult);
+                        }
+                        else
+                        {
+                            printf("Calibration failed. %s\n\n", mpoRTProtocol->GetErrorString());
+                        }
+                        break;
+                    }
                 default :
                     break;
             }

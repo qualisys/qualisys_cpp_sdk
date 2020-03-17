@@ -38,7 +38,9 @@ public:
         GetCaptureQTM   = 10,
         Trig            = 11,
         SetQTMEvent     = 12,
-        Reprocess       = 13
+        Reprocess       = 13,
+        Calibrate       = 14,
+        CalibrateRefine = 15
     };
 
 public:
