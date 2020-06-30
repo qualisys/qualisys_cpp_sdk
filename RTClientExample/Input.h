@@ -17,11 +17,14 @@ public:
         ViewSettings                    = 7,
         ChangeGeneralSystemSettings     = 8,
         ChangeExtTimebaseSettings       = 9,
-        ChangeProcessingActionsSettings = 10,
-        ChangeCameraSettings            = 11,
-        ChangeCameraSyncOutSettings     = 12,
-        ChangeImageSettings             = 13,
-        ChangeForceSettings             = 14,
+        ChangeExtTimestampSettings      = 10,
+        ChangeProcessingActionsSettings = 11,
+        ChangeCameraSettings            = 12,
+        ChangeCameraSyncOutSettings     = 13,
+        Change6dSettings                = 14,
+        ChangeForceSettings             = 15,
+        ChangeImageSettings             = 16,
+        ChangeSkeletonSettings          = 17
     };
 
     enum EQTMCommand
@@ -56,7 +59,7 @@ public:
     unsigned int ReadDataComponent(bool printInstr, bool &skeletonGlobalReferenceFrame);
     bool Read2DNoiseTest();
     bool ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP, bool &bLogToFile, bool &bOnlyTimeAndFrameNumber, unsigned short &nUDPPort, char *tAddress, int nAddressLen);
-    void ReadSystemSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware);
+    void ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware);
     void ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &eProcessingActions,
                                        CRTProtocol::EProcessingActions &eRtProcessingActions,
                                        CRTProtocol::EProcessingActions &eReprocessingActions);
@@ -65,6 +68,7 @@ public:
                                  unsigned int &nDivisor,            unsigned int &nFrequencyTolerance,
                                  float        &fNominalFrequency,   bool         &bNegativeEdge,
                                  unsigned int &nSignalShutterDelay, float        &fNonPeriodicTimeout);
+    void ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings);
     void ReadCameraSettings(unsigned int &nCameraId,       int   &nMode,            CRTProtocol::EVideoResolution &videoResolution, CRTProtocol::EVideoAspectRatio &videoAspectRatio,
                             unsigned int &nVideoFrequency, float &fVideoExposure,   float &fVideoFlashTime,
                             float        &fMarkerExposure, float &fMarkerThreshold, int   &nRotation,
@@ -76,15 +80,19 @@ public:
     void ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFormat, unsigned int &nWidth,
                            unsigned int &nHeight, float &fLeftCrop, float &fTopCrop, float &fRightCrop, float &fBottomCrop);
     void ReadForceSettings(unsigned int &nForcePlateIndex, float afCorner[4][3]);
-    bool ReadQTMCommand(EQTMCommand &eCommand);
+    void Read6DSettings(unsigned int &color, float &maxResidual, unsigned int &minMarkersInBody, float &boneLengthTolerance, std::string &filterPreset);
+    void Read6DSettingsMesh(CRTProtocol::SSettings6DMesh &mesh);
+    void Read6DSettingsOrigin(CRTProtocol::SOrigin &origin);
+    void Read6DSettingsPoints(std::vector<CRTProtocol::SBodyPoint> &points);
+        bool ReadQTMCommand(EQTMCommand &eCommand);
 
-    void  ReadFileName(char* pStr, int nStrLen);
-    int   ReadInt(int nDefault);
+    std::string ReadString(const std::string& text);
+    float       ReadFloat(const std::string& text, float fDefault);
+    bool        ReadYesNo(const std::string& text, bool bDefault);
+    int         ReadInt(const std::string& text, int nDefault);
+    char        ReadChar(char cDefault, bool bShowInput = false);
     unsigned short ReadPort(int nDefault);
-    float ReadFloat(float fDefault);
-    bool  ReadYesNo(bool bDefault);
-    char  ReadChar(char cDefault, bool bShowInput = false);
-    bool  ReadUseScrolling(bool &bOutputModeScrolling);
+    bool        ReadUseScrolling(bool &bOutputModeScrolling);
 
 private:
     unsigned int mnMajorVersion;

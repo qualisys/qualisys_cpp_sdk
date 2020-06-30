@@ -1,11 +1,8 @@
 #include "Operations.h"
 
-#define PROGRAM_VERSION_MAJOR 1
-#define PROGRAM_VERSION_MINOR 5
-
 #define LATEST_SELECTABLE_MAJOR_VERSION 1
-#define LATEST_SELECTABLE_MINOR_VERSION 20
-
+#define LATEST_SELECTABLE_MINOR_VERSION 21
+#define PROGRAM_VERSION 0
 
 int main(int argc, char **argv)
 {
@@ -20,9 +17,9 @@ int main(int argc, char **argv)
 
     poInput = new CInput();
 
-    printf("\n**************************************\n");
-    printf("   Qualisys RT Client Example v %d.%d\n", PROGRAM_VERSION_MAJOR, PROGRAM_VERSION_MINOR);
-    printf("**************************************");
+    printf("\n*****************************************\n");
+    printf("   Qualisys RT Client Example v %d.%d.%d\n", LATEST_SELECTABLE_MAJOR_VERSION, LATEST_SELECTABLE_MINOR_VERSION, PROGRAM_VERSION);
+    printf("*****************************************");
 
     // By default assume you want to connect to QTM at the same machine - just for testing
     char pServerAddr[32] = "localhost";
@@ -110,12 +107,15 @@ int main(int argc, char **argv)
                 poOperations->ViewSettings();
                 break;
             case CInput::ChangeGeneralSystemSettings :
-            case CInput::ChangeExtTimebaseSettings :
+            case CInput::ChangeExtTimebaseSettings:
+            case CInput::ChangeExtTimestampSettings:
             case CInput::ChangeProcessingActionsSettings :
             case CInput::ChangeCameraSettings :
             case CInput::ChangeCameraSyncOutSettings :
+            case CInput::Change6dSettings:
+            case CInput::ChangeForceSettings:
             case CInput::ChangeImageSettings :
-            case CInput::ChangeForceSettings :
+            case CInput::ChangeSkeletonSettings :
                 poOperations->ChangeSettings(eOperation);
                 break;
             case CInput::ControlQTM :

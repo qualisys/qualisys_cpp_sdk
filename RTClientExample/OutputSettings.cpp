@@ -4,6 +4,8 @@
 #include <conio.h>
 #include <math.h>
 #include <float.h>
+#include <functional>
+
 
 void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
 {
@@ -29,7 +31,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
     bool         bStartOnTrigSoftware;
     CRTProtocol::EProcessingActions eProcessingActions[3];
 
-    poRTProtocol->GetSystemSettings(
+    poRTProtocol->GetGeneralSettings(
         nCaptureFrequency, fCaptureTime,
         bStartOnExtTrig, bStartOnTriggerNO, bStartOnTriggerNC, bStartOnTrigSoftware,
         eProcessingActions[0], eProcessingActions[1], eProcessingActions[2]);
@@ -177,6 +179,29 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
         }
     }
 
+    CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
+    poRTProtocol->GetExtTimestampSettings(timestampSettings);
+
+    printf("\n----- Timestamp-----\n\n");
+    printf("Timestamp: %s\n", timestampSettings.bEnabled ? "Enabled" : "Disabled");
+    if (timestampSettings.bEnabled)
+    {
+        printf("Type:      %s\n", timestampSettings.nType == CRTProtocol::Timestamp_SMPTE ? "SMPTE" : timestampSettings.nType == CRTProtocol::Timestamp_IRIG ? "IRIG" : "CameraTime");
+        printf("Frequency: %d Hz\n", timestampSettings.nFrequency);
+    }    
+    
+    unsigned int nMajorVersion;
+    unsigned int nMinorVersion;
+
+    poRTProtocol->GetRTPacket()->GetVersion(nMajorVersion, nMinorVersion);
+
+    if (nMajorVersion > 1 || nMinorVersion > 20)
+    {
+        std::string first, second, third;
+        poRTProtocol->GetEulerAngles(first, second, third);
+        printf("\nEuler rotation names: First = %s  Second = %s  Third = %s\n", first.c_str(), second.c_str(), third.c_str());
+    }
+
     unsigned int                  nID;
     CRTProtocol::ECameraModel     eModel;
     bool                          bUnderwater;
@@ -258,6 +283,12 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                 break;
             case CRTProtocol::ModelMiqusVideoColor:
                 printf("  Model: Miqus Video Color   ");
+                break;
+            case CRTProtocol::ModelArqusA5:
+                printf("  Model: Arqus A5   ");
+                break;
+            case CRTProtocol::ModelArqusA12:
+                printf("  Model: Arqus A12   ");
                 break;
             }
             printf("  %s\n", bUnderwater ? "Underwater" : "");
@@ -569,7 +600,6 @@ void COutput::Print3DSettings(CRTProtocol* poRTProtocol)
 
 void COutput::Print6DOFSettings(CRTProtocol* poRTProtocol)
 {
-    CRTProtocol::SPoint sPoint;
     unsigned int nMajorVersion;
     unsigned int nMinorVersion;
 
@@ -579,38 +609,88 @@ void COutput::Print6DOFSettings(CRTProtocol* poRTProtocol)
 
     printf("\n================== 6DOF Settings =================\n\n");
 
-    if (nMajorVersion > 1 || nMinorVersion > 15)
+    if (nMajorVersion > 1 || (nMinorVersion > 15 && nMinorVersion < 21))
     {
         std::string first, second, third;
-        poRTProtocol->Get6DOFEulerNames(first, second, third);
-        printf("Euler rotation names:\n");
-        printf("  First = %s\n  Second = %s\n  Third = %s\n", first.c_str(), second.c_str(), third.c_str());
+        poRTProtocol->GetEulerAngles(first, second, third);
+        printf("Euler angle names:\n");
+        printf("  First = %s\n  Second = %s\n  Third = %s\n\n", first.c_str(), second.c_str(), third.c_str());
+    }
+
+    std::vector<CRTProtocol::SSettings6DOFBody> bodiesSettings;
+    if (nMajorVersion > 1 || nMinorVersion > 20)
+    {
+        poRTProtocol->Get6DOFBodySettings(bodiesSettings);
     }
 
     if (nBodies > 0)
     {
         if (nBodies == 1)
         {
-            printf("There is 1 6DOF body\n");
+            printf("There is 1 6DOF body\n\n");
         }
         else
         {
-            printf("There are %d 6DOF Bodies\n", nBodies);
+            printf("There are %d 6DOF Bodies\n\n", nBodies);
         }
         for (int iBody = 0; iBody < nBodies; iBody++)
         {
-            printf("Body #%d\n", iBody + 1);
-            printf("  Name:  %s\n",   poRTProtocol->Get6DOFBodyName(iBody));
-            printf("  Color: %.6X\n", poRTProtocol->Get6DOFBodyColor(iBody));
+            auto color = poRTProtocol->Get6DOFBodyColor(iBody);
+            printf("Body #%d - %s\n", iBody + 1, poRTProtocol->Get6DOFBodyName(iBody));
+            if (nMajorVersion == 1 && nMinorVersion < 21)
+            {
+                printf("  Color: R=%.2X G=%.2X B=%.2X\n", color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
+            }
+            else
+            {
+                printf("  Color:                 R=%.2X G=%.2X B=%.2X\n", color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
+                printf("  Bone length tolerance: %f\n", bodiesSettings[iBody].boneLengthTolerance);
+                printf("  Max residual:          %f\n", bodiesSettings[iBody].maxResidual);
+                printf("  Min markers in body:   %d\n", bodiesSettings[iBody].minMarkersInBody);
+                if (!bodiesSettings[iBody].mesh.name.empty())
+                {
+                    printf("  Mesh - %s\n", bodiesSettings[iBody].mesh.name.c_str());
+                    printf("    Mesh position: %f, %f, %f\n", bodiesSettings[iBody].mesh.position.fX, bodiesSettings[iBody].mesh.position.fY, bodiesSettings[iBody].mesh.position.fZ);
+                    printf("    Mesh rotation: %f, %f, %f\n", bodiesSettings[iBody].mesh.rotation.fX, bodiesSettings[iBody].mesh.rotation.fY, bodiesSettings[iBody].mesh.rotation.fZ);
+                    printf("    Mesh scale:    %f\n", bodiesSettings[iBody].mesh.scale);
+                    printf("    Mesh opacity:  %f\n", bodiesSettings[iBody].mesh.opacity);
+                }
+                if (!bodiesSettings[iBody].filterPreset.empty())
+                {
+                    printf("  Filter preset:         %s\n", bodiesSettings[iBody].filterPreset.c_str());
+                }
+
+                if (bodiesSettings[iBody].origin.type == CRTProtocol::GlobalOrigin)
+                {
+                    printf("  Translation origin:    Global\n");
+                    printf("  Rotation origin:       Global\n");
+                }
+                else if (bodiesSettings[iBody].origin.type == CRTProtocol::RelativeOrigin)
+                {
+                    printf("  Translation origin:    Relative body #%d\n", bodiesSettings[iBody].origin.relativeBody - 1);
+                    printf("  Rotation origin:       Relative body #%d\n", bodiesSettings[iBody].origin.relativeBody - 1);
+                }
+                else
+                {
+                    printf("  Translation origin:    Fixed\n");
+                    printf("    Translation: %f, %f, %f\n", bodiesSettings[iBody].origin.position.fX, bodiesSettings[iBody].origin.position.fY, bodiesSettings[iBody].origin.position.fZ);
+                    printf("  Rotation origin:       Fixed\n");
+                    printf("    Rotation: %9f, %9f, %9f\n", bodiesSettings[iBody].origin.rotation[0], bodiesSettings[iBody].origin.rotation[1], bodiesSettings[iBody].origin.rotation[2]);
+                    printf("              %9f, %9f, %9f\n", bodiesSettings[iBody].origin.rotation[3], bodiesSettings[iBody].origin.rotation[4], bodiesSettings[iBody].origin.rotation[5]);
+                    printf("              %9f, %9f, %9f\n", bodiesSettings[iBody].origin.rotation[6], bodiesSettings[iBody].origin.rotation[7], bodiesSettings[iBody].origin.rotation[8]);
+                }
+            }
+
             for (unsigned int iPoint = 0; iPoint < poRTProtocol->Get6DOFBodyPointCount(iBody); iPoint++)
             {
-                if (poRTProtocol->Get6DOFBodyPoint(iBody, iPoint, sPoint))
+                CRTProtocol::SPoint point;
+                auto color = poRTProtocol->Get6DOFBodyPoint(iBody, iPoint, point);
+                printf("  Point - %s\n", (nMajorVersion > 1 || nMinorVersion > 20) ? bodiesSettings[iBody].points[iPoint].name.c_str() : "");
+                printf("    Position: %f, %f, %f\n", point.fX, point.fY, point.fZ);
+                if (nMajorVersion > 1 || nMinorVersion > 20)
                 {
-                    printf("  Point: ");
-                    printf("X = %9f   ", sPoint.fX);
-                    printf("Y = %9f   ", sPoint.fY);
-                    printf("Z = %9f",    sPoint.fZ);
-                    printf("\n");
+                    printf("    Virtual = %s\n", bodiesSettings[iBody].points[iPoint].virtual_ ? "True" : "False");
+                    printf("    Physical id = %d\n", bodiesSettings[iBody].points[iPoint].physicalId);
                 }
             }
             printf("\n");
@@ -626,19 +706,29 @@ void COutput::PrintGazeVectorSettings(CRTProtocol* poRTProtocol)
     {
         printf("\n============== Gaze Vector Settings ==============\n\n");
 
-        if (nGazeVectorCount == 1)
-        {
-            printf("There is 1 gaze vector\n");
-        }
-        else
-        {
-            printf("There are %d gaze vectors\n", nGazeVectorCount);
-        }
         for (int iVector = 0; iVector < nGazeVectorCount; iVector++)
         {
             printf("Gaze vector #%d\n", iVector + 1);
             printf("  Name:  %s\n", poRTProtocol->GetGazeVectorName(iVector));
             printf("  Frequency: %.1f\n", poRTProtocol->GetGazeVectorFrequency(iVector));
+            printf("\n");
+        }
+    }
+}
+
+void COutput::PrintEyeTrackerSettings(CRTProtocol* poRTProtocol)
+{
+    int eyeTrackerCount = poRTProtocol->GetEyeTrackerCount();
+
+    if (eyeTrackerCount > 0)
+    {
+        printf("\n============== Eye Tracker Settings ==============\n\n");
+
+        for (int eyeTracker = 0; eyeTracker < eyeTrackerCount; eyeTracker++)
+        {
+            printf("Eye tracker #%d\n", eyeTracker + 1);
+            printf("  Name:  %s\n", poRTProtocol->GetEyeTrackerName(eyeTracker));
+            printf("  Frequency: %.1f\n", poRTProtocol->GetEyeTrackerFrequency(eyeTracker));
             printf("\n");
         }
     }
@@ -837,22 +927,110 @@ void COutput::PrintImageSettings(CRTProtocol* poRTProtocol)
 
 void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlobalReferenceFrame)
 {
+    unsigned int majorVersion;
+    unsigned int minorVersion;
+    poRTProtocol->GetVersion(majorVersion, minorVersion);
+
     if (poRTProtocol->GetSkeletonCount() > 0)
     {
         printf("\n================ Skeleton Settings ==================\n");
 
         for (unsigned int iSkeleton = 0; iSkeleton < poRTProtocol->GetSkeletonCount(); iSkeleton++)
         {
+            CRTProtocol::SSettingsSkeletonHierarchical skeleton;
+            uint32_t level = 0;
+
+            if ((majorVersion > 1 || minorVersion > 20) && poRTProtocol->GetSkeleton(iSkeleton, skeleton))
+            {
+                printf("\nSkeleton Name: %s  Solver: %s  Scale: %f", skeleton.name.c_str(), skeleton.solver.c_str(), skeleton.scale);
+
+                std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, uint32_t& level)
+                {
+                    level++;
+                    std::string indent = std::string(level * 3, ' ');
+
+                    printf("\n");
+                    printf("%sSegment name: %s   ID: %d\n", indent.c_str(), segment.name.c_str(), segment.id);
+                    printf("%s   Position: %.2f, %.2f, %.2f\n", indent.c_str(), segment.position.x, segment.position.y, segment.position.z);
+                    printf("%s   Rotation: %.2f, %.2f, %.2f %.2f\n", indent.c_str(), segment.rotation.x, segment.rotation.y, segment.rotation.z, segment.rotation.w);
+                    
+                    if (segment.defaultPosition.IsValid())
+                    {
+                        printf("%s   Default Position: %.2f, %.2f, %.2f\n", indent.c_str(), segment.defaultPosition.x, segment.defaultPosition.y, segment.defaultPosition.z);
+                    }
+                    if (segment.defaultRotation.IsValid())
+                    {
+                        printf("%s   Default Rotation: %.2f, %.2f, %.2f %.2f\n", indent.c_str(), segment.defaultRotation.x, segment.defaultRotation.y, segment.defaultRotation.z, segment.defaultRotation.w);
+                    }
+
+                    if (segment.dofRotation.x.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Rotation X: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofRotation.x.lowerBound, segment.dofRotation.x.upperBound);
+                    }
+                    if (segment.dofRotation.y.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Rotation Y: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofRotation.y.lowerBound, segment.dofRotation.y.upperBound);
+                    }
+                    if (segment.dofRotation.z.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Rotation Z: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofRotation.z.lowerBound, segment.dofRotation.z.upperBound);
+                    }
+                    if (segment.dofTranslation.x.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Translation X: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofTranslation.x.lowerBound, segment.dofTranslation.x.upperBound);
+                    }
+                    if (segment.dofTranslation.y.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Translation Y: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofTranslation.y.lowerBound, segment.dofTranslation.y.upperBound);
+                    }
+                    if (segment.dofTranslation.z.IsValid())
+                    {
+                        printf("%s   Degrees of freedom Translation Z: ", indent.c_str());
+                        printf("%.4f - %.4f\n", segment.dofTranslation.z.lowerBound, segment.dofTranslation.z.upperBound);
+                    }
+
+                    if (segment.endpoint.IsValid())
+                    {
+                        printf("%s   Endpoint: %.2f, %.2f, %.2f\n", indent.c_str(), segment.endpoint.x, segment.endpoint.y, segment.endpoint.z);
+                    }
+
+                    for (const auto& marker : segment.markers)
+                    {
+                        printf("%s   Marker name: %s\n", indent.c_str(), marker.name.c_str());
+                        printf("%s      Position: %.2f, %.2f, %.2f\n", indent.c_str(), marker.position.x, marker.position.y, marker.position.z);
+                        printf("%s      Weight: %.2f\n", indent.c_str(), marker.weight);
+                    }
+                    for (const auto& rigidBody : segment.bodies)
+                    {
+                        printf("%s   Rigid body name: %s\n", indent.c_str(), rigidBody.name.c_str());
+                        printf("%s      Position: %.2f, %.2f, %.2f\n", indent.c_str(), rigidBody.position.x, rigidBody.position.y, rigidBody.position.z);
+                        printf("%s      Rotation: %.2f, %.2f, %.2f, %.2f\n", indent.c_str(), rigidBody.rotation.x, rigidBody.rotation.y, rigidBody.rotation.z, rigidBody.rotation.w);
+                        printf("%s      Weight: %.2f\n", indent.c_str(), rigidBody.weight);
+                    }
+                    for (const auto& childSegment : segment.segments)
+                    {
+                        recurseSegments(childSegment, level);
+                    }
+                    level--;
+                };
+                recurseSegments(skeleton.rootSegment, level);
+            }
+
+
             CRTProtocol::SSettingsSkeletonSegment segment;
-            
             unsigned int segmentCount = poRTProtocol->GetSkeletonSegmentCount(iSkeleton);
             const char* name = poRTProtocol->GetSkeletonName(iSkeleton);
 
-            printf("\nName: %s  Segment count: %d\n", name, segmentCount);
+            printf("\nSkeleton: %s  Segment count: %d\n", name, segmentCount);
             for (unsigned int segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++)
             {
                 poRTProtocol->GetSkeletonSegment(iSkeleton, segmentIndex, &segment);
-                printf("  Segment %2d  name: %-19s  ", segment.id, segment.name.c_str());
+                printf("  Segment id: %2d  name: %-19s  ", segment.id, segment.name.c_str());
                 if (segment.parentId == -1)
                 {
                     printf("              ");
@@ -861,7 +1039,7 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
                 {
                     printf("Parent: %-4d  ", segment.parentId);
                 }
-                printf("%s Pos: %8.2f, %8.2f, %8.2f Rot: %4.2f, %4.2f, %4.2f, %4.2f\n", skeletonGlobalReferenceFrame ? "Global" : "Local",
+                printf("%s  Pos: %8.2f, %8.2f, %8.2f  Rot: %4.2f, %4.2f, %4.2f, %4.2f\n", skeletonGlobalReferenceFrame ? "Global" : "Local",
                     segment.positionX, segment.positionY, segment.positionZ,
                     segment.rotationX, segment.rotationY, segment.rotationZ, segment.rotationW);
             }

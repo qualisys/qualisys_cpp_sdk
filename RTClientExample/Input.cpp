@@ -1,5 +1,6 @@
 #include "Input.h"
 #include <conio.h>
+#include <iostream>
 
 
 bool CInput::CheckKeyPressed()
@@ -117,11 +118,11 @@ bool CInput::ReadOperation(EOperation &eOperation)
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 6)
     {
-        printf("7 : View Settings (General, Calibration, 3D, 6DOF, GazeVector, Analog, Force, Image, Skeleton)\n");
+        printf("7 : View Settings (General, Calibration, 3D, 6DOF, GazeVector, EyeTracker, Analog, Force, Image, Skeleton)\n");
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 6)
     {
-        printf("8 : Change Settings (General, Force, Image)\n");
+        printf("8 : Change Settings (General, 6d, Force, Image)\n");
     }
     printf("Q : Quit\n\n");
 
@@ -142,20 +143,23 @@ bool CInput::ReadOperation(EOperation &eOperation)
             returnValue = true;
             break;
         case 8:
-            printf("1 : Change General Settings (default)\n");
-            printf("2 : Change External Time Base Settings\n");
+            printf("0 : Change General Settings (default)\n");
+            printf("1 : Change External Time Base Settings\n");
+            printf("2 : Change Timestamp Settings\n");
             printf("3 : Change Processing Actions Settings\n");
             printf("4 : Change Camera Settings\n");
             printf("5 : Change Camera Sync Out Settings\n");
-            printf("6 : Change Image Settings\n");
+            printf("6 : Change 6D Settings\n");
             printf("7 : Change Force Settings\n");
+            printf("8 : Change Image Settings\n");
+            printf("9 : Change Skeleton Settings\n");
             printf("Q : Quit\n\n");
 
-            nSelection = (int)(ReadChar('1') - '0');
+            nSelection = (int)(ReadChar('0') - '0');
 
-            if (nSelection >= 1 && nSelection <= 7)
+            if (nSelection >= 0 && nSelection <= 9)
             {
-                eOperation = (EOperation)(nSelection + ChangeGeneralSystemSettings - 1);
+                eOperation = (EOperation)(nSelection + ChangeGeneralSystemSettings);
                 returnValue = true;
             }
             break;
@@ -184,15 +188,13 @@ bool CInput::ReadStreamRate(CRTProtocol::EStreamRate &eRate, int &nArg)
         eRate = (CRTProtocol::EStreamRate)nSelection;
         if (nSelection == 2)
         {
-            printf("Enter Frequency: ");
-            nArg = ReadInt(1);
+            nArg = ReadInt("Enter Frequency: ", 1);
             printf("\n\n");
             return true;
         }
         if (nSelection == 3)
         {
-            printf("Enter Frequency Divisor: ");
-            nArg = ReadInt(1);
+            nArg = ReadInt("Enter Frequency Divisor: ", 1);
             printf("\n\n");
             return true;
         }
@@ -248,8 +250,7 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
     {
         selectedAnalogChannels[0] = 0;
 
-        printf("Read all channels (y/n)\n");
-        if (!ReadYesNo(true))
+        if (!ReadYesNo("Read all channels (y/n)\n", true))
         {
             printf("Select analog channels: (Ex, 1,3,4-7,8)\n");
             fgets(selectedAnalogChannels, selectedAnalogChannelsLen, stdin);
@@ -279,30 +280,34 @@ unsigned int CInput::ReadDataComponent(bool printInstr, bool &skeletonGlobalRefe
         {
             printf("b: Gaze vector\n");
         }
-        printf("c: Analog\n");
+        if (mnMajorVersion > 1 || mnMinorVersion > 18)
+        {
+            printf("c: Eye tracker\n");
+        }
+        printf("d: Analog\n");
         if (mnMajorVersion > 1 || mnMinorVersion > 0)
         {
-            printf("d: Analog Single\n");
+            printf("e: Analog Single\n");
         }
-        printf("e: Force\n");
+        printf("f: Force\n");
         if (mnMajorVersion > 1 || mnMinorVersion > 7)
         {
-            printf("f: Force Single\n");
+            printf("g: Force Single\n");
         }
         if (mnMajorVersion > 1 || mnMinorVersion > 7)
         {
-            printf("g: Image\n");
+            printf("h: Image\n");
         }
         if (mnMajorVersion > 1 || mnMinorVersion > 16)
         {
-            printf("h: Timecode\n");
+            printf("i: Timecode\n");
         }
         if (mnMajorVersion > 1 || mnMinorVersion > 18)
         {
-            printf("i: Skeleton Local\n");
-            printf("j: Skeleton Global\n");
+            printf("j: Skeleton Local\n");
+            printf("k: Skeleton Global\n");
         }
-        printf("k: Multiple Components\n");
+        printf("l: Multiple Components\n");
     }
 
     int c = ReadChar('0');
@@ -344,33 +349,36 @@ unsigned int CInput::ReadDataComponent(bool printInstr, bool &skeletonGlobalRefe
         case 'b' :
             nComponentType = CRTProtocol::cComponentGazeVector;
             break;
-        case 'c' :
-            nComponentType = CRTProtocol::cComponentAnalog;
+        case 'c':
+            nComponentType = CRTProtocol::cComponentEyeTracker;
             break;
         case 'd' :
-            nComponentType = CRTProtocol::cComponentAnalogSingle;
+            nComponentType = CRTProtocol::cComponentAnalog;
             break;
         case 'e' :
-            nComponentType = CRTProtocol::cComponentForce;
+            nComponentType = CRTProtocol::cComponentAnalogSingle;
             break;
         case 'f' :
-            nComponentType = CRTProtocol::cComponentForceSingle;
+            nComponentType = CRTProtocol::cComponentForce;
             break;
         case 'g' :
+            nComponentType = CRTProtocol::cComponentForceSingle;
+            break;
+        case 'h' :
             nComponentType = CRTProtocol::cComponentImage;
             break;
-        case 'h':
-            nComponentType = CRTProtocol::cComponentTimecode;
-            break;
         case 'i':
-            nComponentType = CRTProtocol::cComponentSkeleton;
-            skeletonGlobalReferenceFrame = false;
+            nComponentType = CRTProtocol::cComponentTimecode;
             break;
         case 'j':
             nComponentType = CRTProtocol::cComponentSkeleton;
+            skeletonGlobalReferenceFrame = false;
+            break;
+        case 'k':
+            nComponentType = CRTProtocol::cComponentSkeleton;
             skeletonGlobalReferenceFrame = true;
             break;
-        case 'k' :
+        case 'l' :
             nComponentType = 0xffffffff;
             break;
         default:    
@@ -383,8 +391,7 @@ unsigned int CInput::ReadDataComponent(bool printInstr, bool &skeletonGlobalRefe
 
 bool CInput::Read2DNoiseTest()
 {
-    printf("\nPerform 2D Noise Test (y/n)?\n");
-    return ReadYesNo(false);
+    return ReadYesNo("\nPerform 2D Noise Test (y/n)?\n", false);
 }
 
 
@@ -474,29 +481,21 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
     return false;
 }
 
-void CInput::ReadSystemSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware)
+void CInput::ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware)
 {
-    printf("Enter Capture Frequency (Hz) : ");
-    nCaptureFrequency = ReadInt(20);
+    nCaptureFrequency = ReadInt("Enter Capture Frequency (Hz) : ", 20);
 
-    printf("Enter Capture Time (seconds) : ");
-    fCaptureTime = ReadFloat(1.0);
+    fCaptureTime = ReadFloat("Enter Capture Time (seconds) : ", 1.0);
     
     if (mnMajorVersion > 1 || mnMinorVersion > 14)
     {
-        printf("Enter Start on Trig NO (y/n)?\n");
-        trigNO = ReadYesNo(false);
-
-        printf("Enter Start Trig NC (y/n)?\n");
-        trigNC = ReadYesNo(false);
-
-        printf("Enter Start Software trigger (y/n)?\n");
-        trigSoftware = ReadYesNo(false);
+        trigNO = ReadYesNo("Enter Start on Trig NO (y/n)?\n", false);
+        trigNC = ReadYesNo("Enter Start Trig NC (y/n)?\n", false);
+        trigSoftware = ReadYesNo("Enter Start Software trigger (y/n)?\n", false);
     }
     else
     {
-        printf("Enter Start on External Trigger (y/n)?\n");
-        bExternalTrigger = ReadYesNo(false);
+        bExternalTrigger = ReadYesNo("Enter Start on External Trigger (y/n)?\n", false);
     }
 
 }
@@ -518,15 +517,14 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
     for (auto i = 0; i < actionsCount; i++)
     {
         printf("\nChange %s settings (y/n)? ", processings[i]);
-        if (!ReadYesNo(true))
+        if (!ReadYesNo("", true))
         {
             continue;
         }
 
         if (mnMajorVersion > 1 || mnMinorVersion > 13)
         {
-            printf("\n2D pre-processing (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("\n2D pre-processing (y/n)? ", true))
             {
                 *processingActions[i] = CRTProtocol::ProcessingPreProcess2D;
             }
@@ -556,65 +554,47 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
 
         if (i != 1) //Not RtProcessingSettings
         {
-            printf("TwinSystem Merge (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("TwinSystem Merge (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingTwinSystemMerge);
             }
-
-            printf("Spline Fill (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("Spline Fill (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingSplineFill);
             }
         }
-
-        printf("AIM (y/n)? ");
-        if (ReadYesNo(true))
+        if (ReadYesNo("AIM (y/n)? ", true))
         {
             *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingAIM);
         }
-
-        printf("6DOF Tracking (y/n)? ");
-        if (ReadYesNo(true))
+        if (ReadYesNo("6DOF Tracking (y/n)? ", true))
         {
             *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::Processing6DOFTracking);
         }
-
-        printf("Force (y/n)? ");
-        if (ReadYesNo(true))
+        if (ReadYesNo("Force (y/n)? ", true))
         {
             *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingForceData);
         }
-
-        printf("Gaze Vector (y/n)? ");
-        if (ReadYesNo(true))
+        if (ReadYesNo("Gaze Vector (y/n)? ", true))
         {
             *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingGazeVector);
         }
 
         if (i != 1) // Not RtProcessingSettings
         {
-            printf("Export TSV (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("Export TSV (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportTSV);
             }
-
-            printf("Export C3D (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("Export C3D (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportC3D);
             }
-
-            printf("Export MATLAB File (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("Export MATLAB File (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportMatlabFile);
             }
-
-            printf("Export AVI File (y/n)? ");
-            if (ReadYesNo(true))
+            if (ReadYesNo("Export AVI File (y/n)? ", true))
             {
                 *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportAviFile);
             }
@@ -629,8 +609,7 @@ void CInput::ReadExtTimeBaseSettings(bool         &bEnabled,            int     
                                      float        &fNominalFrequency,   bool         &bNegativeEdge,
                                      unsigned int &nSignalShutterDelay, float        &fNonPeriodicTimeout)
 {
-    printf("Enable External Time Base (y/n)? ");
-    bEnabled = ReadYesNo(false);
+    bEnabled = ReadYesNo("Enable External Time Base (y/n)? ", false);
 
     if (bEnabled)
     {
@@ -648,42 +627,54 @@ void CInput::ReadExtTimeBaseSettings(bool         &bEnabled,            int     
 
         if (nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3)
         {
-            printf("Signal Mode Periodic (y/n)? ");
-            bSignalModePeriodic = ReadYesNo(true);
+            bSignalModePeriodic = ReadYesNo("Signal Mode Periodic (y/n)? ", true);
         }
 
         if ((nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 2 || nSignalSource == 3) && bSignalModePeriodic)
         {
-            printf("Enter Frequency Multiplier : ");
-            nMultiplier = ReadInt(1);
+            nMultiplier = ReadInt("Enter Frequency Multiplier : ", 1);
 
-            printf("Enter Frequency Divisor : ");
-            nDivisor = ReadInt(1);
+            nDivisor = ReadInt("Enter Frequency Divisor : ", 1);
 
             if (nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3)
             {
-                printf("Enter Frequency Tolerance (ppm): ");
-                nFrequencyTolerance = ReadInt(1000);
+                nFrequencyTolerance = ReadInt("Enter Frequency Tolerance (ppm): ", 1000);
             }
 
-            printf("Enter Nominal Frequency (Hz) : ");
-            fNominalFrequency = ReadFloat(0);
+            fNominalFrequency = ReadFloat("Enter Nominal Frequency (Hz) : ", 0);
         }
 
         if (nSignalSource == 0 || nSignalSource == 3)
         {
-            printf("Negative Edge (y/n)? ");
-            bNegativeEdge = ReadYesNo(true);
+            bNegativeEdge = ReadYesNo("Negative Edge (y/n)? ", true);
         }
 
-        printf("Enter Signal Shutter Delay (us) : ");
-        nFrequencyTolerance = ReadInt(0);
+        nFrequencyTolerance = ReadInt("Enter Signal Shutter Delay (us) : ", 0);
 
         if ((nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3) && !bSignalModePeriodic)
         {
-            printf("Non Periodic Timeout (s) : ");
-            fNonPeriodicTimeout = ReadFloat(1);
+            fNonPeriodicTimeout = ReadFloat("Non Periodic Timeout (s) : ", 1);
         }
+    }
+}
+
+void CInput::ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings)
+{
+    timestampSettings.bEnabled = ReadYesNo("Enable Timestamp (y/n)? ", false);
+    if (timestampSettings.bEnabled)
+    {
+        printf("Enter Type:\n");
+        printf("  1 : SMPTE\n");
+        printf("  2 : IRIG\n");
+        printf("  3 : CameraTime\n");
+        printf("Select 1 - 3 : ");
+        auto type = ReadChar('1', true) - '0' - 1;
+        if (type < 0 || type > 2)
+        {
+            type = CRTProtocol::Timestamp_SMPTE;
+        }
+        timestampSettings.nType = (CRTProtocol::ETimestampType)type;
+        timestampSettings.nFrequency = ReadInt("Frequency: ", 30);
     }
 }
 
@@ -693,8 +684,7 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
                                 float        &fFocus,           float &fAperture,        bool  &autoExposure,
                                 float        &exposureCompensation, bool &autoWhiteBalance)
 {
-    printf("\nEnter Camera ID : ");
-    nCameraId = ReadInt(1);
+    nCameraId = ReadInt("\nEnter Camera ID : ", 1);
 
     printf("Enter Camera Mode :\n");
     printf("  1 : Marker\n");
@@ -709,22 +699,14 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
 
     if (nMode == 0 || nMode == 1)
     {
-        printf("Enter Marker Exposure (us) (Default 300 us): ");
-        fMarkerExposure = ReadFloat(300);
-
-        printf("Enter Marker Threshold (50 - 900) (Default 150) : ");
-        fMarkerThreshold = ReadFloat(150);
+        fMarkerExposure = ReadFloat("Enter Marker Exposure (us) (Default 300 us): ", 300);
+        fMarkerThreshold = ReadFloat("Enter Marker Threshold (50 - 900) (Default 150) : ", 150);
     }
     if (nMode == 2)
     {
-        printf("Enter Video Frequency (Default 24 Hz) : ");
-        nVideoFrequency = ReadInt(24);
-
-        printf("Enter Video Exposure (us) (Default 300 us) : ");
-        fVideoExposure = ReadFloat(300);
-
-        printf("Enter Video Flash Time (us) (Default 300 us) : ");
-        fVideoFlashTime = ReadFloat(300);
+        nVideoFrequency = ReadInt("Enter Video Frequency (Default 24 Hz) : ", 24);
+        fVideoExposure = ReadFloat("Enter Video Exposure (us) (Default 300 us) : ", 300);
+        fVideoFlashTime = ReadFloat("Enter Video Flash Time (us) (Default 300 us) : ", 300);
     }
 
     printf("Enter Video Resolution :\n");
@@ -760,40 +742,30 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
         videoAspectRatio = CRTProtocol::VideoAspectRatioNone;
     }
 
-    printf("Enter Camera Rotation (degrees) (Default 0 degrees): ");
-    nRotation = ReadInt(0);
+    nRotation = ReadInt("Enter Camera Rotation (degrees) (Default 0 degrees): ", 0);
     nRotation = nRotation - (nRotation % 90);
     if (nRotation < 0 || nRotation > 270)
     {
         nRotation = 0;
     }
 
-    printf("Enter Lens Focus: ");
-    fFocus = ReadFloat(5);
-    printf("Enter Lens Aperture: ");
-    fAperture = ReadFloat(5);
+    fFocus = ReadFloat("Enter Lens Focus: ", 5);
+    fAperture = ReadFloat("Enter Lens Aperture: ", 5);
 
-    printf("Enable Auto Exposure: ");
-    autoExposure = ReadYesNo(false);
+    autoExposure = ReadYesNo("Enable Auto Exposure? (y/n): ", false);
     if (autoExposure)
     {
-        printf("Enter Exposure Compensation: ");
-        exposureCompensation = ReadFloat(0);
+        exposureCompensation = ReadFloat("Enter Exposure Compensation: ", 0);
     }
-
-    printf("Enable Auto White Balance: ");
-    autoWhiteBalance = ReadYesNo(true);
+    autoWhiteBalance = ReadYesNo("Enable Auto White Balance? (y/n): ", true);
 }
 
 
 void CInput::ReadCameraSyncOutSettings(unsigned int &nCameraId, int &portNumber, int   &nSyncOutMode, unsigned int &nSyncOutValue,
                                         float &fSyncOutDutyCycle, bool  &bSyncOutNegativePolarity)
 {
-    printf("\nEnter Camera ID : ");
-    nCameraId = ReadInt(1);
-
-    printf("Enter Sync out port number (1-3) ");
-    portNumber = ReadInt(1);
+    nCameraId = ReadInt("\nEnter Camera ID : ", 1);
+    portNumber = ReadInt("Enter Sync out port number (1-3) ", 1);
 
     if (portNumber > 0 && portNumber < 3)
     {
@@ -814,17 +786,15 @@ void CInput::ReadCameraSyncOutSettings(unsigned int &nCameraId, int &portNumber,
         if (nSyncOutMode >= 2 && nSyncOutMode <= 4)
         {
             printf("Enter %s : ", nSyncOutMode == 2 ? "Multiplier" : (nSyncOutMode == 3 ? "Divisor" : "Camera Independent Frequency"));
-            nSyncOutValue = ReadInt(1000);
+            nSyncOutValue = ReadInt("", 1000);
 
-            printf("Enter Sync Out Duty Cycle (%%) : ");
-            fSyncOutDutyCycle = ReadFloat(0.5);
+            fSyncOutDutyCycle = ReadFloat("Enter Sync Out Duty Cycle (%%) : ", 0.5);
         }
     }
 
     if (nSyncOutMode < 6)
     {
-        printf("Negative Polarity (y/n)? ");
-        bSyncOutNegativePolarity = ReadYesNo(true);
+        bSyncOutNegativePolarity = ReadYesNo("Negative Polarity? (y/n): ", true);
     }
 }
 
@@ -834,11 +804,9 @@ void CInput::ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFor
 {
     int c;
 
-    printf("Enter Camera ID (Default 1): ");
-    nCameraId = ReadInt(1);
+    nCameraId = ReadInt("Enter Camera ID (Default 1): ", 1);
 
-    printf("Enter Enable Camera (y/n)? ");
-    bEnable = ReadYesNo(true);
+    bEnable = ReadYesNo("Enable Camera? (y/n): ", true);
 
     printf("Enter Image format :\n");
     printf("  1 : RAW Grayscale\n");
@@ -852,38 +820,31 @@ void CInput::ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFor
     {
         nFormat = 3;
     }
-    printf("Enter Image Width (Default 320): ");
-    nWidth = ReadInt(320);
+    nWidth = ReadInt("Enter Image Width (Default 320): ", 320);
+    nHeight = ReadInt("Enter Image Height (Default 200) : ", 200);
     
-    printf("Enter Image Height (Default 200) : ");
-    nHeight = ReadInt(200);
-    
-    printf("Enter Image Left Crop (%% of Width, Default 0 %%) : ");
-    c = ReadInt(0);
+    c = ReadInt("Enter Image Left Crop (%% of Width, Default 0 %%) : ", 0);
     if (c < 0 || c > 100)
     {
         c = 0;
     }
     fLeftCrop = (float)c / (float)100.0;
 
-    printf("Enter Image Top Crop (%% of Height, Default 0 %%) : ");
-    c = ReadInt(0);
+    c = ReadInt("Enter Image Top Crop (%% of Height, Default 0 %%) : ", 0);
     if (c < 0 || c > 100)
     {
         c = 0;
     }
     fTopCrop = (float)c / (float)100.0;
 
-    printf("Enter Image Right Crop (%% of Width, Default 100 %%) : ");
-    c = ReadInt(100);
+    c = ReadInt("Enter Image Right Crop (%% of Width, Default 100 %%) : ", 100);
     if (c < 0 || c > 100)
     {
         c = 100;
     }
     fRightCrop = (float)c / (float)100.0;
 
-    printf("Enter Image Bottom Crop (%% of Height, Default 100 %%) : ");
-    c = ReadInt(100);
+    c = ReadInt("Enter Image Bottom Crop (%% of Height, Default 100 %%) : ", 100);
     if (c < 0 || c > 100)
     {
         c = 100;
@@ -893,18 +854,95 @@ void CInput::ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFor
 
 void CInput::ReadForceSettings(unsigned int &nForcePlateIndex, float afCorner[4][3])
 {
-    printf("Enter Force Plate Index : ");
-    nForcePlateIndex = ReadInt(1);
+    nForcePlateIndex = ReadInt("Enter Force Plate Index : ", 1);
 
     // Read Force Plate Parameters
     for (int nCorner = 0; nCorner < 4; nCorner++)
     {
         printf("Enter Force plate corner %d\nX : ", nCorner + 1);
-        afCorner[nCorner][0] = ReadFloat(0.0);
-        printf("Y : ");
-        afCorner[nCorner][1] = ReadFloat(0.0);
-        printf("Z : ");
-        afCorner[nCorner][2] = ReadFloat(0.0);
+        afCorner[nCorner][0] = ReadFloat("", 0.0);
+        afCorner[nCorner][1] = ReadFloat("Y : ", 0.0);
+        afCorner[nCorner][2] = ReadFloat("Z : ", 0.0);
+    }
+}
+
+void CInput::Read6DSettings(unsigned int &color, float &maxResidual, unsigned int &minMarkersInBody, float &boneLengthTolerance, std::string &filterPreset)
+{
+    unsigned int colorTmp[3];
+
+    colorTmp[0] = ReadInt("Enter color R (0-255): ", 0xff);
+    colorTmp[1] = ReadInt("Enter color G (0-255): ", 0xff);
+    colorTmp[2] = ReadInt("Enter color B (0-255): ", 0xff);
+    color = colorTmp[0] | (colorTmp[1] << 8) | (colorTmp[2] << 16);
+    maxResidual = ReadFloat("Enter max residual: ", 10);
+    minMarkersInBody = ReadInt("Enter min markers in body: ", 3);
+    boneLengthTolerance = ReadFloat("Enter bone length tolerance: ", 5);
+    int preset = ReadInt("Enter filter preset(0-3):\n  0 - No filter\n  1 - Multi-purpose\n  2 - High stability\n  3 - Static pose\n", 0);
+    switch (preset)
+    {
+    case 0: filterPreset = "No filter";
+        break;
+    case 1: filterPreset = "Multi-purpose";
+        break;
+    case 2: filterPreset = "High stability";
+        break;
+    case 3: filterPreset = "Static pose";
+        break;
+    default:
+        filterPreset = "";
+    }
+}
+
+void CInput::Read6DSettingsMesh(CRTProtocol::SSettings6DMesh &mesh)
+{
+    mesh.name = ReadString("Enter mesh name: ");
+    mesh.position.fX = ReadFloat("Enter mesh position X: ", 0);
+    mesh.position.fY = ReadFloat("Enter mesh position Y: ", 0);
+    mesh.position.fZ = ReadFloat("Enter mesh position Z: ", 0);
+    mesh.rotation.fX = ReadFloat("Enter mesh rotation X: ", 0);
+    mesh.rotation.fY = ReadFloat("Enter mesh rotation Y: ", 0);
+    mesh.rotation.fZ = ReadFloat("Enter mesh rotation Z: ", 0);
+    mesh.scale = ReadFloat("Enter mesh scale: ", 1);
+    mesh.opacity = ReadFloat("Enter mesh opacity: ", 1);
+}
+
+void CInput::Read6DSettingsOrigin(CRTProtocol::SOrigin &origin)
+{
+    origin.type = (CRTProtocol::EOriginType)ReadInt("Enter origin (0 = Global, 1 = Relative, 2 = Fixed)", 0);
+    if (origin.type == CRTProtocol::RelativeOrigin)
+    {
+        origin.relativeBody = ReadInt("Enter relative body index: ", 0) + 1; // QTM body index starts at 1.
+    }
+    else if (origin.type == CRTProtocol::FixedOrigin)
+    {
+        origin.position.fX = ReadFloat("Enter origin position X: ", 0);
+        origin.position.fY = ReadFloat("Enter origin position Y: ", 0);
+        origin.position.fZ = ReadFloat("Enter origin position Z: ", 0);
+        origin.rotation[0] = ReadFloat("Enter origin rotation matrix (1,1): ", 0);
+        origin.rotation[1] = ReadFloat("Enter origin rotation matrix (1,2): ", 0);
+        origin.rotation[2] = ReadFloat("Enter origin rotation matrix (1,3): ", 0);
+        origin.rotation[3] = ReadFloat("Enter origin rotation matrix (2,1): ", 0);
+        origin.rotation[4] = ReadFloat("Enter origin rotation matrix (2,2): ", 0);
+        origin.rotation[5] = ReadFloat("Enter origin rotation matrix (2,3): ", 0);
+        origin.rotation[6] = ReadFloat("Enter origin rotation matrix (3,1): ", 0);
+        origin.rotation[7] = ReadFloat("Enter origin rotation matrix (3,2): ", 0);
+        origin.rotation[8] = ReadFloat("Enter origin rotation matrix (3,3): ", 0);
+    }
+}
+
+void CInput::Read6DSettingsPoints(std::vector<CRTProtocol::SBodyPoint> &points)
+{
+    CRTProtocol::SBodyPoint point;
+
+    while (ReadYesNo("Enter point (y/n): ", true))
+    {
+        point.name = ReadString("Enter point name: ");
+        point.fX = ReadFloat("Enter point position X: ", 0);
+        point.fY = ReadFloat("Enter point position Y: ", 0);
+        point.fZ = ReadFloat("Enter point position Z: ", 0);
+        point.virtual_ = ReadYesNo("Is point virtual? (y/n): ", false);
+        point.physicalId = ReadInt("Enter physical id: ", 0);
+        points.push_back(point);
     }
 }
 
@@ -961,16 +999,22 @@ bool CInput::ReadQTMCommand(EQTMCommand &eCommand)
     return true;
 }
 
-void CInput::ReadFileName(char* pStr, int nStrLen)
+std::string CInput::ReadString(const std::string& text)
 {
-    printf("Enter Name : ");
-    gets_s(pStr, nStrLen);
+    std::string str;
+
+    printf(text.c_str());
+    std::getline(std::cin, str);
+    
+    return str;
 }
 
-float CInput::ReadFloat(float fDefault)
+float CInput::ReadFloat(const std::string& text, float fDefault)
 {
     char  pStr[128];
     float fVal;
+
+    printf(text.c_str());
 
     gets_s(pStr, 32);
     if (sscanf_s(pStr, "%f", &fVal) != 1)
@@ -981,9 +1025,11 @@ float CInput::ReadFloat(float fDefault)
     return fVal;
 }
 
-bool CInput::ReadYesNo(bool bDefault)
+bool CInput::ReadYesNo(const std::string& text, bool bDefault)
 {
     char c;
+
+    printf(text.c_str());
 
     do
     {
@@ -1003,10 +1049,12 @@ bool CInput::ReadYesNo(bool bDefault)
     return bDefault;
 }
 
-int CInput::ReadInt(int nDefault)
+int CInput::ReadInt(const std::string& text, int nDefault)
 {
     char pStr[128];
     int  nVal;
+
+    printf(text.c_str());
 
     gets_s(pStr, 32);
     if (sscanf_s(pStr, "%d", &nVal) != 1)

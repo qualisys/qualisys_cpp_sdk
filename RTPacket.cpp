@@ -23,7 +23,7 @@ CRTPacket::CRTPacket(int nMajorVersion, int nMinorVersion, bool bBigEndian)
     ClearData();
 }
 
-void CRTPacket::GetVersion(unsigned int &nMajorVersion, unsigned int &nMinorVersion)
+void CRTPacket::GetVersion(unsigned int& nMajorVersion, unsigned int& nMinorVersion)
 {
     nMajorVersion = mnMajorVersion;
     nMinorVersion = mnMinorVersion;
@@ -57,6 +57,7 @@ void CRTPacket::ClearData()
     mnForcePlateCount         = 0;
     mnForceSinglePlateCount   = 0;
     mnGazeVectorCount         = 0;
+    mnEyeTrackerCount         = 0;
     mnTimecodeCount           = 0;
     mSkeletonCount           = 0;
     memset(mpComponentData, 0, ComponentNone * 4);
@@ -68,6 +69,7 @@ void CRTPacket::ClearData()
     memset(mpForceData, 0, MAX_FORCE_PLATE_COUNT * 4);
     memset(mpForceSingleData, 0, MAX_FORCE_PLATE_COUNT * 4);
     memset(mpGazeVectorData, 0, MAX_GAZE_VECTOR_COUNT * 4);
+    memset(mpEyeTrackerData, 0, MAX_EYE_TRACKER_COUNT * 4);
     memset(mpSkeletonData, 0, MAX_SKELETON_COUNT * 4);
 }
 
@@ -87,8 +89,9 @@ void CRTPacket::SetData(char* ptr)
     mnForcePlateCount         = 0;
     mnForceSinglePlateCount   = 0;
     mnGazeVectorCount         = 0;
+    mnEyeTrackerCount         = 0;
     mnTimecodeCount           = 0;
-    mSkeletonCount           = 0;
+    mSkeletonCount            = 0;
 
     // Check if it's a data packet
     if (GetType() == PacketData)
@@ -246,6 +249,19 @@ void CRTPacket::SetData(char* ptr)
                                                 nPrevSampleCount * 24;
                 }
             }
+            if (nComponentType == ComponentEyeTracker)
+            {
+                mnEyeTrackerCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
+
+                mpEyeTrackerData[0] = pCurrentComponent + 12;
+
+                for (nDevice = 1; nDevice < mnEyeTrackerCount; nDevice++)
+                {
+                    unsigned int nPrevSampleCount = SetByteOrder((unsigned int*)(mpEyeTrackerData[nDevice - 1]));
+                    mpEyeTrackerData[nDevice] = mpEyeTrackerData[nDevice - 1] + 4 + ((nPrevSampleCount == 0) ? 0 : 4) +
+                        nPrevSampleCount * 28;
+                }
+            }
             if (nComponentType == ComponentTimecode)
             {
                 mnTimecodeCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
@@ -276,7 +292,7 @@ void CRTPacket::SetData(char* ptr)
 } // SetData
 
 
-void CRTPacket::GetData(char* &ptr, unsigned int &nSize)
+void CRTPacket::GetData(char* &ptr, unsigned int& nSize)
 {
     if (mpData == nullptr)
     {
@@ -549,7 +565,7 @@ unsigned char CRTPacket::Get2DStatusFlags(unsigned int nCameraIndex)
     return 0;
 }
 
-bool CRTPacket::Get2DMarker(unsigned int nCameraIndex, unsigned int nMarkerIndex, unsigned int &nX, unsigned int &nY,
+bool CRTPacket::Get2DMarker(unsigned int nCameraIndex, unsigned int nMarkerIndex, unsigned int& nX, unsigned int& nY,
                             unsigned short &nXDiameter, unsigned short &nYDiameter)
 {
     int nOffset;
@@ -602,7 +618,7 @@ unsigned char CRTPacket::Get2DLinStatusFlags(unsigned int nCameraIndex)
     return 0;
 }
 
-bool CRTPacket::Get2DLinMarker(unsigned int nCameraIndex, unsigned int nMarkerIndex, unsigned int &nX, unsigned int &nY,
+bool CRTPacket::Get2DLinMarker(unsigned int nCameraIndex, unsigned int nMarkerIndex, unsigned int& nX, unsigned int& nY,
                                unsigned short &nXDiameter, unsigned short &nYDiameter)
 {
     int nOffset;
@@ -728,7 +744,7 @@ unsigned int CRTPacket::Get3DNoLabelsMarkerCount()
     return SetByteOrder((unsigned int*)(pData + 8));
 }
 
-bool CRTPacket::Get3DNoLabelsMarker(unsigned int nMarkerIndex, float &fX, float &fY, float &fZ, unsigned int &nId)
+bool CRTPacket::Get3DNoLabelsMarker(unsigned int nMarkerIndex, float &fX, float &fY, float &fZ, unsigned int& nId)
 {
     char* pData = mpComponentData[Component3dNoLabels - 1];
 
@@ -770,7 +786,7 @@ unsigned int CRTPacket::Get3DNoLabelsResidualMarkerCount()
 }
 
 bool CRTPacket::Get3DNoLabelsResidualMarker(unsigned int nMarkerIndex, float &fX, float &fY, float &fZ,
-                                            unsigned int &nId, float &fResidual)
+                                            unsigned int& nId, float &fResidual)
 {
     char* pData = mpComponentData[Component3dNoLabelsRes - 1];
 
@@ -1059,80 +1075,148 @@ bool CRTPacket::GetGazeVector(unsigned int nVectorIndex, SGazeVector* pGazeVecto
 
 
 //-----------------------------------------------------------
-//                       Timecode
+//                       Eye Tracker
 //-----------------------------------------------------------
-unsigned int CRTPacket::GetTimecodeCount()
+unsigned int CRTPacket::GetEyeTrackerCount()
 {
-    return mnTimecodeCount;
+    return mnEyeTrackerCount;
 }
 
-bool CRTPacket::GetTimecodeType(unsigned int nTimecodeIndex, CRTPacket::ETimecodeType &timecodeType)
+unsigned int CRTPacket::GetEyeTrackerSampleCount(unsigned int nVectorIndex)
 {
-    if (mnTimecodeCount <= nTimecodeIndex)
+    if (mnEyeTrackerCount <= nVectorIndex)
+    {
+        return 0;
+    }
+    return SetByteOrder((unsigned int*)(mpEyeTrackerData[nVectorIndex]));
+}
+
+unsigned int CRTPacket::GetEyeTrackerSampleNumber(unsigned int nVectorIndex)
+{
+    unsigned int nSampleCount = GetEyeTrackerSampleCount(nVectorIndex);
+
+    if (nSampleCount == 0)
+    {
+        return 0;
+    }
+    return SetByteOrder((unsigned int*)(mpEyeTrackerData[nVectorIndex] + 4));
+}
+
+bool CRTPacket::GetEyeTrackerData(unsigned int eyeTrackerIndex, unsigned int nSampleIndex, SEyeTracker &sEyeTracker)
+{
+    unsigned int nSampleCount = GetEyeTrackerSampleCount(eyeTrackerIndex);
+
+    if (nSampleCount == 0 || nSampleIndex >= nSampleCount)
     {
         return false;
     }
-    timecodeType = (CRTPacket::ETimecodeType)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex]));
+
+    for (unsigned int k = 0; k < (sizeof(SEyeTracker) / sizeof(float)); k++)
+    {
+        *(((float*)&sEyeTracker) + k) =
+            (float)SetByteOrder((float*)(mpEyeTrackerData[eyeTrackerIndex] + 8 + k * sizeof(float) + nSampleIndex * sizeof(SEyeTracker)));
+    }
+
     return true;
 }
 
-bool CRTPacket::GetTimecodeSMPTE(unsigned int nTimecodeIndex, int &hours, int &minutes, int &seconds, int &frame)
+bool CRTPacket::GetEyeTrackerData(unsigned int eyeTrackerIndex, SEyeTracker* pEyeTrackerBuf, unsigned int nBufSize)
 {
-    if (mnTimecodeCount <= nTimecodeIndex)
+    unsigned int nSampleCount = GetEyeTrackerSampleCount(eyeTrackerIndex);
+
+    if (nSampleCount == 0 || (nBufSize < nSampleCount * sizeof(SEyeTracker)))
+    {
+        return false;
+    }
+
+    for (unsigned int nSample = 0; nSample < nSampleCount; nSample++)
+    {
+        for (unsigned int k = 0; k < (sizeof(SEyeTracker) / sizeof(float)); k++)
+        {
+            *(((float*)pEyeTrackerBuf) + k + (nSample * sizeof(SEyeTracker))) =
+                (float)SetByteOrder((float*)(mpEyeTrackerData[eyeTrackerIndex] + 8 + k * sizeof(float) + nSample * sizeof(SEyeTracker)));
+        }
+    }
+
+    return true;
+}
+
+
+//-----------------------------------------------------------
+//                       Timecode
+//-----------------------------------------------------------
+bool CRTPacket::IsTimeCodeAvailable() const
+{
+    return mnTimecodeCount > 0;
+}
+
+bool CRTPacket::GetTimecodeType(CRTPacket::ETimecodeType &timecodeType)
+{
+    if (mnTimecodeCount <= 0)
+    {
+        return false;
+    }
+    timecodeType = (CRTPacket::ETimecodeType)SetByteOrder((unsigned int*)(mpTimecodeData[0]));
+    return true;
+}
+
+bool CRTPacket::GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& frames)
+{
+    if (mnTimecodeCount <= 0)
     {
         return false;
     }
     CRTPacket::ETimecodeType timecodeType;
-    if (GetTimecodeType(nTimecodeIndex, timecodeType))
+    if (GetTimecodeType(timecodeType))
     {
         if (timecodeType == TimecodeSMPTE)
         {
-            hours   = 0x1f & SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8));
-            minutes = 0x3f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 5);
-            seconds = 0x3f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 11);
-            frame   = 0x1f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 17);
+            hours   = 0x1f & SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8));
+            minutes = 0x3f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 5);
+            seconds = 0x3f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 11);
+            frames  = 0x1f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 17);
             return true;
         }
     }
     return false;
 }
 
-bool CRTPacket::GetTimecodeIRIG(unsigned int nTimecodeIndex, int &year, int &day, int &hours, int &minutes, int &seconds, int &tenths)
+bool CRTPacket::GetTimecodeIRIG(int& years, int& days, int& hours, int& minutes, int& seconds, int& tenths)
 {
-    if (mnTimecodeCount <= nTimecodeIndex)
+    if (mnTimecodeCount <= 0)
     {
         return false;
     }
     CRTPacket::ETimecodeType timecodeType;
-    if (GetTimecodeType(nTimecodeIndex, timecodeType))
+    if (GetTimecodeType(timecodeType))
     {
         if (timecodeType == TimecodeIRIG)
         {
-            year        = 0x007f & SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 4));
-            day         = 0x01ff & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 4)) >> 7);
-            hours       = 0x001f & SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8));
-            minutes     = 0x003f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 5);
-            seconds     = 0x003f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 11);
-            tenths      = 0x000f & (SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8)) >> 17);
+            years       = 0x007f & SetByteOrder((unsigned int*)(mpTimecodeData[0] + 4));
+            days        = 0x01ff & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 4)) >> 7);
+            hours       = 0x001f & SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8));
+            minutes     = 0x003f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 5);
+            seconds     = 0x003f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 11);
+            tenths      = 0x000f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 17);
             return true;
         }
     }
     return false;
 }
 
-bool CRTPacket::GetTimecodeCameraTime(unsigned int nTimecodeIndex, unsigned long long &cameraTime)
+bool CRTPacket::GetTimecodeCameraTime(unsigned long long &cameraTime)
 {
-    if (mnTimecodeCount <= nTimecodeIndex)
+    if (mnTimecodeCount <= 0)
     {
         return false;
     }
     CRTPacket::ETimecodeType timecodeType;
-    if (GetTimecodeType(nTimecodeIndex, timecodeType))
+    if (GetTimecodeType(timecodeType))
     {
         if (timecodeType == TimecodeCamerTime)
         {
-            cameraTime = ((long long)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 4))) << 32 |
-                          (long long)SetByteOrder((unsigned int*)(mpTimecodeData[nTimecodeIndex] + 8));
+            cameraTime = ((long long)SetByteOrder((unsigned int*)(mpTimecodeData[0] + 4))) << 32 |
+                          (long long)SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8));
             return true;
         }
     }
@@ -1168,7 +1252,7 @@ bool CRTPacket::GetImageFormat(unsigned int nCameraIndex, EImageFormat &eImageFo
     return true;
 }
 
-bool CRTPacket::GetImageSize(unsigned int nCameraIndex, unsigned int &nWidth, unsigned int &nHeight)
+bool CRTPacket::GetImageSize(unsigned int nCameraIndex, unsigned int& nWidth, unsigned int& nHeight)
 {
     if (mnImageCameraCount <= nCameraIndex)
     {

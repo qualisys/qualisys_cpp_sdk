@@ -149,6 +149,7 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
         PrintData6DEuler(logfile, poRTPacket, poRTProtocol);
         PrintData6DEulerRes(logfile, poRTPacket, poRTProtocol);
         PrintDataGazeVector(logfile, poRTPacket, poRTProtocol);
+        PrintDataEyeTracker(logfile, poRTPacket, poRTProtocol);
         PrintAnalog(logfile, poRTPacket);
         PrintAnalogSingle(logfile, poRTPacket);
         PrintForce(logfile, poRTPacket);
@@ -222,9 +223,7 @@ void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
 {
     if (poRTPacket->GetComponentSize(CRTPacket::ComponentTimecode))
     {
-        unsigned int nCount = poRTPacket->GetTimecodeCount();
-
-        if (nCount > 0)
+        if (poRTPacket->IsTimeCodeAvailable())
         {
             if (logfile == stdout && !mbOutputModeScrolling)
             {
@@ -233,25 +232,24 @@ void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
 
             fprintf(logfile, "--------------- Timecode --------------\n");
             mPrintPos.Y++;
-            for (unsigned int i = 0; i < nCount; i++)
-            {
-                int year, day, hours, minutes, seconds, tenth, frame;
-                unsigned __int64 cameraTime;
 
-                if (poRTPacket->GetTimecodeSMPTE(i, hours, minutes, seconds, frame))
-                {
-                    fprintf(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d\n", hours, minutes, seconds, frame);
-                }
-                if (poRTPacket->GetTimecodeIRIG(i, year, day, hours, minutes, seconds, tenth))
-                {
-                    fprintf(logfile, "IRIG: Year %02d Day %03d Hour %02d Min %02d Sec %02d Sec/10 %d\n", year, day, hours, minutes, seconds, tenth);
-                }
-                if (poRTPacket->GetTimecodeCameraTime(i, cameraTime))
-                {
-                    fprintf(logfile, "Camera Time: %I64u\n", cameraTime);
-                }
-                mPrintPos.Y++;
+            int year, day, hours, minutes, seconds, tenth, frame;
+            unsigned __int64 cameraTime;
+
+            if (poRTPacket->GetTimecodeSMPTE(hours, minutes, seconds, frame))
+            {
+                fprintf(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d\n", hours, minutes, seconds, frame);
             }
+            if (poRTPacket->GetTimecodeIRIG(year, day, hours, minutes, seconds, tenth))
+            {
+                fprintf(logfile, "IRIG: Year %02d Day %03d Hour %02d Min %02d Sec %02d Sec/10 %d\n", year, day, hours, minutes, seconds, tenth);
+            }
+            if (poRTPacket->GetTimecodeCameraTime(cameraTime))
+            {
+                fprintf(logfile, "Camera Time: %I64u\n", cameraTime);
+            }
+            mPrintPos.Y++;
+
             fprintf(logfile, "\n");
             mPrintPos.Y++;
         }
@@ -665,6 +663,42 @@ void COutput::PrintDataGazeVector(FILE* logfile, CRTPacket* poRTPacket, CRTProto
         }
     }
 } // PrintDataGazeVector
+
+void COutput::PrintDataEyeTracker(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol)
+{
+    if (poRTPacket->GetComponentSize(CRTPacket::ComponentEyeTracker))
+    {
+        unsigned int nCount = poRTPacket->GetEyeTrackerCount();
+
+        if (nCount > 0)
+        {
+            fprintf(logfile, "--------------- Eye Tracker --------------\n");
+            for (unsigned int i = 0; i < nCount; i++)
+            {
+                char* tLabel = (char*)poRTProtocol->GetEyeTrackerName(i);
+                char  emptyString[] = "";
+                if (tLabel == NULL)
+                {
+                    tLabel = emptyString;
+                }
+                CRTPacket::SEyeTracker sEyeTracker;
+                unsigned int nSampleCount = poRTPacket->GetEyeTrackerSampleCount(i);
+                if (nSampleCount > 0)
+                {
+                    fprintf(logfile, "%s - Sample number %d\n", tLabel, poRTPacket->GetEyeTrackerSampleNumber(i));
+                    for (unsigned int nSampleIndex  = 0; nSampleIndex < nSampleCount; nSampleIndex++)
+                    {
+                        if (poRTPacket->GetEyeTrackerData(i, nSampleIndex, sEyeTracker))
+                        {
+                            fprintf(logfile, "Left Pupil Diameter %-8.2f  Right Pupil Diameter %-8.2f\n", sEyeTracker.leftPupilDiameter, sEyeTracker.rightPupilDiameter);
+                        }
+                    }
+                }
+            }
+            fprintf(logfile, "\n");
+        }
+    }
+} // PrintDataEyeTracker
 
 void COutput::PrintAnalog(FILE* logfile, CRTPacket* poRTPacket)
 {
