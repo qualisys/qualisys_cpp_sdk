@@ -100,7 +100,7 @@ void COperations::MonitorEvents()
 
 void COperations::ViewSettings()
 {
-    if (mpoRTProtocol->ReadCameraSystemSettings() == false)
+    if (mpoRTProtocol->ReadGeneralSettings() == false)
     {
         if (mpoRTProtocol->Connected())
         {
@@ -641,7 +641,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
         printf("\nMeasurement started. Press any key to abort.");
     }
 
-    mpoRTProtocol->ReadCameraSystemSettings();
+    mpoRTProtocol->ReadGeneralSettings();
 
     bool bDataAvailable;
 

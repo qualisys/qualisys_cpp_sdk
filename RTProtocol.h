@@ -706,6 +706,7 @@ public:
     CRTPacket* GetRTPacket();
 
     bool ReadGeneralSettings();
+    [[deprecated("Replaced by ReadGeneralSettings.")]]
     bool ReadCameraSystemSettings(); // Same as ReadGeneralSettings
     bool ReadCalibrationSettings();
     bool Read3DSettings(bool &bDataAvailable);

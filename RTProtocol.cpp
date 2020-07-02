@@ -4089,22 +4089,22 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
         {
             while (xml.FindElem("Skeleton"))
             {
-                SSettingsSkeletonHierarchical skeletonRekursive;
+                SSettingsSkeletonHierarchical skeletonHierarchical;
                 SSettingsSkeleton skeleton;
 
-                skeletonRekursive.name = xml.GetAttrib("Name");
-                skeleton.name = skeletonRekursive.name;
+                skeletonHierarchical.name = xml.GetAttrib("Name");
+                skeleton.name = skeletonHierarchical.name;
 
                 xml.IntoElem();
 
                 if (xml.FindElem("Solver"))
                 {
-                    skeletonRekursive.solver = xml.GetData();
+                    skeletonHierarchical.solver = xml.GetData();
                 }
 
                 if (xml.FindElem("Scale"))
                 {
-                    if (!ParseString(xml.GetData(), skeletonRekursive.scale))
+                    if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
                     {
                         sprintf(maErrorStr, "Scale element parse error");
                         return false;
@@ -4238,12 +4238,12 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
 
                     if (xml.FindElem("Segment"))
                     {
-                        recurseSegments(skeletonRekursive.rootSegment, skeleton.segments, -1);
+                        recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
                     }
                     xml.OutOfElem(); // Segments
                 }
                 xml.OutOfElem(); // Skeleton
-                mSkeletonSettingsHierarchical.push_back(skeletonRekursive);
+                mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
                 mSkeletonSettings.push_back(skeleton);
             }
             dataAvailable = true;
