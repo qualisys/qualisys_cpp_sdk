@@ -21,6 +21,7 @@ public:
     void Print3DSettings(CRTProtocol* poRTProtocol);
     void Print6DOFSettings(CRTProtocol* poRTProtocol);
     void PrintGazeVectorSettings(CRTProtocol* poRTProtocol);
+    void PrintEyeTrackerSettings(CRTProtocol* poRTProtocol);
     void PrintAnalogSettings(CRTProtocol* poRTProtocol);
     void PrintForceSettings(CRTProtocol* poRTProtocol);
     void PrintImageSettings(CRTProtocol* poRTProtocol);
@@ -48,6 +49,7 @@ private:
     void PrintData6DEuler(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void PrintData6DEulerRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void PrintDataGazeVector(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
+    void PrintDataEyeTracker(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void PrintAnalog(FILE* logfile, CRTPacket* poRTPacket);
     void PrintAnalogSingle(FILE* logfile, CRTPacket* poRTPacket);
     void PrintForce(FILE* logfile, CRTPacket* poRTPacket);

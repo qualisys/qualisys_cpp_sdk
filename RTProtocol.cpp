@@ -11,6 +11,7 @@
 #include <locale>
 #include <vector>
 #include <iterator>
+#include <functional>
 
 #include "RTProtocol.h"
 #include "Markup.h"
@@ -67,9 +68,9 @@ CRTProtocol::CRTProtocol()
     maErrorStr[0]   = 0;
     mnBroadcastPort = 0;
     mpFileBuffer    = nullptr;
-    mDataBuffSize = 65535;
-    maDataBuff = new char[mDataBuffSize];
     mbIsMaster = false;
+    mDataBuff.resize(65535);
+    mSendBuffer.resize(5000);
 } // CRTProtocol
 
 
@@ -85,12 +86,6 @@ CRTProtocol::~CRTProtocol()
         delete mpoRTPacket;
         mpoRTPacket = nullptr;
     }
-    if (maDataBuff)
-    {
-        delete maDataBuff;
-        maDataBuff = nullptr;
-    }
-
 } // ~CRTProtocol
 
 
@@ -381,15 +376,15 @@ bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResp
         do 
         {
             unsigned int nAddr = 0;
-            nReceived = mpoNetwork->Receive(maDataBuff, mDataBuffSize, false, 100000, &nAddr);
+            nReceived = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), false, 100000, &nAddr);
 
             if (nReceived != -1 && nReceived > 8)
             {
-                if (CRTPacket::GetType(maDataBuff) == CRTPacket::PacketCommand)
+                if (CRTPacket::GetType(mDataBuff.data()) == CRTPacket::PacketCommand)
                 {
-                    char* response  = CRTPacket::GetCommandString(maDataBuff);
+                    char* response  = CRTPacket::GetCommandString(mDataBuff.data());
                     sResponse.nAddr = nAddr;
-                    sResponse.nBasePort = CRTPacket::GetDiscoverResponseBasePort(maDataBuff);
+                    sResponse.nBasePort = CRTPacket::GetDiscoverResponseBasePort(mDataBuff.data());
 
                     if (response && (!bNoLocalResponses || !mpoNetwork->IsLocalAddress(nAddr)))
                     {
@@ -455,6 +450,11 @@ bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentO
     return false;
 }
 
+
+bool CRTProtocol::StreamFrames(unsigned int nComponentType)
+{
+    return StreamFrames(RateAllFrames, 0, 0, nullptr, nComponentType);
+}
 
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr, const char* components)
 {
@@ -952,7 +952,7 @@ bool CRTProtocol::LoadCapture(const char* pFileName)
 
     if (strlen(pFileName) <= 94)
     {
-        sprintf(tTemp, "Load %s", pFileName);
+        sprintf(tTemp, "Load \"%s\"", pFileName);
 
         if (SendCommand(tTemp, pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
         {
@@ -1009,7 +1009,7 @@ bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNew
                 return true;
             }
         }
-        if (pResponseStr)
+        if (pResponseStr && strlen(pResponseStr) > 0)
         {
             sprintf(maErrorStr, "%s.", pResponseStr);
         }
@@ -1281,6 +1281,11 @@ bool CRTProtocol::GetComponent(std::string componentStr, unsigned int &component
         component = CRTProtocol::cComponentGazeVector;
         return true;
     }
+    if (componentStr == "eyetracker")
+    {
+        component = CRTProtocol::cComponentEyeTracker;
+        return true;
+    }
     if (componentStr == "timecode")
     {
         component = CRTProtocol::cComponentTimecode;
@@ -1396,6 +1401,10 @@ bool CRTProtocol::GetComponentString(char* pComponentStr, unsigned int nComponen
     {
         strcat(pComponentStr, "GazeVector ");
     }
+    if (nComponentType & cComponentEyeTracker)
+    {
+        strcat(pComponentStr, "EyeTracker ");
+    }
     if (nComponentType & cComponentImage)
     {
         strcat(pComponentStr, "Image ");
@@ -1433,7 +1442,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         nRecved      = 0;
         nRecvedTotal = 0;
 
-        nRecved = mpoNetwork->Receive(maDataBuff, mDataBuffSize, true, nTimeout);
+        nRecved = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), true, nTimeout);
         if (nRecved == 0)
         {
             // Receive timeout.
@@ -1454,8 +1463,8 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         nRecvedTotal += nRecved;
 
         bool bBigEndian = (mbBigEndian || (mnMajorVersion == 1 && mnMinorVersion == 0));
-        nFrameSize = mpoRTPacket->GetSize(maDataBuff, bBigEndian);
-        eType      = mpoRTPacket->GetType(maDataBuff, bBigEndian);
+        nFrameSize = mpoRTPacket->GetSize(mDataBuff.data(), bBigEndian);
+        eType      = mpoRTPacket->GetType(mDataBuff.data(), bBigEndian);
         
         unsigned int nReadSize;
 
@@ -1464,7 +1473,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             if (mpFileBuffer != nullptr)
             {
                 rewind(mpFileBuffer); // Start from the beginning
-                if (fwrite(maDataBuff + sizeof(int) * 2, 1, nRecvedTotal - sizeof(int) * 2, mpFileBuffer) !=
+                if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, nRecvedTotal - sizeof(int) * 2, mpFileBuffer) !=
                     nRecvedTotal - sizeof(int) * 2)
                 {
                     strcpy(maErrorStr, "Failed to write file to disk.");
@@ -1476,12 +1485,12 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                 while (nRecvedTotal < nFrameSize) 
                 {
                     nReadSize = nFrameSize - nRecvedTotal;
-                    if (nFrameSize > mDataBuffSize)                                                                                                                                                                                                                                                                                             
+                    if (nFrameSize > mDataBuff.size())                                                                                                                                                                                                                                                                                             
                     {
-                        nReadSize = mDataBuffSize;
+                        nReadSize = mDataBuff.size();
                     }
                     // As long as we haven't received enough data, wait for more
-                    nRecved = mpoNetwork->Receive(&(maDataBuff[sizeof(int) * 2]), nReadSize, false, nTimeout);
+                    nRecved = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, nTimeout);
                     if (nRecved <= 0)
                     {
                         strcpy(maErrorStr, "Socket Error.");
@@ -1489,7 +1498,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                         mpFileBuffer = nullptr;
                         return -1;
                     }
-                    if (fwrite(maDataBuff + sizeof(int) * 2, 1, nRecved, mpFileBuffer) != (size_t)nRecved)
+                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, nRecved, mpFileBuffer) != (size_t)nRecved)
                     {
                         strcpy(maErrorStr, "Failed to write file to disk.");
                         fclose(mpFileBuffer);
@@ -1512,20 +1521,16 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
         }
         else
         {
-            if (nFrameSize > mDataBuffSize)
+            if (nFrameSize > mDataBuff.size())
             {
-                char* buf = new char[nFrameSize];
-                memcpy(buf, maDataBuff, mDataBuffSize);
-                delete maDataBuff;
-                maDataBuff = buf;
-                mDataBuffSize = nFrameSize;
+                mDataBuff.resize(nFrameSize);
             }
 
             // Receive more data until we have read the whole packet
             while (nRecvedTotal < nFrameSize) 
             {
                 // As long as we haven't received enough data, wait for more
-                nRecved = mpoNetwork->Receive(&(maDataBuff[nRecvedTotal]), nFrameSize - nRecvedTotal, false, nTimeout);
+                nRecved = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, nTimeout);
                 if (nRecved <= 0)
                 {
                     strcpy(maErrorStr, "Socket Error.");
@@ -1535,7 +1540,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             }
         }
 
-        mpoRTPacket->SetData(maDataBuff);
+        mpoRTPacket->SetData(mDataBuff.data());
 
         if (mpoRTPacket->GetEvent(meLastEvent)) // Update last event if there is an event
         {
@@ -1590,17 +1595,17 @@ bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& va
     return true;
 }
 
-bool CRTProtocol::ReadCameraSystemSettings()
+
+bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
 {
-    CRTPacket::EPacketType  eType;
-    CMarkup                 oXML;
-    std::string             tStr;
+    CRTPacket::EPacketType eType;
 
-    msGeneralSettings.vsCameras.clear();
+    mvsAnalogDeviceSettings.clear();
 
-    if (!SendCommand("GetParameters General"))
+    auto sendStr = std::string("GetParameters ") + settingsType;
+    if (!SendCommand(sendStr.c_str()))
     {
-        strcpy(maErrorStr, "GetParameters General failed");
+        sprintf(maErrorStr, "GetParameters %s failed", settingsType.c_str());
         return false;
     }
 
@@ -1623,12 +1628,34 @@ bool CRTProtocol::ReadCameraSystemSettings()
         }
         else
         {
-            sprintf(maErrorStr, "GetParameters General returned wrong packet type. Got type %d expected type 2.", eType);
+            sprintf(maErrorStr, "GetParameters %s returned wrong packet type. Got type %d expected type 2.", settingsType.c_str(), eType);
         }
         return false;
     }
 
     oXML.SetDoc(mpoRTPacket->GetXMLString());
+    
+    return true;
+}
+
+
+bool CRTProtocol::ReadCameraSystemSettings()
+{
+    return ReadGeneralSettings();
+}
+
+
+bool CRTProtocol::ReadGeneralSettings()
+{
+    CMarkup                 oXML;
+    std::string             tStr;
+
+    msGeneralSettings.vsCameras.clear();
+
+    if (!ReadSettings("General", oXML))
+    {
+        return false;
+    }
 
     // ==================== General ====================
     if (!oXML.FindChildElem("General"))
@@ -1855,6 +1882,49 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
     oXML.OutOfElem(); // External_Time_Base
 
+
+    // External_Timestamp
+    if (oXML.FindChildElem("External_Timestamp"))
+    {
+        oXML.IntoElem();
+
+        if (oXML.FindChildElem("Enabled"))
+        {
+            tStr = oXML.GetChildData();
+            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            msGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
+        }
+        if (oXML.FindChildElem("Type"))
+        {
+            tStr = oXML.GetChildData();
+            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            if (tStr == "smpte")
+            {
+                msGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
+            }
+            else if (tStr == "irig")
+            {
+                msGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
+            }
+            else
+            {
+                msGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
+            }
+        }
+        if (oXML.FindChildElem("Frequency"))
+        {
+            unsigned int timestampFrequency;
+            tStr = oXML.GetChildData();
+            if (sscanf(tStr.c_str(), "%u", &timestampFrequency) == 1)
+            {
+                msGeneralSettings.sTimestamp.nFrequency = timestampFrequency;
+            }
+        }
+        oXML.OutOfElem();
+    }
+    // External_Timestamp
+
+
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     EProcessingActions* processingActions[3] =
     {
@@ -2005,6 +2075,15 @@ bool CRTProtocol::ReadCameraSystemSettings()
         oXML.OutOfElem(); // Processing_Actions
     }
 
+    if (oXML.FindChildElem("EulerAngles"))
+    {
+        oXML.IntoElem();
+        msGeneralSettings.eulerRotations[0] = oXML.GetAttrib("First");
+        msGeneralSettings.eulerRotations[1] = oXML.GetAttrib("Second");
+        msGeneralSettings.eulerRotations[2] = oXML.GetAttrib("Third");
+        oXML.OutOfElem();
+    }
+
     SSettingsGeneralCamera sCameraSettings;
 
     while (oXML.FindChildElem("Camera"))
@@ -2112,9 +2191,17 @@ bool CRTProtocol::ReadCameraSystemSettings()
         {
             sCameraSettings.eModel = ModelMiqusHybrid;
         }
+        else if (tStr == "arqus a5")
+        {
+            sCameraSettings.eModel = ModelArqusA5;
+        }
+        else if (tStr == "arqus a12")
+        {
+            sCameraSettings.eModel = ModelArqusA12;
+        }
         else
         {
-            return false;
+            sCameraSettings.eModel = ModelUnknown;
         }
 
         // Only available from protocol version 1.10 and later.
@@ -2813,8 +2900,8 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
             settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
             if (settings.type == ECalibrationType::refine)
             {
-                settings.result_refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
-                settings.result_consecutive = std::stoul(oXML.GetAttrib("consecutive"));
+                settings.result_refit_residual = std::stod(oXML.GetChildAttrib("refit-residual"));
+                settings.result_consecutive = std::stoul(oXML.GetChildAttrib("consecutive"));
             }
         }
 
@@ -2923,46 +3010,18 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 
 bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
-    std::string            tStr;
+    CMarkup     oXML;
+    std::string tStr;
 
     bDataAvailable = false;
 
     ms3DSettings.s3DLabels.clear();
     ms3DSettings.pCalibrationTime[0] = 0;
 
-    if (!SendCommand("GetParameters 3D"))
+    if (!ReadSettings("3D", oXML))
     {
-        strcpy(maErrorStr, "GetParameters 3D failed");
         return false;
     }
-
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
-
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
-        {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-        }
-        else
-        {
-            sprintf(maErrorStr, "GetParameters 3D returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
 
     if (!oXML.FindChildElem("The_3D"))
     {
@@ -3073,179 +3132,260 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
 
 bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup oXML;
 
     bDataAvailable = false;
 
-    mvs6DOFSettings.bodySettings.clear();
+    m6DOFSettings.clear();
 
-    if (!SendCommand("GetParameters 6D"))
+    if (!ReadSettings("6D", oXML))
     {
-        strcpy(maErrorStr, "GetParameters 6D failed");
         return false;
     }
-
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
+    
+    if (oXML.FindChildElem("The_6D"))
     {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
+        oXML.IntoElem();
 
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
+        if (mnMajorVersion > 1 || mnMinorVersion > 20)
         {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
+            while (oXML.FindChildElem("Body"))
+            {
+                SSettings6DOFBody s6DOFBodySettings;
+                SBodyPoint sBodyPoint;
+
+                oXML.IntoElem();
+
+                if (!oXML.FindChildElem("Name"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.name = oXML.GetChildData();
+
+                if (!oXML.FindChildElem("Color"))
+                {
+                    return false;
+                }
+                uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
+                uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
+                uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
+                s6DOFBodySettings.color = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+
+                if (!oXML.FindChildElem("MaximumResidual"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.maxResidual = (float)atof(oXML.GetChildData().c_str());
+
+                if (!oXML.FindChildElem("MinimumMarkersInBody"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.minMarkersInBody = atoi(oXML.GetChildData().c_str());
+
+                if (!oXML.FindChildElem("BoneLengthTolerance"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.boneLengthTolerance = (float)atof(oXML.GetChildData().c_str());
+
+                if (!oXML.FindChildElem("Filter"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.filterPreset = oXML.GetChildAttrib("Preset");
+
+                if (oXML.FindChildElem("Mesh"))
+                {
+                    oXML.IntoElem();
+                    if (!oXML.FindChildElem("Name"))
+                    {
+                        return false;
+                    }
+                    s6DOFBodySettings.mesh.name = oXML.GetChildData();
+
+                    if (!oXML.FindChildElem("Position"))
+                    {
+                        return false;
+                    }
+                    s6DOFBodySettings.mesh.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+                    s6DOFBodySettings.mesh.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+                    s6DOFBodySettings.mesh.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+                    if (!oXML.FindChildElem("Rotation"))
+                    {
+                        return false;
+                    }
+                    s6DOFBodySettings.mesh.rotation.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+                    s6DOFBodySettings.mesh.rotation.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+                    s6DOFBodySettings.mesh.rotation.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+                    if (!oXML.FindChildElem("Scale"))
+                    {
+                        return false;
+                    }
+                    s6DOFBodySettings.mesh.scale = (float)atof(oXML.GetChildData().c_str());
+
+                    if (!oXML.FindChildElem("Opacity"))
+                    {
+                        return false;
+                    }
+                    s6DOFBodySettings.mesh.opacity = (float)atof(oXML.GetChildData().c_str());
+
+                    oXML.OutOfElem(); // Mesh
+                }
+
+                if (oXML.FindChildElem("Points"))
+                {
+                    oXML.IntoElem();
+
+                    while (oXML.FindChildElem("Point"))
+                    {
+                        sBodyPoint.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+                        sBodyPoint.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+                        sBodyPoint.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+                        sBodyPoint.virtual_ = (0 != atoi(oXML.GetChildAttrib("Virtual").c_str()));
+                        sBodyPoint.physicalId = atoi(oXML.GetChildAttrib("PhysicalId").c_str());
+                        sBodyPoint.name = oXML.GetChildAttrib("Name");
+                        s6DOFBodySettings.points.push_back(sBodyPoint);
+                    }
+                    oXML.OutOfElem(); // Points
+                }
+
+                if (!oXML.FindChildElem("Data_origin"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.origin.type = (EOriginType)atoi(oXML.GetChildData().c_str());
+                s6DOFBodySettings.origin.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+                s6DOFBodySettings.origin.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+                s6DOFBodySettings.origin.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+                s6DOFBodySettings.origin.relativeBody = atoi(oXML.GetChildAttrib("Relative_body").c_str());
+
+                if (!oXML.FindChildElem("Data_orientation"))
+                {
+                    return false;
+                }
+                if (s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str()) ||
+                    s6DOFBodySettings.origin.relativeBody != atoi(oXML.GetChildAttrib("Relative_body").c_str()))
+                {
+                    return false;
+                }
+
+                char tmpStr[10];
+                for (uint32_t i = 0; i < 9; i++)
+                {
+                    sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+                    s6DOFBodySettings.origin.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
+                }
+                m6DOFSettings.push_back(s6DOFBodySettings);
+                oXML.OutOfElem(); // Body
+
+                bDataAvailable = true;
+            }
         }
         else
         {
-            sprintf(maErrorStr, "GetParameters 6D returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
-
-    //
-    // Read 6DOF bodies
-    //
-    if (!oXML.FindChildElem("The_6D"))
-    {
-        return true; // NO 6DOF data available.
-    }
-    oXML.IntoElem();
-
-    if (!oXML.FindChildElem("Bodies"))
-    {
-        return false;
-    }
-    int nBodies = atoi(oXML.GetChildData().c_str());
-    SSettings6DOFBody s6DOFBodySettings;
-    SPoint sPoint;
-
-    for (int iBody = 0; iBody < nBodies; iBody++)
-    {
-        if (!oXML.FindChildElem("Body"))
-        {
-            return false;
-        }
-        oXML.IntoElem();
-
-        if (!oXML.FindChildElem("Name"))
-        {
-            return false;
-        }
-        s6DOFBodySettings.oName = oXML.GetChildData();
-        
-        if (!oXML.FindChildElem("RGBColor"))
-        {
-            return false;
-        }
-        s6DOFBodySettings.vsPoints.clear();
-        s6DOFBodySettings.nRGBColor = atoi(oXML.GetChildData().c_str());
-
-        while (oXML.FindChildElem("Point"))
-        {
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("X"))
+            if (!oXML.FindChildElem("Bodies"))
             {
                 return false;
             }
-            sPoint.fX = (float)atof(oXML.GetChildData().c_str());
+            int nBodies = atoi(oXML.GetChildData().c_str());
+            SSettings6DOFBody s6DOFBodySettings;
+            SBodyPoint sPoint;
 
-            if (!oXML.FindChildElem("Y"))
+            for (int iBody = 0; iBody < nBodies; iBody++)
             {
-                return false;
-            }
-            sPoint.fY = (float)atof(oXML.GetChildData().c_str());
+                if (!oXML.FindChildElem("Body"))
+                {
+                    return false;
+                }
+                oXML.IntoElem();
 
-            if (!oXML.FindChildElem("Z"))
-            {
-                return false;
-            }
-            sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
+                if (!oXML.FindChildElem("Name"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.name = oXML.GetChildData();
 
-            oXML.OutOfElem(); // Point
-            s6DOFBodySettings.vsPoints.push_back(sPoint);
-        }
-        mvs6DOFSettings.bodySettings.push_back(s6DOFBodySettings);
-        oXML.OutOfElem(); // Body
-    }
-    
-    if (mnMajorVersion > 1 || mnMinorVersion > 15)
-    {
-        if (oXML.FindChildElem("Euler"))
-        {
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("First"))
-            {
-                return false;
+                if (!oXML.FindChildElem("RGBColor"))
+                {
+                    return false;
+                }
+                s6DOFBodySettings.color = atoi(oXML.GetChildData().c_str());
+
+                s6DOFBodySettings.points.clear();
+
+                while (oXML.FindChildElem("Point"))
+                {
+                    oXML.IntoElem();
+                    if (!oXML.FindChildElem("X"))
+                    {
+                        return false;
+                    }
+                    sPoint.fX = (float)atof(oXML.GetChildData().c_str());
+
+                    if (!oXML.FindChildElem("Y"))
+                    {
+                        return false;
+                    }
+                    sPoint.fY = (float)atof(oXML.GetChildData().c_str());
+
+                    if (!oXML.FindChildElem("Z"))
+                    {
+                        return false;
+                    }
+                    sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
+
+                    oXML.OutOfElem(); // Point
+                    s6DOFBodySettings.points.push_back(sPoint);
+                }
+                m6DOFSettings.push_back(s6DOFBodySettings);
+                oXML.OutOfElem(); // Body
             }
-            mvs6DOFSettings.eulerFirst = oXML.GetChildData();
-            if (!oXML.FindChildElem("Second"))
+            if (mnMajorVersion > 1 || mnMinorVersion > 15)
             {
-                return false;
+                if (oXML.FindChildElem("Euler"))
+                {
+                    oXML.IntoElem();
+                    if (!oXML.FindChildElem("First"))
+                    {
+                        return false;
+                    }
+                    msGeneralSettings.eulerRotations[0] = oXML.GetChildData();
+                    if (!oXML.FindChildElem("Second"))
+                    {
+                        return false;
+                    }
+                    msGeneralSettings.eulerRotations[1] = oXML.GetChildData();
+                    if (!oXML.FindChildElem("Third"))
+                    {
+                        return false;
+                    }
+                    msGeneralSettings.eulerRotations[2] = oXML.GetChildData();
+                    oXML.OutOfElem(); // Euler
+                }
             }
-            mvs6DOFSettings.eulerSecond = oXML.GetChildData();
-            if (!oXML.FindChildElem("Third"))
-            {
-                return false;
-            }
-            mvs6DOFSettings.eulerThird = oXML.GetChildData();
-            oXML.OutOfElem(); // Euler
+            bDataAvailable = true;
         }
     }
 
-    bDataAvailable = true;
     return true;
 } // Read6DOFSettings
 
 bool CRTProtocol::ReadGazeVectorSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup oXML;
 
     bDataAvailable = false;
 
     mvsGazeVectorSettings.clear();
 
-    if (!SendCommand("GetParameters GazeVector"))
+    if (!ReadSettings("GazeVector", oXML))
     {
-        strcpy(maErrorStr, "GetParameters GazeVector failed");
         return false;
     }
-
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
-
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
-        {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-        }
-        else
-        {
-            sprintf(maErrorStr, "GetParameters GazeVector returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
 
     //
     // Read gaze vectors
@@ -3285,45 +3425,65 @@ bool CRTProtocol::ReadGazeVectorSettings(bool &bDataAvailable)
     return true;
 } // ReadGazeVectorSettings
 
+bool CRTProtocol::ReadEyeTrackerSettings(bool &bDataAvailable)
+{
+    CMarkup oXML;
+
+    bDataAvailable = false;
+
+    mvsEyeTrackerSettings.clear();
+
+    if (!ReadSettings("EyeTracker", oXML))
+    {
+        return false;
+    }
+
+    if (!oXML.FindChildElem("Eye_Tracker"))
+    {
+        return true; // NO eye tracker data available.
+    }
+    oXML.IntoElem();
+
+    std::string tEyeTrackerName;
+
+    int nEyeTrackerCount = 0;
+
+    while (oXML.FindChildElem("Device"))
+    {
+        oXML.IntoElem();
+
+        if (!oXML.FindChildElem("Name"))
+        {
+            return false;
+        }
+        tEyeTrackerName = oXML.GetChildData();
+
+        float frequency = 0;
+        if (oXML.FindChildElem("Frequency"))
+        {
+            frequency = (float)atof(oXML.GetChildData().c_str());
+        }
+
+        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency });
+        nEyeTrackerCount++;
+        oXML.OutOfElem(); // Vector
+    }
+
+    bDataAvailable = true;
+    return true;
+} // ReadEyeTrackerSettings
+
 bool CRTProtocol::ReadAnalogSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup oXML;
 
     bDataAvailable = false;
     mvsAnalogDeviceSettings.clear();
 
-    if (!SendCommand("GetParameters Analog"))
+    if (!ReadSettings("Analog", oXML))
     {
-        strcpy(maErrorStr, "GetParameters Analog failed");
         return false;
     }
-
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
-
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
-        {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-        }
-        else
-        {
-            sprintf(maErrorStr, "GetParameters Analog returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
 
     if (!oXML.FindChildElem("Analog"))
     {
@@ -3338,12 +3498,12 @@ bool CRTProtocol::ReadAnalogSettings(bool &bDataAvailable)
     if (mnMajorVersion == 1 && mnMinorVersion == 0)
     {
         sAnalogDevice.nDeviceID = 1;   // Always channel 1
-        sAnalogDevice.oName     = "AnalogDevice";
+        sAnalogDevice.oName = "AnalogDevice";
         if (!oXML.FindChildElem("Channels"))
         {
             return false;
         }
-        sAnalogDevice.nChannels  = atoi(oXML.GetChildData().c_str());
+        sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
         if (!oXML.FindChildElem("Frequency"))
         {
             return false;
@@ -3489,44 +3649,17 @@ bool CRTProtocol::ReadAnalogSettings(bool &bDataAvailable)
 
 bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup oXML;
     
     bDataAvailable = false;
 
     msForceSettings.vsForcePlates.clear();
 
-    if (!SendCommand("GetParameters Force"))
+    if (!ReadSettings("Force", oXML))
     {
-        strcpy(maErrorStr, "GetParameters Force failed");
         return false;
     }
 
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
-
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
-        {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-        }
-        else
-        {
-            sprintf(maErrorStr, "GetParameters Force returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
     //
     // Read some force plate parameters
     //
@@ -3806,44 +3939,17 @@ bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
 
 bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup oXML;
 
     bDataAvailable = false;
 
     mvsImageSettings.clear();
 
-    if (!SendCommand("GetParameters Image"))
+    if (!ReadSettings("Image", oXML))
     {
-        strcpy(maErrorStr, "GetParameters Image failed");
         return false;
     }
 
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
-
-    if (eType != CRTPacket::PacketXML)
-    {
-        if (eType == CRTPacket::PacketError)
-        {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-        }
-        else
-        {
-            sprintf(maErrorStr, "GetParameters Image returned wrong packet type. Got type %d expected type 2.", eType);
-        }
-        return false;
-    }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
     //
     // Read some Image parameters
     //
@@ -3956,156 +4062,310 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
 } // ReadImageSettings
 
 
-bool CRTProtocol::ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobalData)
+bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalData)
 {
-    CRTPacket::EPacketType eType;
-    CMarkup                oXML;
+    CMarkup xml;
 
-    bDataAvailable = false;
+    dataAvailable = false;
 
     mSkeletonSettings.clear();
+    mSkeletonSettingsHierarchical.clear();
 
-    std::string cmd("GetParameters Skeleton");
-    if (skeletonGlobalData)
+    if (!ReadSettings(skeletonGlobalData ? "Skeleton:global" : "Skeleton", xml))
     {
-        cmd += ":global";
-    }
-    if (!SendCommand(cmd.c_str()))
-    {
-        strcpy(maErrorStr, "GetParameters Skeleton failed");
         return false;
     }
 
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
-    {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
-        return false;
-    }
+    xml.ResetPos();
 
-    if (eType != CRTPacket::PacketXML)
+    xml.FindElem();
+    xml.IntoElem();
+
+    if (xml.FindElem("Skeletons"))
     {
-        if (eType == CRTPacket::PacketError)
+        xml.IntoElem();
+
+        if (mnMajorVersion > 1 || mnMinorVersion > 20)
         {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
+            while (xml.FindElem("Skeleton"))
+            {
+                SSettingsSkeletonHierarchical skeletonHierarchical;
+                SSettingsSkeleton skeleton;
+
+                skeletonHierarchical.name = xml.GetAttrib("Name");
+                skeleton.name = skeletonHierarchical.name;
+
+                xml.IntoElem();
+
+                if (xml.FindElem("Solver"))
+                {
+                    skeletonHierarchical.solver = xml.GetData();
+                }
+
+                if (xml.FindElem("Scale"))
+                {
+                    if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
+                    {
+                        sprintf(maErrorStr, "Scale element parse error");
+                        return false;
+                    }
+                }
+
+                if (xml.FindElem("Segments"))
+                {
+                    xml.IntoElem();
+
+                    std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
+                        [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
+                    {
+                        segmentHierarchical.name = xml.GetAttrib("Name");
+                        ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+
+                        xml.IntoElem();
+
+                        if (xml.FindElem("Transform"))
+                        {
+                            xml.IntoElem();
+                            segmentHierarchical.position = ReadXMLPosition(xml, "Position");
+                            segmentHierarchical.rotation = ReadXMLRotation(xml, "Rotation");
+                            xml.OutOfElem(); // Transform
+                        }
+
+                        if (xml.FindElem("DefaultTransform"))
+                        {
+                            xml.IntoElem();
+                            segmentHierarchical.defaultPosition = ReadXMLPosition(xml, "Position");
+                            segmentHierarchical.defaultRotation = ReadXMLRotation(xml, "Rotation");
+                            xml.OutOfElem(); // DefaultTransform
+                        }
+
+                        if (xml.FindElem("DegreesOfFreedom"))
+                        {
+                            xml.IntoElem();
+                            segmentHierarchical.dofRotation.x = ReadXMLBoundary(xml, "RotationX");
+                            segmentHierarchical.dofRotation.y = ReadXMLBoundary(xml, "RotationY");
+                            segmentHierarchical.dofRotation.z = ReadXMLBoundary(xml, "RotationZ");
+                            segmentHierarchical.dofTranslation.x = ReadXMLBoundary(xml, "TranslationX");
+                            segmentHierarchical.dofTranslation.y = ReadXMLBoundary(xml, "TranslationY");
+                            segmentHierarchical.dofTranslation.z = ReadXMLBoundary(xml, "TranslationZ");
+                            xml.OutOfElem(); // DegreesOfFreedom
+                        }
+
+                        segmentHierarchical.endpoint = ReadXMLPosition(xml, "Endpoint");
+
+                        if (xml.FindElem("Markers"))
+                        {
+                            xml.IntoElem();
+
+                            while (xml.FindElem("Marker"))
+                            {
+                                SMarker marker;
+
+                                marker.name = xml.GetAttrib("Name");
+                                marker.weight = 1.0;
+
+                                xml.IntoElem();
+                                marker.position = segmentHierarchical.endpoint = ReadXMLPosition(xml, "Position");
+                                if (xml.FindElem("Weight"))
+                                {
+                                    ParseString(xml.GetData(), marker.weight);
+                                }
+
+                                xml.OutOfElem(); // Marker
+
+                                segmentHierarchical.markers.push_back(marker);
+                            }
+
+                            xml.OutOfElem(); // Markers
+                        }
+
+                        if (xml.FindElem("RigidBodies"))
+                        {
+                            xml.IntoElem();
+
+                            while (xml.FindElem("RigidBody"))
+                            {
+                                SBody body;
+
+                                body.name = xml.GetAttrib("Name");
+                                body.weight = 1.0;
+
+                                xml.IntoElem();
+
+                                if (xml.FindElem("Transform"))
+                                {
+                                    xml.IntoElem();
+                                    body.position = ReadXMLPosition(xml, "Position");
+                                    body.rotation = ReadXMLRotation(xml, "Rotation");
+                                    xml.OutOfElem(); // Transform
+                                }
+                                if (xml.FindElem("Weight"))
+                                {
+                                    ParseString(xml.GetData(), body.weight);
+                                }
+
+                                xml.OutOfElem(); // RigidBody
+
+                                segmentHierarchical.bodies.push_back(body);
+                            }
+
+                            xml.OutOfElem(); // RigidBodies
+                        }
+                        SSettingsSkeletonSegment segment;
+                        segment.name = segmentHierarchical.name;
+                        segment.id = segmentHierarchical.id;
+                        segment.parentId = parentId;
+                        segment.parentIndex = segments.size() - 1;
+                        segment.positionX = (float)segmentHierarchical.position.x;
+                        segment.positionX = (float)segmentHierarchical.position.x;
+                        segment.positionY = (float)segmentHierarchical.position.y;
+                        segment.positionZ = (float)segmentHierarchical.position.z;
+                        segment.rotationX = (float)segmentHierarchical.rotation.x;
+                        segment.rotationY = (float)segmentHierarchical.rotation.y;
+                        segment.rotationZ = (float)segmentHierarchical.rotation.z;
+                        segment.rotationW = (float)segmentHierarchical.rotation.w;
+
+                        segments.push_back(segment);
+
+                        while (xml.FindElem("Segment"))
+                        {
+                            SSettingsSkeletonSegmentHierarchical childSegment;
+                            recurseSegments(childSegment, skeleton.segments, segmentHierarchical.id);
+                            segmentHierarchical.segments.push_back(childSegment);
+                        }
+                        xml.OutOfElem();
+                    };
+
+                    if (xml.FindElem("Segment"))
+                    {
+                        recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
+                    }
+                    xml.OutOfElem(); // Segments
+                }
+                xml.OutOfElem(); // Skeleton
+                mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
+                mSkeletonSettings.push_back(skeleton);
+            }
+            dataAvailable = true;
         }
         else
         {
-            sprintf(maErrorStr, "GetParameters Skeleton returned wrong packet type. Got type %d expected type 2.", eType);
+            int segmentIndex;
+            std::map<int, int> segmentIdIndexMap;
+
+            while (xml.FindElem("Skeleton"))
+            {
+                SSettingsSkeleton skeleton;
+                segmentIndex = 0;
+
+                skeleton.name = xml.GetAttrib("Name");
+                xml.IntoElem();
+
+                while (xml.FindElem("Segment"))
+                {
+                    SSettingsSkeletonSegment segment;
+
+                    segment.name = xml.GetAttrib("Name");
+                    if (segment.name.size() == 0 || sscanf(xml.GetAttrib("ID").c_str(), "%u", &segment.id) != 1)
+                    {
+                        return false;
+                    }
+
+                    segmentIdIndexMap[segment.id] = segmentIndex++;
+
+                    int parentId;
+                    if (sscanf(xml.GetAttrib("Parent_ID").c_str(), "%d", &parentId) != 1)
+                    {
+                        segment.parentId = -1;
+                        segment.parentIndex = -1;
+                    }
+                    else if (segmentIdIndexMap.count(parentId) > 0)
+                    {
+                        segment.parentId = parentId;
+                        segment.parentIndex = segmentIdIndexMap[parentId];
+                    }
+
+                    xml.IntoElem();
+
+                    if (xml.FindElem("Position"))
+                    {
+                        ParseString(xml.GetAttrib("X"), segment.positionX);
+                        ParseString(xml.GetAttrib("Y"), segment.positionY);
+                        ParseString(xml.GetAttrib("Z"), segment.positionZ);
+                    }
+
+                    if (xml.FindElem("Rotation"))
+                    {
+                        ParseString(xml.GetAttrib("X"), segment.rotationX);
+                        ParseString(xml.GetAttrib("Y"), segment.rotationY);
+                        ParseString(xml.GetAttrib("Z"), segment.rotationZ);
+                        ParseString(xml.GetAttrib("W"), segment.rotationW);
+                    }
+
+                    skeleton.segments.push_back(segment);
+
+                    xml.OutOfElem(); // Segment
+                }
+
+                mSkeletonSettings.push_back(skeleton);
+
+                xml.OutOfElem(); // Skeleton
+            }
         }
-        return false;
+        xml.OutOfElem(); // Skeletons
+        dataAvailable = true;
     }
-
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
-
-    if (!oXML.FindChildElem("Skeletons"))
-    {
-        return true;
-    }
-    oXML.IntoElem();
-
-    std::string skeletonName;
-    int segmentIndex;
-    std::map<int, int> segmentIdIndexMap;
-
-    while (oXML.FindChildElem("Skeleton"))
-    {
-        SSettingsSkeleton skeleton;
-        segmentIndex = 0;
-
-        oXML.IntoElem();
-
-        skeleton.name = oXML.GetAttrib("Name");
-        while (oXML.FindChildElem("Segment"))
-        {
-            oXML.IntoElem();
-
-            SSettingsSkeletonSegment segment;
-
-            segment.name = oXML.GetAttrib("Name");
-            if (segment.name.size() == 0 || sscanf(oXML.GetAttrib("ID").c_str(), "%u", &segment.id) != 1)
-            {
-                return false;
-            }
-
-            segmentIdIndexMap[segment.id] = segmentIndex++;
-
-            int parentId;
-            if (sscanf(oXML.GetAttrib("Parent_ID").c_str(), "%d", &parentId) != 1)
-            {
-                segment.parentId = -1;
-                segment.parentIndex = -1;
-            }
-            else if (segmentIdIndexMap.count(parentId) > 0)
-            {
-                segment.parentId = parentId;
-                segment.parentIndex = segmentIdIndexMap[parentId];
-            }
-
-            if (oXML.FindChildElem("Position"))
-            {
-                oXML.IntoElem();
-                float x, y, z;
-                if (sscanf(oXML.GetAttrib("X").c_str(), "%f", &x) == 1)
-                {
-                    segment.positionX = x;
-                }
-                if (sscanf(oXML.GetAttrib("Y").c_str(), "%f", &y) == 1)
-                {
-                    segment.positionY = y;
-                }
-                if (sscanf(oXML.GetAttrib("Z").c_str(), "%f", &z) == 1)
-                {
-                    segment.positionZ = z;
-                }
-                oXML.OutOfElem();
-            }
-
-            if (oXML.FindChildElem("Rotation"))
-            {
-                oXML.IntoElem();
-                float x, y, z, w;
-                if (sscanf(oXML.GetAttrib("X").c_str(), "%f", &x) == 1)
-                {
-                    segment.rotationX = x;
-                }
-                if (sscanf(oXML.GetAttrib("Y").c_str(), "%f", &y) == 1)
-                {
-                    segment.rotationY = y;
-                }
-                if (sscanf(oXML.GetAttrib("Z").c_str(), "%f", &z) == 1)
-                {
-                    segment.rotationZ = z;
-                }
-                if (sscanf(oXML.GetAttrib("W").c_str(), "%f", &w) == 1)
-                {
-                    segment.rotationW = w;
-                }
-                oXML.OutOfElem();
-            }
-
-            skeleton.segments.push_back(segment);
-
-            oXML.OutOfElem(); // Segment
-        }
-
-        mSkeletonSettings.push_back(skeleton);
-
-        oXML.OutOfElem(); // Skeleton
-    }
-
-    oXML.OutOfElem(); // Skeletons
-
-    bDataAvailable = true;
     return true;
 } // ReadSkeletonSettings
 
 
-void CRTProtocol::GetSystemSettings(
+CRTProtocol::SPosition CRTProtocol::ReadXMLPosition(CMarkup& xml, const std::string& element)
+{
+    SPosition position;
+
+    if (xml.FindElem(element.c_str()))
+    {
+        ParseString(xml.GetAttrib("X"), position.x);
+        ParseString(xml.GetAttrib("Y"), position.y);
+        ParseString(xml.GetAttrib("Z"), position.z);
+        xml.ResetMainPos();
+    }
+    return position;
+}
+
+
+CRTProtocol::SRotation CRTProtocol::ReadXMLRotation(CMarkup& xml, const std::string& element)
+{
+    SRotation rotation;
+
+    if (xml.FindElem(element.c_str()))
+    {
+        ParseString(xml.GetAttrib("X"), rotation.x);
+        ParseString(xml.GetAttrib("Y"), rotation.y);
+        ParseString(xml.GetAttrib("Z"), rotation.z);
+        ParseString(xml.GetAttrib("W"), rotation.w);
+        xml.ResetMainPos();
+    }
+    return rotation;
+}
+
+
+CRTProtocol::SBoundary CRTProtocol::ReadXMLBoundary(CMarkup& xml, const std::string& element)
+{
+    SBoundary boundary;
+
+    if (xml.FindElem(element.c_str()))
+    {
+        ParseString(xml.GetAttrib("LowerBound"), boundary.lowerBound);
+        ParseString(xml.GetAttrib("UpperBound"), boundary.upperBound);
+        xml.ResetMainPos();
+    }
+
+    return boundary;
+}
+
+
+void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
     bool& bStartOnExtTrig, bool& startOnTrigNO, bool& startOnTrigNC, bool& startOnTrigSoftware,
     EProcessingActions &eProcessingActions, EProcessingActions &eRtProcessingActions, EProcessingActions &eReprocessingActions) const
@@ -4119,6 +4379,15 @@ void CRTProtocol::GetSystemSettings(
     eProcessingActions = msGeneralSettings.eProcessingActions;
     eRtProcessingActions = msGeneralSettings.eRtProcessingActions;
     eReprocessingActions = msGeneralSettings.eReprocessingActions;
+}
+
+
+void CRTProtocol::GetSystemSettings(
+    unsigned int       &nCaptureFrequency, float &fCaptureTime,
+    bool& bStartOnExtTrig, bool& startOnTrigNO, bool& startOnTrigNC, bool& startOnTrigSoftware,
+    EProcessingActions &eProcessingActions, EProcessingActions &eRtProcessingActions, EProcessingActions &eReprocessingActions) const
+{
+    GetGeneralSettings(nCaptureFrequency, fCaptureTime, bStartOnExtTrig, startOnTrigNO, startOnTrigNC, startOnTrigSoftware, eProcessingActions, eRtProcessingActions, eReprocessingActions);
 }
 
 
@@ -4148,6 +4417,17 @@ void CRTProtocol::GetExtTimeBaseSettings(
     fNonPeriodicTimeout = msGeneralSettings.sExternalTimebase.fNonPeriodicTimeout;
 }
 
+void CRTProtocol::GetExtTimestampSettings(SSettingsGeneralExternalTimestamp& timestamp) const
+{
+    timestamp = msGeneralSettings.sTimestamp;
+}
+
+void CRTProtocol::GetEulerAngles(std::string& first, std::string& second, std::string& third) const
+{
+    first = msGeneralSettings.eulerRotations[0];
+    second = msGeneralSettings.eulerRotations[1];
+    third = msGeneralSettings.eulerRotations[2];
+}
 
 unsigned int CRTProtocol::GetCameraCount() const
 {
@@ -4405,23 +4685,23 @@ const char* CRTProtocol::Get3DBoneToName(unsigned int boneIndex) const
 
 void CRTProtocol::Get6DOFEulerNames(std::string &first, std::string &second, std::string &third) const
 {
-    first = mvs6DOFSettings.eulerFirst;
-    second = mvs6DOFSettings.eulerSecond;
-    third = mvs6DOFSettings.eulerThird;
+    first = msGeneralSettings.eulerRotations[0];
+    second = msGeneralSettings.eulerRotations[1];
+    third = msGeneralSettings.eulerRotations[2];
 }
 
 
 unsigned int CRTProtocol::Get6DOFBodyCount() const
 {
-    return (unsigned int)mvs6DOFSettings.bodySettings.size();
+    return (unsigned int)m6DOFSettings.size();
 }
 
 
 const char* CRTProtocol::Get6DOFBodyName(unsigned int nBodyIndex) const
 {
-    if (nBodyIndex < mvs6DOFSettings.bodySettings.size())
+    if (nBodyIndex < m6DOFSettings.size())
     {
-        return mvs6DOFSettings.bodySettings[nBodyIndex].oName.c_str();
+        return m6DOFSettings[nBodyIndex].name.c_str();
     }
     return nullptr;
 }
@@ -4429,9 +4709,9 @@ const char* CRTProtocol::Get6DOFBodyName(unsigned int nBodyIndex) const
 
 unsigned int CRTProtocol::Get6DOFBodyColor(unsigned int nBodyIndex) const
 {
-    if (nBodyIndex < mvs6DOFSettings.bodySettings.size())
+    if (nBodyIndex < m6DOFSettings.size())
     {
-        return mvs6DOFSettings.bodySettings[nBodyIndex].nRGBColor;
+        return m6DOFSettings[nBodyIndex].color;
     }
     return 0;
 }
@@ -4439,23 +4719,23 @@ unsigned int CRTProtocol::Get6DOFBodyColor(unsigned int nBodyIndex) const
 
 unsigned int CRTProtocol::Get6DOFBodyPointCount(unsigned int nBodyIndex) const
 {
-    if (nBodyIndex < mvs6DOFSettings.bodySettings.size())
+    if (nBodyIndex < m6DOFSettings.size())
     {
-        return (unsigned int)mvs6DOFSettings.bodySettings.at(nBodyIndex).vsPoints.size();
+        return (unsigned int)m6DOFSettings.at(nBodyIndex).points.size();
     }
-    return false;
+    return 0;
 }
 
 
 bool CRTProtocol::Get6DOFBodyPoint(unsigned int nBodyIndex, unsigned int nMarkerIndex, SPoint &sPoint) const
 {
-    if (nBodyIndex < mvs6DOFSettings.bodySettings.size())
+    if (nBodyIndex < m6DOFSettings.size())
     {
-        if (nMarkerIndex < mvs6DOFSettings.bodySettings.at(nBodyIndex).vsPoints.size())
+        if (nMarkerIndex < m6DOFSettings.at(nBodyIndex).points.size())
         {
-            sPoint.fX = mvs6DOFSettings.bodySettings.at(nBodyIndex).vsPoints[nMarkerIndex].fX;
-            sPoint.fY = mvs6DOFSettings.bodySettings.at(nBodyIndex).vsPoints[nMarkerIndex].fY;
-            sPoint.fZ = mvs6DOFSettings.bodySettings.at(nBodyIndex).vsPoints[nMarkerIndex].fZ;
+            sPoint.fX = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fX;
+            sPoint.fY = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fY;
+            sPoint.fZ = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fZ;
             return true;
         }
     }
@@ -4463,11 +4743,21 @@ bool CRTProtocol::Get6DOFBodyPoint(unsigned int nBodyIndex, unsigned int nMarker
 }
 
 
+bool CRTProtocol::Get6DOFBodySettings(std::vector<SSettings6DOFBody>& settings)
+{
+    if (mnMajorVersion == 1 && mnMinorVersion < 21)
+    {
+        strcpy(maErrorStr, "Get6DOFBodySettings not available before protocol version 1.21");
+        return false;
+    }
+    settings = m6DOFSettings;
+    return true;
+}
+
 unsigned int CRTProtocol::GetGazeVectorCount() const
 {
     return (unsigned int)mvsGazeVectorSettings.size();
 }
-
 
 const char* CRTProtocol::GetGazeVectorName(unsigned int nGazeVectorIndex) const
 {
@@ -4483,6 +4773,30 @@ float CRTProtocol::GetGazeVectorFrequency(unsigned int nGazeVectorIndex) const
     if (nGazeVectorIndex < mvsGazeVectorSettings.size())
     {
         return mvsGazeVectorSettings[nGazeVectorIndex].frequency;
+    }
+    return 0;
+}
+
+
+unsigned int CRTProtocol::GetEyeTrackerCount() const
+{
+    return (unsigned int)mvsEyeTrackerSettings.size();
+}
+
+const char* CRTProtocol::GetEyeTrackerName(unsigned int nEyeTrackerIndex) const
+{
+    if (nEyeTrackerIndex < mvsEyeTrackerSettings.size())
+    {
+        return mvsEyeTrackerSettings[nEyeTrackerIndex].name.c_str();
+    }
+    return nullptr;
+}
+
+float CRTProtocol::GetEyeTrackerFrequency(unsigned int nEyeTrackerIndex) const
+{
+    if (nEyeTrackerIndex < mvsEyeTrackerSettings.size())
+    {
+        return mvsEyeTrackerSettings[nEyeTrackerIndex].frequency;
     }
     return 0;
 }
@@ -4718,7 +5032,30 @@ bool CRTProtocol::GetSkeletonSegment(unsigned int skeletonIndex, unsigned int se
     return false;
 }
 
+bool CRTProtocol::GetSkeleton(unsigned int skeletonIndex, SSettingsSkeletonHierarchical& skeleton)
+{
+    if (skeletonIndex < mSkeletonSettingsHierarchical.size())
+    {
+        skeleton = mSkeletonSettingsHierarchical[skeletonIndex];
+        return true;
+    }
+    return false;
+}
+
+void CRTProtocol::GetSkeletons(std::vector<SSettingsSkeletonHierarchical>& skeletons)
+{
+    skeletons = mSkeletonSettingsHierarchical;
+}
+
 bool CRTProtocol::SetSystemSettings(
+    const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
+    const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+    const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
+{
+    return SetGeneralSettings(pnCaptureFrequency, pfCaptureTime, pbStartOnExtTrig, startOnTrigNO, startOnTrigNC, startOnTrigSoftware, peProcessingActions, peRtProcessingActions, peReprocessingActions);
+}
+
+bool CRTProtocol::SetGeneralSettings(
     const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
     const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
     const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
@@ -4880,6 +5217,46 @@ bool CRTProtocol::SetExtTimeBaseSettings(
 
     return false;
 } // SetGeneralExtTimeBase
+
+
+bool CRTProtocol::SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings)
+{
+    CMarkup oXML;
+
+    oXML.AddElem("QTM_Settings");
+    oXML.IntoElem();
+    oXML.AddElem("General");
+    oXML.IntoElem();
+    oXML.AddElem("External_Timestamp");
+    oXML.IntoElem();
+
+    AddXMLElementBool(&oXML, "Enabled", timestampSettings.bEnabled);
+
+    switch (timestampSettings.nType)
+    {
+    default:
+    case CRTProtocol::Timestamp_SMPTE:
+        oXML.AddElem("Type", "SMPTE");
+        break;
+    case CRTProtocol::Timestamp_IRIG:
+        oXML.AddElem("Type", "IRIG");
+        break;
+    case CRTProtocol::Timestamp_CameraTime:
+        oXML.AddElem("Type", "CameraTime");
+        break;
+    }
+    AddXMLElementUnsignedInt(&oXML, "Frequency", timestampSettings.nFrequency);
+
+    oXML.OutOfElem(); // Timestamp
+    oXML.OutOfElem(); // General
+    oXML.OutOfElem(); // QTM_Settings
+
+    if (SendXML(oXML.GetDoc().c_str()))
+    {
+        return true;
+    }
+    return false;
+}
 
 
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
@@ -5323,6 +5700,215 @@ bool CRTProtocol::SetForceSettings(
 } // SetForceSettings
 
 
+bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
+{
+    if (mnMajorVersion == 1 && mnMinorVersion < 21)
+    {
+        strcpy(maErrorStr, "Set6DOFBodySettings only available for protocol version 1.21 and later.");
+
+        return false;
+    }
+
+    CMarkup oXML;
+
+    oXML.AddElem("QTM_Settings");
+    oXML.IntoElem();
+    oXML.AddElem("The_6D");
+    oXML.IntoElem();
+
+    for (auto &body : settings)
+    {
+        oXML.AddElem("Body");
+        oXML.IntoElem();
+        oXML.AddElem("Name", body.name.c_str());
+        oXML.AddElem("Color");
+        oXML.AddAttrib("R", std::to_string(body.color & 0xff).c_str());
+        oXML.AddAttrib("G", std::to_string((body.color >> 8) & 0xff).c_str());
+        oXML.AddAttrib("B", std::to_string((body.color >> 16) & 0xff).c_str());
+        oXML.AddElem("MaximumResidual", std::to_string(body.maxResidual).c_str());
+        oXML.AddElem("MinimumMarkersInBody", std::to_string(body.minMarkersInBody).c_str());
+        oXML.AddElem("BoneLengthTolerance", std::to_string(body.boneLengthTolerance).c_str());
+        oXML.AddElem("Filter");
+        oXML.AddAttrib("Preset", body.filterPreset.c_str());
+
+        if (!body.mesh.name.empty())
+        {
+            oXML.AddElem("Mesh");
+            oXML.IntoElem();
+            oXML.AddElem("Name", body.mesh.name.c_str());
+            oXML.AddElem("Position");
+            oXML.AddAttrib("X", std::to_string(body.mesh.position.fX).c_str());
+            oXML.AddAttrib("Y", std::to_string(body.mesh.position.fY).c_str());
+            oXML.AddAttrib("Z", std::to_string(body.mesh.position.fZ).c_str());
+            oXML.AddElem("Rotation");
+            oXML.AddAttrib("X", std::to_string(body.mesh.rotation.fX).c_str());
+            oXML.AddAttrib("Y", std::to_string(body.mesh.rotation.fY).c_str());
+            oXML.AddAttrib("Z", std::to_string(body.mesh.rotation.fZ).c_str());
+            oXML.AddElem("Scale", std::to_string(body.mesh.scale).c_str());
+            oXML.AddElem("Opacity", std::to_string(body.mesh.opacity).c_str());
+            oXML.OutOfElem(); // Mesh
+        }
+
+        if (!body.points.empty())
+        {
+            oXML.AddElem("Points");
+            oXML.IntoElem();
+            for (auto &point : body.points)
+            {
+                oXML.AddElem("Point");
+                oXML.AddAttrib("X", std::to_string(point.fX).c_str());
+                oXML.AddAttrib("Y", std::to_string(point.fY).c_str());
+                oXML.AddAttrib("Z", std::to_string(point.fZ).c_str());
+                oXML.AddAttrib("Virtual", point.virtual_ ? "1" : "0");
+                oXML.AddAttrib("PhysicalId", std::to_string(point.physicalId).c_str());
+                oXML.AddAttrib("Name", point.name.c_str());
+            }
+            oXML.OutOfElem(); // Points
+        }
+        oXML.AddElem("Data_origin", std::to_string(body.origin.type).c_str());
+        oXML.AddAttrib("X", std::to_string(body.origin.position.fX).c_str());
+        oXML.AddAttrib("Y", std::to_string(body.origin.position.fY).c_str());
+        oXML.AddAttrib("Z", std::to_string(body.origin.position.fZ).c_str());
+        oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
+        oXML.AddElem("Data_orientation", std::to_string(body.origin.type).c_str());
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            char tmpStr[16];
+            sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            oXML.AddAttrib(tmpStr, std::to_string(body.origin.rotation[i]).c_str());
+        }
+        oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
+
+        oXML.OutOfElem(); // Body
+    }
+    oXML.OutOfElem(); // The_6D
+    oXML.OutOfElem(); // QTM_Settings
+
+    return SendXML(oXML.GetDoc().c_str());
+}
+
+bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons)
+{
+    CMarkup xml;
+
+    xml.AddElem("QTM_Settings");
+    xml.IntoElem();
+    xml.AddElem("Skeletons");
+    xml.IntoElem();
+
+    for (auto& skeleton : skeletons)
+    {
+        xml.AddElem("Skeleton");
+        xml.SetAttrib("Name", skeleton.name.c_str());
+        xml.IntoElem();
+        xml.AddElem("Solver", skeleton.solver.c_str());
+        xml.AddElem("Scale", std::to_string(skeleton.scale).c_str());
+        xml.AddElem("Segments");
+        xml.IntoElem();
+
+        std::function<void(const SSettingsSkeletonSegmentHierarchical)> recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment)
+        {
+            xml.AddElem("Segment");
+            xml.SetAttrib("Name", segment.name.c_str());
+            xml.IntoElem();
+            {
+                if (!std::isnan(segment.position.x))
+                {
+                    AddXMLElementTransform(xml, "Transform", segment.position, segment.rotation);
+                }
+                if (!std::isnan(segment.defaultPosition.x))
+                {
+                    AddXMLElementTransform(xml, "DefaultTransform", segment.defaultPosition, segment.defaultRotation);
+                }
+                xml.AddElem("DegreesOfFreedom");
+                xml.IntoElem();
+                AddXMLElementDOF(xml, "RotationX", segment.dofRotation.x);
+                AddXMLElementDOF(xml, "RotationY", segment.dofRotation.y);
+                AddXMLElementDOF(xml, "RotationZ", segment.dofRotation.z);
+                AddXMLElementDOF(xml, "TranslationX", segment.dofTranslation.x);
+                AddXMLElementDOF(xml, "TranslationY", segment.dofTranslation.y);
+                AddXMLElementDOF(xml, "TranslationZ", segment.dofTranslation.z);
+                xml.OutOfElem(); //DegreesOfFreedom
+
+                xml.AddElem("Endpoint");
+                {
+                    if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
+                    {
+                        xml.AddAttrib("X", std::to_string(segment.endpoint.x).c_str());
+                        xml.AddAttrib("Y", std::to_string(segment.endpoint.y).c_str());
+                        xml.AddAttrib("Z", std::to_string(segment.endpoint.z).c_str());
+                    }
+                }
+
+                xml.AddElem("Markers");
+                xml.IntoElem();
+                {
+                    for (const auto& marker : segment.markers)
+                    {
+                        xml.AddElem("Marker");
+                        xml.AddAttrib("Name", marker.name.c_str());
+                        xml.IntoElem();
+                        {
+                            xml.AddElem("Position");
+                            xml.AddAttrib("X", std::to_string(marker.position.x).c_str());
+                            xml.AddAttrib("Y", std::to_string(marker.position.y).c_str());
+                            xml.AddAttrib("Z", std::to_string(marker.position.z).c_str());
+                            xml.AddElem("Weight", std::to_string(marker.weight).c_str());
+                        }
+                        xml.OutOfElem(); // Marker
+                    }
+                }
+                xml.OutOfElem(); // MarkerS
+
+                xml.AddElem("RigidBodies");
+                xml.IntoElem();
+                {
+                    for (const auto& rigidBody : segment.bodies)
+                    {
+                        xml.AddElem("RigidBody");
+                        xml.AddAttrib("Name", rigidBody.name.c_str());
+                        xml.IntoElem();
+
+                        xml.AddElem("Transform");
+                        xml.IntoElem();
+
+                        xml.AddElem("Position");
+                        xml.AddAttrib("X", std::to_string(rigidBody.position.x).c_str());
+                        xml.AddAttrib("Y", std::to_string(rigidBody.position.y).c_str());
+                        xml.AddAttrib("Z", std::to_string(rigidBody.position.z).c_str());
+                        xml.AddElem("Rotation");
+                        xml.AddAttrib("X", std::to_string(rigidBody.rotation.x).c_str());
+                        xml.AddAttrib("Y", std::to_string(rigidBody.rotation.y).c_str());
+                        xml.AddAttrib("Z", std::to_string(rigidBody.rotation.z).c_str());
+                        xml.AddAttrib("W", std::to_string(rigidBody.rotation.w).c_str());
+                        xml.OutOfElem(); // Transform
+
+                        xml.AddElem("Weight", std::to_string(rigidBody.weight).c_str());
+                        xml.OutOfElem(); // RigidBody
+                    }
+                }
+                xml.OutOfElem(); // RigidBodies
+            }
+            xml.OutOfElem(); // Segment
+
+            for (const auto& childSegment : segment.segments)
+            {
+                xml.IntoElem();
+                recurseSegments(childSegment);
+                xml.OutOfElem();
+            }
+        };
+        recurseSegments(skeleton.rootSegment);
+
+        xml.OutOfElem(); // Segments
+        xml.OutOfElem(); // Skeleton
+    }
+    xml.OutOfElem(); // Skeleton
+
+    return SendXML(xml.GetDoc().c_str());
+}
+
+
 char* CRTProtocol::GetErrorString()
 {
     return maErrorStr;
@@ -5331,34 +5917,28 @@ char* CRTProtocol::GetErrorString()
 
 bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 {
-    int         nSize;
-    int         nCmdStrLen = (int)strlen(pCmdStr);
+    uint32_t nCmdStrLen = (int)strlen(pCmdStr);
+    uint32_t nSize = 8 + nCmdStrLen + 1; // Header size + length of the string + terminating null char
 
-    if (nCmdStrLen > sizeof(mSendBuffer))
+    if (nSize > mSendBuffer.size())
     {
-        strcpy(maErrorStr, "String is larger than send buffer.");
-        return false;
+        mSendBuffer.resize(nSize);
     }
-
-    //
-    // Header size + length of the string + terminating null char
-    //
-    nSize = 8 + nCmdStrLen + 1;
-
-    memcpy(mSendBuffer + 8, pCmdStr, nCmdStrLen + 1);
+    
+    memcpy(mSendBuffer.data() + 8, pCmdStr, nCmdStrLen + 1);
 
     if ((mnMajorVersion == 1 && mnMinorVersion == 0) || mbBigEndian)
     {
-        *((unsigned int*)mSendBuffer)       = htonl(nSize);
-        *((unsigned int*)(mSendBuffer + 4)) = htonl(nType);
+        *((unsigned int*)mSendBuffer.data())       = htonl(nSize);
+        *((unsigned int*)(mSendBuffer.data() + 4)) = htonl(nType);
     }
     else
     {
-        *((unsigned int*)mSendBuffer)       = nSize;
-        *((unsigned int*)(mSendBuffer + 4)) = nType;
+        *((unsigned int*)mSendBuffer.data())       = nSize;
+        *((unsigned int*)(mSendBuffer.data() + 4)) = nType;
     }
 
-    if (mpoNetwork->Send(mSendBuffer, nSize) == false)
+    if (mpoNetwork->Send(mSendBuffer.data(), nSize) == false)
     {
         strcpy(maErrorStr, mpoNetwork->GetErrorString());
         return false;
@@ -5427,6 +6007,10 @@ bool CRTProtocol::SendXML(const char* pCmdStr)
                         mpoRTPacket->GetCommandString());
                 }
             }
+            else if (eType == CRTPacket::PacketError)
+            {
+                strcpy(maErrorStr, mpoRTPacket->GetErrorString());
+            }
             else
             {
                 sprintf(maErrorStr, "Expected command response packet. Got packet type %d.", (int)eType);
@@ -5474,14 +6058,17 @@ void CRTProtocol::AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* p
 }
 
 
+void CRTProtocol::AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int value)
+{
+    std::string tVal = CMarkup::Format("%u", value);
+    oXML->AddElem(tTag, tVal.c_str());
+}
+
 void CRTProtocol::AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue)
 {
     if (pnValue)
     {
-        std::string tVal;
-
-        tVal = CMarkup::Format("%u", *pnValue);
-        oXML->AddElem(tTag, tVal.c_str());
+        AddXMLElementUnsignedInt(oXML, tTag, *pnValue);
     }
 }
 
@@ -5498,8 +6085,114 @@ void CRTProtocol::AddXMLElementFloat(CMarkup* oXML, const char* tTag, const floa
     }
 }
 
+void CRTProtocol::AddXMLElementTransform(CMarkup& xml, const std::string& name, const SPosition& position, const SRotation& rotation)
+{
+    xml.AddElem(name.c_str());
+    xml.IntoElem();
+
+    xml.AddElem("Position");
+    xml.AddAttrib("X", std::to_string(position.x).c_str());
+    xml.AddAttrib("Y", std::to_string(position.y).c_str());
+    xml.AddAttrib("Z", std::to_string(position.z).c_str());
+
+    xml.AddElem("Rotation");
+    xml.AddAttrib("X", std::to_string(rotation.x).c_str());
+    xml.AddAttrib("Y", std::to_string(rotation.y).c_str());
+    xml.AddAttrib("Z", std::to_string(rotation.z).c_str());
+    xml.AddAttrib("W", std::to_string(rotation.w).c_str());
+
+    xml.OutOfElem();
+}
+
+void CRTProtocol::AddXMLElementDOF(CMarkup& xml, const std::string& name, SBoundary boundry)
+{
+    if (!std::isnan(boundry.lowerBound) && !std::isnan(boundry.upperBound))
+    {
+        xml.AddElem(name.c_str());
+        xml.AddAttrib("LowerBound", std::to_string(boundry.lowerBound).c_str());
+        xml.AddAttrib("UpperBound", std::to_string(boundry.upperBound).c_str());
+    }
+}
+
 bool CRTProtocol::CompareNoCase(std::string tStr1, const char* tStr2) const
 {
     std::transform(tStr1.begin(), tStr1.end(), tStr1.begin(), ::tolower);
     return tStr1.compare(tStr2) == 0;
+}
+
+std::string CRTProtocol::ToLower(std::string str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+    return str;
+}
+
+bool CRTProtocol::ParseString(const std::string& str, uint32_t& value)
+{
+    try
+    {
+        value = std::stoul(str);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool CRTProtocol::ParseString(const std::string& str, int32_t& value)
+{
+    try
+    {
+        value = std::stol(str);
+    }
+    catch (...)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool CRTProtocol::ParseString(const std::string& str, float& value)
+{
+    try
+    {
+        value = std::stof(str);
+    }
+    catch (...)
+    {
+        value = std::numeric_limits<float>::quiet_NaN();
+        return false;
+    }
+    return true;
+}
+
+bool CRTProtocol::ParseString(const std::string& str, double& value)
+{
+    try
+    {
+        value = std::stod(str);
+    }
+    catch (...)
+    {
+        value = std::numeric_limits<double>::quiet_NaN();
+        return false;
+    }
+    return true;
+}
+
+bool CRTProtocol::ParseString(const std::string& str, bool& value)
+{
+    std::string strLower = ToLower(str);
+
+    if (strLower == "true" || strLower == "1")
+    {
+        value = true;
+        return true;
+    }
+    else if (strLower == "false" || strLower == "0")
+    {
+        value = false;
+        return true;
+    }
+    return false;
 }

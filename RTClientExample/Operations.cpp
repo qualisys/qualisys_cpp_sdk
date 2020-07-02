@@ -53,7 +53,7 @@ void COperations::DiscoverRTServers(char* tServerAddr, int nServerAddrLen, unsig
     if (tServerAddr != NULL)
     {
         printf("\nSelect QTM RT Server to connect to (1 - %d): ", mpoRTProtocol->GetNumberOfDiscoverResponses());
-        int nSelection = mpoInput->ReadInt(0);
+        int nSelection = mpoInput->ReadInt("", 0);
         if (mpoRTProtocol->GetDiscoverResponse(nSelection - 1, nAddr, *pnPort, message))
         {
             sprintf_s(tServerAddr, nServerAddrLen, "%d.%d.%d.%d", 0xff & nAddr, 0xff & (nAddr >> 8), 0xff & (nAddr >> 16), 0xff & (nAddr >> 24));
@@ -100,7 +100,7 @@ void COperations::MonitorEvents()
 
 void COperations::ViewSettings()
 {
-    if (mpoRTProtocol->ReadCameraSystemSettings() == false)
+    if (mpoRTProtocol->ReadGeneralSettings() == false)
     {
         if (mpoRTProtocol->Connected())
         {
@@ -159,6 +159,18 @@ void COperations::ViewSettings()
     else if (bDataAvailable)
     {
         mpoOutput->PrintGazeVectorSettings(mpoRTProtocol);
+    }
+
+    if (mpoRTProtocol->ReadEyeTrackerSettings(bDataAvailable) == false)
+    {
+        if (mpoRTProtocol->Connected())
+        {
+            printf("Read eye tracker settings failed. %s\n\n", mpoRTProtocol->GetErrorString());
+        }
+    }
+    else if (bDataAvailable)
+    {
+        mpoOutput->PrintEyeTrackerSettings(mpoRTProtocol);
     }
 
     if (mpoRTProtocol->ReadAnalogSettings(bDataAvailable) == false)
@@ -246,9 +258,9 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 bool startOnTrigNC;
                 bool startOnTrigSoftware;
 
-                mpoInput->ReadSystemSettings(nCaptureFrequency, fCaptureTime, bExternalTrigger, startOnTrigNO, startOnTrigNC, startOnTrigSoftware);
+                mpoInput->ReadGeneralSettings(nCaptureFrequency, fCaptureTime, bExternalTrigger, startOnTrigNO, startOnTrigNC, startOnTrigSoftware);
 
-                if (mpoRTProtocol->SetSystemSettings(&nCaptureFrequency, &fCaptureTime, &bExternalTrigger, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware, NULL, NULL, NULL))
+                if (mpoRTProtocol->SetGeneralSettings(&nCaptureFrequency, &fCaptureTime, &bExternalTrigger, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware, NULL, NULL, NULL))
                 {
                     printf("Change General Settings Succeeded\n\n");
                 }
@@ -291,44 +303,37 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 }
             }
 
+            if (eOperation == CInput::ChangeExtTimestampSettings)
+            {
+                printf("\n\nInput Timestamp Settings\n\n");
+
+                CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
+                mpoInput->ReadTimestampSettings(timestampSettings);
+                if (mpoRTProtocol->SetExtTimestampSettings(timestampSettings))
+                {
+                    printf("Change Timestamp Settings Succeeded\n\n");
+                }
+                else
+                {
+                    printf("Change Timestamp Settings Failed\n\n");
+                }
+            }
+
             if (eOperation == CInput::ChangeProcessingActionsSettings)
             {
-                bool         bEnabled;
-                int          nSignalSource;
-                bool         bSignalModePeriodic;
-                unsigned int nMultiplier;
-                unsigned int nDivisor;
-                unsigned int nFrequencyTolerance;
-                float        fNominalFrequency;
-                bool         bNegativeEdge;
-                unsigned int nSignalShutterDelay;
-                float        fNonPeriodicTimeout;
                 CRTProtocol::EProcessingActions eProcessingActions = CRTProtocol::ProcessingNone;
                 CRTProtocol::EProcessingActions eRtProcessingActions = CRTProtocol::ProcessingNone;
                 CRTProtocol::EProcessingActions eReprocessingActions = CRTProtocol::ProcessingNone;
 
                 mpoInput->ReadProcessingActionsSettings(eProcessingActions, eRtProcessingActions, eReprocessingActions);
 
-                if (mpoRTProtocol->SetSystemSettings(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &eProcessingActions, &eRtProcessingActions, &eReprocessingActions))
+                if (mpoRTProtocol->SetGeneralSettings(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &eProcessingActions, &eRtProcessingActions, &eReprocessingActions))
                 {
                     printf("Change General Settings Processing Actions Succeeded\n\n");
                 }
                 else
                 {
                     printf("Change General Settings Processing Actions Failed\n\n");
-                }
-
-
-                if (mpoRTProtocol->SetExtTimeBaseSettings(&bEnabled, (CRTProtocol::ESignalSource*)&nSignalSource,
-                    &bSignalModePeriodic, &nMultiplier,       &nDivisor,      
-                    &nFrequencyTolerance, &fNominalFrequency, &bNegativeEdge,
-                    &nSignalShutterDelay, &fNonPeriodicTimeout))
-                {
-                    printf("Change External Time Base Settings Succeeded\n\n");
-                }
-                else
-                {
-                    printf("Change External Time Base Settings Failed\n\n");
                 }
             }
 
@@ -473,6 +478,66 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 }
             }
 
+            if (eOperation == CInput::Change6dSettings)
+            {
+                std::vector<CRTProtocol::SSettings6DOFBody> bodiesSettings;
+                CRTProtocol::SSettings6DOFBody bodySettings;
+
+                printf("\n\nInput 6D Settings\n\n");
+
+                bodySettings.name = mpoInput->ReadString("Enter rigid body name: ");
+                mpoInput->Read6DSettings(bodySettings.color, bodySettings.maxResidual, bodySettings.minMarkersInBody, bodySettings.boneLengthTolerance, bodySettings.filterPreset);
+                
+                if (mpoInput->ReadYesNo("Change: Mesh? (y/n): ", false))
+                {
+                    mpoInput->Read6DSettingsMesh(bodySettings.mesh);
+                }
+                mpoInput->Read6DSettingsOrigin(bodySettings.origin);
+                mpoInput->Read6DSettingsPoints(bodySettings.points);
+
+                bodiesSettings.push_back(bodySettings);
+
+                if (mpoRTProtocol->Set6DOFBodySettings(bodiesSettings))
+                {
+                    printf("Change 6D Settings Succeeded\n\n");
+                }
+                else
+                {
+                    printf("Change 6D Settings Failed. %s\n\n", mpoRTProtocol->GetErrorString());
+                }
+            }
+
+            if (eOperation == CInput::ChangeSkeletonSettings)
+            {
+                std::vector<CRTProtocol::SSettingsSkeletonHierarchical> skeletonsSettings;
+                CRTProtocol::SSettingsSkeletonHierarchical skeletonSettings;
+
+                printf("\n\nRename skeletons\n\n");
+
+                std::string name = mpoInput->ReadString("Enter skeleton suffix: ");
+
+                bool available = false;
+                if (!mpoRTProtocol->ReadSkeletonSettings(available))
+                {
+                    printf("Read skeleton Settings Failed. %s\n\n", mpoRTProtocol->GetErrorString());
+                }
+                mpoRTProtocol->GetSkeletons(skeletonsSettings);
+                for (auto& skeleton : skeletonsSettings)
+                {
+                    skeleton.name += "_";
+                    skeleton.name += name;
+                }
+
+                if (mpoRTProtocol->SetSkeletonSettings(skeletonsSettings))
+                {
+                    printf("Change skeleton Settings Succeeded\n\n");
+                }
+                else
+                {
+                    printf("Change skeleton Settings Failed. %s\n\n", mpoRTProtocol->GetErrorString());
+                }
+            }
+
             if (mpoRTProtocol->ReleaseControl() == false)
             {
                 printf("Failed to release QTM control.\n\n");
@@ -549,11 +614,10 @@ void COperations::DataTransfer(CInput::EOperation operation)
 
     if (bLogToFile)
     {
-        char pFileName[256];
+        std::string filename;
+        filename = mpoInput->ReadString("Enter Name : ");
 
-        mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-
-        if (fopen_s(&logfile, pFileName, "w") != 0)
+        if (fopen_s(&logfile, filename.c_str(), "w") != 0)
         {
             printf("\n\nOpen/Create log file failed.\n");
             return;
@@ -577,7 +641,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
         printf("\nMeasurement started. Press any key to abort.");
     }
 
-    mpoRTProtocol->ReadCameraSystemSettings();
+    mpoRTProtocol->ReadGeneralSettings();
 
     bool bDataAvailable;
 
@@ -600,6 +664,11 @@ void COperations::DataTransfer(CInput::EOperation operation)
     if ((nComponentType & CRTProtocol::cComponentGazeVector))
     {
         mpoRTProtocol->ReadGazeVectorSettings(bDataAvailable);
+    }
+
+    if ((nComponentType & CRTProtocol::cComponentEyeTracker))
+    {
+        mpoRTProtocol->ReadEyeTrackerSettings(bDataAvailable);
     }
 
     if ((nComponentType & CRTProtocol::cComponentAnalog) |
@@ -769,7 +838,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
 void COperations::ControlQTM()
 {
     CInput::EQTMCommand eCommand;
-    char                pFileName[256];
+    std::string filename;
 
     // Take control over QTM
     if (TakeQTMControl())
@@ -829,8 +898,8 @@ void COperations::ControlQTM()
                     }
                     break;
                 case CInput::Load :
-                    mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                    if (mpoRTProtocol->LoadCapture(pFileName))
+                    filename = mpoInput->ReadString("Enter Name : ");
+                    if (mpoRTProtocol->LoadCapture(filename.c_str()))
                     {
                         printf("Measurement loaded.\n\n");
                     }
@@ -841,11 +910,10 @@ void COperations::ControlQTM()
                     break;
                 case CInput::Save :
                     {
-                        mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                        printf("Overwrite existing measurement (y/n)? ");
-                        bool bOverWrite = mpoInput->ReadYesNo(false);
+                        filename = mpoInput->ReadString("Enter Name : ");
+                        bool bOverWrite = mpoInput->ReadYesNo("Overwrite existing measurement (y/n)? ", false);
                         char tNewFileName[300];
-                        if (mpoRTProtocol->SaveCapture(pFileName, bOverWrite, tNewFileName, sizeof(tNewFileName)))
+                        if (mpoRTProtocol->SaveCapture(filename.c_str(), bOverWrite, tNewFileName, sizeof(tNewFileName)))
                         {
                             if (strlen(tNewFileName) == 0)
                             {
@@ -863,8 +931,8 @@ void COperations::ControlQTM()
                     }
                     break;
                 case CInput::LoadProject :
-                    mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                    if (mpoRTProtocol->LoadProject(pFileName))
+                    filename = mpoInput->ReadString("Enter Name : ");
+                    if (mpoRTProtocol->LoadProject(filename.c_str()))
                     {
                         printf("Project loaded.\n\n");
                     }
@@ -874,10 +942,10 @@ void COperations::ControlQTM()
                     }
                     break;
                 case CInput::GetCaptureC3D :
-                    mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                    if (mpoRTProtocol->GetCapture(pFileName, true))
+                    filename = mpoInput->ReadString("Enter Name : ");
+                    if (mpoRTProtocol->GetCapture(filename.c_str(), true))
                     {
-                        printf("C3D file written successfully to : %s.\n\n", pFileName);
+                        printf("C3D file written successfully to : %s.\n\n", filename.c_str());
                     }
                     else
                     {
@@ -885,10 +953,10 @@ void COperations::ControlQTM()
                     }
                     break;
                 case CInput::GetCaptureQTM :
-                    mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                    if (mpoRTProtocol->GetCapture(pFileName, false))
+                    filename = mpoInput->ReadString("Enter Name : ");
+                    if (mpoRTProtocol->GetCapture(filename.c_str(), false))
                     {
-                        printf("QTN file written successfully to : %s.\n\n", pFileName);
+                        printf("QTN file written successfully to : %s.\n\n", filename.c_str());
                     }
                     else
                     {
@@ -906,8 +974,8 @@ void COperations::ControlQTM()
                     }
                     break;
                 case CInput::SetQTMEvent :
-                    mpoInput->ReadFileName(pFileName, sizeof(pFileName));
-                    if (mpoRTProtocol->SetQTMEvent(pFileName))
+                    filename = mpoInput->ReadString("Enter Name : ");
+                    if (mpoRTProtocol->SetQTMEvent(filename.c_str()))
                     {
                         printf("QTM event set.\n\n");
                     }
