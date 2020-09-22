@@ -1,8 +1,11 @@
 #ifndef RTPACKET_H
 #define RTPACKET_H
 
-#include <stdio.h>
-#include <stdint.h>
+#include <vector>
+
+#ifdef _WIN32
+#pragma warning (disable : 4251)
+#endif
 
 #ifdef EXPORT_DLL
     #define DLL_EXPORT __declspec(dllexport)
@@ -10,18 +13,8 @@
     #define DLL_EXPORT
 #endif
 
-
 #define MAJOR_VERSION           1
 #define MINOR_VERSION           20
-
-#define MAX_CAMERA_COUNT        256
-#define MAX_ANALOG_DEVICE_COUNT 64
-#define MAX_FORCE_PLATE_COUNT   64
-#define MAX_GAZE_VECTOR_COUNT   64
-#define MAX_EYE_TRACKER_COUNT   64
-#define MAX_TIMECODE_COUNT       3
-#define MAX_SKELETON_COUNT      10
-
 
 class DLL_EXPORT CRTPacket
 {
@@ -305,18 +298,18 @@ private:
 
 private:
     char*          mpData;
-    char*          mpComponentData[ComponentNone];
-    char*          mp2DData[MAX_CAMERA_COUNT];
-    char*          mp2DLinData[MAX_CAMERA_COUNT];
-    char*          mpImageData[MAX_CAMERA_COUNT];
-    char*          mpAnalogData[MAX_ANALOG_DEVICE_COUNT];
-    char*          mpAnalogSingleData[MAX_ANALOG_DEVICE_COUNT];
-    char*          mpForceData[MAX_FORCE_PLATE_COUNT];
-    char*          mpForceSingleData[MAX_FORCE_PLATE_COUNT];
-    char*          mpGazeVectorData[MAX_GAZE_VECTOR_COUNT];
-    char*          mpEyeTrackerData[MAX_EYE_TRACKER_COUNT];
-    char*          mpTimecodeData[MAX_TIMECODE_COUNT];
-    char*          mpSkeletonData[MAX_SKELETON_COUNT];
+    std::vector<char*> mpComponentData;
+    std::vector<char*> mp2DData;
+    std::vector<char*> mp2DLinData;
+    std::vector<char*> mpImageData;
+    std::vector<char*> mpAnalogData;
+    std::vector<char*> mpAnalogSingleData;
+    std::vector<char*> mpForceData;
+    std::vector<char*> mpForceSingleData;
+    std::vector<char*> mpGazeVectorData;
+    std::vector<char*> mpEyeTrackerData;
+    std::vector<char*> mpTimecodeData;
+    std::vector<char*> mpSkeletonData;
     unsigned int   mnComponentCount;
     EComponentType meComponentType;
     unsigned int   mn2DCameraCount;

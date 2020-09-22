@@ -59,18 +59,8 @@ void CRTPacket::ClearData()
     mnGazeVectorCount         = 0;
     mnEyeTrackerCount         = 0;
     mnTimecodeCount           = 0;
-    mSkeletonCount           = 0;
-    memset(mpComponentData, 0, ComponentNone * 4);
-    memset(mp2DData, 0, MAX_CAMERA_COUNT * 4);
-    memset(mp2DLinData, 0, MAX_CAMERA_COUNT * 4);
-    memset(mpImageData, 0, MAX_CAMERA_COUNT * 4);
-    memset(mpAnalogData, 0, MAX_ANALOG_DEVICE_COUNT * 4);
-    memset(mpAnalogSingleData, 0, MAX_ANALOG_DEVICE_COUNT * 4);
-    memset(mpForceData, 0, MAX_FORCE_PLATE_COUNT * 4);
-    memset(mpForceSingleData, 0, MAX_FORCE_PLATE_COUNT * 4);
-    memset(mpGazeVectorData, 0, MAX_GAZE_VECTOR_COUNT * 4);
-    memset(mpEyeTrackerData, 0, MAX_EYE_TRACKER_COUNT * 4);
-    memset(mpSkeletonData, 0, MAX_SKELETON_COUNT * 4);
+    mSkeletonCount            = 0;
+    mpComponentData.resize(ComponentNone);
 }
 
 void CRTPacket::SetData(char* ptr)
@@ -91,7 +81,7 @@ void CRTPacket::SetData(char* ptr)
     mnGazeVectorCount         = 0;
     mnEyeTrackerCount         = 0;
     mnTimecodeCount           = 0;
-    mSkeletonCount            = 0;
+    mSkeletonCount           = 0;
 
     // Check if it's a data packet
     if (GetType() == PacketData)
@@ -115,6 +105,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mn2DCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mp2DData.resize(mn2DCameraCount);
                 mp2DData[0] = pCurrentComponent + 16;
                 for (nCamera = 1; nCamera < mn2DCameraCount; nCamera++)
                 {
@@ -132,6 +123,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mn2DLinCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mp2DLinData.resize(mn2DLinCameraCount);
                 mp2DLinData[0] = pCurrentComponent + 16;
                 for (nCamera = 1; nCamera < mn2DLinCameraCount; nCamera++)
                 {
@@ -149,6 +141,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnImageCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpImageData.resize(mnImageCameraCount);
                 mpImageData[0] = pCurrentComponent + 12;
                 for (nCamera = 1; nCamera < mnImageCameraCount; nCamera++)
                 {
@@ -166,6 +159,7 @@ void CRTPacket::SetData(char* ptr)
                     mnAnalogDeviceCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
                 }
 
+                mpAnalogData.resize(mnAnalogDeviceCount);
                 if ((mnMajorVersion > 1) || (mnMinorVersion > 7))
                 {
                     mpAnalogData[0] = pCurrentComponent + 12;
@@ -185,6 +179,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnAnalogSingleDeviceCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpAnalogSingleData.resize(mnAnalogSingleDeviceCount);
                 if (mnMajorVersion > 1 || mnMinorVersion > 7)
                 {
                     mpAnalogSingleData[0] = pCurrentComponent + 12;
@@ -204,6 +199,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnForcePlateCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpForceData.resize(mnForcePlateCount);
                 if (mnMajorVersion > 1 || mnMinorVersion > 7)
                 {
                     mpForceData[0] = pCurrentComponent + 12;
@@ -229,6 +225,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnForceSinglePlateCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpForceSingleData.resize(mnForceSinglePlateCount);
                 mpForceSingleData[0] = pCurrentComponent + 12;
 
                 for (nDevice = 1; nDevice < mnForceSinglePlateCount; nDevice++)
@@ -240,6 +237,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnGazeVectorCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpGazeVectorData.resize(mnGazeVectorCount);
                 mpGazeVectorData[0] = pCurrentComponent + 12;
 
                 for (nDevice = 1; nDevice < mnGazeVectorCount; nDevice++)
@@ -253,6 +251,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnEyeTrackerCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpEyeTrackerData.resize(mnEyeTrackerCount);
                 mpEyeTrackerData[0] = pCurrentComponent + 12;
 
                 for (nDevice = 1; nDevice < mnEyeTrackerCount; nDevice++)
@@ -266,6 +265,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mnTimecodeCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpTimecodeData.resize(mnTimecodeCount);
                 mpTimecodeData[0] = pCurrentComponent + 12;
 
                 for (nDevice = 1; nDevice < mnTimecodeCount; nDevice++)
@@ -277,6 +277,7 @@ void CRTPacket::SetData(char* ptr)
             {
                 mSkeletonCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
 
+                mpSkeletonData.resize(mSkeletonCount);
                 mpSkeletonData[0] = pCurrentComponent + 12;
 
                 for (nDevice = 1; nDevice < mSkeletonCount; nDevice++)
