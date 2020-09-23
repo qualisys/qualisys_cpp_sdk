@@ -104,48 +104,57 @@ void CRTPacket::SetData(char* ptr)
             if (nComponentType == Component2d)
             {
                 mn2DCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mp2DData.resize(mn2DCameraCount);
-                mp2DData[0] = pCurrentComponent + 16;
-                for (nCamera = 1; nCamera < mn2DCameraCount; nCamera++)
+
+                if (!mp2DData.empty())
                 {
-                    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                    mp2DData[0] = pCurrentComponent + 16;
+                    for (nCamera = 1; nCamera < mn2DCameraCount; nCamera++)
                     {
-                        mp2DData[nCamera] = mp2DData[nCamera - 1] + 5 + Get2DMarkerCount(nCamera - 1) * 12;
-                    }
-                    else
-                    {
-                        mp2DData[nCamera] = mp2DData[nCamera - 1] + 4 + Get2DMarkerCount(nCamera - 1) * 12;
+                        if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                        {
+                            mp2DData[nCamera] = mp2DData[nCamera - 1] + 5 + Get2DMarkerCount(nCamera - 1) * 12;
+                        }
+                        else
+                        {
+                            mp2DData[nCamera] = mp2DData[nCamera - 1] + 4 + Get2DMarkerCount(nCamera - 1) * 12;
+                        }
                     }
                 }
             }
             if (nComponentType == Component2dLin)
             {
                 mn2DLinCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mp2DLinData.resize(mn2DLinCameraCount);
-                mp2DLinData[0] = pCurrentComponent + 16;
-                for (nCamera = 1; nCamera < mn2DLinCameraCount; nCamera++)
+
+                if (!mp2DLinData.empty())
                 {
-                    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                    mp2DLinData[0] = pCurrentComponent + 16;
+                    for (nCamera = 1; nCamera < mn2DLinCameraCount; nCamera++)
                     {
-                        mp2DLinData[nCamera] = mp2DLinData[nCamera - 1] + 5 + Get2DLinMarkerCount(nCamera - 1) * 12;
-                    }
-                    else
-                    {
-                        mp2DLinData[nCamera] = mp2DLinData[nCamera - 1] + 4 + Get2DLinMarkerCount(nCamera - 1) * 12;
+                        if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                        {
+                            mp2DLinData[nCamera] = mp2DLinData[nCamera - 1] + 5 + Get2DLinMarkerCount(nCamera - 1) * 12;
+                        }
+                        else
+                        {
+                            mp2DLinData[nCamera] = mp2DLinData[nCamera - 1] + 4 + Get2DLinMarkerCount(nCamera - 1) * 12;
+                        }
                     }
                 }
             }
             if (nComponentType == ComponentImage)
             {
                 mnImageCameraCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpImageData.resize(mnImageCameraCount);
-                mpImageData[0] = pCurrentComponent + 12;
-                for (nCamera = 1; nCamera < mnImageCameraCount; nCamera++)
+
+                if (!mpImageData.empty())
                 {
-                    mpImageData[nCamera] = mpImageData[nCamera - 1] + 36 + SetByteOrder((unsigned int*)(mpImageData[nCamera - 1] + 32));
+                    mpImageData[0] = pCurrentComponent + 12;
+                    for (nCamera = 1; nCamera < mnImageCameraCount; nCamera++)
+                    {
+                        mpImageData[nCamera] = mpImageData[nCamera - 1] + 36 + SetByteOrder((unsigned int*)(mpImageData[nCamera - 1] + 32));
+                    }
                 }
             }
             if (nComponentType == ComponentAnalog)
@@ -158,132 +167,156 @@ void CRTPacket::SetData(char* ptr)
                 {
                     mnAnalogDeviceCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
                 }
-
                 mpAnalogData.resize(mnAnalogDeviceCount);
-                if ((mnMajorVersion > 1) || (mnMinorVersion > 7))
+
+                if (!mpAnalogData.empty())
                 {
-                    mpAnalogData[0] = pCurrentComponent + 12;
-                }
-                else
-                {
-                    mpAnalogData[0] = pCurrentComponent + 16;
-                }
-                for (nDevice = 1; nDevice < mnAnalogDeviceCount; nDevice++)
-                {
-                    mpAnalogData[nDevice] = mpAnalogData[nDevice - 1] + 16 + 
-                        (SetByteOrder((unsigned int*)(mpAnalogData[nDevice - 1] + 4)) *
-                        SetByteOrder((unsigned int*)(mpAnalogData[nDevice - 1] + 8)) * 4);
+                    if ((mnMajorVersion > 1) || (mnMinorVersion > 7))
+                    {
+                        mpAnalogData[0] = pCurrentComponent + 12;
+                    }
+                    else
+                    {
+                        mpAnalogData[0] = pCurrentComponent + 16;
+                    }
+                    for (nDevice = 1; nDevice < mnAnalogDeviceCount; nDevice++)
+                    {
+                        mpAnalogData[nDevice] = mpAnalogData[nDevice - 1] + 16 +
+                            (SetByteOrder((unsigned int*)(mpAnalogData[nDevice - 1] + 4)) *
+                                SetByteOrder((unsigned int*)(mpAnalogData[nDevice - 1] + 8)) * 4);
+                    }
                 }
             }
             if (nComponentType == ComponentAnalogSingle)
             {
                 mnAnalogSingleDeviceCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpAnalogSingleData.resize(mnAnalogSingleDeviceCount);
-                if (mnMajorVersion > 1 || mnMinorVersion > 7)
-                {
-                    mpAnalogSingleData[0] = pCurrentComponent + 12;
-                }
-                else
-                {
-                    mpAnalogSingleData[0] = pCurrentComponent + 16;
-                }
 
-                for (nDevice = 1; nDevice < mnAnalogSingleDeviceCount; nDevice++)
+                if (!mpAnalogSingleData.empty())
                 {
-                    mpAnalogSingleData[nDevice] = mpAnalogSingleData[nDevice - 1] + 8 + 
-                        SetByteOrder((unsigned int*)(mpAnalogSingleData[nDevice - 1] + 4)) * 4;
+                    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+                    {
+                        mpAnalogSingleData[0] = pCurrentComponent + 12;
+                    }
+                    else
+                    {
+                        mpAnalogSingleData[0] = pCurrentComponent + 16;
+                    }
+
+                    for (nDevice = 1; nDevice < mnAnalogSingleDeviceCount; nDevice++)
+                    {
+                        mpAnalogSingleData[nDevice] = mpAnalogSingleData[nDevice - 1] + 8 +
+                            SetByteOrder((unsigned int*)(mpAnalogSingleData[nDevice - 1] + 4)) * 4;
+                    }
                 }
             }
             if (nComponentType == ComponentForce)
             {
                 mnForcePlateCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpForceData.resize(mnForcePlateCount);
-                if (mnMajorVersion > 1 || mnMinorVersion > 7)
+
+                if (!mpForceData.empty())
                 {
-                    mpForceData[0] = pCurrentComponent + 12;
-                }
-                else
-                {
-                    mpForceData[0] = pCurrentComponent + 16;
-                }
-                for (nDevice = 1; nDevice < mnForcePlateCount; nDevice++)
-                {
-                    if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
+                    if (mnMajorVersion > 1 || mnMinorVersion > 7)
                     {
-                        mpForceData[nDevice] = mpForceData[nDevice - 1] + 72;
+                        mpForceData[0] = pCurrentComponent + 12;
                     }
                     else
                     {
-                        mpForceData[nDevice] = mpForceData[nDevice - 1] + 12 + 
-                            SetByteOrder((unsigned int*)(mpForceData[nDevice - 1] + 4)) * 36;
+                        mpForceData[0] = pCurrentComponent + 16;
+                    }
+                    for (nDevice = 1; nDevice < mnForcePlateCount; nDevice++)
+                    {
+                        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
+                        {
+                            mpForceData[nDevice] = mpForceData[nDevice - 1] + 72;
+                        }
+                        else
+                        {
+                            mpForceData[nDevice] = mpForceData[nDevice - 1] + 12 +
+                                SetByteOrder((unsigned int*)(mpForceData[nDevice - 1] + 4)) * 36;
+                        }
                     }
                 }
             }
             if (nComponentType == ComponentForceSingle)
             {
                 mnForceSinglePlateCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpForceSingleData.resize(mnForceSinglePlateCount);
-                mpForceSingleData[0] = pCurrentComponent + 12;
 
-                for (nDevice = 1; nDevice < mnForceSinglePlateCount; nDevice++)
+                if (!mpForceSingleData.empty())
                 {
-                    mpForceSingleData[nDevice] = mpForceSingleData[nDevice - 1] + 4 + 36;
+                    mpForceSingleData[0] = pCurrentComponent + 12;
+
+                    for (nDevice = 1; nDevice < mnForceSinglePlateCount; nDevice++)
+                    {
+                        mpForceSingleData[nDevice] = mpForceSingleData[nDevice - 1] + 4 + 36;
+                    }
                 }
             }
             if (nComponentType == ComponentGazeVector)
             {
                 mnGazeVectorCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpGazeVectorData.resize(mnGazeVectorCount);
-                mpGazeVectorData[0] = pCurrentComponent + 12;
 
-                for (nDevice = 1; nDevice < mnGazeVectorCount; nDevice++)
+                if (!mpGazeVectorData.empty())
                 {
-                    unsigned int nPrevSampleCount = SetByteOrder((unsigned int*)(mpGazeVectorData[nDevice - 1]));
-                    mpGazeVectorData[nDevice] = mpGazeVectorData[nDevice - 1] + 4 + ((nPrevSampleCount == 0) ? 0 : 4) +
-                                                nPrevSampleCount * 24;
+                    mpGazeVectorData[0] = pCurrentComponent + 12;
+
+                    for (nDevice = 1; nDevice < mnGazeVectorCount; nDevice++)
+                    {
+                        unsigned int nPrevSampleCount = SetByteOrder((unsigned int*)(mpGazeVectorData[nDevice - 1]));
+                        mpGazeVectorData[nDevice] = mpGazeVectorData[nDevice - 1] + 4 + ((nPrevSampleCount == 0) ? 0 : 4) +
+                            nPrevSampleCount * 24;
+                    }
                 }
             }
             if (nComponentType == ComponentEyeTracker)
             {
                 mnEyeTrackerCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpEyeTrackerData.resize(mnEyeTrackerCount);
-                mpEyeTrackerData[0] = pCurrentComponent + 12;
 
-                for (nDevice = 1; nDevice < mnEyeTrackerCount; nDevice++)
+                if (!mpEyeTrackerData.empty())
                 {
-                    unsigned int nPrevSampleCount = SetByteOrder((unsigned int*)(mpEyeTrackerData[nDevice - 1]));
-                    mpEyeTrackerData[nDevice] = mpEyeTrackerData[nDevice - 1] + 4 + ((nPrevSampleCount == 0) ? 0 : 4) +
-                        nPrevSampleCount * 28;
+                    mpEyeTrackerData[0] = pCurrentComponent + 12;
+
+                    for (nDevice = 1; nDevice < mnEyeTrackerCount; nDevice++)
+                    {
+                        unsigned int nPrevSampleCount = SetByteOrder((unsigned int*)(mpEyeTrackerData[nDevice - 1]));
+                        mpEyeTrackerData[nDevice] = mpEyeTrackerData[nDevice - 1] + 4 + ((nPrevSampleCount == 0) ? 0 : 4) +
+                            nPrevSampleCount * 28;
+                    }
                 }
             }
             if (nComponentType == ComponentTimecode)
             {
                 mnTimecodeCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpTimecodeData.resize(mnTimecodeCount);
-                mpTimecodeData[0] = pCurrentComponent + 12;
 
-                for (nDevice = 1; nDevice < mnTimecodeCount; nDevice++)
+                if (!mpTimecodeData.empty())
                 {
-                    mpTimecodeData[nDevice] = mpTimecodeData[nDevice - 1] + 12;
+                    mpTimecodeData[0] = pCurrentComponent + 12;
+
+                    for (nDevice = 1; nDevice < mnTimecodeCount; nDevice++)
+                    {
+                        mpTimecodeData[nDevice] = mpTimecodeData[nDevice - 1] + 12;
+                    }
                 }
             }
             if (nComponentType == ComponentSkeleton)
             {
                 mSkeletonCount = SetByteOrder((unsigned int*)(pCurrentComponent + 8));
-
                 mpSkeletonData.resize(mSkeletonCount);
-                mpSkeletonData[0] = pCurrentComponent + 12;
 
-                for (nDevice = 1; nDevice < mSkeletonCount; nDevice++)
+                if (!mpSkeletonData.empty())
                 {
-                    unsigned int prevSegmentCount = SetByteOrder((unsigned int*)(mpSkeletonData[nDevice - 1]));
-                    mpSkeletonData[nDevice] = mpSkeletonData[nDevice - 1] + 4 + prevSegmentCount * 32;
+                    mpSkeletonData[0] = pCurrentComponent + 12;
+
+                    for (nDevice = 1; nDevice < mSkeletonCount; nDevice++)
+                    {
+                        unsigned int prevSegmentCount = SetByteOrder((unsigned int*)(mpSkeletonData[nDevice - 1]));
+                        mpSkeletonData[nDevice] = mpSkeletonData[nDevice - 1] + 4 + prevSegmentCount * 32;
+                    }
                 }
             }
             pCurrentComponent += SetByteOrder((int*)pCurrentComponent);
