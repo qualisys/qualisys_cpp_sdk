@@ -287,8 +287,14 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             case CRTProtocol::ModelArqusA5:
                 printf("  Model: Arqus A5   ");
                 break;
+            case CRTProtocol::ModelArqusA9:
+                printf("  Model: Arqus A9   ");
+                break;
             case CRTProtocol::ModelArqusA12:
                 printf("  Model: Arqus A12   ");
+                break;
+            case CRTProtocol::ModelArqusA26:
+                printf("  Model: Arqus A26   ");
                 break;
             }
             printf("  %s\n", bUnderwater ? "Underwater" : "");
@@ -469,23 +475,23 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             printf("  Lens aperture: %f\n", aperture);
         }
 
-		bool autoExposureEnabled = false;
-		float autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
-		if (poRTProtocol->GetCameraAutoExposureSettings(iCamera, &autoExposureEnabled, &autoExposureCompensation))
-		{
-			printf("  AutoExposure enabled: %s\n", autoExposureEnabled ? "on" : "off");
+        bool autoExposureEnabled = false;
+        float autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
+        if (poRTProtocol->GetCameraAutoExposureSettings(iCamera, &autoExposureEnabled, &autoExposureCompensation))
+        {
+            printf("  AutoExposure enabled: %s\n", autoExposureEnabled ? "on" : "off");
             if (autoExposureEnabled)
             {
                 printf("  AutoExposure compensation: %f\n", autoExposureCompensation);
             }
-		}
+        }
 
         bool autoWhiteBalanceEnabled = false;
         if (poRTProtocol->GetCameraAutoWhiteBalance(iCamera, &autoWhiteBalanceEnabled))
         {
             printf("  AutoWhiteBalance enabled: %s\n", autoWhiteBalanceEnabled ? "on" : "off");
         }
-	}
+    }
 }
 
 void COutput::PrintCalibrationSettings(CRTProtocol* poRTProtocol)
