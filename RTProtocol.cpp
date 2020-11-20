@@ -429,7 +429,7 @@ bool CRTProtocol::GetCurrentFrame(const char* components)
     {
         return true;
     }
-	strcpy(maErrorStr, "GetCurrentFrame failed.");
+    strcpy(maErrorStr, "GetCurrentFrame failed.");
 
     return false;
 }
@@ -439,7 +439,7 @@ bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentO
 {
     char components[256];
 
-	if (GetComponentString(components, nComponentType, componentOptions))
+    if (GetComponentString(components, nComponentType, componentOptions))
     {
         return GetCurrentFrame(components);
     }
@@ -2195,9 +2195,17 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             sCameraSettings.eModel = ModelArqusA5;
         }
+        else if (tStr == "arqus a9")
+        {
+            sCameraSettings.eModel = ModelArqusA9;
+        }
         else if (tStr == "arqus a12")
         {
             sCameraSettings.eModel = ModelArqusA12;
+        }
+        else if (tStr == "arqus a26")
+        {
+            sCameraSettings.eModel = ModelArqusA26;
         }
         else
         {
