@@ -1490,8 +1490,8 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                         nReadSize = mDataBuff.size();
                     }
                     // As long as we haven't received enough data, wait for more
-                    nRecved = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, nTimeout);
-                    if (nRecved <= 0)
+                    nRecved = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, -1);
+                    if (nRecved < 0)
                     {
                         strcpy(maErrorStr, "Socket Error.");
                         fclose(mpFileBuffer);
@@ -1530,8 +1530,8 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             while (nRecvedTotal < nFrameSize) 
             {
                 // As long as we haven't received enough data, wait for more
-                nRecved = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, nTimeout);
-                if (nRecved <= 0)
+                nRecved = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
+                if (nRecved < 0)
                 {
                     strcpy(maErrorStr, "Socket Error.");
                     return -1;

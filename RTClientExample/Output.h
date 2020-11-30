@@ -78,11 +78,12 @@ private:
     int  mnMaxPlotYPos;
     bool mbOutputModeScrolling;
 
+    std::vector<double> mRecvTimeDiffs;
     double mfCurrentRecvTime;
     double mfLastRecvTime;
     double mfRecvTimeDiff;
-    double mfMaxRecvTimeDiff;
-    double mfMinRecvTimeDiff;
+    double mMaxRecvTimeDiff;
+    double mMinRecvTimeDiff;
     double mfCameraFreq;
     unsigned long long mnLastTimeStamp;
     unsigned int mnLastFrameNumber;

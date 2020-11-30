@@ -5,7 +5,7 @@
 #include <math.h>
 #include <float.h>
 #include <locale.h>
-
+#include <algorithm>
 
 #define WRITE_ANALOG_HEADERS_TO_FILE
 
@@ -90,8 +90,9 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
             mfCameraFreq = (mnFrameNumberDiff * 1000000.0) / (nTimeStamp - mnLastTimeStamp);
             mnMaxFrameNumberDiff = max((unsigned int)mnFrameNumberDiff, mnMaxFrameNumberDiff);
             mfRecvTimeDiff    = mfCurrentRecvTime - mfLastRecvTime;
-            mfMaxRecvTimeDiff = max(mfRecvTimeDiff, mfMaxRecvTimeDiff);
-            mfMinRecvTimeDiff = min(mfRecvTimeDiff, mfMinRecvTimeDiff);
+            mRecvTimeDiffs.push_back(mfRecvTimeDiff);
+            mMaxRecvTimeDiff = max(mfRecvTimeDiff, mMaxRecvTimeDiff);
+            mMinRecvTimeDiff = min(mfRecvTimeDiff, mMinRecvTimeDiff);
 
             int missingFrames = mnFrameNumberDiff - 1;
 
@@ -271,8 +272,15 @@ void COutput::PrintStatistics(FILE* logfile, CRTPacket* poRTPacket)
     printf("Frame number diff     = %d          \n", mnFrameNumberDiff);
     printf("Max frame number diff = %d          \n\n", mnFrameNumberDiff);
 
-    printf("Min time between frames = %d ms          \n", (int)(mfMinRecvTimeDiff * 1000 + 0.5));
-    printf("Max time between frames = %d ms          \n\n", (int)(mfMaxRecvTimeDiff * 1000 + 0.5));
+    printf("Min time between frames = %d ms          \n", (int)(mMinRecvTimeDiff * 1000 + 0.5));
+    printf("Max time between frames = %d ms          \n", (int)(mMaxRecvTimeDiff * 1000 + 0.5));
+    double medianRecvTimeDiff = 0.0;
+    if (mRecvTimeDiffs.size() > 0)
+    {
+        std::sort(mRecvTimeDiffs.begin(), mRecvTimeDiffs.end());
+        medianRecvTimeDiff = mRecvTimeDiffs[mRecvTimeDiffs.size() / 2];
+    }
+    printf("Median time between frames = %d ms          \n\n", (int)(medianRecvTimeDiff * 1000 + 0.5));
 
     printf("Timestamp Reset Count    = %d            \n", mTimestampResets);
     printf("Frame number Reset Count = %d            \n", mFrameNumberResets);
@@ -1239,16 +1247,17 @@ void COutput::PrintTimingData()
     printf("Average receive frequency = %.1f\n", mnReceivedFrames / mfCurrentRecvTime);
     printf("Camera frequency = %.1f Hz\n", mfCameraFreq);
     printf("Missed frames = %d\n", mnMissingFrames);
-    printf("Max frame receive time diff = %f ms\n", mfMaxRecvTimeDiff);
-    printf("Min frame receive time diff = %f ms\n\n", mfMinRecvTimeDiff);
+    printf("Max frame receive time diff = %f ms\n", mMaxRecvTimeDiff);
+    printf("Min frame receive time diff = %f ms\n\n", mMinRecvTimeDiff);
 } // PrintTimingData
 
 void COutput::ResetCounters()
 {
     // Reset statistic counters
     mfRecvTimeDiff         = 0.0;
-    mfMaxRecvTimeDiff      = 0.0;
-    mfMinRecvTimeDiff      = 100000.0;
+    mMaxRecvTimeDiff       = DBL_MIN;
+    mMinRecvTimeDiff       = DBL_MAX;
+    mRecvTimeDiffs.clear();
     mfLastRecvTime         = 0.0;
     mfLastScreenUpdateTime = 0.0;
     mnLastFrameNumber      = 0xffffffff;
