@@ -462,7 +462,7 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
 
     if (eRate == RateFrequencyDivisor)
     {
-        commandString << "StreamFrames FrequencyDivisor: " << nRateArg << " ";
+        commandString << "StreamFrames FrequencyDivisor:" << nRateArg << " ";
     }
     else if (eRate == RateFrequency)
     {
@@ -4084,6 +4084,8 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
         return false;
     }
 
+    int segmentIndex;
+    std::map<int, int> segmentIdIndexMap;
     xml.ResetPos();
 
     xml.FindElem();
@@ -4099,6 +4101,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
             {
                 SSettingsSkeletonHierarchical skeletonHierarchical;
                 SSettingsSkeleton skeleton;
+                segmentIndex = 0;
 
                 skeletonHierarchical.name = xml.GetAttrib("Name");
                 skeleton.name = skeletonHierarchical.name;
@@ -4128,6 +4131,8 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                     {
                         segmentHierarchical.name = xml.GetAttrib("Name");
                         ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+
+                        segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
                         xml.IntoElem();
 
@@ -4223,15 +4228,14 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                         segment.name = segmentHierarchical.name;
                         segment.id = segmentHierarchical.id;
                         segment.parentId = parentId;
-                        segment.parentIndex = segments.size() - 1;
-                        segment.positionX = (float)segmentHierarchical.position.x;
-                        segment.positionX = (float)segmentHierarchical.position.x;
-                        segment.positionY = (float)segmentHierarchical.position.y;
-                        segment.positionZ = (float)segmentHierarchical.position.z;
-                        segment.rotationX = (float)segmentHierarchical.rotation.x;
-                        segment.rotationY = (float)segmentHierarchical.rotation.y;
-                        segment.rotationZ = (float)segmentHierarchical.rotation.z;
-                        segment.rotationW = (float)segmentHierarchical.rotation.w;
+                        segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
+                        segment.positionX = (float)segmentHierarchical.defaultPosition.x;
+                        segment.positionY = (float)segmentHierarchical.defaultPosition.y;
+                        segment.positionZ = (float)segmentHierarchical.defaultPosition.z;
+                        segment.rotationX = (float)segmentHierarchical.defaultRotation.x;
+                        segment.rotationY = (float)segmentHierarchical.defaultRotation.y;
+                        segment.rotationZ = (float)segmentHierarchical.defaultRotation.z;
+                        segment.rotationW = (float)segmentHierarchical.defaultRotation.w;
 
                         segments.push_back(segment);
 
@@ -4258,9 +4262,6 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
         }
         else
         {
-            int segmentIndex;
-            std::map<int, int> segmentIdIndexMap;
-
             while (xml.FindElem("Skeleton"))
             {
                 SSettingsSkeleton skeleton;
