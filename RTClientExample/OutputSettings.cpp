@@ -1036,15 +1036,7 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
             for (unsigned int segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++)
             {
                 poRTProtocol->GetSkeletonSegment(iSkeleton, segmentIndex, &segment);
-                printf("  Segment id: %2d  name: %-19s  ", segment.id, segment.name.c_str());
-                if (segment.parentId == -1)
-                {
-                    printf("              ");
-                }
-                else
-                {
-                    printf("Parent: %-4d  ", segment.parentId);
-                }
+                printf("  Segment id: %2d  name: %-19s  Parent id: %-4d  Parent index: %-4d  ", segment.id, segment.name.c_str(), segment.parentId, segment.parentIndex);
                 printf("%s  Pos: %8.2f, %8.2f, %8.2f  Rot: %4.2f, %4.2f, %4.2f, %4.2f\n", skeletonGlobalReferenceFrame ? "Global" : "Local",
                     segment.positionX, segment.positionY, segment.positionZ,
                     segment.rotationX, segment.rotationY, segment.rotationZ, segment.rotationW);
