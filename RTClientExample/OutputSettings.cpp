@@ -591,7 +591,8 @@ void COutput::Print3DSettings(CRTProtocol* poRTProtocol)
     for (unsigned int iLabel = 0; iLabel < nCount; iLabel++)
     {
         printf("Marker %2d: %s", iLabel + 1, poRTProtocol->Get3DLabelName(iLabel));
-        printf("   Color: %.6X\n", poRTProtocol->Get3DLabelColor(iLabel));
+        printf("   Color: %.6X", poRTProtocol->Get3DLabelColor(iLabel));
+        printf("   Type:  %s\n", poRTProtocol->Get3DTrajectoryType(iLabel));
     }
 
     nCount = poRTProtocol->Get3DBoneCount();
@@ -717,6 +718,8 @@ void COutput::PrintGazeVectorSettings(CRTProtocol* poRTProtocol)
             printf("Gaze vector #%d\n", iVector + 1);
             printf("  Name:  %s\n", poRTProtocol->GetGazeVectorName(iVector));
             printf("  Frequency: %.1f\n", poRTProtocol->GetGazeVectorFrequency(iVector));
+            printf("  Hardware sync: %s\n", poRTProtocol->GetGazeVectorHardwareSyncUsed(iVector) ? "True" : "False");
+            printf("  Filter: %s\n", poRTProtocol->GetGazeVectorFilterUsed(iVector) ? "True" : "False");
             printf("\n");
         }
     }
@@ -735,6 +738,7 @@ void COutput::PrintEyeTrackerSettings(CRTProtocol* poRTProtocol)
             printf("Eye tracker #%d\n", eyeTracker + 1);
             printf("  Name:  %s\n", poRTProtocol->GetEyeTrackerName(eyeTracker));
             printf("  Frequency: %.1f\n", poRTProtocol->GetEyeTrackerFrequency(eyeTracker));
+            printf("  Hardware sync: %s\n", poRTProtocol->GetGazeVectorHardwareSyncUsed(eyeTracker) ? "True" : "False");
             printf("\n");
         }
     }

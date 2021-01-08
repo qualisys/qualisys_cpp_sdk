@@ -345,6 +345,7 @@ public:
     {
         std::string  oName;
         unsigned int nRGBColor;
+        std::string type;
     };
 
     struct SSettingsBone
@@ -403,12 +404,15 @@ public:
     {
         std::string    name;
         float          frequency;
+        bool           hwSync;
+        bool           filter;
     };
 
     struct SEyeTracker
     {
         std::string    name;
         float          frequency;
+        bool           hwSync;
     };
 
     struct SAnalogDevice 
@@ -794,6 +798,8 @@ public:
     const char*  Get3DLabelName(unsigned int nMarkerIndex) const;
     unsigned int Get3DLabelColor(unsigned int nMarkerIndex) const;
 
+    const char*  Get3DTrajectoryType(unsigned int nMarkerIndex) const;
+
     unsigned int Get3DBoneCount() const;
     const char*  Get3DBoneFromName(unsigned int boneIndex) const;
     const char*  Get3DBoneToName(unsigned int boneIndex) const;
@@ -810,10 +816,13 @@ public:
     unsigned int GetGazeVectorCount() const;
     const char*  GetGazeVectorName(unsigned int nGazeVectorIndex) const;
     float        GetGazeVectorFrequency(unsigned int nGazeVectorIndex) const;
+    bool         GetGazeVectorHardwareSyncUsed(unsigned int nGazeVectorIndex) const;
+    bool         GetGazeVectorFilterUsed(unsigned int nGazeVectorIndex) const;
 
     unsigned int GetEyeTrackerCount() const;
     const char*  GetEyeTrackerName(unsigned int nEyeTrackerIndex) const;
     float        GetEyeTrackerFrequency(unsigned int nEyeTrackerIndex) const;
+    bool         GetEyeTrackerHardwareSyncUsed(unsigned int nEyeTrackerIndex) const;
 
     unsigned int GetAnalogDeviceCount() const;
     bool         GetAnalogDevice(unsigned int nDeviceIndex, unsigned int &nDeviceID, unsigned int &nChannels,

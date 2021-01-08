@@ -947,14 +947,15 @@ bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, 
 
 bool CRTProtocol::LoadCapture(const char* pFileName)
 {
-    char tTemp[100];
+    std::string sendString = "Load \"";
     char pResponseStr[256];
 
-    if (strlen(pFileName) <= 94)
+    if (strlen(pFileName) <= 250)
     {
-        sprintf(tTemp, "Load \"%s\"", pFileName);
+        sendString += pFileName;
+        sendString += "\"";
 
-        if (SendCommand(tTemp, pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
+        if (SendCommand(sendString.c_str(), pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
         {
             if (strcmp(pResponseStr, "Measurement loaded") == 0)
             {
@@ -1576,7 +1577,7 @@ bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& va
 
     auto str = xml->GetChildData();
     RemoveInvalidChars(str);
-    ToLower(str);
+    str = ToLower(str);
 
     if (str == "true")
     {
@@ -3102,6 +3103,10 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
                 {
                     sLabel.nRGBColor = atoi(oXML.GetChildData().c_str());
                 }
+                if (oXML.FindChildElem("Trajectory_Type"))
+                {
+                    sLabel.type = oXML.GetChildData();
+                }
                 ms3DSettings.s3DLabels[iLabel] = sLabel;
             }
             oXML.OutOfElem();
@@ -3424,7 +3429,12 @@ bool CRTProtocol::ReadGazeVectorSettings(bool &bDataAvailable)
             frequency = (float)atof(oXML.GetChildData().c_str());
         }
 
-        mvsGazeVectorSettings.push_back({ tGazeVectorName, frequency });
+        bool hwSync = false;
+        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+        bool filter = false;
+        ReadXmlBool(&oXML, "Filter", filter);
+
+        mvsGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
         nGazeVectorCount++;
         oXML.OutOfElem(); // Vector
     }
@@ -3472,7 +3482,10 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool &bDataAvailable)
             frequency = (float)atof(oXML.GetChildData().c_str());
         }
 
-        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency });
+        bool hwSync = false;
+        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+
+        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
         nEyeTrackerCount++;
         oXML.OutOfElem(); // Vector
     }
@@ -4668,6 +4681,15 @@ unsigned int CRTProtocol::Get3DLabelColor(unsigned int nMarkerIndex) const
     return 0;
 }
 
+const char* CRTProtocol::Get3DTrajectoryType(unsigned int nMarkerIndex) const
+{
+    if (nMarkerIndex < ms3DSettings.s3DLabels.size())
+    {
+        return ms3DSettings.s3DLabels[nMarkerIndex].type.c_str();
+    }
+    return 0;
+}
+
 
 unsigned int CRTProtocol::Get3DBoneCount() const
 {
@@ -4786,6 +4808,24 @@ float CRTProtocol::GetGazeVectorFrequency(unsigned int nGazeVectorIndex) const
     return 0;
 }
 
+bool CRTProtocol::GetGazeVectorHardwareSyncUsed(unsigned int nGazeVectorIndex) const
+{
+    if (nGazeVectorIndex < mvsGazeVectorSettings.size())
+    {
+        return mvsGazeVectorSettings[nGazeVectorIndex].hwSync;
+    }
+    return false;
+}
+
+bool CRTProtocol::GetGazeVectorFilterUsed(unsigned int nGazeVectorIndex) const
+{
+    if (nGazeVectorIndex < mvsGazeVectorSettings.size())
+    {
+        return mvsGazeVectorSettings[nGazeVectorIndex].filter;
+    }
+    return false;
+}
+
 
 unsigned int CRTProtocol::GetEyeTrackerCount() const
 {
@@ -4808,6 +4848,15 @@ float CRTProtocol::GetEyeTrackerFrequency(unsigned int nEyeTrackerIndex) const
         return mvsEyeTrackerSettings[nEyeTrackerIndex].frequency;
     }
     return 0;
+}
+
+bool CRTProtocol::GetEyeTrackerHardwareSyncUsed(unsigned int nEyeTrackerIndex) const
+{
+    if (nEyeTrackerIndex < mvsEyeTrackerSettings.size())
+    {
+        return mvsEyeTrackerSettings[nEyeTrackerIndex].hwSync;
+    }
+    return false;
 }
 
 
