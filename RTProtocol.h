@@ -702,7 +702,9 @@ public:
     static std::vector<std::pair<unsigned int, std::string>> GetComponents(const std::string componentsString);
     static bool GetComponent(std::string componentStr, unsigned int &component, std::string &option);
 
-    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
+    [[deprecated("Replaced by Receive.")]]
+    int         ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
+    CNetwork::ResponseType Receive(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
     
 
     CRTPacket* GetRTPacket();

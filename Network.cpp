@@ -264,10 +264,9 @@ unsigned short CNetwork::GetUdpBroadcastServerPort()
 }
 
 // Receive a data packet. Data is stored in a local static buffer
-// Returns number of bytes in received message, 0 on timeout or -1 if there is an error. 
-int CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeout, unsigned int *ipAddr)
+CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeout, unsigned int *ipAddr)
 {
-    int recieved = 0;
+    int received = 0;
     sockaddr_in source_addr;
     socklen_t fromlen = sizeof(source_addr);
 
@@ -313,63 +312,88 @@ int CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeou
 
     // Wait for activity on the TCP and UDP sockets.
     int selectRes = select(nfds, &readFDs, nullptr, &exceptFDs, pTimeval);
-    if (selectRes == 0)
-    {
-        return 0; // Select timeout.
-    }
-    if (selectRes > 0)
-    {
-        if (FD_ISSET(mSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mSocket, &readFDs))
-        {
-            recieved = recv(mSocket, rtDataBuff, header ? 8 : dataBufSize, 0);
-            FD_CLR(mSocket, &readFDs);
-        }
-        else if (FD_ISSET(mUDPSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mUDPSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mUDPSocket, &readFDs))
-        {
-            recieved = recvfrom(mUDPSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
-            FD_CLR(mUDPSocket, &readFDs);
-        }
-        else if (FD_ISSET(mUDPBroadcastSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mUDPBroadcastSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mUDPBroadcastSocket, &readFDs))
-        {
-            recieved = recvfrom(mUDPBroadcastSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
-            FD_CLR(mUDPBroadcastSocket, &readFDs);
-            if (ipAddr)
-            {
-                *ipAddr = source_addr.sin_addr.s_addr;
-            }
-        }
-    }
-    else
-    {
-        recieved = -1;
-    }
-
-    if (recieved == -1)
+    
+    if (selectRes < 0)
     {
         SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
     }
-    return recieved;
+    if (selectRes == 0)
+    {
+        return Response(CNetwork::ResponseType::timeout, 0);
+    }
+
+    if (FD_ISSET(mSocket, &exceptFDs))
+    {
+        // General socket error
+        FD_CLR(mSocket, &exceptFDs);
+        SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
+    }
+    else if (FD_ISSET(mSocket, &readFDs))
+    {
+        received = recv(mSocket, rtDataBuff, header ? 8 : dataBufSize, 0);
+        FD_CLR(mSocket, &readFDs);
+        if (selectRes < 0)
+        {
+            SetErrorString();
+            return Response(CNetwork::ResponseType::error, 0);
+        }
+        if (received == 0)
+        {
+            return Response(CNetwork::ResponseType::disconnect, 0);
+        }
+        return Response(CNetwork::ResponseType::success, received);
+    }
+    else if (FD_ISSET(mUDPSocket, &exceptFDs))
+    {
+        // General socket error
+        FD_CLR(mUDPSocket, &exceptFDs);
+        SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
+    }
+    else if (FD_ISSET(mUDPSocket, &readFDs))
+    {
+        received = recvfrom(mUDPSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
+        FD_CLR(mUDPSocket, &readFDs);
+        if (selectRes < 0)
+        {
+            SetErrorString();
+            return Response(CNetwork::ResponseType::error, 0);
+        }
+        if (received == 0)
+        {
+            return Response(CNetwork::ResponseType::disconnect, 0);
+        }
+        return Response(CNetwork::ResponseType::success, received);
+    }
+    else if (FD_ISSET(mUDPBroadcastSocket, &exceptFDs))
+    {
+        // General socket error
+        FD_CLR(mUDPBroadcastSocket, &exceptFDs);
+        SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
+    }
+    else if (FD_ISSET(mUDPBroadcastSocket, &readFDs))
+    {
+        received = recvfrom(mUDPBroadcastSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
+        FD_CLR(mUDPBroadcastSocket, &readFDs);
+        if (ipAddr)
+        {
+            *ipAddr = source_addr.sin_addr.s_addr;
+        }
+        if (selectRes < 0)
+        {
+            SetErrorString();
+            return Response(CNetwork::ResponseType::error, 0);
+        }
+        if (received == 0)
+        {
+            return Response(CNetwork::ResponseType::disconnect, 0);
+        }
+        return Response(CNetwork::ResponseType::success, received);
+    }
+    return Response(CNetwork::ResponseType::error, 0);
 }
 
 

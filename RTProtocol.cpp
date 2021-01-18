@@ -49,6 +49,7 @@ namespace
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
 
+    const int qtmPacketHeaderSize = 8; // 8 bytes
 }
 
 unsigned int CRTProtocol::GetSystemFrequency() const
@@ -142,8 +143,7 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
         }
 
         // Welcome message
-        auto received = ReceiveRTPacket(eType, true);
-        if (received > 0)
+        if (Receive(eType, true) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketError)
             {
@@ -372,28 +372,29 @@ bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResp
     {
         mvsDiscoverResponseList.clear();
 
-        int nReceived;
+        CNetwork::Response response(CNetwork::ResponseType::error, 0);
+
         do 
         {
             unsigned int nAddr = 0;
-            nReceived = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), false, 100000, &nAddr);
+            response = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), false, 100000, &nAddr);
 
-            if (nReceived != -1 && nReceived > 8)
+            if (response && response.received > qtmPacketHeaderSize)
             {
                 if (CRTPacket::GetType(mDataBuff.data()) == CRTPacket::PacketCommand)
                 {
-                    char* response  = CRTPacket::GetCommandString(mDataBuff.data());
+                    char* discoverResponse  = CRTPacket::GetCommandString(mDataBuff.data());
                     sResponse.nAddr = nAddr;
                     sResponse.nBasePort = CRTPacket::GetDiscoverResponseBasePort(mDataBuff.data());
 
-                    if (response && (!bNoLocalResponses || !mpoNetwork->IsLocalAddress(nAddr)))
+                    if (discoverResponse && (!bNoLocalResponses || !mpoNetwork->IsLocalAddress(nAddr)))
                     {
-                        strcpy(sResponse.message, response);
+                        strcpy(sResponse.message, discoverResponse);
                         mvsDiscoverResponseList.push_back(sResponse);
                     }
                 }
             }
-        } while (nReceived != -1 && nReceived > 8); // Keep reading until no more responses.
+        } while (response && response.received > qtmPacketHeaderSize); // Keep reading until no more responses.
 
         return true;
     }
@@ -550,18 +551,18 @@ bool CRTProtocol::GetState(CRTPacket::EEvent &eEvent, bool bUpdate, int nTimeout
         }
         if (result)
         {
-            int nReceived;
+            CNetwork::ResponseType response;
             do 
             {
-                nReceived = ReceiveRTPacket(eType, false, nTimeout);
-                if (nReceived > 0)
+                response = Receive(eType, false, nTimeout);
+                if (response == CNetwork::ResponseType::success)
                 {
                     if (mpoRTPacket->GetEvent(eEvent))
                     {
                         return true;
                     }
                 }
-            } while (nReceived > 0);
+            } while (response == CNetwork::ResponseType::success);
         }
         strcpy(maErrorStr, "GetLastEvent failed.");
     }
@@ -589,7 +590,7 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
             {
                 if (strcmp(pResponseStr, "Sending capture") == 0)
                 {
-                    if (ReceiveRTPacket(eType, true, 5000000) > 0) // Wait for C3D file in 5 seconds.
+                    if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for C3D file in 5 seconds.
                     {
                         if (eType == CRTPacket::PacketC3DFile)
                         {
@@ -627,7 +628,7 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
             {
                 if (strcmp(pResponseStr, "Sending capture") == 0)
                 {
-                    if (ReceiveRTPacket(eType, true, 5000000) > 0) // Wait for QTM file in 5 seconds.
+                    if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for QTM file in 5 seconds.
                     {
                         if (eType == CRTPacket::PacketQTMFile)
                         {
@@ -1431,7 +1432,30 @@ bool CRTProtocol::GetComponentString(char* pComponentStr, unsigned int nComponen
 
 int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents, int nTimeout)
 {
-    int          nRecved      = 0;
+    int returnVal = -1;
+    auto response = Receive(eType, bSkipEvents, nTimeout);
+    
+    switch (response)
+    {
+        case CNetwork::ResponseType::success:
+            returnVal = mpoRTPacket->GetSize();
+            break;
+        case CNetwork::ResponseType::timeout:
+            returnVal = 0;
+            break;
+        case CNetwork::ResponseType::error:
+        case CNetwork::ResponseType::disconnect:
+            returnVal = -1;
+            break;
+    }
+
+    return returnVal;
+}
+
+
+CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &eType, bool bSkipEvents, int nTimeout)
+{
+    CNetwork::Response response(CNetwork::ResponseType::error, 0);
     unsigned int nRecvedTotal = 0;
     unsigned int nFrameSize;
 
@@ -1439,28 +1463,33 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
 
     do 
     {
-        nRecved      = 0;
         nRecvedTotal = 0;
 
-        nRecved = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), true, nTimeout);
-        if (nRecved == 0)
+        response = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), true, nTimeout);
+
+        if (response.type == CNetwork::ResponseType::timeout)
         {
             // Receive timeout.
             strcpy(maErrorStr, "Data receive timeout.");
-            return 0;
+            return CNetwork::ResponseType::timeout;
         }
-        if (nRecved < (int)(sizeof(int) * 2))
+        if (response.type == CNetwork::ResponseType::error)
+        {
+            strcpy(maErrorStr, "Socket Error.");
+            return CNetwork::ResponseType::error;
+        }
+        if (response.type == CNetwork::ResponseType::disconnect)
+        {
+            strcpy(maErrorStr, "Disconnected from server.");
+            return CNetwork::ResponseType::disconnect;
+        }        
+        if (response.received < qtmPacketHeaderSize)
         {
             // QTM header not received.
             strcpy(maErrorStr, "Couldn't read header bytes.");
-            return -1;
+            return CNetwork::ResponseType::error;
         }
-        if (nRecved <= -1)
-        {
-            strcpy(maErrorStr, "Socket Error.");
-            return -1;
-        }
-        nRecvedTotal += nRecved;
+        nRecvedTotal += response.received;
 
         bool bBigEndian = (mbBigEndian || (mnMajorVersion == 1 && mnMinorVersion == 0));
         nFrameSize = mpoRTPacket->GetSize(mDataBuff.data(), bBigEndian);
@@ -1479,7 +1508,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     strcpy(maErrorStr, "Failed to write file to disk.");
                     fclose(mpFileBuffer);
                     mpFileBuffer = nullptr;
-                    return -1;
+                    return CNetwork::ResponseType::error;
                 }
                 // Receive more data until we have read the whole packet
                 while (nRecvedTotal < nFrameSize) 
@@ -1490,22 +1519,33 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                         nReadSize = mDataBuff.size();
                     }
                     // As long as we haven't received enough data, wait for more
-                    nRecved = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, -1);
-                    if (nRecved < 0)
+                    response = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, cWaitForDataTimeout);
+                    if (response.type == CNetwork::ResponseType::timeout)
+                    {
+                        strcpy(maErrorStr, "Packet truncated.");
+                        return CNetwork::ResponseType::error;
+                    }
+                    if (response.type == CNetwork::ResponseType::error)
                     {
                         strcpy(maErrorStr, "Socket Error.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
-                        return -1;
+                        return CNetwork::ResponseType::error;
                     }
-                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, nRecved, mpFileBuffer) != (size_t)nRecved)
+                    if (response.type == CNetwork::ResponseType::disconnect)
+                    {
+                        strcpy(maErrorStr, "Disconnected from server.");
+                        return CNetwork::ResponseType::disconnect;
+                    }
+
+                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mpFileBuffer) != (size_t)(response.received))
                     {
                         strcpy(maErrorStr, "Failed to write file to disk.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
-                        return -1;
+                        return CNetwork::ResponseType::error;
                     }
-                    nRecvedTotal += nRecved;
+                    nRecvedTotal += response.received;
                 }
             }
             else
@@ -1516,7 +1556,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     fclose(mpFileBuffer);
                 }
                 mpFileBuffer = nullptr;
-                return -1;
+                return CNetwork::ResponseType::error;
             }
         }
         else
@@ -1530,13 +1570,23 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             while (nRecvedTotal < nFrameSize) 
             {
                 // As long as we haven't received enough data, wait for more
-                nRecved = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
-                if (nRecved < 0)
+                response = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
+                if (response.type == CNetwork::ResponseType::timeout)
+                {
+                    strcpy(maErrorStr, "Packet truncated.");
+                    return CNetwork::ResponseType::error;
+                }
+                if (response.type == CNetwork::ResponseType::error)
                 {
                     strcpy(maErrorStr, "Socket Error.");
-                    return -1;
+                    return CNetwork::ResponseType::error;
                 }
-                nRecvedTotal += nRecved;
+                if (response.type == CNetwork::ResponseType::disconnect)
+                {
+                    strcpy(maErrorStr, "Disconnected from server.");
+                    return CNetwork::ResponseType::disconnect;
+                }
+                nRecvedTotal += response.received;
             }
         }
 
@@ -1553,11 +1603,11 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
     
     if (nRecvedTotal == nFrameSize)
     {
-        return nRecvedTotal;
+        return CNetwork::ResponseType::success;
     }
     strcpy(maErrorStr, "Packet truncated.");
 
-    return -1;
+    return CNetwork::ResponseType::error;
 } // ReceiveRTPacket
 
 
@@ -1609,14 +1659,15 @@ bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
         return false;
     }
 
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
+    auto received = Receive(eType, true);
+
+    if (received == CNetwork::ResponseType::timeout)
     {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
+        strcat(maErrorStr, " Expected XML packet.");
+        return false;
+    }
+    if (received == CNetwork::ResponseType::error)
+    {
         return false;
     }
 
@@ -2811,20 +2862,20 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     CMarkup                 oXML;
     std::string             tStr;
     SCalibration            settings;
-    int                     received;
+    CNetwork::ResponseType  response;
     CRTPacket::EEvent       event = CRTPacket::EventNone;
 
     do 
     {
-        received = ReceiveRTPacket(eType, false, timeout);
+        response = Receive(eType, false, timeout);
 
-        if (received <= 0)
+        if (response == CNetwork::ResponseType::timeout)
         {
-            if (received == 0)
-            {
-                // Receive timeout.
-                strcat(maErrorStr, " Expected XML packet.");
-            }
+            strcat(maErrorStr, " Expected XML packet.");
+            return false;
+        }
+        if (response == CNetwork::ResponseType::error)
+        {
             return false;
         }
 
@@ -5969,7 +6020,7 @@ bool CRTProtocol::SendCommand(const char* pCmdStr, char* pCommandResponseStr, un
 
     if (SendString(pCmdStr, CRTPacket::PacketCommand))
     {
-        while (ReceiveRTPacket(eType, true, timeout) > 0)
+        while (Receive(eType, true, timeout) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketCommand)
             {
@@ -6001,7 +6052,7 @@ bool CRTProtocol::SendXML(const char* pCmdStr)
 
     if (SendString(pCmdStr, CRTPacket::PacketXML))
     {
-        if (ReceiveRTPacket(eType, true) > 0)
+        if (Receive(eType, true) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketCommand)
             {
