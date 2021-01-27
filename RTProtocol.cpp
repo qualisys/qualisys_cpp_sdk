@@ -1441,10 +1441,10 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             returnVal = mpoRTPacket->GetSize();
             break;
         case CNetwork::ResponseType::timeout:
+        case CNetwork::ResponseType::disconnect:
             returnVal = 0;
             break;
         case CNetwork::ResponseType::error:
-        case CNetwork::ResponseType::disconnect:
             returnVal = -1;
             break;
     }
