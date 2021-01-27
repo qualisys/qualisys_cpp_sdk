@@ -313,7 +313,7 @@ CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool hea
     // Wait for activity on the TCP and UDP sockets.
     int selectRes = select(nfds, &readFDs, nullptr, &exceptFDs, pTimeval);
     
-    if (selectRes < 0)
+    if (selectRes == SOCKET_ERROR)
     {
         SetErrorString();
         return Response(CNetwork::ResponseType::error, 0);
@@ -334,7 +334,7 @@ CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool hea
     {
         received = recv(mSocket, rtDataBuff, header ? 8 : dataBufSize, 0);
         FD_CLR(mSocket, &readFDs);
-        if (selectRes < 0)
+        if (selectRes == SOCKET_ERROR)
         {
             SetErrorString();
             return Response(CNetwork::ResponseType::error, 0);
@@ -356,7 +356,7 @@ CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool hea
     {
         received = recvfrom(mUDPSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
         FD_CLR(mUDPSocket, &readFDs);
-        if (selectRes < 0)
+        if (selectRes == SOCKET_ERROR)
         {
             SetErrorString();
             return Response(CNetwork::ResponseType::error, 0);
@@ -382,7 +382,7 @@ CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool hea
         {
             *ipAddr = source_addr.sin_addr.s_addr;
         }
-        if (selectRes < 0)
+        if (selectRes == SOCKET_ERROR)
         {
             SetErrorString();
             return Response(CNetwork::ResponseType::error, 0);
