@@ -345,6 +345,7 @@ public:
     {
         std::string  oName;
         unsigned int nRGBColor;
+        std::string type;
     };
 
     struct SSettingsBone
@@ -403,12 +404,15 @@ public:
     {
         std::string    name;
         float          frequency;
+        bool           hwSync;
+        bool           filter;
     };
 
     struct SEyeTracker
     {
         std::string    name;
         float          frequency;
+        bool           hwSync;
     };
 
     struct SAnalogDevice 
@@ -582,22 +586,31 @@ public:
         }
     };
 
-    struct SBoundary
+    enum EDegreeOfFreedom
     {
-        double lowerBound = std::numeric_limits<double>::quiet_NaN();
-        double upperBound = std::numeric_limits<double>::quiet_NaN();
-
-        bool IsValid() const
-        {
-            return !std::isnan(lowerBound) && !std::isnan(upperBound);
-        }
+        RotationX = 0,
+        RotationY = 1,
+        RotationZ = 2,
+        TranslationX = 3,
+        TranslationY = 4,
+        TranslationZ = 5
     };
 
-    struct SDegreesOfFreedom
+    struct SCoupling
     {
-        SBoundary x;
-        SBoundary y;
-        SBoundary z;
+        std::string segment;
+        EDegreeOfFreedom degreeOfFreedom;
+        double coefficient = std::numeric_limits<double>::quiet_NaN();
+    };
+
+    struct SDegreeOfFreedom
+    {
+        EDegreeOfFreedom type;
+        double lowerBound = std::numeric_limits<double>::quiet_NaN();
+        double upperBound = std::numeric_limits<double>::quiet_NaN();
+        std::vector<SCoupling> couplings;
+        double goalValue = std::numeric_limits<double>::quiet_NaN();
+        double goalWeight = std::numeric_limits<double>::quiet_NaN();
     };
 
     struct SMarker 
@@ -619,12 +632,12 @@ public:
     {
         std::string name;
         uint32_t id = 0;
+        std::string solver;
         SPosition position;
         SRotation rotation;
         SPosition defaultPosition;
         SRotation defaultRotation;
-        SDegreesOfFreedom dofRotation;
-        SDegreesOfFreedom dofTranslation;
+        std::vector<SDegreeOfFreedom> degreesOfFreedom;
         SPosition endpoint;
         std::vector<SMarker> markers;
         std::vector<SBody> bodies;
@@ -642,7 +655,6 @@ public:
     {
         std::string name;
         double scale;
-        std::string solver;
         SSettingsSkeletonSegmentHierarchical rootSegment;
     };
 
@@ -702,7 +714,9 @@ public:
     static std::vector<std::pair<unsigned int, std::string>> GetComponents(const std::string componentsString);
     static bool GetComponent(std::string componentStr, unsigned int &component, std::string &option);
 
-    int        ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
+    [[deprecated("Replaced by Receive.")]]
+    int         ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
+    CNetwork::ResponseType Receive(CRTPacket::EPacketType &eType, bool bSkipEvents = true, int nTimeout = cWaitForDataTimeout); // nTimeout < 0 : Blocking receive
     
 
     CRTPacket* GetRTPacket();
@@ -794,6 +808,8 @@ public:
     const char*  Get3DLabelName(unsigned int nMarkerIndex) const;
     unsigned int Get3DLabelColor(unsigned int nMarkerIndex) const;
 
+    const char*  Get3DTrajectoryType(unsigned int nMarkerIndex) const;
+
     unsigned int Get3DBoneCount() const;
     const char*  Get3DBoneFromName(unsigned int boneIndex) const;
     const char*  Get3DBoneToName(unsigned int boneIndex) const;
@@ -810,10 +826,13 @@ public:
     unsigned int GetGazeVectorCount() const;
     const char*  GetGazeVectorName(unsigned int nGazeVectorIndex) const;
     float        GetGazeVectorFrequency(unsigned int nGazeVectorIndex) const;
+    bool         GetGazeVectorHardwareSyncUsed(unsigned int nGazeVectorIndex) const;
+    bool         GetGazeVectorFilterUsed(unsigned int nGazeVectorIndex) const;
 
     unsigned int GetEyeTrackerCount() const;
     const char*  GetEyeTrackerName(unsigned int nEyeTrackerIndex) const;
     float        GetEyeTrackerFrequency(unsigned int nEyeTrackerIndex) const;
+    bool         GetEyeTrackerHardwareSyncUsed(unsigned int nEyeTrackerIndex) const;
 
     unsigned int GetAnalogDeviceCount() const;
     bool         GetAnalogDevice(unsigned int nDeviceIndex, unsigned int &nDeviceID, unsigned int &nChannels,
@@ -897,6 +916,9 @@ public:
 
 
     bool SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons);
+    
+    static const char* SkeletonDofToString(EDegreeOfFreedom dof);
+    static EDegreeOfFreedom SkeletonStringToDof(const std::string& str);
 
     char* GetErrorString();
 
@@ -913,7 +935,7 @@ private:
     void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue);
     void AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
     void AddXMLElementTransform(CMarkup& xml, const std::string& name, const SPosition& position, const SRotation& rotation);
-    void AddXMLElementDOF(CMarkup& xml, const std::string& name, SBoundary boundry);
+    void AddXMLElementDOF(CMarkup& xml, const std::string& name, SDegreeOfFreedom degreeOfFreedom);
     bool CompareNoCase(std::string tStr1, const char* tStr2) const;
     bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
     static std::string ToLower(std::string str);
@@ -925,7 +947,7 @@ private:
     bool ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
     SPosition ReadXMLPosition(CMarkup& xml, const std::string& element);
     SRotation ReadXMLRotation(CMarkup& xml, const std::string& element);
-    SBoundary ReadXMLBoundary(CMarkup& xml, const std::string& element);
+    bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
 
 private:
     CNetwork*                      mpoNetwork;

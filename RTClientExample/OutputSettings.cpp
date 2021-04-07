@@ -591,7 +591,8 @@ void COutput::Print3DSettings(CRTProtocol* poRTProtocol)
     for (unsigned int iLabel = 0; iLabel < nCount; iLabel++)
     {
         printf("Marker %2d: %s", iLabel + 1, poRTProtocol->Get3DLabelName(iLabel));
-        printf("   Color: %.6X\n", poRTProtocol->Get3DLabelColor(iLabel));
+        printf("   Color: %.6X", poRTProtocol->Get3DLabelColor(iLabel));
+        printf("   Type:  %s\n", poRTProtocol->Get3DTrajectoryType(iLabel));
     }
 
     nCount = poRTProtocol->Get3DBoneCount();
@@ -717,6 +718,8 @@ void COutput::PrintGazeVectorSettings(CRTProtocol* poRTProtocol)
             printf("Gaze vector #%d\n", iVector + 1);
             printf("  Name:  %s\n", poRTProtocol->GetGazeVectorName(iVector));
             printf("  Frequency: %.1f\n", poRTProtocol->GetGazeVectorFrequency(iVector));
+            printf("  Hardware sync: %s\n", poRTProtocol->GetGazeVectorHardwareSyncUsed(iVector) ? "True" : "False");
+            printf("  Filter: %s\n", poRTProtocol->GetGazeVectorFilterUsed(iVector) ? "True" : "False");
             printf("\n");
         }
     }
@@ -735,6 +738,7 @@ void COutput::PrintEyeTrackerSettings(CRTProtocol* poRTProtocol)
             printf("Eye tracker #%d\n", eyeTracker + 1);
             printf("  Name:  %s\n", poRTProtocol->GetEyeTrackerName(eyeTracker));
             printf("  Frequency: %.1f\n", poRTProtocol->GetEyeTrackerFrequency(eyeTracker));
+            printf("  Hardware sync: %s\n", poRTProtocol->GetGazeVectorHardwareSyncUsed(eyeTracker) ? "True" : "False");
             printf("\n");
         }
     }
@@ -948,7 +952,7 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
 
             if ((majorVersion > 1 || minorVersion > 20) && poRTProtocol->GetSkeleton(iSkeleton, skeleton))
             {
-                printf("\nSkeleton Name: %s  Solver: %s  Scale: %f", skeleton.name.c_str(), skeleton.solver.c_str(), skeleton.scale);
+                printf("\nSkeleton Name: %s  Scale: %f", skeleton.name.c_str(), skeleton.scale);
 
                 std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, uint32_t& level)
                 {
@@ -956,7 +960,7 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
                     std::string indent = std::string(level * 3, ' ');
 
                     printf("\n");
-                    printf("%sSegment name: %s   ID: %d\n", indent.c_str(), segment.name.c_str(), segment.id);
+                    printf("%sSegment name: %s   ID: %d   Solver: %s\n", indent.c_str(), segment.name.c_str(), segment.id, segment.solver.c_str());
                     printf("%s   Position: %.2f, %.2f, %.2f\n", indent.c_str(), segment.position.x, segment.position.y, segment.position.z);
                     printf("%s   Rotation: %.2f, %.2f, %.2f %.2f\n", indent.c_str(), segment.rotation.x, segment.rotation.y, segment.rotation.z, segment.rotation.w);
                     
@@ -969,35 +973,30 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
                         printf("%s   Default Rotation: %.2f, %.2f, %.2f %.2f\n", indent.c_str(), segment.defaultRotation.x, segment.defaultRotation.y, segment.defaultRotation.z, segment.defaultRotation.w);
                     }
 
-                    if (segment.dofRotation.x.IsValid())
+                    if (!segment.degreesOfFreedom.empty())
                     {
-                        printf("%s   Degrees of freedom Rotation X: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofRotation.x.lowerBound, segment.dofRotation.x.upperBound);
+                        printf("%s   Degrees of freedom:\n", indent.c_str());
                     }
-                    if (segment.dofRotation.y.IsValid())
+
+                    for (auto dof : segment.degreesOfFreedom)
                     {
-                        printf("%s   Degrees of freedom Rotation Y: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofRotation.y.lowerBound, segment.dofRotation.y.upperBound);
-                    }
-                    if (segment.dofRotation.z.IsValid())
-                    {
-                        printf("%s   Degrees of freedom Rotation Z: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofRotation.z.lowerBound, segment.dofRotation.z.upperBound);
-                    }
-                    if (segment.dofTranslation.x.IsValid())
-                    {
-                        printf("%s   Degrees of freedom Translation X: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofTranslation.x.lowerBound, segment.dofTranslation.x.upperBound);
-                    }
-                    if (segment.dofTranslation.y.IsValid())
-                    {
-                        printf("%s   Degrees of freedom Translation Y: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofTranslation.y.lowerBound, segment.dofTranslation.y.upperBound);
-                    }
-                    if (segment.dofTranslation.z.IsValid())
-                    {
-                        printf("%s   Degrees of freedom Translation Z: ", indent.c_str());
-                        printf("%.4f - %.4f\n", segment.dofTranslation.z.lowerBound, segment.dofTranslation.z.upperBound);
+                        if (!std::isnan(dof.lowerBound) || !std::isnan(dof.upperBound) || !dof.couplings.empty() || !std::isnan(dof.goalValue) || !std::isnan(dof.goalWeight))
+                        {
+                            printf("%s      %s: ", indent.c_str(), CRTProtocol::SkeletonDofToString(dof.type));
+                            if (!std::isnan(dof.lowerBound) || !std::isnan(dof.upperBound))
+                            {
+                                printf("Constraint: %.4f, %.4f ", dof.lowerBound, dof.upperBound);
+                            }
+                            for (auto& coupling : dof.couplings)
+                            {
+                                printf("Coupling: %s, %s, %.4f ", coupling.segment.c_str(), CRTProtocol::SkeletonDofToString(coupling.degreeOfFreedom), coupling.coefficient);
+                            }
+                            if (!std::isnan(dof.goalValue) || !std::isnan(dof.goalWeight))
+                            {
+                                printf("Goal: %.4f, %.4f", dof.goalValue, dof.goalWeight);
+                            }
+                            printf("\n");
+                        }
                     }
 
                     if (segment.endpoint.IsValid())

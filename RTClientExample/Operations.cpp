@@ -79,13 +79,13 @@ void COperations::MonitorEvents()
 
     while (mpoInput->CheckKeyPressed() == false)
     {
-        int nRecv = mpoRTProtocol->ReceiveRTPacket(ePacketType, false);
+        auto response = mpoRTProtocol->Receive(ePacketType, false);
 
-        if (nRecv == -1 || ePacketType == CRTPacket::PacketError)
+        if (response == CNetwork::ResponseType::error || ePacketType == CRTPacket::PacketError)
         {
             break;
         }
-        if (nRecv > 0 && ePacketType == CRTPacket::PacketEvent)
+        if (response == CNetwork::ResponseType::success && ePacketType == CRTPacket::PacketEvent)
         {
             printf("#%d ", nEventCount++);
 
@@ -789,7 +789,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
             bAbort = (mpoRTProtocol->GetCurrentFrame(nComponentType, componentOptions) == false);
         }
 
-        if (mpoRTProtocol->ReceiveRTPacket(ePacketType, true) > 0)
+        if (mpoRTProtocol->Receive(ePacketType, true) == CNetwork::ResponseType::success)
         {
             switch (ePacketType) 
             {

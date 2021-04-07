@@ -263,11 +263,11 @@ unsigned short CNetwork::GetUdpBroadcastServerPort()
     return GetUdpServerPort(mUDPBroadcastSocket);
 }
 
+
 // Receive a data packet. Data is stored in a local static buffer
-// Returns number of bytes in received message, 0 on timeout or -1 if there is an error. 
-int CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeout, unsigned int *ipAddr)
+CNetwork::Response CNetwork::Receive(SOCKET socket, SOCKET udpSocket, char* rtDataBuff, int dataBufSize, bool header, int timeoutMicroseconds, unsigned int *ipAddr)
 {
-    int recieved = 0;
+    int received = 0;
     sockaddr_in source_addr;
     socklen_t fromlen = sizeof(source_addr);
 
@@ -275,101 +275,111 @@ int CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeou
     FD_ZERO(&readFDs);
     FD_ZERO(&exceptFDs);
 
-    if (mSocket != INVALID_SOCKET)
+    if (socket != INVALID_SOCKET)
     {
-        FD_SET(mSocket, &readFDs);
-        FD_SET(mSocket, &exceptFDs);
+        FD_SET(socket, &readFDs);
+        FD_SET(socket, &exceptFDs);
     }
-    if (mUDPSocket != INVALID_SOCKET)
+    if (udpSocket != INVALID_SOCKET)
     {
-        FD_SET(mUDPSocket, &readFDs);
-        FD_SET(mUDPSocket, &exceptFDs);
-    }
-    if (mUDPBroadcastSocket != INVALID_SOCKET)
-    {
-        FD_SET(mUDPBroadcastSocket, &readFDs);
-        FD_SET(mUDPBroadcastSocket, &exceptFDs);
+        FD_SET(udpSocket, &readFDs);
+        FD_SET(udpSocket, &exceptFDs);
     }
 
     TIMEVAL* pTimeval;
     TIMEVAL  sTimeval;
 
-    if (timeout < 0)
+    if (timeoutMicroseconds < 0)
     {
         pTimeval = nullptr;
     }
     else
     {
-        sTimeval.tv_sec  = timeout / 1000000;
-        sTimeval.tv_usec = timeout % 1000000;
+        sTimeval.tv_sec  = timeoutMicroseconds / 1000000;
+        sTimeval.tv_usec = timeoutMicroseconds % 1000000;
         pTimeval = &sTimeval;
     }
 
 #ifdef _WIN32
     const int nfds = 0;
 #else
-    const int nfds = std::max(mSocket, std::max(mUDPSocket, mUDPBroadcastSocket)) + 1;
+    const int nfds = std::max(socket, udpSocket) + 1;
 #endif
 
     // Wait for activity on the TCP and UDP sockets.
     int selectRes = select(nfds, &readFDs, nullptr, &exceptFDs, pTimeval);
-    if (selectRes == 0)
-    {
-        return 0; // Select timeout.
-    }
-    if (selectRes > 0)
-    {
-        if (FD_ISSET(mSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mSocket, &readFDs))
-        {
-            recieved = recv(mSocket, rtDataBuff, header ? 8 : dataBufSize, 0);
-            FD_CLR(mSocket, &readFDs);
-        }
-        else if (FD_ISSET(mUDPSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mUDPSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mUDPSocket, &readFDs))
-        {
-            recieved = recvfrom(mUDPSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
-            FD_CLR(mUDPSocket, &readFDs);
-        }
-        else if (FD_ISSET(mUDPBroadcastSocket, &exceptFDs))
-        {
-            // General socket error
-            FD_CLR(mUDPBroadcastSocket, &exceptFDs);
-            SetErrorString();
-            recieved = SOCKET_ERROR;
-        }
-        else if (FD_ISSET(mUDPBroadcastSocket, &readFDs))
-        {
-            recieved = recvfrom(mUDPBroadcastSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
-            FD_CLR(mUDPBroadcastSocket, &readFDs);
-            if (ipAddr)
-            {
-                *ipAddr = source_addr.sin_addr.s_addr;
-            }
-        }
-    }
-    else
-    {
-        recieved = -1;
-    }
-
-    if (recieved == -1)
+    
+    if (selectRes == SOCKET_ERROR)
     {
         SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
     }
-    return recieved;
+    if (selectRes == 0)
+    {
+        return Response(CNetwork::ResponseType::timeout, 0);
+    }
+
+    if (FD_ISSET(socket, &exceptFDs))
+    {
+        // General socket error
+        FD_CLR(socket, &exceptFDs);
+        SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
+    }
+    else if (FD_ISSET(socket, &readFDs))
+    {
+        received = recv(socket, rtDataBuff, header ? 8 : dataBufSize, 0);
+        FD_CLR(socket, &readFDs);
+        if (selectRes == SOCKET_ERROR)
+        {
+            SetErrorString();
+            return Response(CNetwork::ResponseType::error, 0);
+        }
+        if (received == 0)
+        {
+            return Response(CNetwork::ResponseType::disconnect, 0);
+        }
+        return Response(CNetwork::ResponseType::success, received);
+    }
+    else if (FD_ISSET(udpSocket, &exceptFDs))
+    {
+        // General socket error
+        FD_CLR(udpSocket, &exceptFDs);
+        SetErrorString();
+        return Response(CNetwork::ResponseType::error, 0);
+    }
+    else if (FD_ISSET(udpSocket, &readFDs))
+    {
+        received = recvfrom(udpSocket, rtDataBuff, dataBufSize, 0, (sockaddr*)&source_addr, &fromlen);
+        FD_CLR(udpSocket, &readFDs);
+        if (ipAddr)
+        {
+            *ipAddr = source_addr.sin_addr.s_addr;
+        }
+        if (selectRes == SOCKET_ERROR)
+        {
+            SetErrorString();
+            return Response(CNetwork::ResponseType::error, 0);
+        }
+        if (received == 0)
+        {
+            return Response(CNetwork::ResponseType::disconnect, 0);
+        }
+        return Response(CNetwork::ResponseType::success, received);
+    }
+    return Response(CNetwork::ResponseType::error, 0);
+}
+
+
+CNetwork::Response CNetwork::Receive(char* rtDataBuff, int dataBufSize, bool header, int timeoutMicroseconds, unsigned int *ipAddr)
+{
+    return Receive(mSocket, mUDPSocket, rtDataBuff, dataBufSize, header, timeoutMicroseconds, ipAddr);
+}
+
+
+CNetwork::Response CNetwork::ReceiveUdpBroadcast(char* rtDataBuff, int dataBufSize, int timeoutMicroseconds, unsigned int *ipAddr)
+{
+    return Receive(static_cast<SOCKET>(SOCKET_ERROR), mUDPBroadcastSocket, rtDataBuff, dataBufSize, false, timeoutMicroseconds, ipAddr);
 }
 
 

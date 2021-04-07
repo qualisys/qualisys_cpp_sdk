@@ -29,14 +29,6 @@
 
 namespace
 {
-    inline void ToLower(std::string& str)
-    {
-        std::transform(str.begin(), str.end(), str.begin(), [](int c)
-        {
-            return std::tolower(c);
-        });
-    }
-
     inline void RemoveInvalidChars(std::string& str)
     {
         auto isInvalidChar = [](int c) -> int
@@ -49,6 +41,17 @@ namespace
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
 
+    const int qtmPacketHeaderSize = 8; // 8 bytes
+
+    static const auto DEGREES_OF_FREEDOM =
+    {
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::RotationX, "RotationX"),
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::RotationY, "RotationY"),
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::RotationZ, "RotationZ"),
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::TranslationX, "TranslationX"),
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::TranslationY, "TranslationY"),
+        std::make_pair(CRTProtocol::EDegreeOfFreedom::TranslationZ, "TranslationZ")
+    };
 }
 
 unsigned int CRTProtocol::GetSystemFrequency() const
@@ -142,8 +145,7 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
         }
 
         // Welcome message
-        auto received = ReceiveRTPacket(eType, true);
-        if (received > 0)
+        if (Receive(eType, true) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketError)
             {
@@ -372,28 +374,29 @@ bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResp
     {
         mvsDiscoverResponseList.clear();
 
-        int nReceived;
+        CNetwork::Response response(CNetwork::ResponseType::error, 0);
+
         do 
         {
             unsigned int nAddr = 0;
-            nReceived = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), false, 100000, &nAddr);
+            response = mpoNetwork->ReceiveUdpBroadcast(mDataBuff.data(), (int)mDataBuff.size(), 100000, &nAddr);
 
-            if (nReceived != -1 && nReceived > 8)
+            if (response && response.received > qtmPacketHeaderSize)
             {
                 if (CRTPacket::GetType(mDataBuff.data()) == CRTPacket::PacketCommand)
                 {
-                    char* response  = CRTPacket::GetCommandString(mDataBuff.data());
+                    char* discoverResponse  = CRTPacket::GetCommandString(mDataBuff.data());
                     sResponse.nAddr = nAddr;
                     sResponse.nBasePort = CRTPacket::GetDiscoverResponseBasePort(mDataBuff.data());
 
-                    if (response && (!bNoLocalResponses || !mpoNetwork->IsLocalAddress(nAddr)))
+                    if (discoverResponse && (!bNoLocalResponses || !mpoNetwork->IsLocalAddress(nAddr)))
                     {
-                        strcpy(sResponse.message, response);
+                        strcpy(sResponse.message, discoverResponse);
                         mvsDiscoverResponseList.push_back(sResponse);
                     }
                 }
             }
-        } while (nReceived != -1 && nReceived > 8); // Keep reading until no more responses.
+        } while (response && response.received > qtmPacketHeaderSize); // Keep reading until no more responses.
 
         return true;
     }
@@ -550,18 +553,18 @@ bool CRTProtocol::GetState(CRTPacket::EEvent &eEvent, bool bUpdate, int nTimeout
         }
         if (result)
         {
-            int nReceived;
+            CNetwork::ResponseType response;
             do 
             {
-                nReceived = ReceiveRTPacket(eType, false, nTimeout);
-                if (nReceived > 0)
+                response = Receive(eType, false, nTimeout);
+                if (response == CNetwork::ResponseType::success)
                 {
                     if (mpoRTPacket->GetEvent(eEvent))
                     {
                         return true;
                     }
                 }
-            } while (nReceived > 0);
+            } while (response == CNetwork::ResponseType::success);
         }
         strcpy(maErrorStr, "GetLastEvent failed.");
     }
@@ -589,7 +592,7 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
             {
                 if (strcmp(pResponseStr, "Sending capture") == 0)
                 {
-                    if (ReceiveRTPacket(eType, true, 5000000) > 0) // Wait for C3D file in 5 seconds.
+                    if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for C3D file in 5 seconds.
                     {
                         if (eType == CRTPacket::PacketC3DFile)
                         {
@@ -627,7 +630,7 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
             {
                 if (strcmp(pResponseStr, "Sending capture") == 0)
                 {
-                    if (ReceiveRTPacket(eType, true, 5000000) > 0) // Wait for QTM file in 5 seconds.
+                    if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for QTM file in 5 seconds.
                     {
                         if (eType == CRTPacket::PacketQTMFile)
                         {
@@ -947,14 +950,15 @@ bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, 
 
 bool CRTProtocol::LoadCapture(const char* pFileName)
 {
-    char tTemp[100];
+    std::string sendString = "Load \"";
     char pResponseStr[256];
 
-    if (strlen(pFileName) <= 94)
+    if (strlen(pFileName) <= 250)
     {
-        sprintf(tTemp, "Load \"%s\"", pFileName);
+        sendString += pFileName;
+        sendString += "\"";
 
-        if (SendCommand(tTemp, pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
+        if (SendCommand(sendString.c_str(), pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
         {
             if (strcmp(pResponseStr, "Measurement loaded") == 0)
             {
@@ -1130,7 +1134,7 @@ bool CRTProtocol::ConvertRateString(const char* pRate, EStreamRate &eRate, unsig
     std::string rateString;
 
     rateString.assign(pRate);
-    std::transform(rateString.begin(), rateString.end(), rateString.begin(), ::tolower);
+    rateString = ToLower(rateString);
 
     eRate = RateNone;
 
@@ -1186,7 +1190,7 @@ std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(con
 bool CRTProtocol::GetComponent(std::string componentStr, unsigned int &component, std::string &option)
 {
     // Make string lower case.
-    std::transform(componentStr.begin(), componentStr.end(), componentStr.begin(), ::tolower);
+    componentStr = ToLower(componentStr);
     option = "";
 
     if (componentStr == "2d")
@@ -1431,7 +1435,30 @@ bool CRTProtocol::GetComponentString(char* pComponentStr, unsigned int nComponen
 
 int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents, int nTimeout)
 {
-    int          nRecved      = 0;
+    int returnVal = -1;
+    auto response = Receive(eType, bSkipEvents, nTimeout);
+    
+    switch (response)
+    {
+        case CNetwork::ResponseType::success:
+            returnVal = mpoRTPacket->GetSize();
+            break;
+        case CNetwork::ResponseType::timeout:
+        case CNetwork::ResponseType::disconnect:
+            returnVal = 0;
+            break;
+        case CNetwork::ResponseType::error:
+            returnVal = -1;
+            break;
+    }
+
+    return returnVal;
+}
+
+
+CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &eType, bool bSkipEvents, int nTimeout)
+{
+    CNetwork::Response response(CNetwork::ResponseType::error, 0);
     unsigned int nRecvedTotal = 0;
     unsigned int nFrameSize;
 
@@ -1439,28 +1466,33 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
 
     do 
     {
-        nRecved      = 0;
         nRecvedTotal = 0;
 
-        nRecved = mpoNetwork->Receive(mDataBuff.data(), mDataBuff.size(), true, nTimeout);
-        if (nRecved == 0)
+        response = mpoNetwork->Receive(mDataBuff.data(), (int)mDataBuff.size(), true, nTimeout);
+
+        if (response.type == CNetwork::ResponseType::timeout)
         {
             // Receive timeout.
             strcpy(maErrorStr, "Data receive timeout.");
-            return 0;
+            return CNetwork::ResponseType::timeout;
         }
-        if (nRecved < (int)(sizeof(int) * 2))
+        if (response.type == CNetwork::ResponseType::error)
+        {
+            strcpy(maErrorStr, "Socket Error.");
+            return CNetwork::ResponseType::error;
+        }
+        if (response.type == CNetwork::ResponseType::disconnect)
+        {
+            strcpy(maErrorStr, "Disconnected from server.");
+            return CNetwork::ResponseType::disconnect;
+        }        
+        if (response.received < qtmPacketHeaderSize)
         {
             // QTM header not received.
             strcpy(maErrorStr, "Couldn't read header bytes.");
-            return -1;
+            return CNetwork::ResponseType::error;
         }
-        if (nRecved <= -1)
-        {
-            strcpy(maErrorStr, "Socket Error.");
-            return -1;
-        }
-        nRecvedTotal += nRecved;
+        nRecvedTotal += response.received;
 
         bool bBigEndian = (mbBigEndian || (mnMajorVersion == 1 && mnMinorVersion == 0));
         nFrameSize = mpoRTPacket->GetSize(mDataBuff.data(), bBigEndian);
@@ -1479,7 +1511,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     strcpy(maErrorStr, "Failed to write file to disk.");
                     fclose(mpFileBuffer);
                     mpFileBuffer = nullptr;
-                    return -1;
+                    return CNetwork::ResponseType::error;
                 }
                 // Receive more data until we have read the whole packet
                 while (nRecvedTotal < nFrameSize) 
@@ -1487,25 +1519,36 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     nReadSize = nFrameSize - nRecvedTotal;
                     if (nFrameSize > mDataBuff.size())                                                                                                                                                                                                                                                                                             
                     {
-                        nReadSize = mDataBuff.size();
+                        nReadSize = (int)mDataBuff.size();
                     }
                     // As long as we haven't received enough data, wait for more
-                    nRecved = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, -1);
-                    if (nRecved < 0)
+                    response = mpoNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, cWaitForDataTimeout);
+                    if (response.type == CNetwork::ResponseType::timeout)
+                    {
+                        strcpy(maErrorStr, "Packet truncated.");
+                        return CNetwork::ResponseType::error;
+                    }
+                    if (response.type == CNetwork::ResponseType::error)
                     {
                         strcpy(maErrorStr, "Socket Error.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
-                        return -1;
+                        return CNetwork::ResponseType::error;
                     }
-                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, nRecved, mpFileBuffer) != (size_t)nRecved)
+                    if (response.type == CNetwork::ResponseType::disconnect)
+                    {
+                        strcpy(maErrorStr, "Disconnected from server.");
+                        return CNetwork::ResponseType::disconnect;
+                    }
+
+                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mpFileBuffer) != (size_t)(response.received))
                     {
                         strcpy(maErrorStr, "Failed to write file to disk.");
                         fclose(mpFileBuffer);
                         mpFileBuffer = nullptr;
-                        return -1;
+                        return CNetwork::ResponseType::error;
                     }
-                    nRecvedTotal += nRecved;
+                    nRecvedTotal += response.received;
                 }
             }
             else
@@ -1516,7 +1559,7 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
                     fclose(mpFileBuffer);
                 }
                 mpFileBuffer = nullptr;
-                return -1;
+                return CNetwork::ResponseType::error;
             }
         }
         else
@@ -1530,13 +1573,23 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
             while (nRecvedTotal < nFrameSize) 
             {
                 // As long as we haven't received enough data, wait for more
-                nRecved = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
-                if (nRecved < 0)
+                response = mpoNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
+                if (response.type == CNetwork::ResponseType::timeout)
+                {
+                    strcpy(maErrorStr, "Packet truncated.");
+                    return CNetwork::ResponseType::error;
+                }
+                if (response.type == CNetwork::ResponseType::error)
                 {
                     strcpy(maErrorStr, "Socket Error.");
-                    return -1;
+                    return CNetwork::ResponseType::error;
                 }
-                nRecvedTotal += nRecved;
+                if (response.type == CNetwork::ResponseType::disconnect)
+                {
+                    strcpy(maErrorStr, "Disconnected from server.");
+                    return CNetwork::ResponseType::disconnect;
+                }
+                nRecvedTotal += response.received;
             }
         }
 
@@ -1553,11 +1606,11 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &eType, bool bSkipEvents
     
     if (nRecvedTotal == nFrameSize)
     {
-        return nRecvedTotal;
+        return CNetwork::ResponseType::success;
     }
     strcpy(maErrorStr, "Packet truncated.");
 
-    return -1;
+    return CNetwork::ResponseType::error;
 } // ReceiveRTPacket
 
 
@@ -1576,7 +1629,7 @@ bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& va
 
     auto str = xml->GetChildData();
     RemoveInvalidChars(str);
-    ToLower(str);
+    str = ToLower(str);
 
     if (str == "true")
     {
@@ -1609,14 +1662,15 @@ bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
         return false;
     }
 
-    auto received = ReceiveRTPacket(eType, true);
-    if (received <= 0)
+    auto received = Receive(eType, true);
+
+    if (received == CNetwork::ResponseType::timeout)
     {
-        if (received == 0)
-        {
-            // Receive timeout.
-            strcat(maErrorStr, " Expected XML packet.");
-        }
+        strcat(maErrorStr, " Expected XML packet.");
+        return false;
+    }
+    if (received == CNetwork::ResponseType::error)
+    {
         return false;
     }
 
@@ -1708,16 +1762,14 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
     msGeneralSettings.sExternalTimebase.bEnabled = (tStr == "true");
 
     if (!oXML.FindChildElem("Signal_Source"))
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
     if (tStr == "control port")
     {
         msGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
@@ -1747,8 +1799,7 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
     if (tStr == "periodic")
     {
         msGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
@@ -1811,8 +1862,7 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
 
     if (tStr == "none")
     {
@@ -1835,8 +1885,7 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
     if (tStr == "negative")
     {
         msGeneralSettings.sExternalTimebase.bNegativeEdge = true;
@@ -1890,14 +1939,12 @@ bool CRTProtocol::ReadGeneralSettings()
 
         if (oXML.FindChildElem("Enabled"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             msGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
         }
         if (oXML.FindChildElem("Type"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             if (tStr == "smpte")
             {
                 msGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
@@ -1960,8 +2007,7 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             return false;
         }
-        tStr = oXML.GetChildData();
-        std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+        tStr = ToLower(oXML.GetChildData());
         if (tStr == "3d")
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking3D);
@@ -2100,8 +2146,7 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             return false;
         }
-        tStr = oXML.GetChildData();
-        std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+        tStr = ToLower(oXML.GetChildData());
 
         if (tStr == "macreflex")
         {
@@ -2215,15 +2260,13 @@ bool CRTProtocol::ReadGeneralSettings()
         // Only available from protocol version 1.10 and later.
         if (oXML.FindChildElem("Underwater"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             sCameraSettings.bUnderwater = (tStr == "true");
         }
 
         if (oXML.FindChildElem("Supports_HW_Sync"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             sCameraSettings.bSupportsHwSync = (tStr == "true");
         }
 
@@ -2238,8 +2281,7 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             return false;
         }
-        tStr = oXML.GetChildData();
-        std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+        tStr = ToLower(oXML.GetChildData());
         if (tStr == "marker")
         {
             sCameraSettings.eMode = ModeMarker;
@@ -2270,8 +2312,7 @@ bool CRTProtocol::ReadGeneralSettings()
         // ==================== Video Resolution ====================
         if (oXML.FindChildElem("Video_Resolution"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             if (tStr == "1080p")
             {
                 sCameraSettings.eVideoResolution = VideoResolution1080p;
@@ -2297,8 +2338,7 @@ bool CRTProtocol::ReadGeneralSettings()
         // ==================== Video AspectRatio ====================
         if (oXML.FindChildElem("Video_Aspect_Ratio"))
         {
-            tStr = oXML.GetChildData();
-            std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+            tStr = ToLower(oXML.GetChildData());
             if (tStr == "16x9")
             {
                 sCameraSettings.eVideoAspectRatio = VideoAspectRatio16x9;
@@ -2635,8 +2675,7 @@ bool CRTProtocol::ReadGeneralSettings()
                     {
                         return false;
                     }
-                    tStr = oXML.GetChildData();
-                    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+                    tStr = ToLower(oXML.GetChildData());
                     if (tStr == "shutter out")
                     {
                         sCameraSettings.eSyncOutMode[port] = ModeShutterOut;
@@ -2811,20 +2850,20 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     CMarkup                 oXML;
     std::string             tStr;
     SCalibration            settings;
-    int                     received;
+    CNetwork::ResponseType  response;
     CRTPacket::EEvent       event = CRTPacket::EventNone;
 
     do 
     {
-        received = ReceiveRTPacket(eType, false, timeout);
+        response = Receive(eType, false, timeout);
 
-        if (received <= 0)
+        if (response == CNetwork::ResponseType::timeout)
         {
-            if (received == 0)
-            {
-                // Receive timeout.
-                strcat(maErrorStr, " Expected XML packet.");
-            }
+            strcat(maErrorStr, " Expected XML packet.");
+            return false;
+        }
+        if (response == CNetwork::ResponseType::error)
+        {
             return false;
         }
 
@@ -2866,8 +2905,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 
     try
     {
-        std::string resultStr = oXML.GetAttrib("calibrated");
-        std::transform(resultStr.begin(), resultStr.end(), resultStr.begin(), ::tolower);
+        std::string resultStr = ToLower(oXML.GetAttrib("calibrated"));
 
         settings.calibrated = (resultStr == "true");
         settings.source = oXML.GetAttrib("source");
@@ -2925,8 +2963,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
             SCalibrationCamera camera;
             camera.active = std::stod(oXML.GetAttrib("active")) != 0;
 
-            std::string calibratedStr = oXML.GetAttrib("calibrated");
-            std::transform(calibratedStr.begin(), calibratedStr.end(), calibratedStr.begin(), ::tolower);
+            std::string calibratedStr = ToLower(oXML.GetAttrib("calibrated"));
 
             camera.calibrated = (calibratedStr == "true");
             camera.message = oXML.GetAttrib("message");
@@ -3042,8 +3079,7 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+    tStr = ToLower(oXML.GetChildData());
 
     if (tStr == "+x")
     {
@@ -3101,6 +3137,10 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
                 if (oXML.FindChildElem("RGBColor"))
                 {
                     sLabel.nRGBColor = atoi(oXML.GetChildData().c_str());
+                }
+                if (oXML.FindChildElem("Trajectory_Type"))
+                {
+                    sLabel.type = oXML.GetChildData();
                 }
                 ms3DSettings.s3DLabels[iLabel] = sLabel;
             }
@@ -3276,7 +3316,7 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
                     return false;
                 }
                 if (s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str()) ||
-                    s6DOFBodySettings.origin.relativeBody != atoi(oXML.GetChildAttrib("Relative_body").c_str()))
+                    s6DOFBodySettings.origin.relativeBody != static_cast<uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str())))
                 {
                     return false;
                 }
@@ -3424,7 +3464,12 @@ bool CRTProtocol::ReadGazeVectorSettings(bool &bDataAvailable)
             frequency = (float)atof(oXML.GetChildData().c_str());
         }
 
-        mvsGazeVectorSettings.push_back({ tGazeVectorName, frequency });
+        bool hwSync = false;
+        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+        bool filter = false;
+        ReadXmlBool(&oXML, "Filter", filter);
+
+        mvsGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
         nGazeVectorCount++;
         oXML.OutOfElem(); // Vector
     }
@@ -3472,7 +3517,10 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool &bDataAvailable)
             frequency = (float)atof(oXML.GetChildData().c_str());
         }
 
-        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency });
+        bool hwSync = false;
+        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+
+        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
         nEyeTrackerCount++;
         oXML.OutOfElem(); // Vector
     }
@@ -3984,8 +4032,7 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
             return false;
         }
         std::string tStr;
-        tStr = oXML.GetChildData();
-        std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+        tStr = ToLower(oXML.GetChildData());
 
         if (tStr == "true")
         {
@@ -4000,8 +4047,7 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
         {
             return false;
         }
-        tStr = oXML.GetChildData();
-        std::transform(tStr.begin(), tStr.end(), tStr.begin(), ::tolower);
+        tStr = ToLower(oXML.GetChildData());
 
         if (tStr == "rawgrayscale")
         {
@@ -4110,7 +4156,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
 
                 if (xml.FindElem("Solver"))
                 {
-                    skeletonHierarchical.solver = xml.GetData();
+                    skeletonHierarchical.rootSegment.solver = xml.GetData();
                 }
 
                 if (xml.FindElem("Scale"))
@@ -4136,6 +4182,11 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
 
                         xml.IntoElem();
 
+                        if (xml.FindElem("Solver"))
+                        {
+                            segmentHierarchical.solver = xml.GetData();
+                        }
+
                         if (xml.FindElem("Transform"))
                         {
                             xml.IntoElem();
@@ -4155,12 +4206,12 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                         if (xml.FindElem("DegreesOfFreedom"))
                         {
                             xml.IntoElem();
-                            segmentHierarchical.dofRotation.x = ReadXMLBoundary(xml, "RotationX");
-                            segmentHierarchical.dofRotation.y = ReadXMLBoundary(xml, "RotationY");
-                            segmentHierarchical.dofRotation.z = ReadXMLBoundary(xml, "RotationZ");
-                            segmentHierarchical.dofTranslation.x = ReadXMLBoundary(xml, "TranslationX");
-                            segmentHierarchical.dofTranslation.y = ReadXMLBoundary(xml, "TranslationY");
-                            segmentHierarchical.dofTranslation.z = ReadXMLBoundary(xml, "TranslationZ");
+                            ReadXMLDegreesOfFreedom(xml, "RotationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "RotationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "RotationZ", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationZ", segmentHierarchical.degreesOfFreedom);
                             xml.OutOfElem(); // DegreesOfFreedom
                         }
 
@@ -4359,18 +4410,48 @@ CRTProtocol::SRotation CRTProtocol::ReadXMLRotation(CMarkup& xml, const std::str
 }
 
 
-CRTProtocol::SBoundary CRTProtocol::ReadXMLBoundary(CMarkup& xml, const std::string& element)
+bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
 {
-    SBoundary boundary;
+    SDegreeOfFreedom degreeOfFreedom;
 
     if (xml.FindElem(element.c_str()))
     {
-        ParseString(xml.GetAttrib("LowerBound"), boundary.lowerBound);
-        ParseString(xml.GetAttrib("UpperBound"), boundary.upperBound);
+        degreeOfFreedom.type = CRTProtocol::SkeletonStringToDof(element);
+        ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
+        ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
+        xml.IntoElem();
+        if (xml.FindElem("Constraint"))
+        {
+            ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
+            ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
+        }
+        if (xml.FindElem("Couplings"))
+        {
+            xml.IntoElem();
+            while (xml.FindElem("Coupling"))
+            {
+                CRTProtocol::SCoupling coupling;
+                coupling.segment = xml.GetAttrib("Segment");
+                auto dof = xml.GetAttrib("DegreeOfFreedom");
+                coupling.degreeOfFreedom = CRTProtocol::SkeletonStringToDof(dof);
+                ParseString(xml.GetAttrib("Coefficient"), coupling.coefficient);
+                degreeOfFreedom.couplings.push_back(coupling);
+            }
+            xml.OutOfElem();
+        }
+        if (xml.FindElem("Goal"))
+        {
+            ParseString(xml.GetAttrib("Value"), degreeOfFreedom.goalValue);
+            ParseString(xml.GetAttrib("Weight"), degreeOfFreedom.goalWeight);
+        }
+        xml.OutOfElem();
         xml.ResetMainPos();
+    
+        degreesOfFreedom.push_back(degreeOfFreedom);
+        return true;
     }
 
-    return boundary;
+    return false;
 }
 
 
@@ -4668,6 +4749,15 @@ unsigned int CRTProtocol::Get3DLabelColor(unsigned int nMarkerIndex) const
     return 0;
 }
 
+const char* CRTProtocol::Get3DTrajectoryType(unsigned int nMarkerIndex) const
+{
+    if (nMarkerIndex < ms3DSettings.s3DLabels.size())
+    {
+        return ms3DSettings.s3DLabels[nMarkerIndex].type.c_str();
+    }
+    return 0;
+}
+
 
 unsigned int CRTProtocol::Get3DBoneCount() const
 {
@@ -4786,6 +4876,24 @@ float CRTProtocol::GetGazeVectorFrequency(unsigned int nGazeVectorIndex) const
     return 0;
 }
 
+bool CRTProtocol::GetGazeVectorHardwareSyncUsed(unsigned int nGazeVectorIndex) const
+{
+    if (nGazeVectorIndex < mvsGazeVectorSettings.size())
+    {
+        return mvsGazeVectorSettings[nGazeVectorIndex].hwSync;
+    }
+    return false;
+}
+
+bool CRTProtocol::GetGazeVectorFilterUsed(unsigned int nGazeVectorIndex) const
+{
+    if (nGazeVectorIndex < mvsGazeVectorSettings.size())
+    {
+        return mvsGazeVectorSettings[nGazeVectorIndex].filter;
+    }
+    return false;
+}
+
 
 unsigned int CRTProtocol::GetEyeTrackerCount() const
 {
@@ -4808,6 +4916,15 @@ float CRTProtocol::GetEyeTrackerFrequency(unsigned int nEyeTrackerIndex) const
         return mvsEyeTrackerSettings[nEyeTrackerIndex].frequency;
     }
     return 0;
+}
+
+bool CRTProtocol::GetEyeTrackerHardwareSyncUsed(unsigned int nEyeTrackerIndex) const
+{
+    if (nEyeTrackerIndex < mvsEyeTrackerSettings.size())
+    {
+        return mvsEyeTrackerSettings[nEyeTrackerIndex].hwSync;
+    }
+    return false;
 }
 
 
@@ -5810,7 +5927,10 @@ bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarc
         xml.AddElem("Skeleton");
         xml.SetAttrib("Name", skeleton.name.c_str());
         xml.IntoElem();
-        xml.AddElem("Solver", skeleton.solver.c_str());
+        if (mnMajorVersion == 1 && mnMinorVersion < 22)
+        {
+            xml.AddElem("Solver", skeleton.rootSegment.solver.c_str());
+        }
         xml.AddElem("Scale", std::to_string(skeleton.scale).c_str());
         xml.AddElem("Segments");
         xml.IntoElem();
@@ -5821,6 +5941,10 @@ bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarc
             xml.SetAttrib("Name", segment.name.c_str());
             xml.IntoElem();
             {
+                if (mnMajorVersion > 1 || mnMinorVersion > 21)
+                {
+                    xml.AddElem("Solver", segment.solver.c_str());
+                }
                 if (!std::isnan(segment.position.x))
                 {
                     AddXMLElementTransform(xml, "Transform", segment.position, segment.rotation);
@@ -5831,13 +5955,11 @@ bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarc
                 }
                 xml.AddElem("DegreesOfFreedom");
                 xml.IntoElem();
-                AddXMLElementDOF(xml, "RotationX", segment.dofRotation.x);
-                AddXMLElementDOF(xml, "RotationY", segment.dofRotation.y);
-                AddXMLElementDOF(xml, "RotationZ", segment.dofRotation.z);
-                AddXMLElementDOF(xml, "TranslationX", segment.dofTranslation.x);
-                AddXMLElementDOF(xml, "TranslationY", segment.dofTranslation.y);
-                AddXMLElementDOF(xml, "TranslationZ", segment.dofTranslation.z);
-                xml.OutOfElem(); //DegreesOfFreedom
+                for (auto dof : segment.degreesOfFreedom)
+                {
+                    AddXMLElementDOF(xml, SkeletonDofToString(dof.type), dof);
+                }
+                xml.OutOfElem(); // DegreesOfFreedom
 
                 xml.AddElem("Endpoint");
                 {
@@ -5918,6 +6040,32 @@ bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarc
 }
 
 
+const char* CRTProtocol::SkeletonDofToString(CRTProtocol::EDegreeOfFreedom dof)
+{
+    auto it = std::find_if(DEGREES_OF_FREEDOM.begin(), DEGREES_OF_FREEDOM.end(), [&](const auto& DEGREE_OF_FREEDOM) { return (DEGREE_OF_FREEDOM.first == dof); });
+
+    if (it == DEGREES_OF_FREEDOM.end())
+    {
+        throw std::runtime_error("Unknown degree of freedom");
+    }
+
+    return it->second;
+}
+
+
+CRTProtocol::EDegreeOfFreedom CRTProtocol::SkeletonStringToDof(const std::string& str)
+{
+    auto it = std::find_if(DEGREES_OF_FREEDOM.begin(), DEGREES_OF_FREEDOM.end(), [&](const auto& DEGREE_OF_FREEDOM) { return (DEGREE_OF_FREEDOM.second == str); });
+
+    if (it == DEGREES_OF_FREEDOM.end())
+    {
+        throw std::runtime_error("Unknown degree of freedom");
+    }
+
+    return it->first;
+}
+
+
 char* CRTProtocol::GetErrorString()
 {
     return maErrorStr;
@@ -5969,7 +6117,7 @@ bool CRTProtocol::SendCommand(const char* pCmdStr, char* pCommandResponseStr, un
 
     if (SendString(pCmdStr, CRTPacket::PacketCommand))
     {
-        while (ReceiveRTPacket(eType, true, timeout) > 0)
+        while (Receive(eType, true, timeout) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketCommand)
             {
@@ -6001,7 +6149,7 @@ bool CRTProtocol::SendXML(const char* pCmdStr)
 
     if (SendString(pCmdStr, CRTPacket::PacketXML))
     {
-        if (ReceiveRTPacket(eType, true) > 0)
+        if (Receive(eType, true) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketCommand)
             {
@@ -6113,25 +6261,59 @@ void CRTProtocol::AddXMLElementTransform(CMarkup& xml, const std::string& name, 
     xml.OutOfElem();
 }
 
-void CRTProtocol::AddXMLElementDOF(CMarkup& xml, const std::string& name, SBoundary boundry)
+void CRTProtocol::AddXMLElementDOF(CMarkup& xml, const std::string& name, SDegreeOfFreedom degreeOfFreedoms)
 {
-    if (!std::isnan(boundry.lowerBound) && !std::isnan(boundry.upperBound))
+    xml.AddElem(name.c_str());
+    if (!std::isnan(degreeOfFreedoms.lowerBound) && !std::isnan(degreeOfFreedoms.upperBound))
     {
-        xml.AddElem(name.c_str());
-        xml.AddAttrib("LowerBound", std::to_string(boundry.lowerBound).c_str());
-        xml.AddAttrib("UpperBound", std::to_string(boundry.upperBound).c_str());
+        if (mnMajorVersion > 1 || mnMinorVersion > 21)
+        {
+            xml.IntoElem();
+            xml.AddElem("Constraint");
+        }
+        xml.AddAttrib("LowerBound", std::to_string(degreeOfFreedoms.lowerBound).c_str());
+        xml.AddAttrib("UpperBound", std::to_string(degreeOfFreedoms.upperBound).c_str());
     }
+
+    if (std::isnan(degreeOfFreedoms.lowerBound) || std::isnan(degreeOfFreedoms.upperBound) || (mnMajorVersion == 1 && mnMinorVersion < 22))
+    {
+        xml.IntoElem();
+    }
+    
+    if (!degreeOfFreedoms.couplings.empty())
+    {
+        xml.AddElem("Couplings");
+        xml.IntoElem();
+        {
+            for (const auto& coupling : degreeOfFreedoms.couplings)
+            {
+                xml.AddElem("Coupling");
+                xml.AddAttrib("Segment", coupling.segment.c_str());
+                xml.AddAttrib("DegreeOfFreedom", SkeletonDofToString(coupling.degreeOfFreedom));
+                xml.AddAttrib("Coefficient", std::to_string(coupling.coefficient).c_str());
+            }
+        }
+        xml.OutOfElem(); // Couplings
+    }
+
+    if (!std::isnan(degreeOfFreedoms.goalValue) && !std::isnan(degreeOfFreedoms.goalWeight))
+    {
+        xml.AddElem("Goal");
+        xml.AddAttrib("Value", std::to_string(degreeOfFreedoms.goalValue).c_str());
+        xml.AddAttrib("Weight", std::to_string(degreeOfFreedoms.goalWeight).c_str());
+    }
+    xml.OutOfElem();
 }
 
 bool CRTProtocol::CompareNoCase(std::string tStr1, const char* tStr2) const
 {
-    std::transform(tStr1.begin(), tStr1.end(), tStr1.begin(), ::tolower);
+    tStr1 = ToLower(tStr1);
     return tStr1.compare(tStr2) == 0;
 }
 
 std::string CRTProtocol::ToLower(std::string str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
     return str;
 }
 
