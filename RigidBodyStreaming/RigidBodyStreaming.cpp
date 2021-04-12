@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
             CRTPacket::EPacketType packetType;
 
-            if (rtProtocol.ReceiveRTPacket(packetType, true) > 0)
+            if (rtProtocol.Receive(packetType, true) == CNetwork::ResponseType::success)
             {
                 if (packetType == CRTPacket::PacketData)
                 {
