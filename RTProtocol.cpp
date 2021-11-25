@@ -1654,7 +1654,6 @@ bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
     CRTPacket::EPacketType eType;
 
     mvsAnalogDeviceSettings.clear();
-
     auto sendStr = std::string("GetParameters ") + settingsType;
     if (!SendCommand(sendStr.c_str()))
     {
@@ -1662,6 +1661,7 @@ bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
         return false;
     }
 
+retry:
     auto received = Receive(eType, true);
 
     if (received == CNetwork::ResponseType::timeout)
@@ -1679,12 +1679,13 @@ bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
         if (eType == CRTPacket::PacketError)
         {
             sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
+            return false;
         }
         else
         {
-            sprintf(maErrorStr, "GetParameters %s returned wrong packet type. Got type %d expected type 2.", settingsType.c_str(), eType);
+            goto retry;
+            //sprintf(maErrorStr, "GetParameters %s returned wrong packet type. Got type %d expected type 2.", settingsType.c_str(), eType);
         }
-        return false;
     }
 
     oXML.SetDoc(mpoRTPacket->GetXMLString());

@@ -2,11 +2,14 @@
 #define NETWORK_H
 
 #ifdef _WIN32
-	#define WIN32_LEAN_AND_MEAN
-	#include <winsock2.h>
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+
+    #include <winsock2.h>
 #else
-	#define INVALID_SOCKET	-1
-	#define SOCKET int
+    #define INVALID_SOCKET -1
+    #define SOCKET int
 #endif
 
 #include <vector>
