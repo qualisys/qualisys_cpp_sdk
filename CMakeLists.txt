@@ -5,8 +5,6 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 
 project(qualisys_cpp_sdk)
 
-
-
 add_library(qualisys_cpp_sdk
   Markup.cpp
   Network.cpp
