@@ -18,7 +18,7 @@ target_link_libraries( ${PROJECT_NAME}
     PRIVATE $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
 )
 # Enable C++11
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
 set_target_properties(${PROJECT_NAME} 
     PROPERTIES 
     	CXX_STANDARD_REQUIRED ON
