@@ -28,8 +28,3 @@ find_package(qualisys_cpp_sdk REQUIRED)
 target_link_libraries(myapplication
         qualisys_cpp_sdk)
 ```
-
-### Troubleshooting
-
- * Error on Windows: *Unresolved link external symbol for `CNetwork` and other classes*
-     * Link your application to `ws2_32.lib` explicitly.

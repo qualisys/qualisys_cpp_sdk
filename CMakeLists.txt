@@ -14,7 +14,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>)
 
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>)
+        PUBLIC $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>)
 
 # Enable C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
