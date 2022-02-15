@@ -1,0 +1,7 @@
+#CMake configuration file for qualisys_cpp_sdk library
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+enable_language(C)
+
+include("${CMAKE_CURRENT_LIST_DIR}/qualisys_cpp_sdkTargets.cmake")
