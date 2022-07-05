@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
