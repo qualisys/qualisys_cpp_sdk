@@ -260,7 +260,7 @@ bool CRTProtocol::SetVersion(int nMajorVersion, int nMinorVersion)
             return true;
         }
 
-        if (pResponseStr)
+        if (strlen(pResponseStr))
         {
             sprintf(maErrorStr, "%s.", pResponseStr);
         }
@@ -682,7 +682,7 @@ bool CRTProtocol::SendTrig()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -710,7 +710,7 @@ bool CRTProtocol::SetQTMEvent(const char* pLabel)
                 return true;
             }
         }
-        if (pResponseStr)
+        if (strlen(pResponseStr))
         {
             sprintf(maErrorStr, "%s.", pResponseStr);
         }
@@ -751,7 +751,7 @@ bool CRTProtocol::TakeControl(const char* pPassword)
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -777,7 +777,7 @@ bool CRTProtocol::ReleaseControl()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -807,7 +807,7 @@ bool CRTProtocol::NewMeasurement()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -832,7 +832,7 @@ bool CRTProtocol::CloseMeasurement()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -855,7 +855,7 @@ bool CRTProtocol::StartCapture()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -878,7 +878,7 @@ bool CRTProtocol::StartRTOnFile()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         if (strcmp(pResponseStr, "RT from file already running") == 0)
         {
@@ -905,7 +905,7 @@ bool CRTProtocol::StopCapture()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -936,7 +936,7 @@ bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, 
             }
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
@@ -1046,7 +1046,7 @@ bool CRTProtocol::LoadProject(const char* pFileName)
                 return true;
             }
         }
-        if (pResponseStr)
+        if (strlen(pResponseStr))
         {
             sprintf(maErrorStr, "%s.", pResponseStr);
         }
@@ -1074,7 +1074,7 @@ bool CRTProtocol::Reprocess()
             return true;
         }
     }
-    if (pResponseStr)
+    if (strlen(pResponseStr))
     {
         sprintf(maErrorStr, "%s.", pResponseStr);
     }
