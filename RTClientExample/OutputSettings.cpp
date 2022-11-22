@@ -650,6 +650,11 @@ void COutput::Print6DOFSettings(CRTProtocol* poRTProtocol)
             }
             else
             {
+                if (nMajorVersion > 1 || nMinorVersion > 23)
+                {
+                    std::string enabledAsStr = bodiesSettings[iBody].enabled ? "True" : "False";
+                    printf("  Enabled:               %s\n", enabledAsStr.c_str());
+                }
                 printf("  Color:                 R=%.2X G=%.2X B=%.2X\n", color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
                 printf("  Bone length tolerance: %f\n", bodiesSettings[iBody].boneLengthTolerance);
                 printf("  Max residual:          %f\n", bodiesSettings[iBody].maxResidual);

@@ -390,6 +390,7 @@ public:
     struct SSettings6DOFBody
     {
         std::string           name;
+        bool                  enabled;
         uint32_t              color;
         std::string           filterPreset;
         float                 maxResidual;
