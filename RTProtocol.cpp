@@ -3211,6 +3211,16 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
                 }
                 s6DOFBodySettings.name = oXML.GetChildData();
 
+                if (mnMajorVersion > 1 || mnMinorVersion > 23)
+                {
+                    if (!oXML.FindChildElem("Enabled"))
+                    {
+                        s6DOFBodySettings.enabled = true;
+                    }
+                    s6DOFBodySettings.enabled = oXML.GetChildData() == "true" ? true : false;
+                }
+
+
                 if (!oXML.FindChildElem("Color"))
                 {
                     return false;
@@ -5826,7 +5836,6 @@ bool CRTProtocol::SetForceSettings(
     return false;
 } // SetForceSettings
 
-
 bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
 {
     if (mnMajorVersion == 1 && mnMinorVersion < 21)
@@ -5848,6 +5857,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
         oXML.AddElem("Body");
         oXML.IntoElem();
         oXML.AddElem("Name", body.name.c_str());
+        oXML.AddElem("Enabled", body.enabled ? "true" : "false");
         oXML.AddElem("Color");
         oXML.AddAttrib("R", std::to_string(body.color & 0xff).c_str());
         oXML.AddAttrib("G", std::to_string((body.color >> 8) & 0xff).c_str());
