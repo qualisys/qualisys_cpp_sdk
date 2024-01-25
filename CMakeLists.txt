@@ -1,9 +1,21 @@
 cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
+# By default set release configuration
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
+if(UNIX)
+  if(CMAKE_COMPILER_IS_GNUCXX OR CV_ICC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  endif()
+endif()
+
 option(BUILD_EXAMPLES "Build examples" OFF)
 
 add_library(${PROJECT_NAME}
+        SHARED
         Markup.cpp
         Network.cpp
         RTPacket.cpp
