@@ -1013,7 +1013,7 @@ bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNew
                 return true;
             }
         }
-        if (pResponseStr && strlen(pResponseStr) > 0)
+        if (strlen(pResponseStr) > 0)
         {
             sprintf(maErrorStr, "%s.", pResponseStr);
         }
