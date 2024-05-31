@@ -2237,6 +2237,10 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             sCameraSettings.eModel = ModelMiqusHybrid;
         }
+        else if (tStr == "miqus video color plus")
+        {
+            sCameraSettings.eModel = ModelMiqusVideoColorPlus;
+        }
         else if (tStr == "arqus a5")
         {
             sCameraSettings.eModel = ModelArqusA5;
@@ -2314,7 +2318,11 @@ bool CRTProtocol::ReadGeneralSettings()
         if (oXML.FindChildElem("Video_Resolution"))
         {
             tStr = ToLower(oXML.GetChildData());
-            if (tStr == "1080p")
+            if (tStr == "1440p")
+            {
+                sCameraSettings.eVideoResolution = VideoResolution1440p;
+            }
+            else if (tStr == "1080p")
             {
                 sCameraSettings.eVideoResolution = VideoResolution1080p;
             }
@@ -5467,6 +5475,9 @@ bool CRTProtocol::SetCameraVideoSettings(
     {
         switch (*eVideoResolution)
         {
+            case VideoResolution1440p:
+                oXML.AddElem("Video_Resolution", "1440p");
+                break;
             case VideoResolution1080p:
                 oXML.AddElem("Video_Resolution", "1080p");
                 break;

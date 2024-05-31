@@ -710,14 +710,15 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
     }
 
     printf("Enter Video Resolution :\n");
-    printf("  1 : 1080p\n");
-    printf("  2 : 720p\n");
-    printf("  3 : 540p\n");
-    printf("  4 : 480p\n");
-    printf("  5 : None (default)\n");
-    printf("Select 1 - 5 : ");
+    printf("  1 : 1440p\n");
+    printf("  2 : 1080p\n");
+    printf("  3 : 720p\n");
+    printf("  4 : 540p\n");
+    printf("  5 : 480p\n");
+    printf("  6 : None (default)\n");
+    printf("Select 1 - 6 : ");
     int tmpVideoRes = ReadChar('1', true) - '0' - 1;
-    if (tmpVideoRes >= 0 && tmpVideoRes <= 3)
+    if (tmpVideoRes >= 0 && tmpVideoRes <= 4)
     {
         videoResolution = (CRTProtocol::EVideoResolution)tmpVideoRes;
     }
