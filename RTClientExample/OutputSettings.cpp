@@ -284,6 +284,9 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             case CRTProtocol::ModelMiqusVideoColor:
                 printf("  Model: Miqus Video Color   ");
                 break;
+            case CRTProtocol::ModelMiqusVideoColorPlus:
+                printf("  Model: Miqus Video Color Plus  ");
+                break;
             case CRTProtocol::ModelArqusA5:
                 printf("  Model: Arqus A5   ");
                 break;
@@ -339,6 +342,9 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             {
                 switch (videoResolution)
                 {
+                    case CRTProtocol::VideoResolution1440p:
+                        printf("  Video Resolution: 1440p\n");
+                        break;
                     case CRTProtocol::VideoResolution1080p :
                         printf("  Video Resolution: 1080p\n");
                         break;

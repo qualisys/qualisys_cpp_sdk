@@ -78,33 +78,34 @@ public:
 
     enum ECameraModel
     {
-        ModelMacReflex       = 0,
-        ModelProReflex120    = 1,
-        ModelProReflex240    = 2,
-        ModelProReflex500    = 3,
-        ModelProReflex1000   = 4,
-        ModelOqus100         = 5,
-        ModelOqus300         = 6,
-        ModelOqus300Plus     = 7,
-        ModelOqus400         = 8,
-        ModelOqus500         = 9,
-        ModelOqus200C        = 10,
-        ModelOqus500Plus     = 11,
-        ModelOqus700         = 12,
-        ModelOqus700Plus     = 13,
-        ModelOqus600Plus     = 14,
-        ModelMiqusM1         = 15,
-        ModelMiqusM3         = 16,
-        ModelMiqusM5         = 17,
-        ModelMiqusSyncUnit   = 18,
-        ModelMiqusVideo      = 19,
-        ModelMiqusVideoColor = 20,
-        ModelMiqusHybrid     = 21,
-        ModelArqusA5         = 22,
-        ModelArqusA12        = 23,
-        ModelArqusA9         = 24,
-        ModelArqusA26         = 25,
-        ModelUnknown         = 26
+        ModelMacReflex           = 0,
+        ModelProReflex120        = 1,
+        ModelProReflex240        = 2,
+        ModelProReflex500        = 3,
+        ModelProReflex1000       = 4,
+        ModelOqus100             = 5,
+        ModelOqus300             = 6,
+        ModelOqus300Plus         = 7,
+        ModelOqus400             = 8,
+        ModelOqus500             = 9,
+        ModelOqus200C            = 10,
+        ModelOqus500Plus         = 11,
+        ModelOqus700             = 12,
+        ModelOqus700Plus         = 13,
+        ModelOqus600Plus         = 14,
+        ModelMiqusM1             = 15,
+        ModelMiqusM3             = 16,
+        ModelMiqusM5             = 17,
+        ModelMiqusSyncUnit       = 18,
+        ModelMiqusVideo          = 19,
+        ModelMiqusVideoColor     = 20,
+        ModelMiqusHybrid         = 21,
+        ModelArqusA5             = 22,
+        ModelArqusA12            = 23,
+        ModelArqusA9             = 24,
+        ModelArqusA26            = 25,
+        ModelMiqusVideoColorPlus = 26,
+        ModelUnknown             = 27
     };
 
     enum ECameraMode
@@ -116,11 +117,12 @@ public:
 
     enum EVideoResolution
     {
-        VideoResolution1080p = 0,
-        VideoResolution720p = 1,
-        VideoResolution540p = 2,
-        VideoResolution480p = 3,
-        VideoResolutionNone = 4
+        VideoResolution1440p = 0,
+        VideoResolution1080p = 1,
+        VideoResolution720p = 2,
+        VideoResolution540p = 3,
+        VideoResolution480p = 4,
+        VideoResolutionNone = 5
     };
 
     enum EVideoAspectRatio
