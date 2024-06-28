@@ -706,7 +706,7 @@ public:
     bool       StopCapture();
     bool       Calibrate(const bool refine, SCalibration &calibrationResult, int timeout = cWaitForCalibrationTimeout);
     bool       LoadCapture(const char* pFileName);
-    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
+    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0, int nTimeout = 30000000); //Default timeout is 30 seconds
     bool       LoadProject(const char* pFileName);
     bool       Reprocess();
 

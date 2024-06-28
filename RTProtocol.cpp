@@ -982,7 +982,7 @@ bool CRTProtocol::LoadCapture(const char* pFileName)
 }
 
 
-bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName, int nSizeOfNewFileName)
+bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName, int nSizeOfNewFileName, int nTimeOut)
 {
     char tTemp[100];
     char pResponseStr[256];
@@ -994,7 +994,7 @@ bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNew
     {
         sprintf(tTemp, "Save %s%s", pFileName, bOverwrite ? " Overwrite" : "");
 
-        if (SendCommand(tTemp, pResponseStr))
+        if (SendCommand(tTemp, pResponseStr, nTimeOut))
         {
             if (strcmp(pResponseStr, "Measurement saved") == 0)
             {
