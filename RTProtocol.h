@@ -35,6 +35,7 @@ public:
     static const unsigned int cDefaultAutoDiscoverPort  = cDefaultBasePort + 4;
 
     static const unsigned int cWaitForDataTimeout        = 5000000;   // 5 s
+    static const unsigned int cWaitForSaveTimeout        = 30000000;  // 30 s
     static const unsigned int cWaitForCalibrationTimeout = 600000000; // 10 min
 
     static const unsigned int cComponent3d            = 0x000001;
@@ -706,7 +707,7 @@ public:
     bool       StopCapture();
     bool       Calibrate(const bool refine, SCalibration &calibrationResult, int timeout = cWaitForCalibrationTimeout);
     bool       LoadCapture(const char* pFileName);
-    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
+    bool       SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName = nullptr, int nSizeOfNewFileName = 0, int nTimeout = cWaitForSaveTimeout); //Default timeout is 30 seconds
     bool       LoadProject(const char* pFileName);
     bool       Reprocess();
 
