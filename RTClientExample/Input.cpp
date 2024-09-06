@@ -69,10 +69,10 @@ bool CInput::ReadByteOrder(bool &bBigEndian)
 } // ReadByteOrder
 
 
-void CInput::ReadClientControlPassword(std::string& pPassword)
+void CInput::ReadClientControlPassword(std::string& password)
 {
     printf("Enter Client Control Password : ");
-    std::getline(std::cin, pPassword);
+    std::getline(std::cin, password);
 }
 
 

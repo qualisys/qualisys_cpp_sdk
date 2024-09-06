@@ -234,7 +234,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
     float                     fTopCrop;
     float                     fRightCrop;
     float                     fBottomCrop;
-    std::string               pPassword;
+    std::string               password;
     bool                      bGotControl;
 
     bGotControl  = false;
@@ -242,7 +242,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
     do 
     {
         // Take control over QTM
-        if (mpoRTProtocol->TakeControl(pPassword))
+        if (mpoRTProtocol->TakeControl(password))
         {
             bGotControl = true;
 
@@ -546,7 +546,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
         {
             if (strncmp("Wrong or missing password", mpoRTProtocol->GetErrorString(), 25) == 0)
             {
-                mpoInput->ReadClientControlPassword(pPassword);
+                mpoInput->ReadClientControlPassword(password);
                 printf("\n");
             }
             else
@@ -554,7 +554,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 printf("Failed to take control over QTM. %s\n\n", mpoRTProtocol->GetErrorString());
             }
         }
-    } while (!bGotControl && pPassword[0] != 0);
+    } while (!bGotControl && !password.empty());
 
 } // ChangeSettings
 
@@ -1019,12 +1019,12 @@ void COperations::ControlQTM()
 
 bool COperations::TakeQTMControl()
 {
-    std::string pPassword;
+    std::string password;
 
     do
     {
         // Take control over QTM
-        if (mpoRTProtocol->TakeControl(pPassword))
+        if (mpoRTProtocol->TakeControl(password))
         {
             return true;
         }
@@ -1032,7 +1032,7 @@ bool COperations::TakeQTMControl()
         {
             if (strncmp("Wrong or missing password", mpoRTProtocol->GetErrorString(), 25) == 0)
             {
-                mpoInput->ReadClientControlPassword(pPassword);
+                mpoInput->ReadClientControlPassword(password);
                 printf("\n");
             }
             else
@@ -1040,7 +1040,7 @@ bool COperations::TakeQTMControl()
                 printf("Failed to take control over QTM. %s\n\n", mpoRTProtocol->GetErrorString());
             }
         }
-    } while (!pPassword.empty());
+    } while (!password.empty());
 
     return false;
 } // TakeQTMControl
