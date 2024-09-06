@@ -6124,9 +6124,9 @@ bool CRTProtocol::SendCommand(const std::string& cmdStr, std::string& commandRes
     }
     else
     {
-        std::string pTmpStr;
-        pTmpStr = std::string(maErrorStr);
-        sprintf(maErrorStr, "\'%s\' command failed. %s", cmdStr.c_str(), pTmpStr.c_str());
+        std::string tmpStr;
+        tmpStr = std::string(maErrorStr);
+        sprintf(maErrorStr, "\'%s\' command failed. %s", cmdStr.c_str(), tmpStr.c_str());
     }
     commandResponseStr.clear();
     return false;
