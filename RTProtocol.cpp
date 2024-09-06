@@ -96,8 +96,8 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
                           int nMajorVersion, int nMinorVersion, bool bBigEndian)
 {
     CRTPacket::EPacketType eType;
-    char                   tTemp[100];
-    char                   pResponseStr[256];
+    std::string            tempStr;
+    std::string            responseStr;
 
     mbBigEndian = bBigEndian;
     mbIsMaster = false;
@@ -168,14 +168,14 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
                         {
                             if (mbBigEndian)
                             {
-                                strcpy(tTemp, "ByteOrder BigEndian");
+                                tempStr = "ByteOrder BigEndian";
                             }
                             else
                             {
-                                strcpy(tTemp,  "ByteOrder LittleEndian");
+                                tempStr = "ByteOrder LittleEndian";
                             }
 
-                            if (SendCommand(tTemp, pResponseStr))
+                            if (SendCommand(tempStr, responseStr))
                             {
                                 return true;
                             }
@@ -243,16 +243,14 @@ bool CRTProtocol::Connected() const
 
 bool CRTProtocol::SetVersion(int nMajorVersion, int nMinorVersion)
 {
-    char tTemp[256];
-    char pResponseStr[256];
+    std::string responseStr;
+    std::string tempStr = "Version " + std::to_string(nMajorVersion) + "." + std::to_string(nMinorVersion);
 
-    sprintf(tTemp, "Version %u.%u", nMajorVersion, nMinorVersion);
-
-    if (SendCommand(tTemp, pResponseStr))
+    if (SendCommand(tempStr, responseStr))
     {
-        sprintf(tTemp, "Version set to %u.%u", nMajorVersion, nMinorVersion);
+        tempStr = "Version set to " + std::to_string(nMajorVersion) + "." + std::to_string(nMinorVersion);
 
-        if (strcmp(pResponseStr, tTemp) == 0)
+        if (responseStr == tempStr)
         {
             mnMajorVersion = nMajorVersion;
             mnMinorVersion = nMinorVersion;
@@ -260,9 +258,9 @@ bool CRTProtocol::SetVersion(int nMajorVersion, int nMinorVersion)
             return true;
         }
 
-        if (strlen(pResponseStr))
+        if (!responseStr.empty())
         {
-            sprintf(maErrorStr, "%s.", pResponseStr);
+            sprintf(maErrorStr, "%s.", responseStr.c_str());
         }
         else
         {
@@ -271,8 +269,8 @@ bool CRTProtocol::SetVersion(int nMajorVersion, int nMinorVersion)
     }
     else
     {
-        strcpy(tTemp, maErrorStr);
-        sprintf(maErrorStr, "Send Version failed. %s.", tTemp);
+        tempStr = std::string(maErrorStr);
+        sprintf(maErrorStr, "Send Version failed. %s.", tempStr.c_str());
     }
     return false;
 }
@@ -292,9 +290,9 @@ bool CRTProtocol::GetVersion(unsigned int &nMajorVersion, unsigned int &nMinorVe
 }
 
 
-bool CRTProtocol::GetQTMVersion(char* pVersion, unsigned int nVersionLen)
+bool CRTProtocol::GetQTMVersion(std::string& verStr)
 {
-    if (SendCommand("QTMVersion", pVersion, nVersionLen))
+    if (SendCommand("QTMVersion", verStr))
     {
         return true;
     }
@@ -303,13 +301,13 @@ bool CRTProtocol::GetQTMVersion(char* pVersion, unsigned int nVersionLen)
 }
 
 
-bool CRTProtocol::GetByteOrder(bool &bBigEndian)
+bool CRTProtocol::GetByteOrder(bool& bBigEndian)
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("ByteOrder", pResponseStr))
+    if (SendCommand("ByteOrder", responseStr))
     {
-        bBigEndian = (strcmp(pResponseStr, "Byte order is big endian") == 0);
+        bBigEndian = (responseStr == "Byte order is big endian");
         return true;
     }
     strcpy(maErrorStr, "Get Byte order failed.");
@@ -317,32 +315,26 @@ bool CRTProtocol::GetByteOrder(bool &bBigEndian)
 }
 
 
-bool CRTProtocol::CheckLicense(const char* pLicenseCode)
+bool CRTProtocol::CheckLicense(const std::string& licenseCode)
 {
-    char tTemp[100];
-    char pResponseStr[256];
+    std::string responseStr;
+    std::string tempStr = "CheckLicense ";
 
-    if (strlen(pLicenseCode) <= 85)
+    tempStr += licenseCode;
+
+    if (SendCommand(tempStr, responseStr))
     {
-        sprintf(tTemp, "CheckLicense %s", pLicenseCode);
-
-        if (SendCommand(tTemp, pResponseStr))
+        if (responseStr == "License pass")
         {
-            if (strcmp(pResponseStr, "License pass") == 0)
-            {
-                return true;
-            }
-            strcpy(maErrorStr, "Wrong license code.");
+            return true;
         }
-        else
-        {
-            strcpy(maErrorStr, "CheckLicense failed.");
-        }
+        strcpy(maErrorStr, "Wrong license code.");
     }
     else
     {
-        strcpy(maErrorStr, "License code too long.");
+        strcpy(maErrorStr, "CheckLicense failed.");
     }
+
     return false;
 }
 
@@ -422,13 +414,12 @@ bool CRTProtocol::GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, 
     return false;
 }
 
-bool CRTProtocol::GetCurrentFrame(const char* components)
+bool CRTProtocol::GetCurrentFrame(const std::string& components)
 {
-    char pCommandStr[256];
-    strcpy(pCommandStr, "GetCurrentFrame ");
-    strcat(pCommandStr, components);
+    std::string cmdStr = "GetCurrentFrame ";
+    cmdStr += components;
 
-    if (SendCommand(pCommandStr))
+    if (SendCommand(cmdStr.c_str()))
     {
         return true;
     }
@@ -440,7 +431,7 @@ bool CRTProtocol::GetCurrentFrame(const char* components)
 
 bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
-    char components[256];
+    std::string components;
 
     if (GetComponentString(components, nComponentType, componentOptions))
     {
@@ -507,14 +498,15 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
     return false;
 }
 
+
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
-                               unsigned int nComponentType, const SComponentOptions& componentOptions)
+    unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
-    char components[256];
+    std::string components;
 
     if (GetComponentString(components, nComponentType, componentOptions))
     {
-        return StreamFrames(eRate, nRateArg, nUDPPort, pUDPAddr, components);
+        return StreamFrames(eRate, nRateArg, nUDPPort, pUDPAddr, components.c_str());
     }
     else
     {
@@ -580,7 +572,7 @@ bool CRTProtocol::GetState(CRTPacket::EEvent &eEvent, bool bUpdate, int nTimeout
 bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
 {
     CRTPacket::EPacketType eType;
-    char                   pResponseStr[256];
+    std::string            responseStr;
 
     mpFileBuffer = fopen(pFileName, "wb");
     if (mpFileBuffer != nullptr)
@@ -588,9 +580,9 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
         if (bC3D)
         {
             // C3D file
-            if (SendCommand((mnMajorVersion > 1 || mnMinorVersion > 7) ? "GetCaptureC3D" : "GetCapture", pResponseStr))
+            if (SendCommand((mnMajorVersion > 1 || mnMinorVersion > 7) ? "GetCaptureC3D" : "GetCapture", responseStr))
             {
-                if (strcmp(pResponseStr, "Sending capture") == 0)
+                if (responseStr == "Sending capture")
                 {
                     if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for C3D file in 5 seconds.
                     {
@@ -626,9 +618,9 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
         else
         {
             // QTM file
-            if (SendCommand("GetCaptureQTM", pResponseStr))
+            if (SendCommand("GetCaptureQTM", responseStr))
             {
-                if (strcmp(pResponseStr, "Sending capture") == 0)
+                if (responseStr == "Sending capture")
                 {
                     if (Receive(eType, true, 5000000) == CNetwork::ResponseType::success) // Wait for QTM file in 5 seconds.
                     {
@@ -673,18 +665,18 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
 
 bool CRTProtocol::SendTrig()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Trig", pResponseStr))
+    if (SendCommand("Trig", responseStr))
     {
-        if (strcmp(pResponseStr, "Trig ok") == 0)
+        if (responseStr == "Trig ok")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -694,71 +686,62 @@ bool CRTProtocol::SendTrig()
 }
 
 
-bool CRTProtocol::SetQTMEvent(const char* pLabel)
+bool CRTProtocol::SetQTMEvent(const std::string& label)
 {
-    char tTemp[100];
-    char pResponseStr[256];
+    std::string responseStr;
+    std::string tempStr = (mnMajorVersion > 1 || mnMinorVersion > 7) ? "SetQTMEvent " : "Event ";
 
-    if (strlen(pLabel) <= 92)
+    tempStr += label;
+
+    if (SendCommand(tempStr, responseStr))
     {
-        sprintf(tTemp, "%s %s", (mnMajorVersion > 1 || mnMinorVersion > 7) ? "SetQTMEvent" : "Event", pLabel);
-
-        if (SendCommand(tTemp, pResponseStr))
+        if (responseStr == "Event set")
         {
-            if (strcmp(pResponseStr, "Event set") == 0)
-            {
-                return true;
-            }
+            return true;
         }
-        if (strlen(pResponseStr))
-        {
-            sprintf(maErrorStr, "%s.", pResponseStr);
-        }
-        else
-        {
-            sprintf(maErrorStr, "%s failed.", (mnMajorVersion > 1 || mnMinorVersion > 7) ? "SetQTMEvent" : "Event");
-        }
+    }
+    if (!responseStr.empty())
+    {
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(maErrorStr, "Event label too long.");
+        sprintf(maErrorStr, "%s failed.", (mnMajorVersion > 1 || mnMinorVersion > 7) ? "SetQTMEvent" : "Event");
     }
+
     return false;
 }
 
 
-bool CRTProtocol::TakeControl(const char* pPassword)
+bool CRTProtocol::TakeControl(const std::string& password)
 {
-    char pResponseStr[256];
-    char pCmd[64];
+    std::string responseStr;
+    std::string cmdStr = "TakeControl";
 
-    strcpy(pCmd, "TakeControl");
-    if (pPassword != nullptr)
+    // Add password
+    if (!password.empty())
     {
-        // Add password
-        if (pPassword[0] != 0)
-        {
-            strcat(pCmd, " ");
-            strcat(pCmd, pPassword);
-        }
+        cmdStr += " ";
+        cmdStr += password;
     }
-    if (SendCommand(pCmd, pResponseStr))
+    if (SendCommand(cmdStr, responseStr))
     {
-        if (strcmp("You are now master", pResponseStr)     == 0 ||
-            strcmp("You are already master", pResponseStr) == 0)
+        if (responseStr == "You are now master" ||
+            responseStr == "You are already master")
         {
             mbIsMaster = true;
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
         strcpy(maErrorStr, "TakeControl failed.");
     }
+
     mbIsMaster = false;
     return false;
 } // TakeControl
@@ -766,20 +749,20 @@ bool CRTProtocol::TakeControl(const char* pPassword)
 
 bool CRTProtocol::ReleaseControl()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("ReleaseControl", pResponseStr))
+    if (SendCommand("ReleaseControl", responseStr))
     {
-        if (strcmp("You are now a regular client", pResponseStr)     == 0 ||
-            strcmp("You are already a regular client", pResponseStr) == 0)
+        if (responseStr == "You are now a regular client" ||
+            responseStr == "You are already a regular client")
         {
             mbIsMaster = false;
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -797,19 +780,19 @@ bool CRTProtocol::IsControlling()
 
 bool CRTProtocol::NewMeasurement()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("New", pResponseStr))
+    if (SendCommand("New", responseStr))
     {
-        if (strcmp(pResponseStr, "Creating new connection") == 0 ||
-            strcmp(pResponseStr, "Already connected") == 0)
+        if (responseStr == "Creating new connection" ||
+            responseStr == "Already connected")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -820,21 +803,21 @@ bool CRTProtocol::NewMeasurement()
 
 bool CRTProtocol::CloseMeasurement()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Close", pResponseStr))
+    if (SendCommand("Close", responseStr))
     {
-        if (strcmp(pResponseStr, "Closing connection") == 0 ||
-            strcmp(pResponseStr, "File closed") == 0 ||
-            strcmp(pResponseStr, "Closing file") == 0 ||
-            strcmp(pResponseStr, "No connection to close") == 0)
+        if (responseStr == "Closing connection" ||
+            responseStr == "File closed" ||
+            responseStr == "Closing file" ||
+            responseStr == "No connection to close")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -846,18 +829,18 @@ bool CRTProtocol::CloseMeasurement()
 
 bool CRTProtocol::StartCapture()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Start", pResponseStr))
+    if (SendCommand("Start", responseStr))
     {
-        if (strcmp(pResponseStr, "Starting measurement") == 0)
+        if (responseStr == "Starting measurement")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -869,22 +852,22 @@ bool CRTProtocol::StartCapture()
 
 bool CRTProtocol::StartRTOnFile()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Start rtfromfile", pResponseStr))
+    if (SendCommand("Start rtfromfile", responseStr))
     {
-        if (strcmp(pResponseStr, "Starting RT from file") == 0)
+        if (responseStr == "Starting RT from file")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        if (strcmp(pResponseStr, "RT from file already running") == 0)
+        if (responseStr == "RT from file already running")
         {
             return true;
         }
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -896,18 +879,18 @@ bool CRTProtocol::StartRTOnFile()
 
 bool CRTProtocol::StopCapture()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Stop", pResponseStr))
+    if (SendCommand("Stop", responseStr))
     {
-        if (strcmp(pResponseStr, "Stopping measurement") == 0)
+        if (responseStr == "Stopping measurement")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -917,13 +900,13 @@ bool CRTProtocol::StopCapture()
 }
 
 
-bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, int timeout)
+bool CRTProtocol::Calibrate(const bool refine, SCalibration& calibrationResult, int timeout)
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand(refine ? "calibrate refine" : "calibrate", pResponseStr))
+    if (SendCommand(refine ? "calibrate refine" : "calibrate", responseStr))
     {
-        if (strcmp(pResponseStr, "Starting calibration") == 0)
+        if (responseStr == "Starting calibration")
         {
             if (ReceiveCalibrationSettings(timeout))
             {
@@ -936,9 +919,9 @@ bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, 
             }
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -948,135 +931,117 @@ bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, 
 }
 
 
-bool CRTProtocol::LoadCapture(const char* pFileName)
+bool CRTProtocol::LoadCapture(const std::string& fileName)
 {
-    std::string sendString = "Load \"";
-    char pResponseStr[256];
+    std::string sendStr = "Load \"";
+    std::string responseStr;
 
-    if (strlen(pFileName) <= 250)
+    sendStr += fileName;
+    sendStr += "\"";
+
+    if (SendCommand(sendStr.c_str(), responseStr, 20000000)) // Set timeout to 20 s for Load command.
     {
-        sendString += pFileName;
-        sendString += "\"";
-
-        if (SendCommand(sendString.c_str(), pResponseStr, 20000000)) // Set timeout to 20 s for Load command.
+        if (responseStr == "Measurement loaded")
         {
-            if (strcmp(pResponseStr, "Measurement loaded") == 0)
-            {
-                return true;
-            }
+            return true;
         }
-        if (strlen(pResponseStr) > 0)
-        {
-            sprintf(maErrorStr, "%s.", pResponseStr);
-        }
-        else
-        {
-            strcpy(maErrorStr, "Load failed.");
-        }
+    }
+    if (!responseStr.empty())
+    {
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "Load failed.");
     }
+
     return false;
 }
 
 
-bool CRTProtocol::SaveCapture(const char* pFileName, bool bOverwrite, char* pNewFileName, int nSizeOfNewFileName, int nTimeOut)
+bool CRTProtocol::SaveCapture(const std::string& fileName, bool bOverwrite, std::string* pNewFileName, int nSizeOfNewFileName)
 {
-    char tTemp[100];
-    char pResponseStr[256];
-    char tNewFileNameTmp[300];
+    std::string responseStr;
+    std::string tempNewFileNameStr;
+    std::string tempStr = "Save ";
 
-    tNewFileNameTmp[0] = 0;
+    tempStr += fileName;
+    tempStr += (bOverwrite ? " Overwrite" : "");
 
-    if (strlen(pFileName) <= 94)
+    if (SendCommand(tempStr, responseStr))
     {
-        sprintf(tTemp, "Save %s%s", pFileName, bOverwrite ? " Overwrite" : "");
-
-        if (SendCommand(tTemp, pResponseStr, nTimeOut))
+        if (responseStr == "Measurement saved")
         {
-            if (strcmp(pResponseStr, "Measurement saved") == 0)
+            if (pNewFileName && !pNewFileName->empty())
             {
-                if (pNewFileName && nSizeOfNewFileName > 0)
-                {
-                    pNewFileName[0] = 0;
-                }
-                return true;
+                pNewFileName->clear();
             }
-            if (sscanf(pResponseStr, "Measurement saved as '%[^']'", tNewFileNameTmp) == 1)
+            return true;
+        }
+        tempNewFileNameStr.resize(responseStr.size());
+        if (sscanf(responseStr.c_str(), "Measurement saved as '%[^']'", &tempNewFileNameStr[0]) == 1)
+        {
+            if (pNewFileName)
             {
-                if (pNewFileName)
-                {
-                    strcpy(pNewFileName, tNewFileNameTmp);
-                }
-                return true;
+                *pNewFileName = tempNewFileNameStr;
             }
+            return true;
         }
-        if (strlen(pResponseStr) > 0)
-        {
-            sprintf(maErrorStr, "%s.", pResponseStr);
-        }
-        else
-        {
-            strcpy(maErrorStr, "Save failed.");
-        }
+    }
+    if (!responseStr.empty())
+    {
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "Save failed.");
     }
+
     return false;
 }
 
 
-bool CRTProtocol::LoadProject(const char* pFileName)
+bool CRTProtocol::LoadProject(const std::string& fileName)
 {
-    char tTemp[100];
-    char pResponseStr[256];
+    std::string responseStr;
+    std::string tempStr = "LoadProject ";
 
-    if (strlen(pFileName) <= 94)
+    tempStr += fileName;
+
+    if (SendCommand(tempStr, responseStr, 20000000)) // Timeout 20 s
     {
-        sprintf(tTemp, "LoadProject %s", pFileName);
-
-        if (SendCommand(tTemp, pResponseStr, 20000000)) // Timeout 20 s
+        if (responseStr == "Project loaded")
         {
-            if (strcmp(pResponseStr, "Project loaded") == 0)
-            {
-                return true;
-            }
+            return true;
         }
-        if (strlen(pResponseStr))
-        {
-            sprintf(maErrorStr, "%s.", pResponseStr);
-        }
-        else
-        {
-            strcpy(maErrorStr, "Load project failed.");
-        }
+    }
+    if (!responseStr.empty())
+    {
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(maErrorStr, "File name too long.");
+        strcpy(maErrorStr, "Load project failed.");
     }
+
     return false;
 }
 
 
 bool CRTProtocol::Reprocess()
 {
-    char pResponseStr[256];
+    std::string responseStr;
 
-    if (SendCommand("Reprocess", pResponseStr))
+    if (SendCommand("Reprocess", responseStr))
     {
-        if (strcmp(pResponseStr, "Reprocessing file") == 0)
+        if (responseStr == "Reprocessing file")
         {
             return true;
         }
     }
-    if (strlen(pResponseStr))
+    if (!responseStr.empty())
     {
-        sprintf(maErrorStr, "%s.", pResponseStr);
+        sprintf(maErrorStr, "%s.", responseStr.c_str());
     }
     else
     {
@@ -1162,7 +1127,7 @@ bool CRTProtocol::ConvertRateString(const char* pRate, EStreamRate &eRate, unsig
     return eRate != RateNone;
 }
 
-std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(const std::string componentsString)
+std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(const std::string& componentsString)
 {
     std::vector<std::pair<unsigned int, std::string>> components; // Vector containing pair (component, option string).
     auto result = std::back_inserter(components);
@@ -1187,7 +1152,7 @@ std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(con
     return components;
 }
 
-bool CRTProtocol::GetComponent(std::string componentStr, unsigned int &component, std::string &option)
+bool CRTProtocol::GetComponent(std::string& componentStr, unsigned int& component, std::string& option)
 {
     // Make string lower case.
     componentStr = ToLower(componentStr);
@@ -1310,9 +1275,9 @@ bool CRTProtocol::GetComponent(std::string componentStr, unsigned int &component
 }
 
 
-unsigned int CRTProtocol::ConvertComponentString(const char* componentsString)
+unsigned int CRTProtocol::ConvertComponentString(const std::string& componentsString)
 {
-    auto components = GetComponents(std::string(componentsString));
+    auto components = GetComponents(componentsString);
 
     unsigned int componentTypes = 0;
 
@@ -1325,111 +1290,112 @@ unsigned int CRTProtocol::ConvertComponentString(const char* componentsString)
 }
 
 
-bool CRTProtocol::GetComponentString(char* pComponentStr, unsigned int nComponentType, const SComponentOptions& options)
+bool CRTProtocol::GetComponentString(std::string& componentStr, unsigned int nComponentType, const SComponentOptions& options)
 {
-    pComponentStr[0] = 0;
+    std::string tempStr = "";
 
     if (nComponentType & cComponent2d)
     {
-        strcat(pComponentStr, "2D ");
+        tempStr += "2D ";
     }
     if (nComponentType & cComponent2dLin)
     {
-        strcat(pComponentStr, "2DLin ");
+        tempStr += "2DLin ";
     }
     if (nComponentType & cComponent3d)
     {
-        strcat(pComponentStr, "3D ");
+        tempStr += "3D ";
     }
     if (nComponentType & cComponent3dRes)
     {
-        strcat(pComponentStr, "3DRes ");
+        tempStr += "3DRes ";
     }
     if (nComponentType & cComponent3dNoLabels)
     {
-        strcat(pComponentStr, "3DNoLabels ");
+        tempStr += "3DNoLabels ";
     }
     if (nComponentType & cComponent3dNoLabelsRes)
     {
-        strcat(pComponentStr, "3DNoLabelsRes ");
+        tempStr += "3DNoLabelsRes ";
     }
     if (nComponentType & cComponent6d)
     {
-        strcat(pComponentStr, "6D ");
+        tempStr += "6D ";
     }
     if (nComponentType & cComponent6dRes)
     {
-        strcat(pComponentStr, "6DRes ");
+        tempStr += "6DRes ";
     }
     if (nComponentType & cComponent6dEuler)
     {
-        strcat(pComponentStr, "6DEuler ");
+        tempStr += "6DEuler ";
     }
     if (nComponentType & cComponent6dEulerRes)
     {
-        strcat(pComponentStr, "6DEulerRes ");
+        tempStr += "6DEulerRes ";
     }
     if (nComponentType & cComponentAnalog)
     {
-        strcat(pComponentStr, "Analog");
+        tempStr += "Analog";
 
         if (options.mAnalogChannels != nullptr)
         {
-            strcat(pComponentStr, ":");
-            strcat(pComponentStr, options.mAnalogChannels);
+            tempStr += ":";
+            tempStr += options.mAnalogChannels;
         }
 
-        strcat(pComponentStr, " ");
+        tempStr += " ";
     }
     if (nComponentType & cComponentAnalogSingle)
     {
-        strcat(pComponentStr, "AnalogSingle");
+        tempStr += "AnalogSingle";
 
         if (options.mAnalogChannels != nullptr)
         {
-            strcat(pComponentStr, ":");
-            strcat(pComponentStr, options.mAnalogChannels);
+            tempStr += ":";
+            tempStr += options.mAnalogChannels;
         }
 
-        strcat(pComponentStr, " ");
+        tempStr += " ";
     }
     if (nComponentType & cComponentForce)
     {
-        strcat(pComponentStr, "Force ");
+        tempStr += "Force ";
     }
     if (nComponentType & cComponentForceSingle)
     {
-        strcat(pComponentStr, "ForceSingle ");
+        tempStr += "ForceSingle ";
     }
     if (nComponentType & cComponentGazeVector)
     {
-        strcat(pComponentStr, "GazeVector ");
+        tempStr += "GazeVector ";
     }
     if (nComponentType & cComponentEyeTracker)
     {
-        strcat(pComponentStr, "EyeTracker ");
+        tempStr += "EyeTracker ";
     }
     if (nComponentType & cComponentImage)
     {
-        strcat(pComponentStr, "Image ");
+        tempStr += "Image ";
     }
     if (nComponentType & cComponentTimecode)
     {
-        strcat(pComponentStr, "Timecode ");
+        tempStr += "Timecode ";
     }
     if (nComponentType & cComponentSkeleton)
     {
-        strcat(pComponentStr, "Skeleton");
+        tempStr += "Skeleton";
 
         if (options.mSkeletonGlobalData)
         {
-            strcat(pComponentStr, ":global");
+            tempStr += ":global";
         }
 
-        strcat(pComponentStr, " ");
+        tempStr += " ";
     }
 
-    return (pComponentStr[0] != 0);
+    componentStr += tempStr;
+    return (!tempStr.empty());
 }
 
 
@@ -6133,34 +6099,36 @@ bool CRTProtocol::SendCommand(const char* pCmdStr)
 } // SendCommand
 
 
-bool CRTProtocol::SendCommand(const char* pCmdStr, char* pCommandResponseStr, unsigned int timeout)
+bool CRTProtocol::SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout)
 {
-    CRTPacket::EPacketType eType;
-
-    if (SendString(pCmdStr, CRTPacket::PacketCommand))
+    if (SendString(cmdStr.c_str(), CRTPacket::PacketCommand))
     {
+        CRTPacket::EPacketType eType;
+
         while (Receive(eType, true, timeout) == CNetwork::ResponseType::success)
         {
             if (eType == CRTPacket::PacketCommand)
             {
-                strcpy(pCommandResponseStr, mpoRTPacket->GetCommandString());
+                const auto commandResponseArr = mpoRTPacket->GetCommandString();
+                commandResponseStr = (commandResponseArr != nullptr ? std::string(commandResponseArr) : "");
                 return true;
             }
             if (eType == CRTPacket::PacketError)
             {
-                strcpy(pCommandResponseStr, mpoRTPacket->GetErrorString());
-                strcpy(maErrorStr, pCommandResponseStr);
+                const auto commandResponseArr = mpoRTPacket->GetErrorString();
+                commandResponseStr = (commandResponseArr != nullptr ? std::string(commandResponseArr) : "");
+                strcpy(maErrorStr, commandResponseStr.c_str());
                 return false;
             }
         }
     }
     else
     {
-        char pTmpStr[256];
-        strcpy(pTmpStr, maErrorStr);
-        sprintf(maErrorStr, "\'%s\' command failed. %s", pCmdStr, pTmpStr);
+        std::string pTmpStr;
+        pTmpStr = std::string(maErrorStr);
+        sprintf(maErrorStr, "\'%s\' command failed. %s", cmdStr.c_str(), pTmpStr.c_str());
     }
-    pCommandResponseStr[0] = 0;
+    commandResponseStr.clear();
     return false;
 } // SendCommand
 

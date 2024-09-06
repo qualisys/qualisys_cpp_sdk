@@ -77,10 +77,10 @@ int main(int argc, char **argv)
             unsigned short udpServerPort = 0; // Use random port.
             if (poRTProtocol->Connect(pServerAddr, nBasePort, &udpServerPort, nMajorVersion, nMinorVersion, bBigEndian))
             {
-                char pVer[64];
-                if (poRTProtocol->GetQTMVersion(pVer, sizeof(pVer)))
+                std::string verStr;
+                if (poRTProtocol->GetQTMVersion(verStr))
                 {
-                    printf("Connected. %s.\n", pVer);
+                    printf("Connected. %s.\n", verStr.c_str());
                 }
             }
             else
