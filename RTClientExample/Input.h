@@ -51,7 +51,7 @@ public:
     char WaitForKey();
     bool ReadVersion(int &nMajorVersion, int &nMinorVersion);
     bool ReadByteOrder(bool &bBigEndian);
-    void ReadClientControlPassword(char* pPassword, int nLen);
+    void ReadClientControlPassword(std::string& password);
     bool ReadDiscoverRTServers(bool &bDiscover, char* tServerAddress);
     bool ReadOperation(EOperation &eOperation);
     bool ReadStreamRate(CRTProtocol::EStreamRate &eRate, int &nArg);

@@ -69,10 +69,10 @@ bool CInput::ReadByteOrder(bool &bBigEndian)
 } // ReadByteOrder
 
 
-void CInput::ReadClientControlPassword(char* pPassword, int nLen)
+void CInput::ReadClientControlPassword(std::string& password)
 {
     printf("Enter Client Control Password : ");
-    gets_s(pPassword, nLen);
+    std::getline(std::cin, password);
 }
 
 
@@ -222,9 +222,9 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
             {
                 nAddType = ReadDataComponent(false, skeletonGlobalReferenceFrame);
                 nComponentType |= nAddType;
-                char tmpStr[128];
+                std::string tmpStr;
                 CRTProtocol::GetComponentString(tmpStr, nAddType);
-                printf("%s\n", tmpStr);
+                printf("%s\n", tmpStr.c_str());
             } while (nAddType != 0);
 
             if (nComponentType == 0)

@@ -234,16 +234,15 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
     float                     fTopCrop;
     float                     fRightCrop;
     float                     fBottomCrop;
-    char                      pPassword[31];
+    std::string               password;
     bool                      bGotControl;
 
-    pPassword[0] = 0;
     bGotControl  = false;
 
     do 
     {
         // Take control over QTM
-        if (mpoRTProtocol->TakeControl(pPassword))
+        if (mpoRTProtocol->TakeControl(password))
         {
             bGotControl = true;
 
@@ -547,7 +546,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
         {
             if (strncmp("Wrong or missing password", mpoRTProtocol->GetErrorString(), 25) == 0)
             {
-                mpoInput->ReadClientControlPassword(pPassword, sizeof(pPassword));
+                mpoInput->ReadClientControlPassword(password);
                 printf("\n");
             }
             else
@@ -555,7 +554,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 printf("Failed to take control over QTM. %s\n\n", mpoRTProtocol->GetErrorString());
             }
         }
-    } while (!bGotControl && pPassword[0] != 0);
+    } while (!bGotControl && !password.empty());
 
 } // ChangeSettings
 
@@ -912,16 +911,16 @@ void COperations::ControlQTM()
                     {
                         filename = mpoInput->ReadString("Enter Name : ");
                         bool bOverWrite = mpoInput->ReadYesNo("Overwrite existing measurement (y/n)? ", false);
-                        char tNewFileName[300];
-                        if (mpoRTProtocol->SaveCapture(filename.c_str(), bOverWrite, tNewFileName, sizeof(tNewFileName)))
+                        std::string tNewFileName;
+                        if (mpoRTProtocol->SaveCapture(filename.c_str(), bOverWrite, &tNewFileName, sizeof(tNewFileName)))
                         {
-                            if (strlen(tNewFileName) == 0)
+                            if (tNewFileName.empty())
                             {
                                 printf("Measurement saved.\n\n");
                             }
                             else
                             {
-                                printf_s("Measurement saved as : %s.\n\n", tNewFileName);
+                                printf_s("Measurement saved as : %s.\n\n", tNewFileName.c_str());
                             }
                         }
                         else
@@ -1020,14 +1019,12 @@ void COperations::ControlQTM()
 
 bool COperations::TakeQTMControl()
 {
-    char pPassword[256];
+    std::string password;
 
-    pPassword[0] = 0;
-
-    do 
+    do
     {
         // Take control over QTM
-        if (mpoRTProtocol->TakeControl(pPassword))
+        if (mpoRTProtocol->TakeControl(password))
         {
             return true;
         }
@@ -1035,7 +1032,7 @@ bool COperations::TakeQTMControl()
         {
             if (strncmp("Wrong or missing password", mpoRTProtocol->GetErrorString(), 25) == 0)
             {
-                mpoInput->ReadClientControlPassword(pPassword, sizeof(pPassword));
+                mpoInput->ReadClientControlPassword(password);
                 printf("\n");
             }
             else
@@ -1043,7 +1040,7 @@ bool COperations::TakeQTMControl()
                 printf("Failed to take control over QTM. %s\n\n", mpoRTProtocol->GetErrorString());
             }
         }
-    } while (pPassword[0] != 0);
+    } while (!password.empty());
 
     return false;
 } // TakeQTMControl
