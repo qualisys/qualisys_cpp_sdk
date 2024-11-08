@@ -1163,35 +1163,38 @@ int _vscprintf(const char* format, va_list pargs)
 }
 #endif
 
-std::string CMarkup::Format(const char *fmt, ...)
+std::string CMarkup::Format(const char* fmt, ...)
 {
-    std::string retStr;
-    if (NULL != fmt)
-    {
-        va_list marker;
+	if (!fmt)
+	{
+		return "";  // EARLY EXIT
+	}
 
-        // initialize variable arguments
-        va_start(marker, fmt);
+    va_list marker;
+	va_start(marker, fmt);
+	va_list markerCopy;  // Used for determining buffer size
+	va_copy(markerCopy, marker);
 
-        // Get formatted string length adding one for NULL
-        int len = _vscprintf(fmt, marker) + 1;
-
-        // Create a char vector to hold the formatted string.
-        std::vector<char> buffer(len, '\0');
-#ifdef _WIN32
-        int nWritten = _vsnprintf_s(&buffer[0], buffer.size(), len, fmt, marker);
+	// Determine buffer size
+#if defined(_MSC_VER)
+	int len = _vscprintf(fmt, markerCopy) + 1;
 #else
-        int nWritten = vsnprintf(&buffer[0], len, fmt, marker);
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
 #endif
-        if (nWritten > 0)
-        {
-            retStr = &buffer[0];
-        }
+	va_end(markerCopy);
 
-        // Reset variable arguments
-        va_end(marker);
-    }
-    return retStr;
+	std::vector<char> buffer(len);  // Create buffer of required size
+
+	// Format the string into the buffer
+#if defined(_MSC_VER)
+	int nWritten = _vsnprintf_s(buffer.data(), buffer.size(), len, fmt, marker);
+#else
+	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
+#endif
+	va_end(marker);
+
+	// Return formatted string, or an empty string if an error occurred
+	return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
