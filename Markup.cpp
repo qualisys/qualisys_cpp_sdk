@@ -1177,9 +1177,9 @@ std::string CMarkup::Format(const char* fmt, ...)
 
 	// Determine buffer size
 #if defined(_MSC_VER)
-	int len = _vscprintf(fmt, markerCopy) + 1;
+    int len = _vscprintf(fmt, markerCopy) + 1;
 #else
-	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
+    int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
 #endif
     va_end(markerCopy);
 
