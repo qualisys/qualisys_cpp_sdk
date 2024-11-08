@@ -1171,9 +1171,9 @@ std::string CMarkup::Format(const char* fmt, ...)
 	}
 
     va_list marker;
-	va_start(marker, fmt);
-	va_list markerCopy;  // Used for determining buffer size
-	va_copy(markerCopy, marker);
+    va_start(marker, fmt);
+    va_list markerCopy;  // Used for determining buffer size
+    va_copy(markerCopy, marker);
 
 	// Determine buffer size
 #if defined(_MSC_VER)
@@ -1181,20 +1181,20 @@ std::string CMarkup::Format(const char* fmt, ...)
 #else
 	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
 #endif
-	va_end(markerCopy);
+    va_end(markerCopy);
 
-	std::vector<char> buffer(len);  // Create buffer of required size
+    std::vector<char> buffer(len);  // Create buffer of required size
 
-	// Format the string into the buffer
+    // Format the string into the buffer
 #if defined(_MSC_VER)
-	int nWritten = _vsnprintf_s(buffer.data(), buffer.size(), len, fmt, marker);
+    int nWritten = _vsnprintf_s(buffer.data(), buffer.size(), len, fmt, marker);
 #else
-	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
+    int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
 #endif
-	va_end(marker);
+    va_end(marker);
 
-	// Return formatted string, or an empty string if an error occurred
-	return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
+    // Return formatted string, or an empty string if an error occurred
+    return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
