@@ -692,7 +692,7 @@ std::string CMarkup::x_GetData(int iPos) const
 	return "";
 }
 
-std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
+std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib)
 {
 	// Convert text as seen outside XML document to XML friendly
 	// replacing special characters with ampersand escape codes
@@ -708,43 +708,26 @@ std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 	// &quot; double quote
 	//
 	static const char* szaReplace[] = { "&lt;", "&amp;", "&gt;", "&apos;", "&quot;" };
-	const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
-	std::string csText;
-	const char* pSource = szText;
-	int nDestSize = (int)strlen(pSource);
-	nDestSize += nDestSize / 10 + 7;
-	char* pDest = GetBuffer(csText, nDestSize);
-	int nLen = 0;
-	char cSource = *pSource;
-	const char* pFound;
-	while (cSource)
+	static const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
+	std::string result;
+	result.reserve(strlen(szText) + (strlen(szText) / 10) + 7);
+
+	for (const char* p = szText; *p; ++p)
 	{
-		if (nLen > nDestSize - 6)
+		const char* found = strchr(pFind, *p);
+		if (found)
 		{
-			ReleaseBuffer(csText, nLen);
-			nDestSize *= 2;
-			pDest = GetBuffer(csText, nDestSize);
-		}
-		if ((pFound = strchr(pFind,cSource)) != NULL)
-		{
-			pFound = szaReplace[pFound-pFind];
-#ifdef _WIN32
-			strcpy_s(&pDest[nLen], nDestSize, pFound);
-#else
-			strncpy(&pDest[nLen], pFound, nDestSize);
-#endif
-			nLen += (int)strlen(pFound);
+			// Append appropriate replacement string
+			result += szaReplace[found - pFind];
 		}
 		else
 		{
-			pDest[nLen] = *pSource;
-			nLen += 1; //_tclen(pSource);
+			// Append original char
+			result += *p;
 		}
-		pSource += 1; //_tclen(pSource);
-		cSource = *pSource;
 	}
-	ReleaseBuffer(csText, nLen);
-	return csText;
+
+	return result;
 }
 
 std::string CMarkup::x_TextFromDoc(int nLeft, int nRight) const
