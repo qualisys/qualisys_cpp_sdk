@@ -692,7 +692,7 @@ std::string CMarkup::x_GetData(int iPos) const
 	return "";
 }
 
-std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib)
+std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 {
 	// Convert text as seen outside XML document to XML friendly
 	// replacing special characters with ampersand escape codes

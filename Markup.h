@@ -153,7 +153,7 @@ protected:
 	int x_ParseNode(TokenPos& token);
 	void x_DocChange(int nLeft, int nReplace, const std::string& csInsert);
 	void x_Adjust(int iPos, int nShift, bool bAfterPos = false);
-	std::string x_TextToDoc(const char* szText, bool bAttrib = false);
+	std::string x_TextToDoc(const char* szText, bool bAttrib = false) const;
 	std::string x_TextFromDoc(int nLeft, int nRight) const;
 
 protected:
