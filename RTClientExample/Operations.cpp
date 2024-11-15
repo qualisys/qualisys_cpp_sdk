@@ -239,9 +239,6 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
 
     bGotControl  = false;
 
-    int arr[5];
-    arr[10] = 42;  // Out-of-bounds access
-
     do 
     {
         // Take control over QTM

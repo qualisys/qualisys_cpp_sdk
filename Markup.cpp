@@ -718,29 +718,32 @@ std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 	char cSource = *pSource;
 	const char* pFound;
 	while (cSource)
-	{
-		if (nLen > nDestSize - 6)
+	{   // Ensure there is always room for the longest escape sequence (6 characters)
+		if (nLen + 6 > nDestSize)
 		{
+			std::string tempBuffer(pDest, nLen);
 			ReleaseBuffer(csText, nLen);
 			nDestSize *= 2;
 			pDest = GetBuffer(csText, nDestSize);
+			memcpy(pDest, tempBuffer.data(), nLen);
 		}
 		if ((pFound = strchr(pFind,cSource)) != NULL)
 		{
 			pFound = szaReplace[pFound-pFind];
 #ifdef _WIN32
-			strcpy_s(&pDest[nLen], nDestSize, pFound);
+			strcpy_s(&pDest[nLen], nDestSize - nLen, pFound);
 #else
-			strncpy(&pDest[nLen], pFound, nDestSize);
+			strncpy(&pDest[nLen], pFound, nDestSize - nLen);
+			pDest[nLen + strlen(pFound)] = '\0';  // Only if you use strncpy
 #endif
 			nLen += (int)strlen(pFound);
 		}
 		else
 		{
 			pDest[nLen] = *pSource;
-			nLen += 1; //_tclen(pSource);
+			nLen += 1;
 		}
-		pSource += 1; //_tclen(pSource);
+		pSource += 1;
 		cSource = *pSource;
 	}
 	ReleaseBuffer(csText, nLen);
