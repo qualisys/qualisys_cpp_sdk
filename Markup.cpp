@@ -1175,7 +1175,7 @@ std::string CMarkup::Format(const char* fmt, ...)
     va_list markerCopy;  // Used for determining buffer size
     va_copy(markerCopy, marker);
 
-	// Determine buffer size
+    // Determine buffer size
 #if defined(_MSC_VER)
     int len = _vscprintf(fmt, markerCopy) + 1;
 #else
