@@ -708,46 +708,26 @@ std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 	// &quot; double quote
 	//
 	static const char* szaReplace[] = { "&lt;", "&amp;", "&gt;", "&apos;", "&quot;" };
-	const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
-	std::string csText;
-	const char* pSource = szText;
-	int nDestSize = (int)strlen(pSource);
-	nDestSize += nDestSize / 10 + 7;
-	char* pDest = GetBuffer(csText, nDestSize);
-	int nLen = 0;
-	char cSource = *pSource;
-	const char* pFound;
-	while (cSource)
-	{   // Ensure there is always room for the longest escape sequence (6 characters)
-		if (nLen + 6 > nDestSize)
+	static const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
+	std::string result;
+	result.reserve(strlen(szText) + (strlen(szText) / 10) + 7);
+
+	for (const char* p = szText; *p; ++p)
+	{
+		const char* found = strchr(pFind, *p);
+		if (found)
 		{
-			std::string tempBuffer(pDest, nLen);
-			ReleaseBuffer(csText, nLen);
-			nDestSize *= 2;
-			pDest = GetBuffer(csText, nDestSize);
-			memcpy(pDest, tempBuffer.data(), nLen);
-		}
-		if ((pFound = strchr(pFind,cSource)) != NULL)
-		{
-			pFound = szaReplace[pFound-pFind];
-#ifdef _WIN32
-			strcpy_s(&pDest[nLen], nDestSize - nLen, pFound);
-#else
-			strncpy(&pDest[nLen], pFound, nDestSize - nLen);
-			pDest[nLen + strlen(pFound)] = '\0';  // Only if you use strncpy
-#endif
-			nLen += (int)strlen(pFound);
+			// Append appropriate replacement string
+			result += szaReplace[found - pFind];
 		}
 		else
 		{
-			pDest[nLen] = *pSource;
-			nLen += 1;
+			// Append original char
+			result += *p;
 		}
-		pSource += 1;
-		cSource = *pSource;
 	}
-	ReleaseBuffer(csText, nLen);
-	return csText;
+
+	return result;
 }
 
 std::string CMarkup::x_TextFromDoc(int nLeft, int nRight) const
