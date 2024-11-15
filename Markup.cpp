@@ -1148,10 +1148,10 @@ int _vscprintf(const char* format, va_list pargs)
 
 std::string CMarkup::Format(const char* fmt, ...)
 {
-	if (!fmt)
-	{
-		return "";  // EARLY EXIT
-	}
+    if (!fmt)
+    {
+        return "";  // EARLY EXIT
+    }
 
     va_list marker;
     va_start(marker, fmt);
