@@ -141,7 +141,8 @@ public:
         ModeDivisor,
         ModeIndependentFreq,
         ModeMeasurementTime,
-        ModeFixed100Hz
+        ModeFixed100Hz,
+        ModeSystemLiveTime
     };
 
     enum ESignalSource
