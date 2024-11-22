@@ -463,6 +463,9 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                         case CRTProtocol::ModeFixed100Hz:
                             printf("  Sync Out%d Mode: Fixed 100 Hz\n", portNumber);
                             break;
+                        case CRTProtocol::ModeSystemLiveTime:
+                            printf("  Sync Out%d Mode: System Live Time\n", portNumber);
+                            break;
                         }
                     }
                     if (portNumber == 3)

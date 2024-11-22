@@ -2675,6 +2675,10 @@ bool CRTProtocol::ReadGeneralSettings()
                     {
                         sCameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
                     }
+                    else if (tStr == "system live time")
+                    {
+                        sCameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
+                    }
                     else
                     {
                         return false;
@@ -5539,6 +5543,9 @@ bool CRTProtocol::SetCameraSyncOutSettings(
                 break;
             case ModeFixed100Hz:
                 oXML.AddElem("Mode", "Continuous 100Hz");
+                break;
+            case ModeSystemLiveTime:
+                oXML.AddElem("Mode", "System Live Time");
                 break;
             default:
                 return false; // Should never happen

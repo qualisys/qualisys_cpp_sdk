@@ -777,9 +777,10 @@ void CInput::ReadCameraSyncOutSettings(unsigned int &nCameraId, int &portNumber,
         printf("  4 : Actual Frequency\n");
         printf("  5 : Measurement Time\n");
         printf("  6 : Fixed 100 Hz\n");
-        printf("Select 1 - 6 : ");
+        printf("  7 : System Live Time\n");
+        printf("Select 1 - 7 : ");
         nSyncOutMode = ReadChar('1', true) - '0';
-        if (nSyncOutMode < 1 || nSyncOutMode > 6)
+        if (nSyncOutMode < 1 || nSyncOutMode > 7)
         {
             nSyncOutMode = 1;
         }
