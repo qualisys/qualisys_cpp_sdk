@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
+include(GNUInstallDirs)
+
 option(BUILD_EXAMPLES "Build examples" OFF)
 
 add_library(${PROJECT_NAME}
@@ -9,9 +11,10 @@ add_library(${PROJECT_NAME}
         RTPacket.cpp
         RTProtocol.cpp
 )
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -29,8 +32,6 @@ set_target_properties(${PROJECT_NAME}
 
 # ----------- INSTALL & EXPORT -----------
 
-include(GNUInstallDirs)
-
 set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
 
 install(EXPORT ${PROJECT_NAME}Targets
@@ -46,7 +47,7 @@ configure_package_config_file(${PROJECT_NAME}Config.cmake.in
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-		DESTINATION ${ConfigPackageLocation}
+        DESTINATION ${ConfigPackageLocation}
 )
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
