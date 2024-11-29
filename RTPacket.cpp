@@ -1216,6 +1216,21 @@ bool CRTPacket::GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& fr
     return false;
 }
 
+bool CRTPacket::GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& frames, int& subFrames)
+{
+    if (mnMajorVersion <= 1 && mnMinorVersion < 27)
+    {
+        return false;
+    }
+
+    if (GetTimecodeSMPTE(hours, minutes, seconds, frames))
+    {
+        subFrames = 0x1FF & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 22);
+        return true;
+    }
+    return false;
+}
+
 bool CRTPacket::GetTimecodeIRIG(int& years, int& days, int& hours, int& minutes, int& seconds, int& tenths)
 {
     if (mnTimecodeCount <= 0)

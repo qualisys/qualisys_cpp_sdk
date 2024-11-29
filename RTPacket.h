@@ -241,6 +241,7 @@ public:
     bool             IsTimeCodeAvailable() const;
     bool             GetTimecodeType(CRTPacket::ETimecodeType &timecodeType);
     bool             GetTimecodeSMPTE(int &hours, int &minutes, int &seconds, int &frames);
+    bool             GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& frames, int& subFrames); // Added in RTProtocol version 2.27
     bool             GetTimecodeIRIG(int &years, int &days, int &hours, int &minutes, int &seconds, int &tenths);
     bool             GetTimecodeCameraTime(unsigned long long &cameraTime);
 
