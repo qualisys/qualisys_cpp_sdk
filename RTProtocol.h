@@ -712,6 +712,7 @@ public:
     bool       LoadProject(const std::string& fileName);
     bool       Reprocess();
 
+    static double SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, int subFrame);
     static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr);
     static bool ConvertRateString(const char* pRate, EStreamRate &eRate, unsigned int &nRateArg);
     static unsigned int ConvertComponentString(const std::string& componentsString);
