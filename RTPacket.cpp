@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
+#include "RTPacket.h"
+
 #include <memory.h>
 #include <float.h>
 #include <stdint.h>
@@ -12,7 +14,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include "RTPacket.h"
 
 CRTPacket::CRTPacket(int nMajorVersion, int nMinorVersion, bool bBigEndian)
 {
