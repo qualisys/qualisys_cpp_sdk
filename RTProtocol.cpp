@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
+#include "RTProtocol.h"
+
 #include <float.h>
 #include <cctype>
 #include <thread>
@@ -13,7 +15,6 @@
 #include <iterator>
 #include <functional>
 
-#include "RTProtocol.h"
 #include "Markup.h"
 #include "Network.h"
 #include <stdexcept>
