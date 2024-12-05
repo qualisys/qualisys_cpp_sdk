@@ -9,7 +9,6 @@
 
 #define WRITE_ANALOG_HEADERS_TO_FILE
 
-
 COutput::COutput()
 {
     mbWriteLogFileHeader  = true;
@@ -171,19 +170,19 @@ void COutput::PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum
     if (logfile == stdout && !mbOutputModeScrolling)
     {
         SetConsoleCursorPosition(mOutputHandle, mPrintPos);
-        fprintf(logfile, "================================================================\n");
-        fprintf(logfile, "Timestamp %10I64d \tFrame %d          \n\n",
+        WriteOutput(logfile, "================================================================\n");
+        WriteOutput(logfile, "Timestamp %10I64d \tFrame %d          \n\n",
             poRTPacket->GetTimeStamp(), mnLastFrameNumber);
 
         if (nMajorVersion == 1 && nMinorVersion > 2 &&
             poRTPacket->GetDropRate() != 0xffff &&
             poRTPacket->GetOutOfSyncRate() != 0xffff && bShowDropRate)
         {
-            fprintf(logfile, "2D Drop Rate = %.1f%%, 2D Out Of Sync Rate = %.1f%%          \n",
+            WriteOutput(logfile, "2D Drop Rate = %.1f%%, 2D Out Of Sync Rate = %.1f%%          \n",
                 poRTPacket->GetDropRate() / 10.0,
                 poRTPacket->GetOutOfSyncRate() / 10.0);
         }
-        fprintf(logfile, "================================================================\n\n");
+        WriteOutput(logfile, "================================================================\n\n");
         mPrintPos.Y += 6;
     }
     else
@@ -192,29 +191,29 @@ void COutput::PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum
         {
             if (mbWriteLogFileHeader)
             {
-                // Write log file header
-                fprintf(logfile, "Timestamp\tFrameNo\tFrameNoDiff\tRecvTime\n");
+                // WriteOutput log file header
+                WriteOutput(logfile, "Timestamp\tFrameNo\tFrameNoDiff\tRecvTime\n");
                 mbWriteLogFileHeader = false;
             }
-            fprintf(logfile, "%10I64d\t%d\t%d\t%f\n",
+            WriteOutput(logfile, "%10I64d\t%d\t%d\t%f\n",
                 poRTPacket->GetTimeStamp(), mnLastFrameNumber, mnFrameNumberDiff, mfCurrentRecvTime);
             return;
         }
         else
         {
 #ifdef WRITE_ANALOG_HEADERS_TO_FILE
-            fprintf(logfile, "================================================================\n");
-            fprintf(logfile, "Timestamp: %-10I64u \tFrameNo: %d\n", poRTPacket->GetTimeStamp(), mnLastFrameNumber);
+            WriteOutput(logfile, "================================================================\n");
+            WriteOutput(logfile, "Timestamp: %-10I64u \tFrameNo: %d\n", poRTPacket->GetTimeStamp(), mnLastFrameNumber);
 
             if (nMajorVersion == 1 && nMinorVersion > 2 &&
                 poRTPacket->GetDropRate() != 0xffff &&
                 poRTPacket->GetOutOfSyncRate() != 0xffff && bShowDropRate)
             {
-                fprintf(logfile, "2D Drop Rate = %.1f%%, 2D Out Of Sync Rate = %.1f%%\n",
+                WriteOutput(logfile, "2D Drop Rate = %.1f%%, 2D Out Of Sync Rate = %.1f%%\n",
                     poRTPacket->GetDropRate() / 10.0,
                     poRTPacket->GetOutOfSyncRate() / 10.0);
             }
-            fprintf(logfile, "================================================================\n");
+            WriteOutput(logfile, "================================================================\n");
 #endif
         }
     }
@@ -231,7 +230,7 @@ void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
                 SetConsoleCursorPosition(mOutputHandle, mPrintPos);
             }
 
-            fprintf(logfile, "--------------- Timecode --------------\n");
+            WriteOutput(logfile, "--------------- Timecode --------------\n");
             mPrintPos.Y++;
 
             int year, day, hours, minutes, seconds, tenth, frame;
@@ -239,19 +238,19 @@ void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
 
             if (poRTPacket->GetTimecodeSMPTE(hours, minutes, seconds, frame))
             {
-                fprintf(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d\n", hours, minutes, seconds, frame);
+                WriteOutput(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d\n", hours, minutes, seconds, frame);
             }
             if (poRTPacket->GetTimecodeIRIG(year, day, hours, minutes, seconds, tenth))
             {
-                fprintf(logfile, "IRIG: Year %02d Day %03d Hour %02d Min %02d Sec %02d Sec/10 %d\n", year, day, hours, minutes, seconds, tenth);
+                WriteOutput(logfile, "IRIG: Year %02d Day %03d Hour %02d Min %02d Sec %02d Sec/10 %d\n", year, day, hours, minutes, seconds, tenth);
             }
             if (poRTPacket->GetTimecodeCameraTime(cameraTime))
             {
-                fprintf(logfile, "Camera Time: %I64u\n", cameraTime);
+                WriteOutput(logfile, "Camera Time: %I64u\n", cameraTime);
             }
             mPrintPos.Y++;
 
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
             mPrintPos.Y++;
         }
     }
@@ -307,7 +306,7 @@ void COutput::PrintData2D(FILE* logfile, CRTPacket* poRTPacket)
             SetConsoleCursorPosition(mOutputHandle, mPrintPos);
         }
 
-        fprintf(logfile, "------------------- 2D -------------------\n");
+        WriteOutput(logfile, "------------------- 2D -------------------\n");
         mPrintPos.Y++;
 
         nCamCount = poRTPacket->Get2DCameraCount();
@@ -322,17 +321,17 @@ void COutput::PrintData2D(FILE* logfile, CRTPacket* poRTPacket)
 
             if (iCamera > 0)
             {
-                fprintf(logfile, "\n");
+                WriteOutput(logfile, "\n");
                 mPrintPos.Y++;
             }
 
             if (nMajorVersion > 1 || nMinorVersion >= 8)
             {
-                fprintf(logfile, "Camera %d  Status Flags: 0x%x\n", iCamera + 1, poRTPacket->Get2DStatusFlags(iCamera));
+                WriteOutput(logfile, "Camera %d  Status Flags: 0x%x\n", iCamera + 1, poRTPacket->Get2DStatusFlags(iCamera));
             }
             else
             {
-                fprintf(logfile, "Camera %d\n", iCamera + 1);
+                WriteOutput(logfile, "Camera %d\n", iCamera + 1);
             }
             mPrintPos.Y++;
 
@@ -347,19 +346,19 @@ void COutput::PrintData2D(FILE* logfile, CRTPacket* poRTPacket)
             {
                 poRTPacket->Get2DMarker(iCamera, iMarker, nX, nY, nXD, nYD);
 
-                fprintf(logfile, "  X=%6d Y=%6d  Xsize=%4d Ysize=%4d\n", nX, nY, nXD, nYD);
+                WriteOutput(logfile, "  X=%6d Y=%6d  Xsize=%4d Ysize=%4d\n", nX, nY, nXD, nYD);
                 mPrintPos.Y++;
             }
             for (; iMarker < mcnMaxMarkers; iMarker++)
             {
-                fprintf(logfile, "                                               \n");
+                WriteOutput(logfile, "                                               \n");
                 mPrintPos.Y++;
             }
         }
 
         if (logfile != stdout || mbOutputModeScrolling)
         {
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
         else
         {
@@ -395,7 +394,7 @@ void COutput::PrintData2DLin(FILE* logfile, CRTPacket* poRTPacket)
             SetConsoleCursorPosition(mOutputHandle, mPrintPos);
         }
 
-        fprintf(logfile, "-------------- 2D Linearized -------------\n");
+        WriteOutput(logfile, "-------------- 2D Linearized -------------\n");
         mPrintPos.Y++;
 
         for (unsigned int iCamera = 0; iCamera < poRTPacket->Get2DLinCameraCount(); iCamera++)
@@ -403,11 +402,11 @@ void COutput::PrintData2DLin(FILE* logfile, CRTPacket* poRTPacket)
             unsigned char nStatus = 0;
             if (nMajorVersion > 1 || nMinorVersion >= 8)
             {
-                fprintf(logfile, "Camera %d  Status Flags: 0x%x\n", iCamera + 1, poRTPacket->Get2DLinStatusFlags(iCamera));
+                WriteOutput(logfile, "Camera %d  Status Flags: 0x%x\n", iCamera + 1, poRTPacket->Get2DLinStatusFlags(iCamera));
             }
             else
             {
-                fprintf(logfile, "Camera %d\n", iCamera + 1);
+                WriteOutput(logfile, "Camera %d\n", iCamera + 1);
             }
             mPrintPos.Y++;
 
@@ -415,11 +414,11 @@ void COutput::PrintData2DLin(FILE* logfile, CRTPacket* poRTPacket)
             {
                 poRTPacket->Get2DLinMarker(iCamera, iMarker, nX, nY, nXD, nYD);
 
-                fprintf(logfile, "  X=%6d Y=%6d  Xsize=%4d Ysize=%4d\n", nX, nY, nXD, nYD);
+                WriteOutput(logfile, "  X=%6d Y=%6d  Xsize=%4d Ysize=%4d\n", nX, nY, nXD, nYD);
                 mPrintPos.Y++;
             }
         }
-        fprintf(logfile, "\n");
+        WriteOutput(logfile, "\n");
         mPrintPos.Y++;
     }
 } // PrintData2DLin
@@ -432,19 +431,19 @@ void COutput::PrintData3D(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poR
     {
         if (poRTPacket->Get3DMarkerCount() > 0)
         {
-            fprintf(logfile, "------------------- 3D -------------------\n"); 
+            WriteOutput(logfile, "------------------- 3D -------------------\n"); 
             for (unsigned int i = 0; i < poRTPacket->Get3DMarkerCount(); i++)
             {
                 const char* tmpStr = poRTProtocol->Get3DLabelName(i);
-                fprintf(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
+                WriteOutput(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
 
                 if (poRTPacket->Get3DMarker(i, fX, fY, fZ))
                 {
-                    fprintf(logfile, "%9.3f %9.3f %9.3f", fX, fY, fZ);
+                    WriteOutput(logfile, "%9.3f %9.3f %9.3f", fX, fY, fZ);
                 }
-                fprintf(logfile, "\n");
+                WriteOutput(logfile, "\n");
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 }
@@ -457,20 +456,20 @@ void COutput::PrintData3DRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* 
     {
         if (poRTPacket->Get3DResidualMarkerCount() > 0)
         {
-            fprintf(logfile, "--------------- 3D Residual --------------\n"); 
+            WriteOutput(logfile, "--------------- 3D Residual --------------\n"); 
             for (unsigned int i = 0; i < poRTPacket->Get3DResidualMarkerCount(); i++)
 
             {
                 const char* tmpStr = poRTProtocol->Get3DLabelName(i);
-                fprintf(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
+                WriteOutput(logfile, "%-16s : ", tmpStr ? tmpStr : "Unknown");
 
                 if (poRTPacket->Get3DResidualMarker(i, fX, fY, fZ, fResidual))
                 {
-                    fprintf(logfile, "%9.3f %9.3f %9.3f %9.3f", fX, fY, fZ, fResidual);
+                    WriteOutput(logfile, "%9.3f %9.3f %9.3f %9.3f", fX, fY, fZ, fResidual);
                 }
-                fprintf(logfile, "\n");
+                WriteOutput(logfile, "\n");
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData3DRes
@@ -484,13 +483,13 @@ void COutput::PrintData3DNoLabels(FILE* logfile, CRTPacket* poRTPacket)
     {
         if (poRTPacket->Get3DNoLabelsMarkerCount() > 0)
         {
-            fprintf(logfile, "-------------- 3D No Labels --------------\n"); 
+            WriteOutput(logfile, "-------------- 3D No Labels --------------\n"); 
             for (unsigned int i = 0; i < poRTPacket->Get3DNoLabelsMarkerCount(); i++)
             {
                 poRTPacket->Get3DNoLabelsMarker(i, fX, fY, fZ, nId);
-                fprintf(logfile, "Marker%4d : %9.3f %9.3f %9.3f\n", nId, fX, fY, fZ);
+                WriteOutput(logfile, "Marker%4d : %9.3f %9.3f %9.3f\n", nId, fX, fY, fZ);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData3DNoLabels
@@ -504,13 +503,13 @@ void COutput::PrintData3DNoLabelsRes(FILE* logfile, CRTPacket* poRTPacket)
     {
         if (poRTPacket->Get3DNoLabelsResidualMarkerCount() > 0)
         {                     
-            fprintf(logfile, "---------- 3D No Labels Residual ---------\n"); 
+            WriteOutput(logfile, "---------- 3D No Labels Residual ---------\n"); 
             for (unsigned int i = 0; i < poRTPacket->Get3DNoLabelsResidualMarkerCount(); i++)
             {
                 poRTPacket->Get3DNoLabelsResidualMarker(i, fX, fY, fZ, nId, fResidual);
-                fprintf(logfile, "Marker%4d : %9.3f %9.3f %9.3f%9.3f\n", nId, fX, fY, fZ, fResidual);
+                WriteOutput(logfile, "Marker%4d : %9.3f %9.3f %9.3f%9.3f\n", nId, fX, fY, fZ, fResidual);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData3DNoLabelsRes
@@ -526,7 +525,7 @@ void COutput::PrintData6D(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poR
 
         if (nCount > 0)
         {
-            fprintf(logfile, "------------------ 6 DOF -----------------\n"); 
+            WriteOutput(logfile, "------------------ 6 DOF -----------------\n"); 
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* label = (char*)poRTProtocol->Get6DOFBodyName(i);
@@ -537,11 +536,11 @@ void COutput::PrintData6D(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poR
                 }
                 poRTPacket->Get6DOFBody(i, fX, fY, fZ, afRotMatrix);
 
-                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f\n",
+                WriteOutput(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f\n",
                     label, fX, fY, fZ, afRotMatrix[0], afRotMatrix[1], afRotMatrix[2], afRotMatrix[3],
                     afRotMatrix[4], afRotMatrix[5], afRotMatrix[6], afRotMatrix[7], afRotMatrix[8]);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData6D
@@ -557,7 +556,7 @@ void COutput::PrintData6DRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* 
 
         if (nCount > 0)
         {
-            fprintf(logfile, "------------- 6 DOF Residual -------------\n"); 
+            WriteOutput(logfile, "------------- 6 DOF Residual -------------\n"); 
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* label = (char*)poRTProtocol->Get6DOFBodyName(i);
@@ -568,11 +567,11 @@ void COutput::PrintData6DRes(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* 
                 }
                 poRTPacket->Get6DOFResidualBody(i, fX, fY, fZ, afRotMatrix, fResidual);
 
-                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f   %9.3f\n",
+                WriteOutput(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f %9.3f   %9.3f\n",
                     label, fX, fY, fZ, afRotMatrix[0], afRotMatrix[1], afRotMatrix[2], afRotMatrix[3],
                     afRotMatrix[4], afRotMatrix[5], afRotMatrix[6], afRotMatrix[7], afRotMatrix[8], fResidual);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData6DRes
@@ -587,7 +586,7 @@ void COutput::PrintData6DEuler(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol
 
         if (nCount > 0)
         {
-            fprintf(logfile, "--------------- 6 DOF Euler --------------\n"); 
+            WriteOutput(logfile, "--------------- 6 DOF Euler --------------\n"); 
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* label = (char*)poRTProtocol->Get6DOFBodyName(i);
@@ -598,9 +597,9 @@ void COutput::PrintData6DEuler(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol
                 }
                 poRTPacket->Get6DOFEulerBody(i, fX, fY, fZ, fAng1, fAng2, fAng3);
 
-                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f\n", label, fX, fY, fZ, fAng1, fAng2, fAng3);
+                WriteOutput(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f\n", label, fX, fY, fZ, fAng1, fAng2, fAng3);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData6DEuler
@@ -615,7 +614,7 @@ void COutput::PrintData6DEulerRes(FILE* logfile, CRTPacket* poRTPacket, CRTProto
 
         if (nCount > 0)
         {
-            fprintf(logfile, "---------- 6 DOF Euler Residual ----------\n"); 
+            WriteOutput(logfile, "---------- 6 DOF Euler Residual ----------\n"); 
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* label = (char*)poRTProtocol->Get6DOFBodyName(i);
@@ -626,10 +625,10 @@ void COutput::PrintData6DEulerRes(FILE* logfile, CRTPacket* poRTPacket, CRTProto
                 }
                 poRTPacket->Get6DOFEulerResidualBody(i, fX, fY, fZ, fAng1, fAng2, fAng3, fResidual);
 
-                fprintf(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f   %9.3f\n",
+                WriteOutput(logfile,  "%15s : %9.3f %9.3f %9.3f   %9.3f %9.3f %9.3f   %9.3f\n",
                     label, fX, fY, fZ, fAng1, fAng2, fAng3, fResidual);
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintData6DEulerRes
@@ -642,7 +641,7 @@ void COutput::PrintDataGazeVector(FILE* logfile, CRTPacket* poRTPacket, CRTProto
 
         if (nCount > 0)
         {
-            fprintf(logfile, "--------------- Gaze Vector --------------\n"); 
+            WriteOutput(logfile, "--------------- Gaze Vector --------------\n"); 
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* tLabel = (char*)poRTProtocol->GetGazeVectorName(i);
@@ -655,19 +654,19 @@ void COutput::PrintDataGazeVector(FILE* logfile, CRTPacket* poRTPacket, CRTProto
                 unsigned int nSampleCount = poRTPacket->GetGazeVectorSampleCount(i);
                 if (nSampleCount > 0)
                 {
-                    fprintf(logfile, "%18s Sample number %d\n", tLabel, poRTPacket->GetGazeVectorSampleNumber(i));
+                    WriteOutput(logfile, "%18s Sample number %d\n", tLabel, poRTPacket->GetGazeVectorSampleNumber(i));
                     for (unsigned int nSampleIndex = 0; nSampleIndex < nSampleCount; nSampleIndex++)
                     {
                         if (poRTPacket->GetGazeVector(i, nSampleIndex, sGazeVector))
                         {
-                            fprintf(logfile, "  Position %-8.2f %-8.2f %-8.2f   Direction %-5.2f %-5.2f %-5.2f\n",
+                            WriteOutput(logfile, "  Position %-8.2f %-8.2f %-8.2f   Direction %-5.2f %-5.2f %-5.2f\n",
                                     sGazeVector.fPosX, sGazeVector.fPosY, sGazeVector.fPosZ,
                                     sGazeVector.fX, sGazeVector.fY, sGazeVector.fZ);
                         }
                     }
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintDataGazeVector
@@ -680,7 +679,7 @@ void COutput::PrintDataEyeTracker(FILE* logfile, CRTPacket* poRTPacket, CRTProto
 
         if (nCount > 0)
         {
-            fprintf(logfile, "--------------- Eye Tracker --------------\n");
+            WriteOutput(logfile, "--------------- Eye Tracker --------------\n");
             for (unsigned int i = 0; i < nCount; i++)
             {
                 char* tLabel = (char*)poRTProtocol->GetEyeTrackerName(i);
@@ -693,17 +692,17 @@ void COutput::PrintDataEyeTracker(FILE* logfile, CRTPacket* poRTPacket, CRTProto
                 unsigned int nSampleCount = poRTPacket->GetEyeTrackerSampleCount(i);
                 if (nSampleCount > 0)
                 {
-                    fprintf(logfile, "%s - Sample number %d\n", tLabel, poRTPacket->GetEyeTrackerSampleNumber(i));
+                    WriteOutput(logfile, "%s - Sample number %d\n", tLabel, poRTPacket->GetEyeTrackerSampleNumber(i));
                     for (unsigned int nSampleIndex  = 0; nSampleIndex < nSampleCount; nSampleIndex++)
                     {
                         if (poRTPacket->GetEyeTrackerData(i, nSampleIndex, sEyeTracker))
                         {
-                            fprintf(logfile, "Left Pupil Diameter %-8.2f  Right Pupil Diameter %-8.2f\n", sEyeTracker.leftPupilDiameter, sEyeTracker.rightPupilDiameter);
+                            WriteOutput(logfile, "Left Pupil Diameter %-8.2f  Right Pupil Diameter %-8.2f\n", sEyeTracker.leftPupilDiameter, sEyeTracker.rightPupilDiameter);
                         }
                     }
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintDataEyeTracker
@@ -787,20 +786,20 @@ void COutput::PrintAnalog(FILE* logfile, CRTPacket* poRTPacket)
                 // Log to file
 
 #ifdef WRITE_ANALOG_HEADERS_TO_FILE
-                fprintf(logfile, "----------------- Analog -----------------\n"); 
+                WriteOutput(logfile, "----------------- Analog -----------------\n"); 
 #endif
                 if (nMajorVersion == 1 && nMinorVersion == 0)
                 {
                     nChannelCount = poRTPacket->GetAnalogChannelCount(0);
                     if (mbWriteLogFileHeader)
                     {
-                        // Write log file header
-                        fprintf(logfile, "FrameNo\tTimestamp\t");
+                        // WriteOutput log file header
+                        WriteOutput(logfile, "FrameNo\tTimestamp\t");
                         for (unsigned int a = 1; a <= poRTPacket->GetAnalogChannelCount(0); a++)
                         {
-                            fprintf(logfile, "Ch_%d\t", a);
+                            WriteOutput(logfile, "Ch_%d\t", a);
                         }
-                        fprintf(logfile, "\n");
+                        WriteOutput(logfile, "\n");
                         mbWriteLogFileHeader = false;
                     }
                     bool bNoData  = true;
@@ -815,19 +814,19 @@ void COutput::PrintAnalog(FILE* logfile, CRTPacket* poRTPacket)
                     {
                         int nFrameNumber = poRTPacket->GetFrameNumber();
                         setlocale(LC_NUMERIC, "Swedish");
-                        fprintf(logfile, "%d\t%I64d\t", nFrameNumber, poRTPacket->GetTimeStamp());
+                        WriteOutput(logfile, "%d\t%I64d\t", nFrameNumber, poRTPacket->GetTimeStamp());
                         for (unsigned int i = 0; i < nChannelCount; i++)
                         {
                             if (_isnan(fAnalogValue))
                             {
-                                fprintf(logfile, "\t");
+                                WriteOutput(logfile, "\t");
                             }
                             else
                             {
-                                fprintf(logfile, "%6.3f\t", fAnalogValue);
+                                WriteOutput(logfile, "%6.3f\t", fAnalogValue);
                             }
                         }
-                        fprintf(logfile, "\n");
+                        WriteOutput(logfile, "\n");
                     }
                 }
                 else
@@ -859,29 +858,29 @@ void COutput::PrintAnalog(FILE* logfile, CRTPacket* poRTPacket)
                                 {
                                     setlocale(LC_NUMERIC, "Swedish");
 #ifdef WRITE_ANALOG_HEADERS_TO_FILE
-                                    fprintf(logfile, "Frame %8d ", nSampleNumber + iSample);
+                                    WriteOutput(logfile, "Frame %8d ", nSampleNumber + iSample);
 #else
-                                    fprintf(logfile, "%8d ", nSampleNumber + iSample);
+                                    WriteOutput(logfile, "%8d ", nSampleNumber + iSample);
 #endif
                                     for (unsigned int iChannel = 0; iChannel < nChannelCount; iChannel++)
                                     {
                                         if (poRTPacket->GetAnalogData(iDevice, iChannel, iSample, fAnalogValue))
                                         {
-                                            fprintf(logfile, "%6.3f ", fAnalogValue);
+                                            WriteOutput(logfile, "%6.3f ", fAnalogValue);
                                         }
                                         else
                                         {
-                                            fprintf(logfile, " ");
+                                            WriteOutput(logfile, " ");
                                         }
                                     }
-                                    fprintf(logfile, "\n");
+                                    WriteOutput(logfile, "\n");
                                 }
                             }
                         }
                     }
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintAnalog
@@ -902,7 +901,7 @@ void COutput::PrintAnalogSingle(FILE* logfile, CRTPacket* poRTPacket)
             {
                 // Don't log to file.
 
-                fprintf(logfile, "-------------- Analog Single -------------\n"); 
+                WriteOutput(logfile, "-------------- Analog Single -------------\n"); 
 
                 for (unsigned int iDevice = 0; iDevice < nCount; iDevice++)
                 {
@@ -922,9 +921,9 @@ void COutput::PrintAnalogSingle(FILE* logfile, CRTPacket* poRTPacket)
                         {
                             if (poRTPacket->GetAnalogSingleData(iDevice, iChannel, fAnalogValue))
                             {
-                                fprintf(logfile, "Ch%3d: ", iChannel + 1);
-                                fprintf(logfile, "%6.3f ", fAnalogValue);
-                                fprintf(logfile, "\n");
+                                WriteOutput(logfile, "Ch%3d: ", iChannel + 1);
+                                WriteOutput(logfile, "%6.3f ", fAnalogValue);
+                                WriteOutput(logfile, "\n");
                             }
                         }
                     }
@@ -935,7 +934,7 @@ void COutput::PrintAnalogSingle(FILE* logfile, CRTPacket* poRTPacket)
                 // Log to file
 
 #ifdef WRITE_ANALOG_HEADERS_TO_FILE
-                fprintf(logfile, "-------------- Analog Single -------------\n"); 
+                WriteOutput(logfile, "-------------- Analog Single -------------\n"); 
 #endif
                 for (unsigned int iDevice = 0; iDevice < nCount; iDevice++)
                 {
@@ -959,18 +958,18 @@ void COutput::PrintAnalogSingle(FILE* logfile, CRTPacket* poRTPacket)
                         {
                             if (poRTPacket->GetAnalogSingleData(iDevice, iChannel, fAnalogValue))
                             {
-                                fprintf(logfile, "%6.3f ", fAnalogValue);
+                                WriteOutput(logfile, "%6.3f ", fAnalogValue);
                             }
                             else
                             {
-                                fprintf(logfile, " ");
+                                WriteOutput(logfile, " ");
                             }
                         }
-                        fprintf(logfile, "\n");
+                        WriteOutput(logfile, "\n");
                     }
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintAnalogSingle
@@ -995,27 +994,30 @@ void COutput::PrintForce(FILE* logfile, CRTPacket* poRTPacket)
                 {
                     if (!bForcePrinted)
                     {
-                        fprintf(logfile, "----------------- Force ------------------\n"); 
-                       bForcePrinted = true;
+                        WriteOutput(logfile, "----------------- Force ------------------\n"); 
+                        bForcePrinted = true;
                     }
-                    fprintf(logfile, "Force Plate ID: %d\n",  poRTPacket->GetForcePlateId(iPlate));
+                    WriteOutput(logfile, "Force Plate ID: %d\n",  poRTPacket->GetForcePlateId(iPlate));
                     nForceNumber = poRTPacket->GetForceNumber(iPlate);
 
                     for (unsigned int iForce = 0; iForce < nForceCount; iForce++)
                     {
                         if (poRTPacket->GetForceData(iPlate, iForce, sForce))
                         {
-                            fprintf(logfile, "Frame %8d Force:\tX=%f,\tY=%f,\tZ=%f\n", nForceNumber++, 
+                            WriteOutput(logfile, "                                                                                         \r");
+                            WriteOutput(logfile, "Frame %8d Force:\tX=%f,\tY=%f,\tZ=%f\n", nForceNumber++, 
                                 sForce.fForceX, sForce.fForceY, sForce.fForceZ);
-                            fprintf(logfile, "               Moment:\tX=%f,\tY=%f,\tZ=%f\n",
+                             WriteOutput(logfile, "                                                                                         \r");
+                            WriteOutput(logfile, "               Moment:\tX=%f,\tY=%f,\tZ=%f\n",
                                 sForce.fMomentX, sForce.fMomentY, sForce.fMomentZ);
-                            fprintf(logfile, "               Point:\tX=%f,\tY=%f,\tZ=%f\n", 
+                            WriteOutput(logfile, "                                                                                         \r");
+                            WriteOutput(logfile, "               Point:\tX=%f,\tY=%f,\tZ=%f\n", 
                                 sForce.fApplicationPointX, sForce.fApplicationPointY, sForce.fApplicationPointZ);
                         }
                     }
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintForce
@@ -1037,20 +1039,20 @@ void COutput::PrintForceSingle(FILE* logfile, CRTPacket* poRTPacket)
                 {
                     if (!bForcePrinted)
                     {
-                        fprintf(logfile, "-------------- Force Single --------------\n"); 
+                        WriteOutput(logfile, "-------------- Force Single --------------\n"); 
                         bForcePrinted = true;
                     }
-                    fprintf(logfile, "Force Plate ID: %d\n",  poRTPacket->GetForceSinglePlateId(iPlate));
+                    WriteOutput(logfile, "Force Plate ID: %d\n",  poRTPacket->GetForceSinglePlateId(iPlate));
 
-                    fprintf(logfile, "Force:\tX=%f,\tY=%f,\tZ=%f\n",
+                    WriteOutput(logfile, "Force:\tX=%f,\tY=%f,\tZ=%f\n",
                         sForce.fForceX, sForce.fForceY, sForce.fForceZ);
-                    fprintf(logfile, "Moment:\tX=%f,\tY=%f,\tZ=%f\n",
+                    WriteOutput(logfile, "Moment:\tX=%f,\tY=%f,\tZ=%f\n",
                         sForce.fMomentX, sForce.fMomentY, sForce.fMomentZ);
-                    fprintf(logfile, "Point:\tX=%f,\tY=%f,\tZ=%f\n", 
+                    WriteOutput(logfile, "Point:\tX=%f,\tY=%f,\tZ=%f\n", 
                         sForce.fApplicationPointX, sForce.fApplicationPointY, sForce.fApplicationPointZ);
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintForceSingle
@@ -1077,17 +1079,17 @@ void COutput::PrintImage(FILE* logfile, CRTPacket* poRTPacket)
 
             if (nCameraId > 0 && bSuccess && nImageSize > 0)
             {
-                fprintf(logfile, "----------------- Image ------------------\n"); 
-                fprintf(logfile, "Format: %s\n", eFormat == CRTPacket::FormatRawGrayscale ? "Raw Grayscale" : 
+                WriteOutput(logfile, "----------------- Image ------------------\n"); 
+                WriteOutput(logfile, "Format: %s\n", eFormat == CRTPacket::FormatRawGrayscale ? "Raw Grayscale" : 
                     eFormat == CRTPacket::FormatRawBGR ? "Raw BGR" :
                     eFormat == CRTPacket::FormatJPG ? "JPG" : "PNG");
-                fprintf(logfile, "Image Size: %d bytes\n", nImageSize);
-                fprintf(logfile, "Width: %d\n",       nWidth);
-                fprintf(logfile, "Height: %d\n",      nHeight);
-                fprintf(logfile, "Left Crop: %f\n",   fCropLeft);
-                fprintf(logfile, "Top Crop: %f\n",    fCropTop);
-                fprintf(logfile, "Right Crop: %f\n",  fCropRight);
-                fprintf(logfile, "Bottom Crop: %f\n", fCropBottom);
+                WriteOutput(logfile, "Image Size: %d bytes\n", nImageSize);
+                WriteOutput(logfile, "Width: %d\n",       nWidth);
+                WriteOutput(logfile, "Height: %d\n",      nHeight);
+                WriteOutput(logfile, "Left Crop: %f\n",   fCropLeft);
+                WriteOutput(logfile, "Top Crop: %f\n",    fCropTop);
+                WriteOutput(logfile, "Right Crop: %f\n",  fCropRight);
+                WriteOutput(logfile, "Bottom Crop: %f\n", fCropBottom);
             }
         }
     }
@@ -1101,7 +1103,7 @@ void COutput::PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* p
 
         if (skeletonCount > 0)
         {
-            fprintf(logfile, "---------------- Skeleton ---------------\n");
+            WriteOutput(logfile, "---------------- Skeleton ---------------\n");
             for (unsigned int skeletonIndex = 0; skeletonIndex < skeletonCount; skeletonIndex++)
             {
                 unsigned int segmentCount = poRTPacket->GetSkeletonSegmentCount(skeletonIndex);
@@ -1111,16 +1113,16 @@ void COutput::PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* p
                     const char* name = poRTProtocol->GetSkeletonName(skeletonIndex);
                     if (name == NULL)
                     {
-                        fprintf(logfile, "Skeleton name missing.\n\n");
+                        WriteOutput(logfile, "Skeleton name missing.\n\n");
                         return;
                     }
 
-                    fprintf(logfile, "Skeleton name: %s   Segment count: %d\n", name, segmentCount);
+                    WriteOutput(logfile, "Skeleton name: %s   Segment count: %d\n", name, segmentCount);
 
                     CRTPacket::SSkeletonSegment segments[50];
                     if (!poRTPacket->GetSkeletonSegments(skeletonIndex, segments, sizeof(segments)))
                     {
-                        fprintf(logfile, "Bad skeleton segments.\n\n");
+                        WriteOutput(logfile, "Bad skeleton segments.\n\n");
                         return;
                     }
 
@@ -1128,15 +1130,15 @@ void COutput::PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* p
                     {
                         CRTProtocol::SSettingsSkeletonSegment segmentInfo;
                         poRTProtocol->GetSkeletonSegment(skeletonIndex, segmentIndex, &segmentInfo);
-                        fprintf(logfile, "%-20s  id: %d  Pos: %9.3f, %9.3f, %9.3f   Rot: %7.4f, %7.4f, %7.4f, %7.4f\n", segmentInfo.name.c_str(), segments[segmentIndex].id,
+                        WriteOutput(logfile, "%-20s  id: %d  Pos: %9.3f, %9.3f, %9.3f   Rot: %7.4f, %7.4f, %7.4f, %7.4f\n", segmentInfo.name.c_str(), segments[segmentIndex].id,
                             segments[segmentIndex].positionX, segments[segmentIndex].positionY, segments[segmentIndex].positionZ,
                             segments[segmentIndex].rotationX, segments[segmentIndex].rotationY, segments[segmentIndex].rotationZ, segments[segmentIndex].rotationW);
                     }
 
-                    fprintf(logfile, "\n");
+                    WriteOutput(logfile, "\n");
                 }
             }
-            fprintf(logfile, "\n");
+            WriteOutput(logfile, "\n");
         }
     }
 } // PrintDataSkeleton

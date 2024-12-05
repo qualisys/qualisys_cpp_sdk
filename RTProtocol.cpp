@@ -302,7 +302,7 @@ bool CRTProtocol::GetQTMVersion(std::string& verStr)
 }
 
 
-bool CRTProtocol::GetByteOrder(bool& bBigEndian)
+bool CRTProtocol::GetByteOrder(bool &bBigEndian)
 {
     std::string responseStr;
 
@@ -499,9 +499,8 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
     return false;
 }
 
-
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
-    unsigned int nComponentType, const SComponentOptions& componentOptions)
+                               unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
     std::string components;
 
@@ -901,7 +900,7 @@ bool CRTProtocol::StopCapture()
 }
 
 
-bool CRTProtocol::Calibrate(const bool refine, SCalibration& calibrationResult, int timeout)
+bool CRTProtocol::Calibrate(const bool refine, SCalibration &calibrationResult, int timeout)
 {
     std::string responseStr;
 
@@ -1153,7 +1152,7 @@ std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(con
     return components;
 }
 
-bool CRTProtocol::GetComponent(std::string& componentStr, unsigned int& component, std::string& option)
+bool CRTProtocol::GetComponent(std::string& componentStr, unsigned int &component, std::string& option)
 {
     // Make string lower case.
     componentStr = ToLower(componentStr);
@@ -2305,6 +2304,10 @@ bool CRTProtocol::ReadGeneralSettings()
             {
                 sCameraSettings.eVideoResolution = VideoResolution480p;
             }
+            else
+            {
+                return false;
+            }
         }
         else
         {
@@ -3158,6 +3161,265 @@ bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
     return true;
 } // Read3DSettings
 
+namespace
+{
+    bool TryReadSetEnabled(const int nMajorVer, const int nMinorVer, CMarkup& oXML, bool& bTarget)
+    {
+        if (nMajorVer > 1 || nMinorVer > 23)
+        {
+            if (!oXML.FindChildElem("Enabled"))
+            {
+                bTarget = true;
+                return true;
+            }
+
+            bTarget = oXML.GetChildData() == "true" ? true : false;
+            return false;
+        }
+
+        return false;
+    }
+
+    bool TryReadSetName(CMarkup& oXML, std::string& sTarget)
+    {
+        if (!oXML.FindChildElem("Name"))
+        {
+            return false;
+        }
+        sTarget = oXML.GetChildData();
+        return true;
+    }
+
+    bool TryReadSetColor(CMarkup& oXML, uint32_t& nTarget)
+    {
+        if (!oXML.FindChildElem("Color"))
+        {
+            return false;
+        }
+        uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
+        uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
+        uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
+        nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+
+        return true;
+    }
+
+    bool TryReadSetMaxResidual(CMarkup& oXML, float& fTarget)
+    {
+        if (!oXML.FindChildElem("MaximumResidual"))
+        {
+            return false;
+        }
+        fTarget = (float)atof(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetMinMarkersInBody(CMarkup& oXML, uint32_t& nTarget)
+    {
+        if (!oXML.FindChildElem("MinimumMarkersInBody"))
+        {
+            return false;
+        }
+        nTarget = atoi(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetBoneLenTolerance(CMarkup& oXML, float& fTarget)
+    {
+        if (!oXML.FindChildElem("BoneLengthTolerance"))
+        {
+            return false;
+        }
+        fTarget = (float)atof(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetFilter(CMarkup& oXML, std::string& sTarget)
+    {
+        if (!oXML.FindChildElem("Filter"))
+        {
+            return false;
+        }
+        sTarget = oXML.GetChildAttrib("Preset");
+
+        return true;
+    }
+
+    bool TryReadSetPos(CMarkup& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
+    {
+        if (!oXML.FindChildElem("Position"))
+        {
+            return false;
+        }
+        fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
+        fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+        fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+        return true;
+    }
+
+    bool TryReadSetRotation(CMarkup& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
+    {
+        if (!oXML.FindChildElem("Rotation"))
+        {
+            return false;
+        }
+        fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
+        fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+        fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+        return true;
+    }
+
+    bool TryReadSetScale(CMarkup& oXML, float& fTarget)
+    {
+        if (!oXML.FindChildElem("Scale"))
+        {
+            return false;
+        }
+        fTarget = (float)atof(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetOpacity(CMarkup& oXML, float& fTarget)
+    {
+        if (!oXML.FindChildElem("Opacity"))
+        {
+            return false;
+        }
+        fTarget = (float)atof(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetPoints(CMarkup& oXML, std::vector<CRTProtocol::SBodyPoint>& vTarget)
+    {
+        if (oXML.FindChildElem("Points"))
+        {
+            oXML.IntoElem();
+
+            while (oXML.FindChildElem("Point"))
+            {
+                CRTProtocol::SBodyPoint sBodyPoint;
+
+                sBodyPoint.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+                sBodyPoint.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+                sBodyPoint.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+
+                sBodyPoint.virtual_ = (0 != atoi(oXML.GetChildAttrib("Virtual").c_str()));
+                sBodyPoint.physicalId = atoi(oXML.GetChildAttrib("PhysicalId").c_str());
+                sBodyPoint.name = oXML.GetChildAttrib("Name");
+                vTarget.push_back(sBodyPoint);
+            }
+            oXML.OutOfElem(); // Points
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool TryReadSetDataOrigin(CMarkup& oXML, CRTProtocol::SOrigin& oTarget)
+    {
+        if (!oXML.FindChildElem("Data_origin"))
+        {
+            return false;
+        }
+        oTarget.type = (CRTProtocol::EOriginType)atoi(oXML.GetChildData().c_str());
+        oTarget.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
+        oTarget.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
+        oTarget.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+        oTarget.relativeBody = atoi(oXML.GetChildAttrib("Relative_body").c_str());
+
+        return true;
+    }
+
+    void ReadSetRotations(CMarkup& oXML, CRTProtocol::SOrigin& oTarget)
+    {
+        char tmpStr[10];
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            oTarget.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
+        }
+    }
+
+    bool TryReadSetRGBColor(CMarkup& oXML, uint32_t& oTarget)
+    {
+        if (!oXML.FindChildElem("RGBColor"))
+        {
+            return false;
+        }
+        oTarget = atoi(oXML.GetChildData().c_str());
+
+        return true;
+    }
+
+    bool TryReadSetPointsOld(CMarkup& oXML, std::vector<CRTProtocol::SBodyPoint>& vTarget)
+    {
+        vTarget.clear();
+
+        while (oXML.FindChildElem("Point"))
+        {
+            CRTProtocol::SBodyPoint sPoint;
+
+            oXML.IntoElem();
+            if (!oXML.FindChildElem("X"))
+            {
+                return false;
+            }
+            sPoint.fX = (float)atof(oXML.GetChildData().c_str());
+
+            if (!oXML.FindChildElem("Y"))
+            {
+                return false;
+            }
+            sPoint.fY = (float)atof(oXML.GetChildData().c_str());
+
+            if (!oXML.FindChildElem("Z"))
+            {
+                return false;
+            }
+            sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
+
+            oXML.OutOfElem(); // Point
+            vTarget.push_back(sPoint);
+        }
+
+        return true;
+    }
+
+    bool TryReadSetEuler(CMarkup& oXML, std::string& sTargetFirst, std::string& sTargetSecond, std::string& sTargetThird)
+    {
+        if (oXML.FindChildElem("Euler"))
+        {
+            oXML.IntoElem();
+            if (!oXML.FindChildElem("First"))
+            {
+                return false;
+            }
+            sTargetFirst = oXML.GetChildData();
+            if (!oXML.FindChildElem("Second"))
+            {
+                return false;
+            }
+            sTargetSecond = oXML.GetChildData();
+            if (!oXML.FindChildElem("Third"))
+            {
+                return false;
+            }
+            sTargetThird = oXML.GetChildData();
+            oXML.OutOfElem(); // Euler
+        }
+
+        return true;
+    }
+}
+
 bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
 {
     CMarkup oXML;
@@ -3170,7 +3432,7 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
     {
         return false;
     }
-    
+
     if (oXML.FindChildElem("The_6D"))
     {
         oXML.IntoElem();
@@ -3181,142 +3443,55 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
             {
                 SSettings6DOFBody s6DOFBodySettings;
                 SBodyPoint sBodyPoint;
-
+                
                 oXML.IntoElem();
 
-                if (!oXML.FindChildElem("Name"))
-                {
+                // NOTE: READ-ORDER MATTERS!!!
+                if (!TryReadSetName(oXML, s6DOFBodySettings.name))
+                { // Name --- REQUIRED
                     return false;
                 }
-                s6DOFBodySettings.name = oXML.GetChildData();
-
-                if (mnMajorVersion > 1 || mnMinorVersion > 23)
-                {
-                    if (!oXML.FindChildElem("Enabled"))
-                    {
-                        s6DOFBodySettings.enabled = true;
-                    }
-                    s6DOFBodySettings.enabled = oXML.GetChildData() == "true" ? true : false;
-                }
-
-
-                if (!oXML.FindChildElem("Color"))
-                {
+                // Enabled --- NOT(!) REQUIRED
+                TryReadSetEnabled(mnMajorVersion, mnMinorVersion, oXML, s6DOFBodySettings.enabled);
+                if (!TryReadSetColor(oXML, s6DOFBodySettings.color)
+                    || !TryReadSetMaxResidual(oXML, s6DOFBodySettings.maxResidual)
+                    || !TryReadSetMinMarkersInBody(oXML, s6DOFBodySettings.minMarkersInBody)
+                    || !TryReadSetBoneLenTolerance(oXML, s6DOFBodySettings.boneLengthTolerance)
+                    || !TryReadSetFilter(oXML, s6DOFBodySettings.filterPreset))
+                { // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
                     return false;
                 }
-                uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
-                uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
-                uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
-                s6DOFBodySettings.color = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
-
-                if (!oXML.FindChildElem("MaximumResidual"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.maxResidual = (float)atof(oXML.GetChildData().c_str());
-
-                if (!oXML.FindChildElem("MinimumMarkersInBody"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.minMarkersInBody = atoi(oXML.GetChildData().c_str());
-
-                if (!oXML.FindChildElem("BoneLengthTolerance"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.boneLengthTolerance = (float)atof(oXML.GetChildData().c_str());
-
-                if (!oXML.FindChildElem("Filter"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.filterPreset = oXML.GetChildAttrib("Preset");
 
                 if (oXML.FindChildElem("Mesh"))
                 {
                     oXML.IntoElem();
-                    if (!oXML.FindChildElem("Name"))
-                    {
-                        return false;
-                    }
-                    s6DOFBodySettings.mesh.name = oXML.GetChildData();
 
-                    if (!oXML.FindChildElem("Position"))
-                    {
+                    if (!TryReadSetName(oXML, s6DOFBodySettings.mesh.name)
+                        || !TryReadSetPos(oXML, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
+                        || !TryReadSetRotation(oXML, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
+                        || !TryReadSetScale(oXML, s6DOFBodySettings.mesh.scale)
+                        || !TryReadSetOpacity(oXML, s6DOFBodySettings.mesh.opacity))
+                    { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
                         return false;
                     }
-                    s6DOFBodySettings.mesh.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-                    s6DOFBodySettings.mesh.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-                    s6DOFBodySettings.mesh.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-                    if (!oXML.FindChildElem("Rotation"))
-                    {
-                        return false;
-                    }
-                    s6DOFBodySettings.mesh.rotation.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-                    s6DOFBodySettings.mesh.rotation.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-                    s6DOFBodySettings.mesh.rotation.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-                    if (!oXML.FindChildElem("Scale"))
-                    {
-                        return false;
-                    }
-                    s6DOFBodySettings.mesh.scale = (float)atof(oXML.GetChildData().c_str());
-
-                    if (!oXML.FindChildElem("Opacity"))
-                    {
-                        return false;
-                    }
-                    s6DOFBodySettings.mesh.opacity = (float)atof(oXML.GetChildData().c_str());
 
                     oXML.OutOfElem(); // Mesh
                 }
 
-                if (oXML.FindChildElem("Points"))
-                {
-                    oXML.IntoElem();
-
-                    while (oXML.FindChildElem("Point"))
-                    {
-                        sBodyPoint.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-                        sBodyPoint.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-                        sBodyPoint.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-                        sBodyPoint.virtual_ = (0 != atoi(oXML.GetChildAttrib("Virtual").c_str()));
-                        sBodyPoint.physicalId = atoi(oXML.GetChildAttrib("PhysicalId").c_str());
-                        sBodyPoint.name = oXML.GetChildAttrib("Name");
-                        s6DOFBodySettings.points.push_back(sBodyPoint);
-                    }
-                    oXML.OutOfElem(); // Points
-                }
-
-                if (!oXML.FindChildElem("Data_origin"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.origin.type = (EOriginType)atoi(oXML.GetChildData().c_str());
-                s6DOFBodySettings.origin.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-                s6DOFBodySettings.origin.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-                s6DOFBodySettings.origin.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-                s6DOFBodySettings.origin.relativeBody = atoi(oXML.GetChildAttrib("Relative_body").c_str());
-
-                if (!oXML.FindChildElem("Data_orientation"))
-                {
-                    return false;
-                }
-                if (s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str()) ||
-                    s6DOFBodySettings.origin.relativeBody != static_cast<uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str())))
-                {
+                // Points --- REQUIRED
+                TryReadSetPoints(oXML, s6DOFBodySettings.points);
+                if (!TryReadSetDataOrigin(oXML, s6DOFBodySettings.origin)
+                    || !oXML.FindChildElem("Data_orientation")
+                    || s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str())
+                    || s6DOFBodySettings.origin.relativeBody != static_cast<uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str()))
+                    )
+                { // Data Orientation, Origin Type / Relative Body --- REQUIRED
                     return false;
                 }
 
-                char tmpStr[10];
-                for (uint32_t i = 0; i < 9; i++)
-                {
-                    sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-                    s6DOFBodySettings.origin.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
-                }
+                // Rotation values --- NOTE : Does NOT(!) 'Try'; just reads and sets (no boolean return)
+                ReadSetRotations(oXML, s6DOFBodySettings.origin);
+
                 m6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
 
@@ -3331,7 +3506,6 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
             }
             int nBodies = atoi(oXML.GetChildData().c_str());
             SSettings6DOFBody s6DOFBodySettings;
-            SBodyPoint sPoint;
 
             for (int iBody = 0; iBody < nBodies; iBody++)
             {
@@ -3341,68 +3515,21 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
                 }
                 oXML.IntoElem();
 
-                if (!oXML.FindChildElem("Name"))
-                {
+                if (!TryReadSetName(oXML, s6DOFBodySettings.name)
+                    || !TryReadSetRGBColor(oXML, s6DOFBodySettings.color)
+                    || !TryReadSetPointsOld(oXML, s6DOFBodySettings.points))
+                { // Name, RGBColor, Points(OLD) --- REQUIRED
                     return false;
                 }
-                s6DOFBodySettings.name = oXML.GetChildData();
 
-                if (!oXML.FindChildElem("RGBColor"))
-                {
-                    return false;
-                }
-                s6DOFBodySettings.color = atoi(oXML.GetChildData().c_str());
-
-                s6DOFBodySettings.points.clear();
-
-                while (oXML.FindChildElem("Point"))
-                {
-                    oXML.IntoElem();
-                    if (!oXML.FindChildElem("X"))
-                    {
-                        return false;
-                    }
-                    sPoint.fX = (float)atof(oXML.GetChildData().c_str());
-
-                    if (!oXML.FindChildElem("Y"))
-                    {
-                        return false;
-                    }
-                    sPoint.fY = (float)atof(oXML.GetChildData().c_str());
-
-                    if (!oXML.FindChildElem("Z"))
-                    {
-                        return false;
-                    }
-                    sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
-
-                    oXML.OutOfElem(); // Point
-                    s6DOFBodySettings.points.push_back(sPoint);
-                }
                 m6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
             }
             if (mnMajorVersion > 1 || mnMinorVersion > 15)
             {
-                if (oXML.FindChildElem("Euler"))
-                {
-                    oXML.IntoElem();
-                    if (!oXML.FindChildElem("First"))
-                    {
-                        return false;
-                    }
-                    msGeneralSettings.eulerRotations[0] = oXML.GetChildData();
-                    if (!oXML.FindChildElem("Second"))
-                    {
-                        return false;
-                    }
-                    msGeneralSettings.eulerRotations[1] = oXML.GetChildData();
-                    if (!oXML.FindChildElem("Third"))
-                    {
-                        return false;
-                    }
-                    msGeneralSettings.eulerRotations[2] = oXML.GetChildData();
-                    oXML.OutOfElem(); // Euler
+                if (!TryReadSetEuler(oXML, msGeneralSettings.eulerRotations[0], msGeneralSettings.eulerRotations[1], msGeneralSettings.eulerRotations[2]))
+                { // Euler --- REQUIRED
+                    return false;
                 }
             }
             bDataAvailable = true;
@@ -5546,7 +5673,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
                 oXML.AddElem("Mode", "Continuous 100Hz");
                 break;
             case ModeSystemLiveTime:
-                oXML.AddElem("Mode", "System Live Time");
+                oXML.AddElem("Mode", "System live time");
                 break;
             default:
                 return false; // Should never happen
