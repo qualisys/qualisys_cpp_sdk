@@ -542,11 +542,23 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
     return false;
 }
 
+double CRTProtocol::SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, unsigned int subFrame) 
+{
+    if(captureFrequency < timestampFrequency || !timestampFrequency || !captureFrequency) 
+    {
+        return 0.0;
+    }
+
+    const auto subFramesPerFrame = captureFrequency / timestampFrequency;
+
+    return static_cast<double>(subFrame) / static_cast<double>(subFramesPerFrame);
+}
+
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,
                                unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
     std::string components;
-
+    
     if (GetComponentString(components, nComponentType, componentOptions))
     {
         return StreamFrames(eRate, nRateArg, nUDPPort, pUDPAddr, components.c_str());
