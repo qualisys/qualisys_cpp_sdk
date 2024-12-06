@@ -58,6 +58,16 @@ private:
     void PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void Print2DNoise(CRTPacket* poRTPacket);
 
+    template< typename... Args>
+    void WriteOutput(FILE* stream, char const * const fmt, Args... args)
+    {
+        if(!mbOutputModeScrolling)
+        {
+            fprintf(stream, "                                                                                                                  \r");
+        }
+        fprintf(stream, fmt, args...);
+    }
+
     static const int mcnMaxCameras = 30;  // How many cameras can be measured noise on
     static const int mcnMaxMarkers = 30;  // How many markers can be measured noise on
     static const int mcnUseSamples = 100; // How many samples to calculate max noise upon 
