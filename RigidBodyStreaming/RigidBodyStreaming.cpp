@@ -36,10 +36,6 @@ int main(int argc, char **argv)
 
         const char           serverAddr[] = "127.0.0.1";
         const unsigned short basePort = 22222;
-        const int            majorVersion = 1;
-        const int            minorVersion = 19;
-        const bool           bigEndian = false;
-
         bool dataAvailable = false;
         bool streamFrames = false;
         unsigned short udpPort = 6734;
@@ -47,11 +43,23 @@ int main(int argc, char **argv)
         {
             if (!rtProtocol.Connected())
             {
-                if (!rtProtocol.Connect(serverAddr, basePort, &udpPort, majorVersion, minorVersion, bigEndian))
+                if (!rtProtocol.Connect(serverAddr, basePort, &udpPort))
                 {
                     printf("rtProtocol.Connect: %s\n\n", rtProtocol.GetErrorString());
-                    sleep(1);
+                    sleep(1000);
                     continue;
+                }
+
+                unsigned int major, minor;
+                if(rtProtocol.GetVersion(major, minor)) 
+                {
+                    printf("rtProtocol.Connect: RT Protocol Version %d.%d\n\n", major, minor);
+                }
+
+                std::string qtmVersion;
+                if(rtProtocol.GetQTMVersion(qtmVersion)) 
+                {
+                    printf("rtProtocol.Connect: Connected to %s\n\n", qtmVersion.data());
                 }
             }
 
