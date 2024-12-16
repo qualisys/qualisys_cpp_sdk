@@ -234,7 +234,6 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
                             }
                         }
                     }
-
                     Disconnect();
                     return false;
                 }
