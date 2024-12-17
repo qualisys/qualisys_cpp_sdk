@@ -674,7 +674,7 @@ public:
     ~CRTProtocol();
 
     bool       Connect(const char* pServerAddr, unsigned short nPort = cDefaultBasePort, unsigned short* pnUDPServerPort = nullptr,
-                       int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false);
+                       int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false, bool bNegotiateVersion = true);
     unsigned short GetUdpServerPort();
     void       Disconnect();
     bool       Connected() const;

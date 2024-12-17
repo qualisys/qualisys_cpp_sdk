@@ -53,6 +53,38 @@ namespace
         std::make_pair(CRTProtocol::EDegreeOfFreedom::TranslationY, "TranslationY"),
         std::make_pair(CRTProtocol::EDegreeOfFreedom::TranslationZ, "TranslationZ")
     };
+
+    struct RTVersion
+    {
+        int major = MAJOR_VERSION;
+        int minor = MINOR_VERSION;
+
+        // Returns a list of rt protocol version which are supported by the current SDK, 
+        // including an initial version by the function argument. (The initial version is not checked for compatibility)
+        // The list is sorted high to low and contains only unique elements.
+        static std::vector<RTVersion> VersionList(const RTVersion& initial)
+        {
+            // Valid versions added from high to low
+            std::vector<RTVersion> versions {
+                {MAJOR_VERSION, MINOR_VERSION},
+                {1, 25},
+                {1, 24},
+                {1, 23},
+            };
+
+            // Remove higher versions
+            versions.erase(
+                std::remove_if(versions.begin(), versions.end(), [&](const RTVersion& v) {
+                    return v.major > initial.major || (v.major == initial.major && v.minor >= initial.minor);
+                }),
+                versions.end()
+            );
+
+            versions.insert(versions.begin(), initial);
+
+            return versions;
+        }
+    };
 }
 
 unsigned int CRTProtocol::GetSystemFrequency() const
@@ -92,9 +124,8 @@ CRTProtocol::~CRTProtocol()
     }
 } // ~CRTProtocol
 
-
 bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigned short* pnUDPServerPort,
-                          int nMajorVersion, int nMinorVersion, bool bBigEndian)
+                          int nMajorVersion, int nMinorVersion, bool bBigEndian, bool bNegotiateVersion)
 {
     CRTPacket::EPacketType eType;
     std::string            tempStr;
@@ -102,7 +133,6 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
 
     mbBigEndian = bBigEndian;
     mbIsMaster = false;
-
     mnMajorVersion = 1;
     if ((nMajorVersion == 1) && (nMinorVersion == 0))
     {
@@ -125,6 +155,7 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
     {
         delete mpoRTPacket;
     }
+
     mpoRTPacket = new CRTPacket(nMajorVersion, nMinorVersion, bBigEndian);
 
     if (mpoRTPacket == nullptr)
@@ -159,36 +190,48 @@ bool CRTProtocol::Connect(const char* pServerAddr, unsigned short nPort, unsigne
                 const std::string welcomeMessage("QTM RT Interface connected");
                 if (strncmp(welcomeMessage.c_str(), mpoRTPacket->GetCommandString(), welcomeMessage.size()) == 0)
                 {
-                    // Set protocol version
-                    if (SetVersion(nMajorVersion, nMinorVersion))
+                    std::vector<RTVersion> versionList;
+                    if (bNegotiateVersion) 
                     {
-                        // Set byte order.
-                        // Unless we use protocol version 1.0, we have set the byte order by selecting the correct port.
-
-                        if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
+                        versionList = RTVersion::VersionList({nMajorVersion, nMinorVersion});
+                    } 
+                    else 
+                    {
+                        versionList = std::vector<RTVersion>(1, {nMajorVersion, nMinorVersion});
+                    }
+                    
+                    for(RTVersion& version : versionList) 
+                    {
+                        // Set protocol version
+                        if (SetVersion(version.major, version.minor))
                         {
-                            if (mbBigEndian)
+                            // Set byte order.
+                            // Unless we use protocol version 1.0, we have set the byte order by selecting the correct port.
+                            if ((mnMajorVersion == 1) && (mnMinorVersion == 0))
                             {
-                                tempStr = "ByteOrder BigEndian";
+                                if (mbBigEndian)
+                                {
+                                    tempStr = "ByteOrder BigEndian";
+                                }
+                                else
+                                {
+                                    tempStr = "ByteOrder LittleEndian";
+                                }
+
+                                if (SendCommand(tempStr, responseStr))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    strcpy(maErrorStr, "Set byte order failed.");
+                                }
                             }
                             else
                             {
-                                tempStr = "ByteOrder LittleEndian";
-                            }
-
-                            if (SendCommand(tempStr, responseStr))
-                            {
+                                GetState(meState, true);
                                 return true;
                             }
-                            else
-                            {
-                                strcpy(maErrorStr, "Set byte order failed.");
-                            }
-                        }
-                        else
-                        {
-                            GetState(meState, true);
-                            return true;
                         }
                     }
                     Disconnect();
