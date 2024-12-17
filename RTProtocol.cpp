@@ -559,7 +559,7 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
                                unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
     std::string components;
-    
+
     if (GetComponentString(components, nComponentType, componentOptions))
     {
         return StreamFrames(eRate, nRateArg, nUDPPort, pUDPAddr, components.c_str());
