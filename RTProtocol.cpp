@@ -67,6 +67,7 @@ namespace
             // Valid versions added from high to low
             std::vector<RTVersion> versions {
                 {MAJOR_VERSION, MINOR_VERSION},
+                {1, 26},
                 {1, 25},
                 {1, 24},
                 {1, 23},
@@ -540,6 +541,18 @@ bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigne
     strcpy(maErrorStr, "StreamFrames failed.");
 
     return false;
+}
+
+double CRTProtocol::SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, unsigned int subFrame) 
+{
+    if(captureFrequency < timestampFrequency || !timestampFrequency || !captureFrequency) 
+    {
+        return 0.0;
+    }
+
+    const auto subFramesPerFrame = captureFrequency / timestampFrequency;
+
+    return static_cast<double>(subFrame) / static_cast<double>(subFramesPerFrame);
 }
 
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr,

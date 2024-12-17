@@ -137,7 +137,7 @@ void COutput::HandleDataFrame(FILE* logfile, bool bLogMinimum, CRTProtocol* poRT
     }
     else
     {
-        PrintTimecode(logfile, poRTPacket);
+        PrintTimecode(logfile, poRTPacket, poRTProtocol);
         PrintData2D(logfile, poRTPacket);
         PrintData2DLin(logfile, poRTPacket);
         PrintData3D(logfile, poRTPacket, poRTProtocol);
@@ -219,7 +219,7 @@ void COutput::PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum
     }
 }
 
-void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
+void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol)
 {
     if (poRTPacket->GetComponentSize(CRTPacket::ComponentTimecode))
     {
@@ -235,10 +235,15 @@ void COutput::PrintTimecode(FILE* logfile, CRTPacket* poRTPacket)
 
             int year, day, hours, minutes, seconds, tenth, frame;
             unsigned __int64 cameraTime;
+            int subFrame;
 
-            if (poRTPacket->GetTimecodeSMPTE(hours, minutes, seconds, frame))
+            CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
+            poRTProtocol->GetExtTimestampSettings(timestampSettings);
+
+            if (poRTPacket->GetTimecodeSMPTE(hours, minutes, seconds, frame, subFrame))
             {
-                WriteOutput(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d\n", hours, minutes, seconds, frame);
+                const auto normalizedSubFrame = CRTProtocol::SMPTENormalizedSubFrame(poRTProtocol->GetSystemFrequency(), timestampSettings.nFrequency, subFrame);
+                WriteOutput(logfile, "SMPTE: Hours %02d Minutes %02d Seconds %02d Frame %02d Subframe: %.4f\n", hours, minutes, seconds, frame, normalizedSubFrame);
             }
             if (poRTPacket->GetTimecodeIRIG(year, day, hours, minutes, seconds, tenth))
             {

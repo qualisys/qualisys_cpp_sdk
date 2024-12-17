@@ -1,7 +1,7 @@
 #include "Operations.h"
 
 #define LATEST_SELECTABLE_MAJOR_VERSION 1
-#define LATEST_SELECTABLE_MINOR_VERSION 26
+#define LATEST_SELECTABLE_MINOR_VERSION 27
 #define PROGRAM_VERSION 0
 
 int main(int argc, char **argv)
