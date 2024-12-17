@@ -36,7 +36,7 @@ private:
     };
 
     void PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum);
-    void PrintTimecode(FILE* logfile, CRTPacket* poRTPacket);
+    void PrintTimecode(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void PrintStatistics(FILE* logfile, CRTPacket* poRTPacket);
     void PrintData2D(FILE* logfile, CRTPacket* poRTPacket);
     void PrintData2DLin(FILE* logfile, CRTPacket* poRTPacket);
