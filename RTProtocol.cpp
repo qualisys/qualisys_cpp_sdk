@@ -67,6 +67,7 @@ namespace
             // Valid versions added from high to low
             std::vector<RTVersion> versions {
                 {MAJOR_VERSION, MINOR_VERSION},
+                {1, 26},
                 {1, 25},
                 {1, 24},
                 {1, 23},
