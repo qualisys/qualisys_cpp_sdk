@@ -710,6 +710,7 @@ std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 	static const char* szaReplace[] = { "&lt;", "&amp;", "&gt;", "&apos;", "&quot;" };
 	static const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
 	std::string result;
+	// Reserve extra space, replacements from 'szaReplace' are longer than the original characters
 	result.reserve(strlen(szText) + (strlen(szText) / 10) + 7);
 
 	for (const char* p = szText; *p; ++p)
