@@ -1160,21 +1160,13 @@ std::string CMarkup::Format(const char* fmt, ...)
     va_copy(markerCopy, marker);
 
     // Determine buffer size
-#if defined(_MSC_VER)
-    int len = _vscprintf(fmt, markerCopy) + 1;
-#else
-    int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
-#endif
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
     va_end(markerCopy);
 
     std::vector<char> buffer(len);  // Create buffer of required size
 
     // Format the string into the buffer
-#if defined(_MSC_VER)
-    int nWritten = _vsnprintf_s(buffer.data(), buffer.size(), len, fmt, marker);
-#else
-    int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
-#endif
+	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
     va_end(marker);
 
     // Return formatted string, or an empty string if an error occurred
