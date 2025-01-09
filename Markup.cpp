@@ -709,43 +709,27 @@ std::string CMarkup::x_TextToDoc(const char* szText, bool bAttrib) const
 	// &quot; double quote
 	//
 	static const char* szaReplace[] = { "&lt;", "&amp;", "&gt;", "&apos;", "&quot;" };
-	const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
-	std::string csText;
-	const char* pSource = szText;
-	int nDestSize = (int)strlen(pSource);
-	nDestSize += nDestSize / 10 + 7;
-	char* pDest = GetBuffer(csText, nDestSize);
-	int nLen = 0;
-	char cSource = *pSource;
-	const char* pFound;
-	while (cSource)
+	static const char* pFind = bAttrib ? "<&>\'\"" : "<&>";
+	std::string result;
+	// Reserve extra space, replacements from 'szaReplace' are longer than the original characters
+	result.reserve(strlen(szText) + (strlen(szText) / 10) + 7);
+
+	for (const char* p = szText; *p; ++p)
 	{
-		if (nLen > nDestSize - 6)
+		const char* found = strchr(pFind, *p);
+		if (found)
 		{
-			ReleaseBuffer(csText, nLen);
-			nDestSize *= 2;
-			pDest = GetBuffer(csText, nDestSize);
-		}
-		if ((pFound = strchr(pFind,cSource)) != NULL)
-		{
-			pFound = szaReplace[pFound-pFind];
-#ifdef _WIN32
-			strcpy_s(&pDest[nLen], nDestSize, pFound);
-#else
-			strncpy(&pDest[nLen], pFound, nDestSize);
-#endif
-			nLen += (int)strlen(pFound);
+			// Append appropriate replacement string
+			result += szaReplace[found - pFind];
 		}
 		else
 		{
-			pDest[nLen] = *pSource;
-			nLen += 1; //_tclen(pSource);
+			// Append original char
+			result += *p;
 		}
-		pSource += 1; //_tclen(pSource);
-		cSource = *pSource;
 	}
-	ReleaseBuffer(csText, nLen);
-	return csText;
+
+	return result;
 }
 
 std::string CMarkup::x_TextFromDoc(int nLeft, int nRight) const
@@ -1164,35 +1148,30 @@ int _vscprintf(const char* format, va_list pargs)
 }
 #endif
 
-std::string CMarkup::Format(const char *fmt, ...)
+std::string CMarkup::Format(const char* fmt, ...)
 {
-    std::string retStr;
-    if (NULL != fmt)
+    if (!fmt)
     {
-        va_list marker;
-
-        // initialize variable arguments
-        va_start(marker, fmt);
-
-        // Get formatted string length adding one for NULL
-        int len = _vscprintf(fmt, marker) + 1;
-
-        // Create a char vector to hold the formatted string.
-        std::vector<char> buffer(len, '\0');
-#ifdef _WIN32
-        int nWritten = _vsnprintf_s(&buffer[0], buffer.size(), len, fmt, marker);
-#else
-        int nWritten = vsnprintf(&buffer[0], len, fmt, marker);
-#endif
-        if (nWritten > 0)
-        {
-            retStr = &buffer[0];
-        }
-
-        // Reset variable arguments
-        va_end(marker);
+        return "";  // EARLY EXIT
     }
-    return retStr;
+
+    va_list marker;
+    va_start(marker, fmt);
+    va_list markerCopy;  // Used for determining buffer size
+    va_copy(markerCopy, marker);
+
+    // Determine buffer size
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
+    va_end(markerCopy);
+
+    std::vector<char> buffer(len);  // Create buffer of required size
+
+    // Format the string into the buffer
+	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
+    va_end(marker);
+
+    // Return formatted string, or an empty string if an error occurred
+    return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
