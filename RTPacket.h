@@ -14,7 +14,7 @@
 #endif
 
 #define MAJOR_VERSION           1
-#define MINOR_VERSION           25
+#define MINOR_VERSION           27
 
 class DLL_EXPORT CRTPacket
 {
@@ -241,6 +241,7 @@ public:
     bool             IsTimeCodeAvailable() const;
     bool             GetTimecodeType(CRTPacket::ETimecodeType &timecodeType);
     bool             GetTimecodeSMPTE(int &hours, int &minutes, int &seconds, int &frames);
+    bool             GetTimecodeSMPTE(int &hours, int &minutes, int &seconds, int &frames, int &subFrames); // Added in RTProtocol version 1.27
     bool             GetTimecodeIRIG(int &years, int &days, int &hours, int &minutes, int &seconds, int &tenths);
     bool             GetTimecodeCameraTime(unsigned long long &cameraTime);
 

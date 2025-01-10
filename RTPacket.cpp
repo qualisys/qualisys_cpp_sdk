@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
+#include "RTPacket.h"
+
 #include <memory.h>
 #include <float.h>
 #include <stdint.h>
@@ -12,7 +14,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include "RTPacket.h"
 
 CRTPacket::CRTPacket(int nMajorVersion, int nMinorVersion, bool bBigEndian)
 {
@@ -1211,6 +1212,21 @@ bool CRTPacket::GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& fr
             frames  = 0x1f & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 17);
             return true;
         }
+    }
+    return false;
+}
+
+bool CRTPacket::GetTimecodeSMPTE(int& hours, int& minutes, int& seconds, int& frames, int& subFrames)
+{
+    if (mnMajorVersion <= 1 && mnMinorVersion < 27)
+    {
+        return false;
+    }
+
+    if (GetTimecodeSMPTE(hours, minutes, seconds, frames))
+    {
+        subFrames = 0x1FF & (SetByteOrder((unsigned int*)(mpTimecodeData[0] + 8)) >> 22);
+        return true;
     }
     return false;
 }

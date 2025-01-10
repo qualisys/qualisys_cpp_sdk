@@ -141,7 +141,8 @@ public:
         ModeDivisor,
         ModeIndependentFreq,
         ModeMeasurementTime,
-        ModeFixed100Hz
+        ModeFixed100Hz,
+        ModeSystemLiveTime
     };
 
     enum ESignalSource
@@ -673,7 +674,7 @@ public:
     ~CRTProtocol();
 
     bool       Connect(const char* pServerAddr, unsigned short nPort = cDefaultBasePort, unsigned short* pnUDPServerPort = nullptr,
-                       int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false);
+                       int nMajorVersion = MAJOR_VERSION, int nMinorVersion = MINOR_VERSION, bool bBigEndian = false, bool bNegotiateVersion = true);
     unsigned short GetUdpServerPort();
     void       Disconnect();
     bool       Connected() const;
@@ -711,6 +712,7 @@ public:
     bool       LoadProject(const std::string& fileName);
     bool       Reprocess();
 
+    static double SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, unsigned int subFrame);
     static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr);
     static bool ConvertRateString(const char* pRate, EStreamRate &eRate, unsigned int &nRateArg);
     static unsigned int ConvertComponentString(const std::string& componentsString);

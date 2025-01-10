@@ -284,6 +284,9 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             case CRTProtocol::ModelMiqusVideoColor:
                 printf("  Model: Miqus Video Color   ");
                 break;
+            case CRTProtocol::ModelMiqusHybrid:
+                printf("  Model: Miqus Hybrid   ");
+                break;
             case CRTProtocol::ModelMiqusVideoColorPlus:
                 printf("  Model: Miqus Video Color Plus  ");
                 break;
@@ -462,6 +465,9 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                             break;
                         case CRTProtocol::ModeFixed100Hz:
                             printf("  Sync Out%d Mode: Fixed 100 Hz\n", portNumber);
+                            break;
+                        case CRTProtocol::ModeSystemLiveTime:
+                            printf("  Sync Out%d Mode: System Live Time\n", portNumber);
                             break;
                         }
                     }

@@ -10,6 +10,8 @@
 // This software is provided "as is", with no warranty.
 // Latest fixes enhancements and documentation at www.firstobject.com
 
+#include "Markup.h"
+
 #include <assert.h>
 #include <algorithm>
 #include <stdarg.h>

@@ -36,7 +36,7 @@ private:
     };
 
     void PrintHeader(FILE* logfile, CRTPacket* poRTPacket, bool bLogMinimum);
-    void PrintTimecode(FILE* logfile, CRTPacket* poRTPacket);
+    void PrintTimecode(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void PrintStatistics(FILE* logfile, CRTPacket* poRTPacket);
     void PrintData2D(FILE* logfile, CRTPacket* poRTPacket);
     void PrintData2DLin(FILE* logfile, CRTPacket* poRTPacket);
@@ -57,6 +57,16 @@ private:
     void PrintImage(FILE* logfile, CRTPacket* poRTPacket);
     void PrintSkeleton(FILE* logfile, CRTPacket* poRTPacket, CRTProtocol* poRTProtocol);
     void Print2DNoise(CRTPacket* poRTPacket);
+
+    template< typename... Args>
+    void WriteOutput(FILE* stream, char const * const fmt, Args... args)
+    {
+        if(!mbOutputModeScrolling)
+        {
+            fprintf(stream, "                                                                                                                  \r");
+        }
+        fprintf(stream, fmt, args...);
+    }
 
     static const int mcnMaxCameras = 30;  // How many cameras can be measured noise on
     static const int mcnMaxMarkers = 30;  // How many markers can be measured noise on
