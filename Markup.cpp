@@ -1184,7 +1184,7 @@ std::string CMarkup::Format(const char* fmt, ...)
 
     va_end(markerCopy);
 
-	std::vector<char> buffer(len); // Create buffer of required size
+    std::vector<char> buffer(len); // Create buffer of required size
 
 	// Format the string into the buffer
 #ifdef _WIN32
