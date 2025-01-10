@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "Markup.h"
+#include <stdexcept>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -1149,28 +1150,57 @@ int _vscprintf(const char* format, va_list pargs)
 
 std::string CMarkup::Format(const char* fmt, ...)
 {
-    if (!fmt)
-    {
-        return "";  // EARLY EXIT
-    }
+	if (!fmt)
+	{
+		return "";  // EARLY EXIT: Null format string
+	}
 
-    va_list marker;
-    va_start(marker, fmt);
-    va_list markerCopy;  // Used for determining buffer size
-    va_copy(markerCopy, marker);
+	va_list marker;
+	va_start(marker, fmt);
+	va_list markerCopy;  // Used for determining buffer size
+	va_copy(markerCopy, marker);
 
-    // Determine buffer size
-	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
-    va_end(markerCopy);
+#ifdef _WIN32
+	int len = _vscprintf(fmt, markerCopy); // Determine required buffer size (excluding null terminator)
+	if (len < 0)
+	{
+		va_end(markerCopy);
+		va_end(marker);
+		throw std::runtime_error("Format string evaluation failed.");
+	}
+	len += 1; // Add space for null terminator
+#else
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy); // Determine required buffer size (excluding null terminator)
+	if (len < 0)
+	{
+		va_end(markerCopy);
+		va_end(marker);
+		throw std::runtime_error("Format string evaluation failed.");
+	}
+	len += 1; // Add space for null terminator
+#endif
 
-    std::vector<char> buffer(len);  // Create buffer of required size
+	va_end(markerCopy);
 
-    // Format the string into the buffer
+	std::vector<char> buffer(len); // Create buffer of required size
+
+	// Format the string into the buffer
+#ifdef _WIN32
+	// Use vsprintf_s for Windows
+	int nWritten = vsprintf_s(buffer.data(), buffer.size(), fmt, marker);
+#else
+	// Use vsnprintf for other platforms
 	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
-    va_end(marker);
+#endif
+	va_end(marker);
 
-    // Return formatted string, or an empty string if an error occurred
-    return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
+	if (nWritten < 0 || nWritten >= len)
+	{
+		throw std::runtime_error("Buffer writing failed during formatting.");
+	}
+
+	// Return the formatted string
+	return std::string(buffer.data(), nWritten);
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
