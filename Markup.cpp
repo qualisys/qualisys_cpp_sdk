@@ -1152,15 +1152,15 @@ int _vscprintf(const char* format, va_list pargs)
 
 std::string CMarkup::Format(const char* fmt, ...)
 {
-	if (!fmt)
-	{
-		return "";  // EARLY EXIT: Null format string
-	}
+    if (!fmt)
+    {
+        return "";  // EARLY EXIT: Null format string
+    }
 
-	va_list marker;
-	va_start(marker, fmt);
-	va_list markerCopy;  // Used for determining buffer size
-	va_copy(markerCopy, marker);
+    va_list marker;
+    va_start(marker, fmt);
+    va_list markerCopy;  // Used for determining buffer size
+    va_copy(markerCopy, marker);
 
 #ifdef _WIN32
 	int len = _vscprintf(fmt, markerCopy); // Determine required buffer size (excluding null terminator)
@@ -1182,7 +1182,7 @@ std::string CMarkup::Format(const char* fmt, ...)
 	len += 1; // Add space for null terminator
 #endif
 
-	va_end(markerCopy);
+    va_end(markerCopy);
 
 	std::vector<char> buffer(len); // Create buffer of required size
 
@@ -1201,8 +1201,8 @@ std::string CMarkup::Format(const char* fmt, ...)
 		throw std::runtime_error("Buffer writing failed during formatting.");
 	}
 
-	// Return the formatted string
-	return std::string(buffer.data(), nWritten);
+    // Return the formatted string
+    return std::string(buffer.data(), nWritten);
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
