@@ -9,6 +9,7 @@
 #include <map>
 #include <limits>
 #include <cmath>
+#include <cstdint>
 
 #ifdef _WIN32
 #pragma warning (disable : 4251)
