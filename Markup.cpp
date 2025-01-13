@@ -1163,10 +1163,11 @@ std::string CMarkup::Format(const char* fmt, ...)
     va_copy(markerCopy, marker);
 	int len = -1;
 
+	// Determine required buffer size (excluding null terminator)
 #ifdef _WIN32
-	len = _vscprintf(fmt, markerCopy); // Determine required buffer size (excluding null terminator)
+	len = _vscprintf(fmt, markerCopy); 
 #else
-	int len = vsnprintf(nullptr, 0, fmt, markerCopy); // Determine required buffer size (excluding null terminator)
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy);
 #endif
 	if (len < 0)
 	{
@@ -1178,14 +1179,12 @@ std::string CMarkup::Format(const char* fmt, ...)
 
     va_end(markerCopy);
 
-    std::vector<char> buffer(len); // Create buffer of required size
+    std::vector<char> buffer(len);
 
 	// Format the string into the buffer
 #ifdef _WIN32
-	// Use vsprintf_s for Windows
 	int nWritten = vsprintf_s(buffer.data(), buffer.size(), fmt, marker);
 #else
-	// Use vsnprintf for other platforms
 	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
 #endif
 	va_end(marker);
@@ -1195,7 +1194,6 @@ std::string CMarkup::Format(const char* fmt, ...)
 		throw std::runtime_error("Buffer writing failed during formatting.");
 	}
 
-    // Return the formatted string
     return std::string(buffer.data(), nWritten);
 }
 
