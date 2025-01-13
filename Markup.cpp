@@ -1161,38 +1161,38 @@ std::string CMarkup::Format(const char* fmt, ...)
     va_start(marker, fmt);
     va_list markerCopy;  // Used for determining buffer size
     va_copy(markerCopy, marker);
-	int len = -1;
+    int len = -1;
 
-	// Determine required buffer size (excluding null terminator)
+    // Determine required buffer size (excluding null terminator)
 #ifdef _WIN32
-	len = _vscprintf(fmt, markerCopy); 
+    len = _vscprintf(fmt, markerCopy); 
 #else
-	int len = vsnprintf(nullptr, 0, fmt, markerCopy);
+    int len = vsnprintf(nullptr, 0, fmt, markerCopy);
 #endif
-	if (len < 0)
-	{
-		va_end(markerCopy);
-		va_end(marker);
-		throw std::runtime_error("Format string evaluation failed.");
-	}
-	len += 1; // Add space for null terminator
+    if (len < 0)
+    {
+        va_end(markerCopy);
+        va_end(marker);
+        throw std::runtime_error("Format string evaluation failed.");
+    }
+    len += 1; // Add space for null terminator
 
     va_end(markerCopy);
 
     std::vector<char> buffer(len);
 
-	// Format the string into the buffer
+    // Format the string into the buffer
 #ifdef _WIN32
-	int nWritten = vsprintf_s(buffer.data(), buffer.size(), fmt, marker);
+    int nWritten = vsprintf_s(buffer.data(), buffer.size(), fmt, marker);
 #else
-	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
+    int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
 #endif
-	va_end(marker);
+    va_end(marker);
 
-	if (nWritten < 0 || nWritten >= len)
-	{
-		throw std::runtime_error("Buffer writing failed during formatting.");
-	}
+    if (nWritten < 0 || nWritten >= len)
+    {
+        throw std::runtime_error("Buffer writing failed during formatting.");
+    }
 
     return std::string(buffer.data(), nWritten);
 }
