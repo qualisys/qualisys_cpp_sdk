@@ -1161,18 +1161,13 @@ std::string CMarkup::Format(const char* fmt, ...)
     va_start(marker, fmt);
     va_list markerCopy;  // Used for determining buffer size
     va_copy(markerCopy, marker);
+	int len = -1;
 
 #ifdef _WIN32
-	int len = _vscprintf(fmt, markerCopy); // Determine required buffer size (excluding null terminator)
-	if (len < 0)
-	{
-		va_end(markerCopy);
-		va_end(marker);
-		throw std::runtime_error("Format string evaluation failed.");
-	}
-	len += 1; // Add space for null terminator
+	len = _vscprintf(fmt, markerCopy); // Determine required buffer size (excluding null terminator)
 #else
 	int len = vsnprintf(nullptr, 0, fmt, markerCopy); // Determine required buffer size (excluding null terminator)
+#endif
 	if (len < 0)
 	{
 		va_end(markerCopy);
@@ -1180,7 +1175,6 @@ std::string CMarkup::Format(const char* fmt, ...)
 		throw std::runtime_error("Format string evaluation failed.");
 	}
 	len += 1; // Add space for null terminator
-#endif
 
     va_end(markerCopy);
 
