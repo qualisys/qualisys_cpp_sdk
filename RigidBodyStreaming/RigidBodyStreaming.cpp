@@ -7,6 +7,8 @@
 #include <unistd.h>
 #endif
 
+#include <tinyxml2.h>
+
 int main(int argc, char **argv)
 {
     try

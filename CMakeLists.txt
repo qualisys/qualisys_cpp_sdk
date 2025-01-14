@@ -29,6 +29,9 @@ set_target_properties(${PROJECT_NAME}
 
 # ----------- INSTALL & EXPORT -----------
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(tinyxml2)
+
 include(GNUInstallDirs)
 
 set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
@@ -75,5 +78,6 @@ if (BUILD_EXAMPLES)
     )
     target_link_libraries(RigidBodyStreaming
             qualisys_cpp_sdk
+			PRIVATE tinyxml2::tinyxml2
     )
 endif ()
