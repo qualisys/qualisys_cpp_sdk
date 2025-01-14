@@ -971,7 +971,7 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
             {
                 printf("\nSkeleton Name: %s  Scale: %f", skeleton.name.c_str(), skeleton.scale);
 
-                std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, std::uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, uint32_t& level)
+                std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, std::uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, std::uint32_t& level)
                 {
                     level++;
                     std::string indent = std::string(level * 3, ' ');
