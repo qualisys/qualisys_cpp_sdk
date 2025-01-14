@@ -5,7 +5,6 @@
 
 #include <memory.h>
 #include <float.h>
-#include <cstdint>
 #include <math.h>
 
 #ifdef _WIN32
