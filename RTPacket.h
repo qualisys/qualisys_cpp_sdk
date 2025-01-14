@@ -2,7 +2,6 @@
 #define RTPACKET_H
 
 #include <vector>
-#include <stdint.h>
 
 #ifdef _WIN32
 #pragma warning (disable : 4251)

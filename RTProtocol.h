@@ -9,7 +9,7 @@
 #include <map>
 #include <limits>
 #include <cmath>
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef _WIN32
 #pragma warning (disable : 4251)
@@ -197,7 +197,7 @@ public:
         float fY;
         float fZ;
         bool  virtual_;
-        uint32_t physicalId;
+        std::uint32_t physicalId;
     };
 
 
@@ -306,7 +306,7 @@ public:
         {
         }
         bool bEnabled;
-        uint32_t nFrequency;
+        std::uint32_t nFrequency;
         ETimestampType nType;
     };
 
@@ -387,7 +387,7 @@ public:
     struct SOrigin
     {
         EOriginType type;
-        uint32_t    relativeBody;
+        std::uint32_t    relativeBody;
         SPoint      position;
         float       rotation[9];
     };
@@ -396,10 +396,10 @@ public:
     {
         std::string           name;
         bool                  enabled;
-        uint32_t              color;
+        std::uint32_t              color;
         std::string           filterPreset;
         float                 maxResidual;
-        uint32_t              minMarkersInBody;
+        std::uint32_t              minMarkersInBody;
         float                 boneLengthTolerance;
         SSettings6DMesh       mesh;
         SOrigin               origin;
@@ -480,10 +480,10 @@ public:
 
     struct SCalibrationFov
     {
-        uint32_t left;
-        uint32_t top;
-        uint32_t right;
-        uint32_t bottom;
+        std::uint32_t left;
+        std::uint32_t top;
+        std::uint32_t right;
+        std::uint32_t bottom;
     };
 
     struct SCalibrationTransform
@@ -526,11 +526,11 @@ public:
         bool active;
         bool calibrated;
         std::string message;
-        uint32_t point_count;
+        std::uint32_t point_count;
         double avg_residual;
-        uint32_t serial;
+        std::uint32_t serial;
         std::string model;
-        uint32_t view_rotation;
+        std::uint32_t view_rotation;
         SCalibrationFov fov_marker;
         SCalibrationFov fov_marker_max;
         SCalibrationFov fov_video;
@@ -555,14 +555,14 @@ public:
         ECalibrationType type = regular;
         double refit_residual        = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
         double wand_length           = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
-        uint32_t max_frames          = 0;                                        // Not for fixed calibration.
+        std::uint32_t max_frames          = 0;                                        // Not for fixed calibration.
         double short_arm_end         = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double long_arm_end          = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double long_arm_middle       = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_std_dev        = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_min_max_diff   = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_refit_residual = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
-        uint32_t result_consecutive  = 0;    // Only for refine calibration.
+        std::uint32_t result_consecutive  = 0;    // Only for refine calibration.
         std::vector<SCalibrationCamera> cameras;
     };
 
@@ -637,7 +637,7 @@ public:
     struct SSettingsSkeletonSegmentHierarchical
     {
         std::string name;
-        uint32_t id = 0;
+        std::uint32_t id = 0;
         std::string solver;
         SPosition position;
         SRotation rotation;
@@ -946,8 +946,8 @@ private:
     bool CompareNoCase(std::string tStr1, const char* tStr2) const;
     bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
     static std::string ToLower(std::string str);
-    static bool ParseString(const std::string& str, uint32_t& value);
-    static bool ParseString(const std::string& str, int32_t& value);
+    static bool ParseString(const std::string& str, std::uint32_t& value);
+    static bool ParseString(const std::string& str, std::int32_t& value);
     static bool ParseString(const std::string& str, float& value);
     static bool ParseString(const std::string& str, double& value);
     static bool ParseString(const std::string& str, bool& value);
