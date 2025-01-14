@@ -17,8 +17,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "Markup.h"
-#include <stdexcept>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -1154,47 +1152,26 @@ std::string CMarkup::Format(const char* fmt, ...)
 {
     if (!fmt)
     {
-        return "";  // EARLY EXIT: Null format string
+        return "";  // EARLY EXIT
     }
 
     va_list marker;
     va_start(marker, fmt);
     va_list markerCopy;  // Used for determining buffer size
     va_copy(markerCopy, marker);
-    int len = -1;
 
-    // Determine required buffer size (excluding null terminator)
-#ifdef _WIN32
-    len = _vscprintf(fmt, markerCopy); 
-#else
-    int len = vsnprintf(nullptr, 0, fmt, markerCopy);
-#endif
-    if (len < 0)
-    {
-        va_end(markerCopy);
-        va_end(marker);
-        throw std::runtime_error("Format string evaluation failed.");
-    }
-    len += 1; // Add space for null terminator
-
+    // Determine buffer size
+	int len = vsnprintf(nullptr, 0, fmt, markerCopy) + 1;
     va_end(markerCopy);
 
-    std::vector<char> buffer(len);
+    std::vector<char> buffer(len);  // Create buffer of required size
 
     // Format the string into the buffer
-#ifdef _WIN32
-    int nWritten = vsprintf_s(buffer.data(), buffer.size(), fmt, marker);
-#else
-    int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
-#endif
+	int nWritten = vsnprintf(buffer.data(), len, fmt, marker);
     va_end(marker);
 
-    if (nWritten < 0 || nWritten >= len)
-    {
-        throw std::runtime_error("Buffer writing failed during formatting.");
-    }
-
-    return std::string(buffer.data(), nWritten);
+    // Return formatted string, or an empty string if an error occurred
+    return (nWritten >= 0) ? std::string(buffer.data(), nWritten) : "";
 }
 
 std::string CMarkup::Mid(const std::string &tStr, int nFirst) const
