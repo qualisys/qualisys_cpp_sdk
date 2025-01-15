@@ -2979,125 +2979,129 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 
 bool CRTProtocol::Read3DSettings(bool &bDataAvailable)
 {
-    CMarkup     oXML;
-    std::string tStr;
-
+    tinyxml2::XMLDocument oXML;
     bDataAvailable = false;
 
     ms3DSettings.s3DLabels.clear();
-    ms3DSettings.pCalibrationTime[0] = 0;
+    ms3DSettings.pCalibrationTime[0] = '\0';
 
     if (!ReadSettings("3D", oXML))
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("The_3D"))
+    auto* root = oXML.RootElement();
+    if (!root)
+    {
+        return false;
+    }
+
+    auto* the3DElem = root->FirstChildElement("The_3D");
+    if (!the3DElem)
     {
         // No 3D data available.
         return true;
     }
-    oXML.IntoElem();
 
-    if (!oXML.FindChildElem("AxisUpwards"))
+    // AxisUpwards
+    auto* axisUpwardsElem = the3DElem->FirstChildElement("AxisUpwards");
+    if (!axisUpwardsElem || !axisUpwardsElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    std::string axisUpwards = ToLower(axisUpwardsElem->GetText());
 
-    if (tStr == "+x")
-    {
+    if (axisUpwards == "+x") {
         ms3DSettings.eAxisUpwards = XPos;
-    }
-    else if (tStr == "-x")
-    {
+    } else if (axisUpwards == "-x") {
         ms3DSettings.eAxisUpwards = XNeg;
-    }
-    else if (tStr == "+y")
-    {
+    } else if (axisUpwards == "+y") {
         ms3DSettings.eAxisUpwards = YPos;
-    }
-    else if (tStr == "-y")
-    {
+    } else if (axisUpwards == "-y") {
         ms3DSettings.eAxisUpwards = YNeg;
-    }
-    else if (tStr == "+z")
-    {
+    } else if (axisUpwards == "+z") {
         ms3DSettings.eAxisUpwards = ZPos;
-    }
-    else if (tStr == "-z")
-    {
+    } else if (axisUpwards == "-z") {
         ms3DSettings.eAxisUpwards = ZNeg;
-    }
-    else
-    {
+    } else {
         return false;
     }
 
-    if (!oXML.FindChildElem("CalibrationTime"))
+    // CalibrationTime
+    auto* calibrationTimeElem = the3DElem->FirstChildElement("CalibrationTime");
+    if (!calibrationTimeElem || !calibrationTimeElem->GetText())
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    strcpy(ms3DSettings.pCalibrationTime, tStr.c_str());
+    strncpy(ms3DSettings.pCalibrationTime, calibrationTimeElem->GetText(), sizeof(ms3DSettings.pCalibrationTime) - 1);
 
-    if (!oXML.FindChildElem("Labels"))
+    // Find the "Labels" element
+    auto* labelsElem = the3DElem->FirstChildElement("Labels");
+    if (!labelsElem || !labelsElem->GetText())
     {
         return false;
     }
-    unsigned int nNumberOfLabels = atoi(oXML.GetChildData().c_str());
-
+    // Parse the number of labels
+    unsigned int nNumberOfLabels = std::atoi(labelsElem->GetText());
     ms3DSettings.s3DLabels.resize(nNumberOfLabels);
     SSettings3DLabel sLabel;
-
+    // Process each label
+    auto* labelElem = labelsElem->FirstChildElement("Label");
     for (unsigned int iLabel = 0; iLabel < nNumberOfLabels; iLabel++)
     {
-        if (oXML.FindChildElem("Label"))
+        if (!labelElem)
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Name"))
-            {
-                sLabel.oName = oXML.GetChildData();
-                if (oXML.FindChildElem("RGBColor"))
-                {
-                    sLabel.nRGBColor = atoi(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Trajectory_Type"))
-                {
-                    sLabel.type = oXML.GetChildData();
-                }
-                ms3DSettings.s3DLabels[iLabel] = sLabel;
-            }
-            oXML.OutOfElem();
+            return false; // Missing label element
         }
-        else
+
+        // Process the current label
+        auto* nameElem = labelElem->FirstChildElement("Name");
+        if (nameElem && nameElem->GetText())
         {
-            return false;
+            sLabel.oName = nameElem->GetText();
         }
+
+        auto* colorElem = labelElem->FirstChildElement("RGBColor");
+        if (colorElem && colorElem->GetText())
+        {
+            sLabel.nRGBColor = std::atoi(colorElem->GetText());
+        }
+
+        auto* trajectoryElem = labelElem->FirstChildElement("Trajectory_Type");
+        if (trajectoryElem && trajectoryElem->GetText())
+        {
+            sLabel.type = trajectoryElem->GetText();
+        }
+
+        ms3DSettings.s3DLabels[iLabel] = sLabel;
+
+        // Move to the next label element
+        labelElem = labelElem->NextSiblingElement("Label");
     }
 
+    // Bones
     ms3DSettings.sBones.clear();
-    if (oXML.FindChildElem("Bones"))
+    auto* bonesElem = the3DElem->FirstChildElement("Bones");
+    if (bonesElem)
     {
-        oXML.IntoElem();
-        while (oXML.FindChildElem("Bone"))
+        auto* boneElem = bonesElem->FirstChildElement("Bone");
+        while (boneElem)
         {
-            oXML.IntoElem();
-            SSettingsBone bone = { };
-            bone.fromName = oXML.GetAttrib("From").c_str();
-            bone.toName = oXML.GetAttrib("To").c_str();
+            SSettingsBone bone;
+            bone.fromName = boneElem->Attribute("From", "");
+            bone.toName = boneElem->Attribute("To", "");
 
-            auto colorString = oXML.GetAttrib("Color");
-            if (!colorString.empty())
+            auto colorAttr = boneElem->Attribute("Color");
+            if (colorAttr)
             {
-                bone.color = atoi(colorString.c_str());
+                bone.color = std::atoi(colorAttr);
             }
+
             ms3DSettings.sBones.push_back(bone);
-            oXML.OutOfElem();
+            boneElem = boneElem->NextSiblingElement("Bone");
         }
-        oXML.OutOfElem();
     }
-    
+
     bDataAvailable = true;
     return true;
 } // Read3DSettings
