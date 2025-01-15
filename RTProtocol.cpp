@@ -3736,177 +3736,207 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
     return true;
 } // ReadEyeTrackerSettings
 
-bool CRTProtocol::ReadAnalogSettings(bool &bDataAvailable)
+bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
 {
-    CMarkup oXML;
-
+    tinyxml2::XMLDocument oXML;
     bDataAvailable = false;
     mvsAnalogDeviceSettings.clear();
+
+    auto* root = oXML.RootElement();
+    if (!root)
+    {
+        return false;
+    }
 
     if (!ReadSettings("Analog", oXML))
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("Analog"))
+    auto* analogElem = root->FirstChildElement("Analog");
+    if (!analogElem)
     {
-        // No analog data available.
         return true;
     }
 
     SAnalogDevice sAnalogDevice;
 
-    oXML.IntoElem();
-
     if (mnMajorVersion == 1 && mnMinorVersion == 0)
     {
+        // For protocol version 1.0
         sAnalogDevice.nDeviceID = 1;   // Always channel 1
         sAnalogDevice.oName = "AnalogDevice";
-        if (!oXML.FindChildElem("Channels"))
+
+        auto* channelsElem = analogElem->FirstChildElement("Channels");
+        if (!channelsElem || !channelsElem->GetText())
         {
             return false;
         }
-        sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Frequency"))
+        sAnalogDevice.nChannels = std::atoi(channelsElem->GetText());
+
+        auto* frequencyElem = analogElem->FirstChildElement("Frequency");
+        if (!frequencyElem || !frequencyElem->GetText())
         {
             return false;
         }
-        sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Unit"))
+        sAnalogDevice.nFrequency = std::atoi(frequencyElem->GetText());
+
+        auto* unitElem = analogElem->FirstChildElement("Unit");
+        if (!unitElem || !unitElem->GetText())
         {
             return false;
         }
-        sAnalogDevice.oUnit = oXML.GetChildData();
-        if (!oXML.FindChildElem("Range"))
+        sAnalogDevice.oUnit = unitElem->GetText();
+
+        auto* rangeElem = analogElem->FirstChildElement("Range");
+        if (!rangeElem)
         {
             return false;
         }
-        oXML.IntoElem();
-        if (!oXML.FindChildElem("Min"))
+
+        auto* minElem = rangeElem->FirstChildElement("Min");
+        if (!minElem || !minElem->GetText())
         {
             return false;
         }
-        sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Max"))
+        sAnalogDevice.fMinRange = static_cast<float>(std::atof(minElem->GetText()));
+
+        auto* maxElem = rangeElem->FirstChildElement("Max");
+        if (!maxElem || !maxElem->GetText())
         {
             return false;
         }
-        sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
+        sAnalogDevice.fMaxRange = static_cast<float>(std::atof(maxElem->GetText()));
+
         mvsAnalogDeviceSettings.push_back(sAnalogDevice);
         bDataAvailable = true;
         return true;
     }
     else
     {
-        while (oXML.FindChildElem("Device"))
+        auto* deviceElem = analogElem->FirstChildElement("Device");
+        while (deviceElem)
         {
             sAnalogDevice.voLabels.clear();
             sAnalogDevice.voUnits.clear();
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("Device_ID"))
-            {
-                oXML.OutOfElem(); // Device
-                continue;
-            }
-            sAnalogDevice.nDeviceID = atoi(oXML.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Device_Name"))
+            auto* deviceIdElem = deviceElem->FirstChildElement("Device_ID");
+            if (!deviceIdElem || !deviceIdElem->GetText())
             {
-                oXML.OutOfElem(); // Device
+                deviceElem = deviceElem->NextSiblingElement("Device");
                 continue;
             }
-            sAnalogDevice.oName = oXML.GetChildData();
+            sAnalogDevice.nDeviceID = std::atoi(deviceIdElem->GetText());
 
-            if (!oXML.FindChildElem("Channels"))
+            auto* deviceNameElem = deviceElem->FirstChildElement("Device_Name");
+            if (!deviceNameElem || !deviceNameElem->GetText())
             {
-                oXML.OutOfElem(); // Device
+                deviceElem = deviceElem->NextSiblingElement("Device");
                 continue;
             }
-            sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
+            sAnalogDevice.oName = deviceNameElem->GetText();
 
-            if (!oXML.FindChildElem("Frequency"))
+            auto* channelsElem = deviceElem->FirstChildElement("Channels");
+            if (!channelsElem || !channelsElem->GetText())
             {
-                oXML.OutOfElem(); // Device
+                deviceElem = deviceElem->NextSiblingElement("Device");
                 continue;
             }
-            sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
+            sAnalogDevice.nChannels = std::atoi(channelsElem->GetText());
+
+            auto* frequencyElem = deviceElem->FirstChildElement("Frequency");
+            if (!frequencyElem || !frequencyElem->GetText())
+            {
+                deviceElem = deviceElem->NextSiblingElement("Device");
+                continue;
+            }
+            sAnalogDevice.nFrequency = std::atoi(frequencyElem->GetText());
 
             if (mnMajorVersion == 1 && mnMinorVersion < 11)
             {
-                if (!oXML.FindChildElem("Unit"))
+                auto* unitElem = deviceElem->FirstChildElement("Unit");
+                if (!unitElem || !unitElem->GetText())
                 {
-                    oXML.OutOfElem(); // Device
+                    deviceElem = deviceElem->NextSiblingElement("Device");
                     continue;
                 }
-                sAnalogDevice.oUnit = oXML.GetChildData();
+                sAnalogDevice.oUnit = unitElem->GetText();
             }
-            if (!oXML.FindChildElem("Range"))
-            {
-                oXML.OutOfElem(); // Device
-                continue;
-            }
-            oXML.IntoElem();
 
-            if (!oXML.FindChildElem("Min"))
+            auto* rangeElem = deviceElem->FirstChildElement("Range");
+            if (!rangeElem)
             {
-                oXML.OutOfElem(); // Device
-                oXML.OutOfElem(); // Range
+                deviceElem = deviceElem->NextSiblingElement("Device");
                 continue;
             }
-            sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Max"))
+            auto* minElem = rangeElem->FirstChildElement("Min");
+            if (!minElem || !minElem->GetText())
             {
-                oXML.OutOfElem(); // Device
-                oXML.OutOfElem(); // Range
+                deviceElem = deviceElem->NextSiblingElement("Device");
                 continue;
             }
-            sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
-            oXML.OutOfElem(); // Range
+            sAnalogDevice.fMinRange = static_cast<float>(std::atof(minElem->GetText()));
+
+            auto* maxElem = rangeElem->FirstChildElement("Max");
+            if (!maxElem || !maxElem->GetText())
+            {
+                deviceElem = deviceElem->NextSiblingElement("Device");
+                continue;
+            }
+            sAnalogDevice.fMaxRange = static_cast<float>(std::atof(maxElem->GetText()));
 
             if (mnMajorVersion == 1 && mnMinorVersion < 11)
             {
-                for (unsigned int i = 0; i < sAnalogDevice.nChannels; i++)
+                for (unsigned int i = 0; i < sAnalogDevice.nChannels; ++i)
                 {
-                    if (oXML.FindChildElem("Label"))
+                    auto* labelElem = deviceElem->FirstChildElement("Label");
+                    if (labelElem && labelElem->GetText())
                     {
-                        sAnalogDevice.voLabels.push_back(oXML.GetChildData());
+                        sAnalogDevice.voLabels.push_back(labelElem->GetText());
                     }
                 }
                 if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels)
                 {
-                    oXML.OutOfElem(); // Device
+                    deviceElem = deviceElem->NextSiblingElement("Device");
                     continue;
                 }
             }
             else
             {
-                while (oXML.FindChildElem("Channel"))
+                auto* channelElem = deviceElem->FirstChildElement("Channel");
+                while (channelElem)
                 {
-                    oXML.IntoElem();
-                    if (oXML.FindChildElem("Label"))
+                    auto* labelElem = channelElem->FirstChildElement("Label");
+                    if (labelElem && labelElem->GetText())
                     {
-                        sAnalogDevice.voLabels.push_back(oXML.GetChildData());
+                        sAnalogDevice.voLabels.push_back(labelElem->GetText());
                     }
-                    if (oXML.FindChildElem("Unit"))
+
+                    auto* unitElem = channelElem->FirstChildElement("Unit");
+                    if (unitElem && unitElem->GetText())
                     {
-                        sAnalogDevice.voUnits.push_back(oXML.GetChildData());
+                        sAnalogDevice.voUnits.push_back(unitElem->GetText());
                     }
-                    oXML.OutOfElem(); // Channel
+
+                    channelElem = channelElem->NextSiblingElement("Channel");
                 }
+
                 if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels ||
                     sAnalogDevice.voUnits.size() != sAnalogDevice.nChannels)
                 {
-                    oXML.OutOfElem(); // Device
+                    deviceElem = deviceElem->NextSiblingElement("Device");
                     continue;
                 }
             }
-            oXML.OutOfElem(); // Device
+
             mvsAnalogDeviceSettings.push_back(sAnalogDevice);
             bDataAvailable = true;
+
+            deviceElem = deviceElem->NextSiblingElement("Device");
         }
     }
-    
+
     return true;
 } // ReadAnalogSettings
 
