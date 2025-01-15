@@ -1889,7 +1889,7 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    std::string tStr = ToLower(nominalElem->GetText());
+    tStr = ToLower(nominalElem->GetText());
     if (tStr == "none")
     {
         msGeneralSettings.sExternalTimebase.fNominalFrequency = -1.0f; // Disabled
@@ -2147,17 +2147,9 @@ bool CRTProtocol::ReadGeneralSettings()
         msGeneralSettings.eulerRotations[2] = eulerAnglesElem->Attribute("Third");
     }
 
-    SSettingsGeneralCamera sCameraSettings;
-
-    auto* eulerAnglesElem = root->FirstChildElement("EulerAngles");
-    if (eulerAnglesElem) {
-        msGeneralSettings.eulerRotations[0] = eulerAnglesElem->Attribute("First");
-        msGeneralSettings.eulerRotations[1] = eulerAnglesElem->Attribute("Second");
-        msGeneralSettings.eulerRotations[2] = eulerAnglesElem->Attribute("Third");
-    }
-
     // Parse Cameras
     auto* cameraElem = root->FirstChildElement("Camera");
+    SSettingsGeneralCamera sCameraSettings;
     while (cameraElem)
     {
         // Parse ID
