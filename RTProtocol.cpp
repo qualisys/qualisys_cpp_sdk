@@ -3940,225 +3940,172 @@ bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
     return true;
 } // ReadAnalogSettings
 
-bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
+bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
 {
-    CMarkup oXML;
-    
-    bDataAvailable = false;
+    tinyxml2::XMLDocument oXML;
 
+    bDataAvailable = false;
     msForceSettings.vsForcePlates.clear();
+
+    auto* root = oXML.RootElement();
+    if (!root)
+    {
+        return false;
+    }
 
     if (!ReadSettings("Force", oXML))
     {
         return false;
     }
 
-    //
-    // Read some force plate parameters
-    //
-    if (!oXML.FindChildElem("Force"))
+    auto* forceElem = root->FirstChildElement("Force");
+    if (!forceElem)
     {
         return true;
     }
 
-    oXML.IntoElem();
-
-    SForcePlate sForcePlate;
-    sForcePlate.bValidCalibrationMatrix = false;
-    sForcePlate.nCalibrationMatrixRows = 6;
-    sForcePlate.nCalibrationMatrixColumns = 6;
-
-    if (!oXML.FindChildElem("Unit_Length"))
+    auto* unitLengthElem = forceElem->FirstChildElement("Unit_Length");
+    if (!unitLengthElem || !unitLengthElem->GetText())
     {
         return false;
     }
-    msForceSettings.oUnitLength = oXML.GetChildData();
+    msForceSettings.oUnitLength = unitLengthElem->GetText();
 
-    if (!oXML.FindChildElem("Unit_Force"))
+    auto* unitForceElem = forceElem->FirstChildElement("Unit_Force");
+    if (!unitForceElem || !unitForceElem->GetText())
     {
         return false;
     }
-    msForceSettings.oUnitForce = oXML.GetChildData();
+    msForceSettings.oUnitForce = unitForceElem->GetText();
 
-    int  iPlate = 1;
-    while (oXML.FindChildElem("Plate"))
+    auto* plateElem = forceElem->FirstChildElement("Plate");
+    while (plateElem)
     {
-        //
+        SForcePlate sForcePlate = {};
+        sForcePlate.bValidCalibrationMatrix = false;
+        sForcePlate.nCalibrationMatrixRows = 6;
+        sForcePlate.nCalibrationMatrixColumns = 6;
+
         // Get name and type of the plates
-        //
-        oXML.IntoElem(); // "Plate"
-        if (oXML.FindChildElem("Force_Plate_Index")) // Version 1.7 and earlier.
+        auto* indexElem = plateElem->FirstChildElement("Force_Plate_Index");
+        if (!indexElem)
         {
-            sForcePlate.nID = atoi(oXML.GetChildData().c_str());
+            indexElem = plateElem->FirstChildElement("Plate_ID");
         }
-        else if (oXML.FindChildElem("Plate_ID")) // Version 1.8 and later.
-        {
-            sForcePlate.nID = atoi(oXML.GetChildData().c_str());
-        }
-        else
+        if (!indexElem || !indexElem->GetText())
         {
             return false;
         }
+        sForcePlate.nID = std::atoi(indexElem->GetText());
 
-        if (oXML.FindChildElem("Analog_Device_ID"))
+        auto* analogDeviceElem = plateElem->FirstChildElement("Analog_Device_ID");
+        if (analogDeviceElem && analogDeviceElem->GetText())
         {
-            sForcePlate.nAnalogDeviceID = atoi(oXML.GetChildData().c_str());
+            sForcePlate.nAnalogDeviceID = std::atoi(analogDeviceElem->GetText());
         }
         else
         {
             sForcePlate.nAnalogDeviceID = 0;
         }
 
-        if (!oXML.FindChildElem("Frequency"))
+        auto* frequencyElem = plateElem->FirstChildElement("Frequency");
+        if (!frequencyElem || !frequencyElem->GetText())
         {
             return false;
         }
-        sForcePlate.nFrequency = atoi(oXML.GetChildData().c_str());
+        sForcePlate.nFrequency = std::atoi(frequencyElem->GetText());
 
-        if (oXML.FindChildElem("Type"))
+        auto* typeElem = plateElem->FirstChildElement("Type");
+        if (typeElem && typeElem->GetText())
         {
-            sForcePlate.oType = oXML.GetChildData();
+            sForcePlate.oType = typeElem->GetText();
         }
         else
         {
             sForcePlate.oType = "unknown";
         }
 
-        if (oXML.FindChildElem("Name"))
+        auto* nameElem = plateElem->FirstChildElement("Name");
+        if (nameElem && nameElem->GetText())
         {
-            sForcePlate.oName = oXML.GetChildData();
+            sForcePlate.oName = nameElem->GetText();
         }
         else
         {
-            sForcePlate.oName = CMarkup::Format("#%d", iPlate);
+            sForcePlate.oName = "Unnamed Plate";
         }
 
-        if (oXML.FindChildElem("Length"))
+        auto* lengthElem = plateElem->FirstChildElement("Length");
+        if (lengthElem && lengthElem->GetText())
         {
-            sForcePlate.fLength = (float)atof(oXML.GetChildData().c_str());
-        }
-        if (oXML.FindChildElem("Width"))
-        {
-            sForcePlate.fWidth  = (float)atof(oXML.GetChildData().c_str());
+            sForcePlate.fLength = static_cast<float>(std::atof(lengthElem->GetText()));
         }
 
-        if (oXML.FindChildElem("Location"))
+        auto* widthElem = plateElem->FirstChildElement("Width");
+        if (widthElem && widthElem->GetText())
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Corner1"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[0].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[0].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[0].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner2"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[1].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[1].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[1].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner3"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[2].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[2].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[2].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner4"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[3].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[3].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[3].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            oXML.OutOfElem();
+            sForcePlate.fWidth = static_cast<float>(std::atof(widthElem->GetText()));
         }
 
-        if (oXML.FindChildElem("Origin"))
+        auto* locationElem = plateElem->FirstChildElement("Location");
+        if (locationElem)
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("X"))
+            for (int i = 0; i < 4; ++i)
             {
-                sForcePlate.sOrigin.fX = (float)atof(oXML.GetChildData().c_str());
+                std::string cornerName = "Corner" + std::to_string(i + 1);
+                auto* cornerElem = locationElem->FirstChildElement(cornerName.c_str());
+                if (cornerElem)
+                {
+                    auto* xElem = cornerElem->FirstChildElement("X");
+                    auto* yElem = cornerElem->FirstChildElement("Y");
+                    auto* zElem = cornerElem->FirstChildElement("Z");
+
+                    sForcePlate.asCorner[i].fX = xElem && xElem->GetText() ? static_cast<float>(std::atof(xElem->GetText())) : 0.0f;
+                    sForcePlate.asCorner[i].fY = yElem && yElem->GetText() ? static_cast<float>(std::atof(yElem->GetText())) : 0.0f;
+                    sForcePlate.asCorner[i].fZ = zElem && zElem->GetText() ? static_cast<float>(std::atof(zElem->GetText())) : 0.0f;
+                }
             }
-            if (oXML.FindChildElem("Y"))
-            {
-                sForcePlate.sOrigin.fY = (float)atof(oXML.GetChildData().c_str());
-            }
-            if (oXML.FindChildElem("Z"))
-            {
-                sForcePlate.sOrigin.fZ = (float)atof(oXML.GetChildData().c_str());
-            }
-            oXML.OutOfElem();
         }
 
+        auto* originElem = plateElem->FirstChildElement("Origin");
+        if (originElem)
+        {
+            auto* xElem = originElem->FirstChildElement("X");
+            auto* yElem = originElem->FirstChildElement("Y");
+            auto* zElem = originElem->FirstChildElement("Z");
+
+            sForcePlate.sOrigin.fX = xElem && xElem->GetText() ? static_cast<float>(std::atof(xElem->GetText())) : 0.0f;
+            sForcePlate.sOrigin.fY = yElem && yElem->GetText() ? static_cast<float>(std::atof(yElem->GetText())) : 0.0f;
+            sForcePlate.sOrigin.fZ = zElem && zElem->GetText() ? static_cast<float>(std::atof(zElem->GetText())) : 0.0f;
+        }
+        
         sForcePlate.vChannels.clear();
-        if (oXML.FindChildElem("Channels"))
+        if (auto* channelsElem = plateElem->FirstChildElement("Channels"))
         {
-            oXML.IntoElem();
-            SForceChannel sForceChannel;
-            while (oXML.FindChildElem("Channel"))
+            auto* channelElem = channelsElem->FirstChildElement("Channel");
+
+            while (channelElem)
             {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("Channel_No"))
+                SForceChannel sForceChannel;
+                auto* channelNoElem = channelElem->FirstChildElement("Channel_No");
+                if (channelNoElem && channelNoElem->GetText())
                 {
-                    sForceChannel.nChannelNumber = atoi(oXML.GetChildData().c_str());
+                    sForceChannel.nChannelNumber = std::atoi(channelNoElem->GetText());
                 }
-                if (oXML.FindChildElem("ConversionFactor"))
+
+                auto* conversionFactorElem = channelElem->FirstChildElement("ConversionFactor");
+                if (conversionFactorElem && conversionFactorElem->GetText())
                 {
-                    sForceChannel.fConversionFactor = (float)atof(oXML.GetChildData().c_str());
+                    sForceChannel.fConversionFactor = static_cast<float>(std::atof(conversionFactorElem->GetText()));
                 }
+
                 sForcePlate.vChannels.push_back(sForceChannel);
-                oXML.OutOfElem();
+                channelElem = channelElem->NextSiblingElement("Channel");
             }
-            oXML.OutOfElem();
         }
 
-        if (oXML.FindChildElem("Calibration_Matrix"))
+        if (auto* calibrationMatrixElem = plateElem->FirstChildElement("Calibration_Matrix"))
         {
-            oXML.IntoElem();
             int nRow = 0;
 
             if (mnMajorVersion == 1 && mnMinorVersion < 12)
@@ -4166,63 +4113,67 @@ bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
                 char strRow[16];
                 char strCol[16];
                 sprintf(strRow, "Row%d", nRow + 1);
-                while (oXML.FindChildElem(strRow))
+
+                auto* rowElem = calibrationMatrixElem->FirstChildElement(strRow);
+                while (rowElem)
                 {
-                    oXML.IntoElem();
                     int nCol = 0;
                     sprintf(strCol, "Col%d", nCol + 1);
-                    while (oXML.FindChildElem(strCol))
+
+                    auto* colElem = rowElem->FirstChildElement(strCol);
+                    while (colElem)
                     {
-                        sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
+                        if (colElem->GetText())
+                        {
+                            sForcePlate.afCalibrationMatrix[nRow][nCol] = static_cast<float>(std::atof(colElem->GetText()));
+                        }
                         nCol++;
                         sprintf(strCol, "Col%d", nCol + 1);
+                        colElem = rowElem->FirstChildElement(strCol);
                     }
-                    sForcePlate.nCalibrationMatrixColumns = nCol;
 
+                    sForcePlate.nCalibrationMatrixColumns = nCol;
                     nRow++;
                     sprintf(strRow, "Row%d", nRow + 1);
-                    oXML.OutOfElem(); // RowX
+                    rowElem = calibrationMatrixElem->FirstChildElement(strRow);
                 }
             }
             else
             {
-                //<Rows>
-                if (oXML.FindChildElem("Rows"))
+                auto* rowsElem = calibrationMatrixElem->FirstChildElement("Rows");
+                if (rowsElem)
                 {
-                    oXML.IntoElem();
-
-                    while (oXML.FindChildElem("Row"))
+                    auto* rowElem = rowsElem->FirstChildElement("Row");
+                    while (rowElem)
                     {
-                        oXML.IntoElem();
-
-                        //<Columns>
-                        if (oXML.FindChildElem("Columns"))
+                        auto* columnsElem = rowElem->FirstChildElement("Columns");
+                        if (columnsElem)
                         {
-                            oXML.IntoElem();
-
                             int nCol = 0;
-                            while (oXML.FindChildElem("Column"))
+                            auto* colElem = columnsElem->FirstChildElement("Column");
+                            while (colElem)
                             {
-                                sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
+                                if (colElem->GetText())
+                                {
+                                    sForcePlate.afCalibrationMatrix[nRow][nCol] = static_cast<float>(std::atof(colElem->GetText()));
+                                }
                                 nCol++;
+                                colElem = colElem->NextSiblingElement("Column");
                             }
-                            sForcePlate.nCalibrationMatrixColumns = nCol;
 
-                            nRow++;
-                            oXML.OutOfElem(); // Columns
+                            sForcePlate.nCalibrationMatrixColumns = nCol;
                         }
-                        oXML.OutOfElem(); // Row
+                        nRow++;
+                        rowElem = rowElem->NextSiblingElement("Row");
                     }
-                    oXML.OutOfElem(); // Rows
                 }
             }
+
             sForcePlate.nCalibrationMatrixRows = nRow;
             sForcePlate.bValidCalibrationMatrix = true;
-
-            oXML.OutOfElem(); // "Calibration_Matrix"
         }
-        oXML.OutOfElem(); // "Plate"
 
+        // End of processing for this force plate
         bDataAvailable = true;
         msForceSettings.vsForcePlates.push_back(sForcePlate);
     }
