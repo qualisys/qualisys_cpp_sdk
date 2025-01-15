@@ -10,6 +10,7 @@
 #include <limits>
 #include <cmath>
 #include <cstdint>
+#include <tinyxml2.h>
 
 #ifdef _WIN32
 #pragma warning (disable : 4251)
@@ -934,7 +935,7 @@ private:
     bool SendCommand(const char* pCmdStr);
     bool SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout = cWaitForDataTimeout);
     bool SendXML(const char* pCmdStr);
-    bool ReadSettings(std::string settingsType, CMarkup &oXML);
+    bool CRTProtocol::ReadSettings(std::string settingsType, tinyxml2::XMLDocument& oXML);
     void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
     void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
     void AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue);
@@ -951,7 +952,7 @@ private:
     static bool ParseString(const std::string& str, float& value);
     static bool ParseString(const std::string& str, double& value);
     static bool ParseString(const std::string& str, bool& value);
-    bool ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
+    bool ReadXmlBool(tinyxml2::XMLElement* xmll, const std::string& element, bool& value) const;
     SPosition ReadXMLPosition(CMarkup& xml, const std::string& element);
     SRotation ReadXMLRotation(CMarkup& xml, const std::string& element);
     bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);

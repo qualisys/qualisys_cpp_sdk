@@ -1642,16 +1642,30 @@ CRTPacket* CRTProtocol::GetRTPacket()
 }
 
 
-bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const
+bool CRTProtocol::ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const
 {
-    if (!xml->FindChildElem(element.c_str()))
+    if (!xml)
     {
         return false;
     }
 
-    auto str = xml->GetChildData();
+    // Find the child element
+    tinyxml2::XMLElement* child = xml->FirstChildElement(element.c_str());
+    if (!child)
+    {
+        return false;
+    }
+
+    // Get the text content
+    const char* text = child->GetText();
+    if (!text)
+    {
+        return false;
+    }
+
+    std::string str(text);
     RemoveInvalidChars(str);
-    str = ToLower(str);
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
 
     if (str == "true")
     {
@@ -1663,7 +1677,6 @@ bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& va
     }
     else
     {
-        // Don't change value, just report error.
         return false;
     }
 
@@ -1671,15 +1684,15 @@ bool CRTProtocol::ReadXmlBool(CMarkup* xml, const std::string& element, bool& va
 }
 
 
-bool CRTProtocol::ReadSettings(std::string settingsType, CMarkup &oXML)
+bool CRTProtocol::ReadSettings(std::string settingsType, tinyxml2::XMLDocument& oXML)
 {
     CRTPacket::EPacketType eType;
 
     mvsAnalogDeviceSettings.clear();
-    auto sendStr = std::string("GetParameters ") + settingsType;
+    auto sendStr = "GetParameters " + settingsType;
     if (!SendCommand(sendStr.c_str()))
     {
-        sprintf(maErrorStr, "GetParameters %s failed", settingsType.c_str());
+        snprintf(maErrorStr, sizeof(maErrorStr), "GetParameters %s failed", settingsType.c_str());
         return false;
     }
 
@@ -1688,7 +1701,7 @@ retry:
 
     if (received == CNetwork::ResponseType::timeout)
     {
-        strcat(maErrorStr, " Expected XML packet.");
+        strncat(maErrorStr, " Expected XML packet.", sizeof(maErrorStr) - strlen(maErrorStr) - 1);
         return false;
     }
     if (received == CNetwork::ResponseType::error)
@@ -1700,18 +1713,29 @@ retry:
     {
         if (eType == CRTPacket::PacketError)
         {
-            sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
+            snprintf(maErrorStr, sizeof(maErrorStr), "%s.", mpoRTPacket->GetErrorString());
             return false;
         }
         else
         {
             goto retry;
-            //sprintf(maErrorStr, "GetParameters %s returned wrong packet type. Got type %d expected type 2.", settingsType.c_str(), eType);
         }
     }
 
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
-    
+    const char* xmlString = mpoRTPacket->GetXMLString();
+    if (!xmlString)
+    {
+        snprintf(maErrorStr, sizeof(maErrorStr), "Failed to retrieve XML string.");
+        return false;
+    }
+
+    tinyxml2::XMLError error = oXML.Parse(xmlString);
+    if (error != tinyxml2::XML_SUCCESS)
+    {
+        snprintf(maErrorStr, sizeof(maErrorStr), "Failed to parse XML: %s", oXML.ErrorStr());
+        return false;
+    }
+
     return true;
 }
 
@@ -1724,7 +1748,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
 bool CRTProtocol::ReadGeneralSettings()
 {
-    CMarkup                 oXML;
+    tinyxml2::XMLDocument   oXML;
     std::string             tStr;
 
     msGeneralSettings.vsCameras.clear();
@@ -1734,65 +1758,70 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
+    // Root element
+    auto* root = oXML.RootElement();
+    if (!root)
+    {
+        return false;
+    }
+
     // ==================== General ====================
-    if (!oXML.FindChildElem("General"))
+    auto* generalElem = root->FirstChildElement("General");
+    if (!generalElem)
     {
         return false;
     }
-    oXML.IntoElem();
 
-    if (!oXML.FindChildElem("Frequency"))
+    auto* frequencyElem = generalElem->FirstChildElement("Frequency");
+    if (!frequencyElem || !frequencyElem->GetText())
     {
         return false;
     }
-    msGeneralSettings.nCaptureFrequency = atoi(oXML.GetChildData().c_str());
+    msGeneralSettings.nCaptureFrequency = std::atoi(frequencyElem->GetText());
 
-    if (!oXML.FindChildElem("Capture_Time"))
+    auto* captureTimeElem = generalElem->FirstChildElement("Capture_Time");
+    if (!captureTimeElem || !captureTimeElem->GetText())
     {
         return false;
     }
-    msGeneralSettings.fCaptureTime = (float)atof(oXML.GetChildData().c_str());
+    msGeneralSettings.fCaptureTime = std::atof(captureTimeElem->GetText());
 
     // Refactored variant of all this copy/paste code. TODO: Refactor everything else.
-    if (!ReadXmlBool(&oXML, "Start_On_External_Trigger", msGeneralSettings.bStartOnExternalTrigger))
+    if (!ReadXmlBool(generalElem, "Start_On_External_Trigger", msGeneralSettings.bStartOnExternalTrigger))
     {
         return false;
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 14)
     {
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", msGeneralSettings.bStartOnTrigNO))
-        {
-            return false;
-        }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NC", msGeneralSettings.bStartOnTrigNC))
-        {
-            return false;
-        }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_Software", msGeneralSettings.bStartOnTrigSoftware))
+        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", msGeneralSettings.bStartOnTrigNO) ||
+            !ReadXmlBool(generalElem, "Start_On_Trigger_NC", msGeneralSettings.bStartOnTrigNC) ||
+            !ReadXmlBool(generalElem, "Start_On_Trigger_Software", msGeneralSettings.bStartOnTrigSoftware))
         {
             return false;
         }
     }
 
     // ==================== External time base ====================
-    if (!oXML.FindChildElem("External_Time_Base"))
+    auto* extTimeBaseElem = generalElem->FirstChildElement("External_Time_Base");
+    if (!extTimeBaseElem)
     {
         return false;
     }
-    oXML.IntoElem();
 
-    if (!oXML.FindChildElem("Enabled"))
+    auto* enabledElem = extTimeBaseElem->FirstChildElement("Enabled");
+    if (!enabledElem || !enabledElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    tStr = ToLower(enabledElem->GetText());
     msGeneralSettings.sExternalTimebase.bEnabled = (tStr == "true");
 
-    if (!oXML.FindChildElem("Signal_Source"))
+    auto* signalSourceElem = extTimeBaseElem->FirstChildElement("Signal_Source");
+    if (!signalSourceElem || !signalSourceElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    tStr = ToLower(signalSourceElem->GetText());
     if (tStr == "control port")
     {
         msGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
@@ -1818,11 +1847,12 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    if (!oXML.FindChildElem("Signal_Mode"))
+    auto* signalModeElem = extTimeBaseElem->FirstChildElement("Signal_Mode");
+    if (!signalModeElem || !signalModeElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    tStr = ToLower(signalModeElem->GetText());
     if (tStr == "periodic")
     {
         msGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
@@ -1836,60 +1866,33 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Multiplier"))
-    {
-        return false;
-    }
-    unsigned int nMultiplier;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nMultiplier) == 1)
-    {
-        msGeneralSettings.sExternalTimebase.nFreqMultiplier = nMultiplier;
-    }
-    else
+    auto multiplierElem = extTimeBaseElem->FirstChildElement("Frequency_Multiplier");
+    if (!multiplierElem || !multiplierElem->GetText() || sscanf(multiplierElem->GetText(), "%u", &msGeneralSettings.sExternalTimebase.nFreqMultiplier) != 1) 
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Divisor"))
-    {
-        return false;
-    }
-    unsigned int nDivisor;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDivisor) == 1)
-    {
-        msGeneralSettings.sExternalTimebase.nFreqDivisor = nDivisor;
-    }
-    else
+    auto divisorElem = extTimeBaseElem->FirstChildElement("Frequency_Divisor");
+    if (!divisorElem || !divisorElem->GetText() || sscanf(divisorElem->GetText(), "%u", &msGeneralSettings.sExternalTimebase.nFreqDivisor) != 1)
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Tolerance"))
-    {
-        return false;
-    }
-    unsigned int nTolerance;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nTolerance) == 1)
-    {
-        msGeneralSettings.sExternalTimebase.nFreqTolerance = nTolerance;
-    }
-    else
+    auto toleranceElem = extTimeBaseElem->FirstChildElement("Frequency_Tolerance");
+    if (!toleranceElem || !toleranceElem->GetText() || sscanf(toleranceElem->GetText(), "%u", &msGeneralSettings.sExternalTimebase.nFreqTolerance) != 1)
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("Nominal_Frequency"))
+    auto nominalElem = extTimeBaseElem->FirstChildElement("Nominal_Frequency");
+    if (!nominalElem || !nominalElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-
+    std::string tStr = ToLower(nominalElem->GetText());
     if (tStr == "none")
     {
-        msGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
+        msGeneralSettings.sExternalTimebase.fNominalFrequency = -1.0f; // Disabled
     }
     else
     {
@@ -1904,11 +1907,12 @@ bool CRTProtocol::ReadGeneralSettings()
         }
     }
 
-    if (!oXML.FindChildElem("Signal_Edge"))
+    auto signalEdgeElem = extTimeBaseElem->FirstChildElement("Signal_Edge");
+    if (!signalEdgeElem || !signalEdgeElem->GetText())
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    tStr = ToLower(signalEdgeElem->GetText());
     if (tStr == "negative")
     {
         msGeneralSettings.sExternalTimebase.bNegativeEdge = true;
@@ -1922,57 +1926,40 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    if (!oXML.FindChildElem("Signal_Shutter_Delay"))
-    {
-        return false;
-    }
-    unsigned int nDelay;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDelay) == 1)
-    {
-        msGeneralSettings.sExternalTimebase.nSignalShutterDelay = nDelay;
-    }
-    else
+    auto signalShutterDelayElem = extTimeBaseElem->FirstChildElement("Signal_Shutter_Delay");
+    if (!signalShutterDelayElem || !signalShutterDelayElem->GetText() ||
+        sscanf(signalShutterDelayElem->GetText(), "%u", &msGeneralSettings.sExternalTimebase.nSignalShutterDelay) != 1)
     {
         return false;
     }
 
-    if (!oXML.FindChildElem("Non_Periodic_Timeout"))
-    {
-        return false;
-    }
-    float fTimeout;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%f", &fTimeout) == 1)
-    {
-        msGeneralSettings.sExternalTimebase.fNonPeriodicTimeout = fTimeout;
-    }
-    else
+    // Parse Non_Periodic_Timeout
+    auto nonPeriodicTimeoutElem = extTimeBaseElem->FirstChildElement("Non_Periodic_Timeout");
+    if (!nonPeriodicTimeoutElem || !nonPeriodicTimeoutElem->GetText() ||
+        sscanf(nonPeriodicTimeoutElem->GetText(), "%f", &msGeneralSettings.sExternalTimebase.fNonPeriodicTimeout) != 1)
     {
         return false;
     }
 
-    oXML.OutOfElem(); // External_Time_Base
-
-
-    // External_Timestamp
-    if (oXML.FindChildElem("External_Timestamp"))
+    auto extTimestampElem = root->FirstChildElement("External_Timestamp"); // External_Time_Base
+    if (extTimestampElem)
     {
-        oXML.IntoElem();
-
-        if (oXML.FindChildElem("Enabled"))
+        // Parse children of External_Timestamp
+        auto enabledElem = extTimestampElem->FirstChildElement("Enabled");
+        if (enabledElem && enabledElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
-            msGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
+            msGeneralSettings.sTimestamp.bEnabled = (ToLower(enabledElem->GetText()) == "true");
         }
-        if (oXML.FindChildElem("Type"))
+
+        auto typeElem = extTimestampElem->FirstChildElement("Type");
+        if (typeElem && typeElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "smpte")
+            std::string typeStr = ToLower(typeElem->GetText());
+            if (typeStr == "smpte")
             {
                 msGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
             }
-            else if (tStr == "irig")
+            else if (typeStr == "irig")
             {
                 msGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
             }
@@ -1981,19 +1968,17 @@ bool CRTProtocol::ReadGeneralSettings()
                 msGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
             }
         }
-        if (oXML.FindChildElem("Frequency"))
+
+        auto frequencyElem = extTimestampElem->FirstChildElement("Frequency");
+        if (frequencyElem && frequencyElem->GetText())
         {
             unsigned int timestampFrequency;
-            tStr = oXML.GetChildData();
-            if (sscanf(tStr.c_str(), "%u", &timestampFrequency) == 1)
+            if (sscanf(frequencyElem->GetText(), "%u", &timestampFrequency) == 1)
             {
                 msGeneralSettings.sTimestamp.nFrequency = timestampFrequency;
             }
         }
-        oXML.OutOfElem();
     }
-    // External_Timestamp
-
 
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     EProcessingActions* processingActions[3] =
@@ -2005,363 +1990,314 @@ bool CRTProtocol::ReadGeneralSettings()
     auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
-        // ==================== Processing actions ====================
-        if (!oXML.FindChildElem(processings[i]))
+        auto* processingElem = root->FirstChildElement(processings[i]);
+        if (!processingElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
         *processingActions[i] = ProcessingNone;
 
         if (mnMajorVersion > 1 || mnMinorVersion > 13)
         {
-            if (!oXML.FindChildElem("PreProcessing2D"))
+            auto* preProcessingElem = processingElem->FirstChildElement("PreProcessing2D");
+            if (!preProcessingElem || !preProcessingElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(preProcessingElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingPreProcess2D);
             }
         }
 
-        if (!oXML.FindChildElem("Tracking"))
+        auto* trackingElem = processingElem->FirstChildElement("Tracking");
+        if (!trackingElem || !trackingElem->GetText())
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
+        tStr = ToLower(trackingElem->GetText());
         if (tStr == "3d")
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking3D);
         }
-        else if (tStr == "2d" && i != 1) // i != 1 => Not RtProcessingSettings
+        else if (tStr == "2d" && i != 1)
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking2D);
         }
 
-        if (i != 1) //Not RtProcessingSettings
+        if (i != 1)
         {
-            if (!oXML.FindChildElem("TwinSystemMerge"))
+            auto* twinSystemMergeElem = processingElem->FirstChildElement("TwinSystemMerge");
+            if (!twinSystemMergeElem || !twinSystemMergeElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(twinSystemMergeElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTwinSystemMerge);
             }
 
-            if (!oXML.FindChildElem("SplineFill"))
+            auto* splineFillElem = processingElem->FirstChildElement("SplineFill");
+            if (!splineFillElem || !splineFillElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(splineFillElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingSplineFill);
             }
         }
 
-        if (!oXML.FindChildElem("AIM"))
+        auto* aimElem = processingElem->FirstChildElement("AIM");
+        if (!aimElem || !aimElem->GetText())
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(aimElem->GetText(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingAIM);
         }
 
-        if (!oXML.FindChildElem("Track6DOF"))
+        auto* track6DOFElem = processingElem->FirstChildElement("Track6DOF");
+        if (!track6DOFElem || !track6DOFElem->GetText())
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(track6DOFElem->GetText(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + Processing6DOFTracking);
         }
 
-        if (!oXML.FindChildElem("ForceData"))
+        auto* forceDataElem = processingElem->FirstChildElement("ForceData");
+        if (!forceDataElem || !forceDataElem->GetText())
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(forceDataElem->GetText(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingForceData);
         }
 
         if (mnMajorVersion > 1 || mnMinorVersion > 11)
         {
-            if (!oXML.FindChildElem("GazeVector"))
+            auto* gazeVectorElem = processingElem->FirstChildElement("GazeVector");
+            if (!gazeVectorElem || !gazeVectorElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(gazeVectorElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingGazeVector);
             }
         }
 
-        if (i != 1) //Not RtProcessingSettings
+        if (i != 1)
         {
-            if (!oXML.FindChildElem("ExportTSV"))
+            auto* exportTSVElem = processingElem->FirstChildElement("ExportTSV");
+            if (!exportTSVElem || !exportTSVElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(exportTSVElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportTSV);
             }
 
-            if (!oXML.FindChildElem("ExportC3D"))
+            auto* exportC3DElem = processingElem->FirstChildElement("ExportC3D");
+            if (!exportC3DElem || !exportC3DElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(exportC3DElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportC3D);
             }
 
-            if (!oXML.FindChildElem("ExportMatlabFile"))
+            auto* exportMatlabFileElem = processingElem->FirstChildElement("ExportMatlabFile");
+            if (!exportMatlabFileElem || !exportMatlabFileElem->GetText())
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(exportMatlabFileElem->GetText(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportMatlabFile);
             }
 
             if (mnMajorVersion > 1 || mnMinorVersion > 11)
             {
-                if (!oXML.FindChildElem("ExportAviFile"))
+                auto* exportAviFileElem = processingElem->FirstChildElement("ExportAviFile");
+                if (!exportAviFileElem || !exportAviFileElem->GetText())
                 {
                     return false;
                 }
-                if (CompareNoCase(oXML.GetChildData(), "true"))
+                if (CompareNoCase(exportAviFileElem->GetText(), "true"))
                 {
                     *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportAviFile);
                 }
             }
         }
-        oXML.OutOfElem(); // Processing_Actions
     }
 
-    if (oXML.FindChildElem("EulerAngles"))
+    auto* eulerAnglesElem = root->FirstChildElement("EulerAngles");
+    if (eulerAnglesElem)
     {
-        oXML.IntoElem();
-        msGeneralSettings.eulerRotations[0] = oXML.GetAttrib("First");
-        msGeneralSettings.eulerRotations[1] = oXML.GetAttrib("Second");
-        msGeneralSettings.eulerRotations[2] = oXML.GetAttrib("Third");
-        oXML.OutOfElem();
+        msGeneralSettings.eulerRotations[0] = eulerAnglesElem->Attribute("First");
+        msGeneralSettings.eulerRotations[1] = eulerAnglesElem->Attribute("Second");
+        msGeneralSettings.eulerRotations[2] = eulerAnglesElem->Attribute("Third");
     }
 
     SSettingsGeneralCamera sCameraSettings;
 
-    while (oXML.FindChildElem("Camera"))
+    auto* eulerAnglesElem = root->FirstChildElement("EulerAngles");
+    if (eulerAnglesElem) {
+        msGeneralSettings.eulerRotations[0] = eulerAnglesElem->Attribute("First");
+        msGeneralSettings.eulerRotations[1] = eulerAnglesElem->Attribute("Second");
+        msGeneralSettings.eulerRotations[2] = eulerAnglesElem->Attribute("Third");
+    }
+
+    // Parse Cameras
+    auto* cameraElem = root->FirstChildElement("Camera");
+    while (cameraElem)
     {
-        oXML.IntoElem();
+        // Parse ID
+        auto* idElem = cameraElem->FirstChildElement("ID");
+        if (!idElem || !idElem->GetText()) {
+            return false;
+        }
+        sCameraSettings.nID = std::atoi(idElem->GetText());
 
-        if (!oXML.FindChildElem("ID"))
+        // Parse Model
+        auto* modelElem = cameraElem->FirstChildElement("Model");
+        if (!modelElem || !modelElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nID = atoi(oXML.GetChildData().c_str());
+        tStr = ToLower(modelElem->GetText());
 
-        if (!oXML.FindChildElem("Model"))
-        {
-            return false;
-        }
-        tStr = ToLower(oXML.GetChildData());
-
-        if (tStr == "macreflex")
-        {
+        if (tStr == "macreflex") {
             sCameraSettings.eModel = ModelMacReflex;
-        }
-        else if (tStr == "proreflex 120")
-        {
+        } else if (tStr == "proreflex 120") {
             sCameraSettings.eModel = ModelProReflex120;
-        }
-        else if (tStr == "proreflex 240")
-        {
+        } else if (tStr == "proreflex 240") {
             sCameraSettings.eModel = ModelProReflex240;
-        }
-        else if (tStr == "proreflex 500")
-        {
+        } else if (tStr == "proreflex 500") {
             sCameraSettings.eModel = ModelProReflex500;
-        }
-        else if (tStr == "proreflex 1000")
-        {
+        } else if (tStr == "proreflex 1000") {
             sCameraSettings.eModel = ModelProReflex1000;
-        }
-        else if (tStr == "oqus 100")
-        {
+        } else if (tStr == "oqus 100") {
             sCameraSettings.eModel = ModelOqus100;
-        }
-        else if (tStr == "oqus 200" || tStr == "oqus 200 c")
-        {
+        } else if (tStr == "oqus 200" || tStr == "oqus 200 c") {
             sCameraSettings.eModel = ModelOqus200C;
-        }
-        else if (tStr == "oqus 300")
-        {
+        } else if (tStr == "oqus 300") {
             sCameraSettings.eModel = ModelOqus300;
-        }
-        else if (tStr == "oqus 300 plus")
-        {
+        } else if (tStr == "oqus 300 plus") {
             sCameraSettings.eModel = ModelOqus300Plus;
-        }
-        else if (tStr == "oqus 400")
-        {
+        } else if (tStr == "oqus 400") {
             sCameraSettings.eModel = ModelOqus400;
-        }
-        else if (tStr == "oqus 500")
-        {
+        } else if (tStr == "oqus 500") {
             sCameraSettings.eModel = ModelOqus500;
-        }
-        else if (tStr == "oqus 500 plus")
-        {
+        } else if (tStr == "oqus 500 plus") {
             sCameraSettings.eModel = ModelOqus500Plus;
-        }
-        else if (tStr == "oqus 700")
-        {
+        } else if (tStr == "oqus 700") {
             sCameraSettings.eModel = ModelOqus700;
-        }
-        else if (tStr == "oqus 700 plus")
-        {
+        } else if (tStr == "oqus 700 plus") {
             sCameraSettings.eModel = ModelOqus700Plus;
-        }
-        else if (tStr == "oqus 600 plus")
-        {
+        } else if (tStr == "oqus 600 plus") {
             sCameraSettings.eModel = ModelOqus600Plus;
-        }
-        else if (tStr == "miqus m1")
-        {
+        } else if (tStr == "miqus m1") {
             sCameraSettings.eModel = ModelMiqusM1;
-        }
-        else if (tStr == "miqus m3")
-        {
+        } else if (tStr == "miqus m3") {
             sCameraSettings.eModel = ModelMiqusM3;
-        }
-        else if (tStr == "miqus m5")
-        {
+        } else if (tStr == "miqus m5") {
             sCameraSettings.eModel = ModelMiqusM5;
-        }
-        else if (tStr == "miqus sync unit")
-        {
+        } else if (tStr == "miqus sync unit") {
             sCameraSettings.eModel = ModelMiqusSyncUnit;
-        }
-        else if (tStr == "miqus video")
-        {
+        } else if (tStr == "miqus video") {
             sCameraSettings.eModel = ModelMiqusVideo;
-        }
-        else if (tStr == "miqus video color")
-        {
+        } else if (tStr == "miqus video color") {
             sCameraSettings.eModel = ModelMiqusVideoColor;
-        }
-        else if (tStr == "miqus hybrid")
-        {
+        } else if (tStr == "miqus hybrid") {
             sCameraSettings.eModel = ModelMiqusHybrid;
-        }
-        else if (tStr == "miqus video color plus")
-        {
+        } else if (tStr == "miqus video color plus") {
             sCameraSettings.eModel = ModelMiqusVideoColorPlus;
-        }
-        else if (tStr == "arqus a5")
-        {
+        } else if (tStr == "arqus a5") {
             sCameraSettings.eModel = ModelArqusA5;
-        }
-        else if (tStr == "arqus a9")
-        {
+        } else if (tStr == "arqus a9") {
             sCameraSettings.eModel = ModelArqusA9;
-        }
-        else if (tStr == "arqus a12")
-        {
+        } else if (tStr == "arqus a12") {
             sCameraSettings.eModel = ModelArqusA12;
-        }
-        else if (tStr == "arqus a26")
-        {
+        } else if (tStr == "arqus a26") {
             sCameraSettings.eModel = ModelArqusA26;
-        }
-        else
-        {
+        } else {
             sCameraSettings.eModel = ModelUnknown;
         }
 
         // Only available from protocol version 1.10 and later.
-        if (oXML.FindChildElem("Underwater"))
+        auto* underwaterElem = cameraElem->FirstChildElement("Underwater");
+        if (underwaterElem && underwaterElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
+            tStr = ToLower(underwaterElem->GetText());
             sCameraSettings.bUnderwater = (tStr == "true");
         }
 
-        if (oXML.FindChildElem("Supports_HW_Sync"))
+        auto* supportsHwSyncElem = cameraElem->FirstChildElement("Supports_HW_Sync");
+        if (supportsHwSyncElem && supportsHwSyncElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
+            tStr = ToLower(supportsHwSyncElem->GetText());
             sCameraSettings.bSupportsHwSync = (tStr == "true");
         }
 
-        if (!oXML.FindChildElem("Serial"))
+        auto* serialElem = cameraElem->FirstChildElement("Serial");
+        if (!serialElem || !serialElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nSerial = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nSerial = std::atoi(serialElem->GetText());
 
         // ==================== Camera Mode ====================
-        if (!oXML.FindChildElem("Mode"))
+        auto* modeElem = cameraElem->FirstChildElement("Mode");
+        if (!modeElem || !modeElem->GetText())
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-        if (tStr == "marker")
-        {
+        tStr = ToLower(modeElem->GetText());
+        if (tStr == "marker") {
             sCameraSettings.eMode = ModeMarker;
-        }
-        else if (tStr == "marker intensity")
-        {
+        } else if (tStr == "marker intensity") {
             sCameraSettings.eMode = ModeMarkerIntensity;
-        }
-        else if (tStr == "video")
-        {
+        } else if (tStr == "video") {
             sCameraSettings.eMode = ModeVideo;
-        }
-        else
-        {
+        } else {
             return false;
         }
 
         if (mnMajorVersion > 1 || mnMinorVersion > 11)
         {
-            // ==================== Video frequency ====================
-            if (!oXML.FindChildElem("Video_Frequency"))
+            auto* videoFrequencyElem = cameraElem->FirstChildElement("Video_Frequency");
+            if (!videoFrequencyElem || !videoFrequencyElem->GetText())
             {
                 return false;
             }
-            sCameraSettings.nVideoFrequency = atoi(oXML.GetChildData().c_str());
+            sCameraSettings.nVideoFrequency = std::atoi(videoFrequencyElem->GetText());
         }
 
         // ==================== Video Resolution ====================
-        if (oXML.FindChildElem("Video_Resolution"))
+        auto* videoResolutionElem = cameraElem->FirstChildElement("Video_Resolution");
+        if (videoResolutionElem && videoResolutionElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "1440p")
-            {
+            tStr = ToLower(videoResolutionElem->GetText());
+            if (tStr == "1440p") {
                 sCameraSettings.eVideoResolution = VideoResolution1440p;
-            }
-            else if (tStr == "1080p")
-            {
+            } else if (tStr == "1080p") {
                 sCameraSettings.eVideoResolution = VideoResolution1080p;
-            }
-            else if (tStr == "720p")
-            {
+            } else if (tStr == "720p") {
                 sCameraSettings.eVideoResolution = VideoResolution720p;
-            }
-            else if (tStr == "540p")
-            {
+            } else if (tStr == "540p") {
                 sCameraSettings.eVideoResolution = VideoResolution540p;
-            }
-            else if (tStr == "480p")
-            {
+            } else if (tStr == "480p") {
                 sCameraSettings.eVideoResolution = VideoResolution480p;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
@@ -2371,19 +2307,15 @@ bool CRTProtocol::ReadGeneralSettings()
         }
 
         // ==================== Video AspectRatio ====================
-        if (oXML.FindChildElem("Video_Aspect_Ratio"))
+        auto* videoAspectRatioElem = cameraElem->FirstChildElement("Video_Aspect_Ratio");
+        if (videoAspectRatioElem && videoAspectRatioElem->GetText())
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "16x9")
-            {
+            tStr = ToLower(videoAspectRatioElem->GetText());
+            if (tStr == "16x9") {
                 sCameraSettings.eVideoAspectRatio = VideoAspectRatio16x9;
-            }
-            else if (tStr == "4x3")
-            {
+            } else if (tStr == "4x3") {
                 sCameraSettings.eVideoAspectRatio = VideoAspectRatio4x3;
-            }
-            else if (tStr == "1x1")
-            {
+            } else if (tStr == "1x1") {
                 sCameraSettings.eVideoAspectRatio = VideoAspectRatio1x1;
             }
         }
@@ -2393,354 +2325,313 @@ bool CRTProtocol::ReadGeneralSettings()
         }
 
         // ==================== Video exposure ====================
-        if (!oXML.FindChildElem("Video_Exposure"))
+        auto* videoExposureElem = cameraElem->FirstChildElement("Video_Exposure");
+        if (!videoExposureElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        auto* currentExposureElem = videoExposureElem->FirstChildElement("Current");
+        if (!currentExposureElem || !currentExposureElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoExposure = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoExposure = std::atoi(currentExposureElem->GetText());
 
-        if (!oXML.FindChildElem("Min"))
+        auto* minExposureElem = videoExposureElem->FirstChildElement("Min");
+        if (!minExposureElem || !minExposureElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoExposureMin = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoExposureMin = std::atoi(minExposureElem->GetText());
 
-        if (!oXML.FindChildElem("Max"))
+        auto* maxExposureElem = videoExposureElem->FirstChildElement("Max");
+        if (!maxExposureElem || !maxExposureElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoExposureMax = atoi(oXML.GetChildData().c_str());
-        oXML.OutOfElem(); // Video_Exposure
+        sCameraSettings.nVideoExposureMax = std::atoi(maxExposureElem->GetText());
 
         // ==================== Video flash time ====================
-        if (!oXML.FindChildElem("Video_Flash_Time"))
+        auto* videoFlashTimeElem = cameraElem->FirstChildElement("Video_Flash_Time");
+        if (!videoFlashTimeElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        auto* currentFlashTimeElem = videoFlashTimeElem->FirstChildElement("Current");
+        if (!currentFlashTimeElem || !currentFlashTimeElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTime = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoFlashTime = std::atoi(currentFlashTimeElem->GetText());
 
-        if (!oXML.FindChildElem("Min"))
+        auto* minFlashTimeElem = videoFlashTimeElem->FirstChildElement("Min");
+        if (!minFlashTimeElem || !minFlashTimeElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTimeMin = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoFlashTimeMin = std::atoi(minFlashTimeElem->GetText());
 
-        if (!oXML.FindChildElem("Max"))
+        auto* maxFlashTimeElem = videoFlashTimeElem->FirstChildElement("Max");
+        if (!maxFlashTimeElem || !maxFlashTimeElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTimeMax = atoi(oXML.GetChildData().c_str());
-        oXML.OutOfElem(); // Video_Flash_Time
+        sCameraSettings.nVideoFlashTimeMax = std::atoi(maxFlashTimeElem->GetText());
 
         // ==================== Marker exposure ====================
-        if (!oXML.FindChildElem("Marker_Exposure"))
+        auto* markerExposureElem = cameraElem->FirstChildElement("Marker_Exposure");
+        if (!markerExposureElem)
         {
             return false;
         }
-        oXML.IntoElem();
-        
-        if (!oXML.FindChildElem("Current"))
-        {
-            return false;
-        }
-        sCameraSettings.nMarkerExposure = atoi(oXML.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Min"))
+        auto* currentMarkerExposureElem = markerExposureElem->FirstChildElement("Current");
+        if (!currentMarkerExposureElem || !currentMarkerExposureElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerExposureMin = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerExposure = std::atoi(currentMarkerExposureElem->GetText());
 
-        if (!oXML.FindChildElem("Max"))
+        auto* minMarkerExposureElem = markerExposureElem->FirstChildElement("Min");
+        if (!minMarkerExposureElem || !minMarkerExposureElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerExposureMax = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerExposureMin = std::atoi(minMarkerExposureElem->GetText());
 
-        oXML.OutOfElem(); // Marker_Exposure
+        auto* maxMarkerExposureElem = markerExposureElem->FirstChildElement("Max");
+        if (!maxMarkerExposureElem || !maxMarkerExposureElem->GetText())
+        {
+            return false;
+        }
+        sCameraSettings.nMarkerExposureMax = std::atoi(maxMarkerExposureElem->GetText());
 
         // ==================== Marker threshold ====================
-        if (!oXML.FindChildElem("Marker_Threshold"))
+        auto* markerThresholdElem = cameraElem->FirstChildElement("Marker_Threshold");
+        if (!markerThresholdElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        auto* currentMarkerThresholdElem = markerThresholdElem->FirstChildElement("Current");
+        if (!currentMarkerThresholdElem || !currentMarkerThresholdElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerThreshold = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerThreshold = std::atoi(currentMarkerThresholdElem->GetText());
 
-        if (!oXML.FindChildElem("Min"))
+        auto* minMarkerThresholdElem = markerThresholdElem->FirstChildElement("Min");
+        if (!minMarkerThresholdElem || !minMarkerThresholdElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerThresholdMin = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerThresholdMin = std::atoi(minMarkerThresholdElem->GetText());
 
-        if (!oXML.FindChildElem("Max"))
+        auto* maxMarkerThresholdElem = markerThresholdElem->FirstChildElement("Max");
+        if (!maxMarkerThresholdElem || !maxMarkerThresholdElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerThresholdMax = atoi(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Marker_Threshold
+        sCameraSettings.nMarkerThresholdMax = std::atoi(maxMarkerThresholdElem->GetText());
 
         // ==================== Position ====================
-        if (!oXML.FindChildElem("Position"))
+        auto* positionElem = cameraElem->FirstChildElement("Position");
+        if (!positionElem)
         {
             return false;
         }
-        oXML.IntoElem();
-        
-        if (!oXML.FindChildElem("X"))
+
+        auto* xElem = positionElem->FirstChildElement("X");
+        if (!xElem || !xElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionX = (float)atoi(oXML.GetChildData().c_str());
+        sCameraSettings.fPositionX = std::atof(xElem->GetText());
 
-        if (!oXML.FindChildElem("Y"))
+        auto* yElem = positionElem->FirstChildElement("Y");
+        if (!yElem || !yElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionY = (float)atoi(oXML.GetChildData().c_str());
+        sCameraSettings.fPositionY = std::atof(yElem->GetText());
 
-        if (!oXML.FindChildElem("Z"))
+        auto* zElem = positionElem->FirstChildElement("Z");
+        if (!zElem || !zElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionZ = (float)atoi(oXML.GetChildData().c_str());
+        sCameraSettings.fPositionZ = std::atof(zElem->GetText());
 
-        if (!oXML.FindChildElem("Rot_1_1"))
+        auto* rotElem = positionElem;
+        for (int row = 0; row < 3; ++row)
+        {
+            for (int col = 0; col < 3; ++col)
+            {
+                char rotName[10];
+                sprintf(rotName, "Rot_%d_%d", row + 1, col + 1);
+                auto* rotValueElem = rotElem->FirstChildElement(rotName);
+                if (!rotValueElem || !rotValueElem->GetText())
+                {
+                    return false;
+                }
+                sCameraSettings.fPositionRotMatrix[row][col] = std::atof(rotValueElem->GetText());
+            }
+        }
+        // ==================== Orientation ====================
+        auto* orientationElem = cameraElem->FirstChildElement("Orientation");
+        if (!orientationElem || !orientationElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[0][0] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_2_1"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[1][0] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_3_1"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[2][0] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_1_2"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[0][1] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_2_2"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[1][1] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_3_2"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[2][1] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_1_3"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[0][2] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_2_3"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[1][2] = (float)atof(oXML.GetChildData().c_str());
-
-        if (!oXML.FindChildElem("Rot_3_3"))
-        {
-            return false;
-        }
-        sCameraSettings.fPositionRotMatrix[2][2] = (float)atof(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Position
-
-
-        if (!oXML.FindChildElem("Orientation"))
-        {
-            return false;
-        }
-        sCameraSettings.nOrientation = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nOrientation = std::atoi(orientationElem->GetText());
 
         // ==================== Marker resolution ====================
-        if (!oXML.FindChildElem("Marker_Res"))
+        auto* markerResElem = cameraElem->FirstChildElement("Marker_Res");
+        if (!markerResElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Width"))
+        auto* markerWidthElem = markerResElem->FirstChildElement("Width");
+        if (!markerWidthElem || !markerWidthElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerResolutionWidth = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerResolutionWidth = std::atoi(markerWidthElem->GetText());
 
-        if (!oXML.FindChildElem("Height"))
+        auto* markerHeightElem = markerResElem->FirstChildElement("Height");
+        if (!markerHeightElem || !markerHeightElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerResolutionHeight = atoi(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Marker_Res
+        sCameraSettings.nMarkerResolutionHeight = std::atoi(markerHeightElem->GetText());
 
         // ==================== Video resolution ====================
-        if (!oXML.FindChildElem("Video_Res"))
+        auto* videoResElem = cameraElem->FirstChildElement("Video_Res");
+        if (!videoResElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Width"))
+        auto* videoWidthElem = videoResElem->FirstChildElement("Width");
+        if (!videoWidthElem || !videoWidthElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoResolutionWidth = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoResolutionWidth = std::atoi(videoWidthElem->GetText());
 
-        if (!oXML.FindChildElem("Height"))
+        auto* videoHeightElem = videoResElem->FirstChildElement("Height");
+        if (!videoHeightElem || !videoHeightElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoResolutionHeight = atoi(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Video_Res
+        sCameraSettings.nVideoResolutionHeight = std::atoi(videoHeightElem->GetText());
 
         // ==================== Marker FOV ====================
-        if (!oXML.FindChildElem("Marker_FOV"))
+        auto* markerFOVElem = cameraElem->FirstChildElement("Marker_FOV");
+        if (!markerFOVElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Left"))
+        auto* markerFOVLeftElem = markerFOVElem->FirstChildElement("Left");
+        if (!markerFOVLeftElem || !markerFOVLeftElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVLeft = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerFOVLeft = std::atoi(markerFOVLeftElem->GetText());
 
-        if (!oXML.FindChildElem("Top"))
+        auto* markerFOVTopElem = markerFOVElem->FirstChildElement("Top");
+        if (!markerFOVTopElem || !markerFOVTopElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVTop = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerFOVTop = std::atoi(markerFOVTopElem->GetText());
 
-        if (!oXML.FindChildElem("Right"))
+        auto* markerFOVRightElem = markerFOVElem->FirstChildElement("Right");
+        if (!markerFOVRightElem || !markerFOVRightElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVRight = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nMarkerFOVRight = std::atoi(markerFOVRightElem->GetText());
 
-        if (!oXML.FindChildElem("Bottom"))
+        auto* markerFOVBottomElem = markerFOVElem->FirstChildElement("Bottom");
+        if (!markerFOVBottomElem || !markerFOVBottomElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVBottom = atoi(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Marker_FOV
+        sCameraSettings.nMarkerFOVBottom = std::atoi(markerFOVBottomElem->GetText());
 
         // ==================== Video FOV ====================
-        if (!oXML.FindChildElem("Video_FOV"))
+        auto* videoFOVElem = cameraElem->FirstChildElement("Video_FOV");
+        if (!videoFOVElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        if (!oXML.FindChildElem("Left"))
+        auto* videoFOVLeftElem = videoFOVElem->FirstChildElement("Left");
+        if (!videoFOVLeftElem || !videoFOVLeftElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFOVLeft = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoFOVLeft = std::atoi(videoFOVLeftElem->GetText());
 
-        if (!oXML.FindChildElem("Top"))
+        auto* videoFOVTopElem = videoFOVElem->FirstChildElement("Top");
+        if (!videoFOVTopElem || !videoFOVTopElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFOVTop = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoFOVTop = std::atoi(videoFOVTopElem->GetText());
 
-        if (!oXML.FindChildElem("Right"))
+        auto* videoFOVRightElem = videoFOVElem->FirstChildElement("Right");
+        if (!videoFOVRightElem || !videoFOVRightElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFOVRight = atoi(oXML.GetChildData().c_str());
+        sCameraSettings.nVideoFOVRight = std::atoi(videoFOVRightElem->GetText());
 
-        if (!oXML.FindChildElem("Bottom"))
+        auto* videoFOVBottomElem = videoFOVElem->FirstChildElement("Bottom");
+        if (!videoFOVBottomElem || !videoFOVBottomElem->GetText())
         {
             return false;
         }
-        sCameraSettings.nVideoFOVBottom = atoi(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // Video_FOV
+        sCameraSettings.nVideoFOVBottom = std::atoi(videoFOVBottomElem->GetText());
 
         // ==================== Sync out ====================
         // Only available from protocol version 1.10 and later.
-        for (int port = 0; port < 3; port++)
+        for (int port = 0; port < 3; ++port)
         {
             char syncOutStr[16];
             sprintf(syncOutStr, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
-            if (oXML.FindChildElem(syncOutStr))
-            {
-                oXML.IntoElem();
+            auto* syncOutElem = cameraElem->FirstChildElement(syncOutStr);
 
+            if (syncOutElem)
+            {
                 if (port < 2)
                 {
-                    if (!oXML.FindChildElem("Mode"))
+                    auto* modeElem = syncOutElem->FirstChildElement("Mode");
+                    if (!modeElem || !modeElem->GetText())
                     {
                         return false;
                     }
-                    tStr = ToLower(oXML.GetChildData());
-                    if (tStr == "shutter out")
-                    {
+                    tStr = ToLower(modeElem->GetText());
+                    if (tStr == "shutter out") {
                         sCameraSettings.eSyncOutMode[port] = ModeShutterOut;
-                    }
-                    else if (tStr == "multiplier")
-                    {
+                    } else if (tStr == "multiplier") {
                         sCameraSettings.eSyncOutMode[port] = ModeMultiplier;
-                    }
-                    else if (tStr == "divisor")
-                    {
+                    } else if (tStr == "divisor") {
                         sCameraSettings.eSyncOutMode[port] = ModeDivisor;
-                    }
-                    else if (tStr == "camera independent")
-                    {
+                    } else if (tStr == "camera independent") {
                         sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
-                    }
-                    else if (tStr == "measurement time")
-                    {
+                    } else if (tStr == "measurement time") {
                         sCameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
-                    }
-                    else if (tStr == "continuous 100hz")
-                    {
+                    } else if (tStr == "continuous 100hz") {
                         sCameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
-                    }
-                    else if (tStr == "system live time")
-                    {
+                    } else if (tStr == "system live time") {
                         sCameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
-                    }
-                    else
-                    {
+                    } else {
                         return false;
                     }
 
@@ -2748,27 +2639,29 @@ bool CRTProtocol::ReadGeneralSettings()
                         sCameraSettings.eSyncOutMode[port] == ModeDivisor ||
                         sCameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
                     {
-                        if (!oXML.FindChildElem("Value"))
+                        auto* valueElem = syncOutElem->FirstChildElement("Value");
+                        if (!valueElem || !valueElem->GetText())
                         {
                             return false;
                         }
-                        sCameraSettings.nSyncOutValue[port] = atoi(oXML.GetChildData().c_str());
+                        sCameraSettings.nSyncOutValue[port] = std::atoi(valueElem->GetText());
 
-                        if (!oXML.FindChildElem("Duty_Cycle"))
+                        auto* dutyCycleElem = syncOutElem->FirstChildElement("Duty_Cycle");
+                        if (!dutyCycleElem || !dutyCycleElem->GetText())
                         {
                             return false;
                         }
-                        sCameraSettings.fSyncOutDutyCycle[port] = (float)atof(oXML.GetChildData().c_str());
+                        sCameraSettings.fSyncOutDutyCycle[port] = std::atof(dutyCycleElem->GetText());
                     }
                 }
-                if (port == 2 ||
-                    (sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
+                if (port == 2 || sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz)
                 {
-                    if (!oXML.FindChildElem("Signal_Polarity"))
+                    auto* polarityElem = syncOutElem->FirstChildElement("Signal_Polarity");
+                    if (!polarityElem || !polarityElem->GetText())
                     {
                         return false;
                     }
-                    if (CompareNoCase(oXML.GetChildData(), "negative"))
+                    if (CompareNoCase(polarityElem->GetText(), "negative"))
                     {
                         sCameraSettings.bSyncOutNegativePolarity[port] = true;
                     }
@@ -2777,41 +2670,38 @@ bool CRTProtocol::ReadGeneralSettings()
                         sCameraSettings.bSyncOutNegativePolarity[port] = false;
                     }
                 }
-                oXML.OutOfElem(); // Sync_Out
             }
             else
             {
                 sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
                 sCameraSettings.nSyncOutValue[port] = 0;
-                sCameraSettings.fSyncOutDutyCycle[port] = 0;
+                sCameraSettings.fSyncOutDutyCycle[port] = 0.0f;
                 sCameraSettings.bSyncOutNegativePolarity[port] = false;
             }
         }
 
-        if (oXML.FindChildElem("LensControl"))
+        auto* lensControlElem = cameraElem->FirstChildElement("LensControl");
+        if (lensControlElem)
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Focus"))
+            auto* focusElem = lensControlElem->FirstChildElement("Focus");
+            if (focusElem)
             {
-                oXML.IntoElem();
                 float focus;
-                if (sscanf(oXML.GetAttrib("Value").c_str(), "%f", &focus) == 1)
+                if (sscanf(focusElem->Attribute("Value"), "%f", &focus) == 1)
                 {
                     sCameraSettings.fFocus = focus;
                 }
-                oXML.OutOfElem();
             }
-            if (oXML.FindChildElem("Aperture"))
+
+            auto* apertureElem = lensControlElem->FirstChildElement("Aperture");
+            if (apertureElem)
             {
-                oXML.IntoElem();
                 float aperture;
-                if (sscanf(oXML.GetAttrib("Value").c_str(), "%f", &aperture) == 1)
+                if (sscanf(apertureElem->Attribute("Value"), "%f", &aperture) == 1)
                 {
                     sCameraSettings.fAperture = aperture;
                 }
-                oXML.OutOfElem();
             }
-            oXML.OutOfElem();
         }
         else
         {
@@ -2819,19 +2709,23 @@ bool CRTProtocol::ReadGeneralSettings()
             sCameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
         }
 
-        if (oXML.FindChildElem("AutoExposure"))
+        // ==================== Auto Exposure ====================
+        auto* autoExposureElem = cameraElem->FirstChildElement("AutoExposure");
+        if (autoExposureElem)
         {
-            oXML.IntoElem();
-            if (CompareNoCase(oXML.GetAttrib("Enabled"), "true"))
+            const char* enabledAttrib = autoExposureElem->Attribute("Enabled");
+            sCameraSettings.autoExposureEnabled = (enabledAttrib && CompareNoCase(enabledAttrib, "true"));
+
+            float compensation;
+            const char* compensationAttrib = autoExposureElem->Attribute("Compensation");
+            if (compensationAttrib && sscanf(compensationAttrib, "%f", &compensation) == 1)
             {
-                sCameraSettings.autoExposureEnabled = true;
+                sCameraSettings.autoExposureCompensation = compensation;
             }
-            float autoExposureCompensation;
-            if (sscanf(oXML.GetAttrib("Compensation").c_str(), "%f", &autoExposureCompensation) == 1)
+            else
             {
-                sCameraSettings.autoExposureCompensation = autoExposureCompensation;
+                sCameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
             }
-            oXML.OutOfElem();
         }
         else
         {
@@ -2839,19 +2733,22 @@ bool CRTProtocol::ReadGeneralSettings()
             sCameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
         }
 
-        if (oXML.FindChildElem("AutoWhiteBalance"))
+        // ==================== Auto White Balance ====================
+        auto* autoWhiteBalanceElem = cameraElem->FirstChildElement("AutoWhiteBalance");
+        if (autoWhiteBalanceElem && autoWhiteBalanceElem->GetText())
         {
-            sCameraSettings.autoWhiteBalance = CompareNoCase(oXML.GetChildData().c_str(), "true") ? 1 : 0;
+            sCameraSettings.autoWhiteBalance = CompareNoCase(autoWhiteBalanceElem->GetText(), "true") ? 1 : 0;
         }
         else
         {
             sCameraSettings.autoWhiteBalance = -1;
         }
 
-        oXML.OutOfElem(); // Camera
-
+        // Finalize Camera Parsing
         msGeneralSettings.vsCameras.push_back(sCameraSettings);
-    }
+        // Move to the next Camera element
+        cameraElem = cameraElem->NextSiblingElement("Camera");
+    } // while-loop
 
     return true;
 } // ReadGeneralSettings
