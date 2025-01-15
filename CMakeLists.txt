@@ -40,6 +40,12 @@ set_target_properties(${PROJECT_NAME}
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(tinyxml2)
 
+# Add TinyXML2 to qualisys_cpp_sdk
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
+    PUBLIC tinyxml2::tinyxml2
+)
+
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(
         TARGETS ${PROJECT_NAME}
