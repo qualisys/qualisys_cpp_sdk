@@ -2746,16 +2746,18 @@ bool CRTProtocol::ReadGeneralSettings()
 } // ReadGeneralSettings
 
 
-bool ReadXmlFov(std::string name, CMarkup &oXML, CRTProtocol::SCalibrationFov &fov)
+bool ReadXmlFov(const std::string& name, tinyxml2::XMLElement* oXML, CRTProtocol::SCalibrationFov& fov)
 {
-    if (!oXML.FindChildElem(name.c_str()))
+    auto* fovElem = oXML->FirstChildElement(name.c_str());
+    if (!fovElem)
     {
         return false;
     }
-    fov.left = std::stoul(oXML.GetChildAttrib("left"));
-    fov.top = std::stoul(oXML.GetChildAttrib("top"));
-    fov.right = std::stoul(oXML.GetChildAttrib("right"));
-    fov.bottom = std::stoul(oXML.GetChildAttrib("bottom"));
+
+    fov.left = std::stoul(fovElem->Attribute("left"));
+    fov.top = std::stoul(fovElem->Attribute("top"));
+    fov.right = std::stoul(fovElem->Attribute("right"));
+    fov.bottom = std::stoul(fovElem->Attribute("bottom"));
 
     return true;
 }
@@ -2775,7 +2777,7 @@ bool CRTProtocol::ReadCalibrationSettings()
 bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 {
     CRTPacket::EPacketType  eType;
-    CMarkup                 oXML;
+    tinyxml2::XMLDocument   oXML;
     std::string             tStr;
     SCalibration            settings;
     CNetwork::ResponseType  response;
@@ -2807,8 +2809,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 
     if (eType != CRTPacket::PacketXML)
     {
-        if (event != CRTPacket::EventNone)
-        {
+        if (event != CRTPacket::EventNone) {
             sprintf(maErrorStr, "Calibration aborted.");
         }
         else if (eType == CRTPacket::PacketError)
@@ -2822,24 +2823,29 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
         return false;
     }
      
-    oXML.SetDoc(mpoRTPacket->GetXMLString());
-
-    if (!oXML.FindChildElem("calibration"))
+    const char* xmlString = mpoRTPacket->GetXMLString();
+    if (!xmlString || oXML.Parse(xmlString) != tinyxml2::XML_SUCCESS)
     {
-        sprintf(maErrorStr, "Missing calibration element");
+        snprintf(maErrorStr, sizeof(maErrorStr), "Failed to parse calibration XML.");
         return false;
-    }    
-    oXML.IntoElem();
+    }
+
+    auto* calibrationElem = oXML.FirstChildElement("calibration");
+    if (!calibrationElem)
+    {
+        snprintf(maErrorStr, sizeof(maErrorStr), "Missing calibration element.");
+        return false;
+    }
 
     try
     {
-        std::string resultStr = ToLower(oXML.GetAttrib("calibrated"));
-
+        std::string resultStr = ToLower(calibrationElem->Attribute("calibrated", ""));
         settings.calibrated = (resultStr == "true");
-        settings.source = oXML.GetAttrib("source");
-        settings.created = oXML.GetAttrib("created");
-        settings.qtm_version = oXML.GetAttrib("qtm-version");
-        std::string typeStr = oXML.GetAttrib("type");
+        settings.source = calibrationElem->Attribute("source", "");
+        settings.created = calibrationElem->Attribute("created", "");
+        settings.qtm_version = calibrationElem->Attribute("qtm-version", "");
+
+        std::string typeStr = calibrationElem->Attribute("type", "");
         if (typeStr == "regular")
         {
             settings.type = ECalibrationType::regular;
@@ -2855,125 +2861,115 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 
         if (settings.type == ECalibrationType::refine)
         {
-            settings.refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
+            settings.refit_residual = std::stod(calibrationElem->Attribute("refit-residual", "0"));
         }
         if (settings.type != ECalibrationType::fixed)
         {
-            settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
-            settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
-            settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
-            settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
-            settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
+            settings.wand_length = std::stod(calibrationElem->Attribute("wandLength", "0"));
+            settings.max_frames = std::stoul(calibrationElem->Attribute("maximumFrames", "0"));
+            settings.short_arm_end = std::stod(calibrationElem->Attribute("shortArmEnd", "0"));
+            settings.long_arm_end = std::stod(calibrationElem->Attribute("longArmEnd", "0"));
+            settings.long_arm_middle = std::stod(calibrationElem->Attribute("longArmMiddle", "0"));
 
-            if (!oXML.FindChildElem("results"))
+            auto* resultsElem = calibrationElem->FirstChildElement("results");
+            if (!resultsElem)
             {
                 return false;
             }
 
-            settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
-            settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
+            settings.result_std_dev = std::stod(resultsElem->Attribute("std-dev", "0"));
+            settings.result_min_max_diff = std::stod(resultsElem->Attribute("min-max-diff", "0"));
             if (settings.type == ECalibrationType::refine)
             {
-                settings.result_refit_residual = std::stod(oXML.GetChildAttrib("refit-residual"));
-                settings.result_consecutive = std::stoul(oXML.GetChildAttrib("consecutive"));
+                settings.result_refit_residual = std::stod(resultsElem->Attribute("refit-residual", "0"));
+                settings.result_consecutive = std::stoul(resultsElem->Attribute("consecutive", "0"));
             }
         }
 
-        if (!oXML.FindChildElem("cameras"))
+        auto* camerasElem = calibrationElem->FirstChildElement("cameras");
+        if (!camerasElem)
         {
             return false;
         }
-        oXML.IntoElem();
 
-        while (oXML.FindChildElem("camera"))
+        auto* cameraElem = camerasElem->FirstChildElement("camera");
+        while (cameraElem)
         {
-            oXML.IntoElem();
             SCalibrationCamera camera;
-            camera.active = std::stod(oXML.GetAttrib("active")) != 0;
 
-            std::string calibratedStr = ToLower(oXML.GetAttrib("calibrated"));
+            // Parse camera attributes
+            camera.active = std::stoi(cameraElem->Attribute("active", "0")) != 0;
+            camera.calibrated = (ToLower(cameraElem->Attribute("calibrated", "")) == "true");
+            camera.message = cameraElem->Attribute("message", "");
+            camera.point_count = std::stoul(cameraElem->Attribute("point-count", "0"));
+            camera.avg_residual = std::stod(cameraElem->Attribute("avg-residual", "0"));
+            camera.serial = std::stoul(cameraElem->Attribute("serial", "0"));
+            camera.model = cameraElem->Attribute("model", "");
+            camera.view_rotation = std::stoul(cameraElem->Attribute("viewrotation", "0"));
 
-            camera.calibrated = (calibratedStr == "true");
-            camera.message = oXML.GetAttrib("message");
-
-            camera.point_count = std::stoul(oXML.GetAttrib("point-count"));
-            camera.avg_residual = std::stod(oXML.GetAttrib("avg-residual"));
-            camera.serial = std::stoul(oXML.GetAttrib("serial"));
-            camera.model = oXML.GetAttrib("model");
-            camera.view_rotation = std::stoul(oXML.GetAttrib("viewrotation"));
-            if (!ReadXmlFov("fov_marker", oXML, camera.fov_marker))
-            {
-                return false;
-            }
-            if (!ReadXmlFov("fov_marker_max", oXML, camera.fov_marker_max))
-            {
-                return false;
-            }
-            if (!ReadXmlFov("fov_video", oXML, camera.fov_video))
-            {
-                return false;
-            }
-            if (!ReadXmlFov("fov_video_max", oXML, camera.fov_video_max))
-            {
-                return false;
-            }
-            if (!oXML.FindChildElem("transform"))
-            {
-                return false;
-            }
-            camera.transform.x = std::stod(oXML.GetChildAttrib("x"));
-            camera.transform.y = std::stod(oXML.GetChildAttrib("y"));
-            camera.transform.z = std::stod(oXML.GetChildAttrib("z"));
-            camera.transform.r11 = std::stod(oXML.GetChildAttrib("r11"));
-            camera.transform.r12 = std::stod(oXML.GetChildAttrib("r12"));
-            camera.transform.r13 = std::stod(oXML.GetChildAttrib("r13"));
-            camera.transform.r21 = std::stod(oXML.GetChildAttrib("r21"));
-            camera.transform.r22 = std::stod(oXML.GetChildAttrib("r22"));
-            camera.transform.r23 = std::stod(oXML.GetChildAttrib("r23"));
-            camera.transform.r31 = std::stod(oXML.GetChildAttrib("r31"));
-            camera.transform.r32 = std::stod(oXML.GetChildAttrib("r32"));
-            camera.transform.r33 = std::stod(oXML.GetChildAttrib("r33"));
-
-            if (!oXML.FindChildElem("intrinsic"))
+            // Parse FOVs
+            if (!ReadXmlFov("fov_marker", cameraElem, camera.fov_marker) ||
+                !ReadXmlFov("fov_marker_max", cameraElem, camera.fov_marker_max) ||
+                !ReadXmlFov("fov_video", cameraElem, camera.fov_video) ||
+                !ReadXmlFov("fov_video_max", cameraElem, camera.fov_video_max))
             {
                 return false;
             }
 
-            auto focalLength = oXML.GetChildAttrib("focallength");
-            try
+            // Parse transform
+            auto* transformElem = cameraElem->FirstChildElement("transform");
+            if (!transformElem)
             {
-                camera.intrinsic.focal_length = std::stod(focalLength);
+                return false;
             }
-            catch (const std::invalid_argument&)
+            camera.transform.x = std::stod(transformElem->Attribute("x", "0"));
+            camera.transform.y = std::stod(transformElem->Attribute("y", "0"));
+            camera.transform.z = std::stod(transformElem->Attribute("z", "0"));
+            camera.transform.r11 = std::stod(transformElem->Attribute("r11", "0"));
+            camera.transform.r12 = std::stod(transformElem->Attribute("r12", "0"));
+            camera.transform.r13 = std::stod(transformElem->Attribute("r13", "0"));
+            camera.transform.r21 = std::stod(transformElem->Attribute("r21", "0"));
+            camera.transform.r22 = std::stod(transformElem->Attribute("r22", "0"));
+            camera.transform.r23 = std::stod(transformElem->Attribute("r23", "0"));
+            camera.transform.r31 = std::stod(transformElem->Attribute("r31", "0"));
+            camera.transform.r32 = std::stod(transformElem->Attribute("r32", "0"));
+            camera.transform.r33 = std::stod(transformElem->Attribute("r33", "0"));
+
+            auto* intrinsicElem = cameraElem->FirstChildElement("intrinsic");
+            if (!intrinsicElem)
             {
-                camera.intrinsic.focal_length = 0;
+                return false;
             }
 
-            camera.intrinsic.sensor_min_u = std::stod(oXML.GetChildAttrib("sensorMinU"));
-            camera.intrinsic.sensor_max_u = std::stod(oXML.GetChildAttrib("sensorMaxU"));
-            camera.intrinsic.sensor_min_v = std::stod(oXML.GetChildAttrib("sensorMinV"));
-            camera.intrinsic.sensor_max_v = std::stod(oXML.GetChildAttrib("sensorMaxV"));
-            camera.intrinsic.focal_length_u = std::stod(oXML.GetChildAttrib("focalLengthU"));
-            camera.intrinsic.focal_length_v = std::stod(oXML.GetChildAttrib("focalLengthV"));
-            camera.intrinsic.center_point_u = std::stod(oXML.GetChildAttrib("centerPointU"));
-            camera.intrinsic.center_point_v = std::stod(oXML.GetChildAttrib("centerPointV"));
-            camera.intrinsic.skew = std::stod(oXML.GetChildAttrib("skew"));
-            camera.intrinsic.radial_distortion_1 = std::stod(oXML.GetChildAttrib("radialDistortion1"));
-            camera.intrinsic.radial_distortion_2 = std::stod(oXML.GetChildAttrib("radialDistortion2"));
-            camera.intrinsic.radial_distortion_3 = std::stod(oXML.GetChildAttrib("radialDistortion3"));
-            camera.intrinsic.tangental_distortion_1 = std::stod(oXML.GetChildAttrib("tangentalDistortion1"));
-            camera.intrinsic.tangental_distortion_2 = std::stod(oXML.GetChildAttrib("tangentalDistortion2"));
-            oXML.OutOfElem(); // camera
+            const char* focalLength = intrinsicElem->Attribute("focallength");
+            camera.intrinsic.focal_length = focalLength ? std::stod(focalLength) : 0.0;
+
+            camera.intrinsic.sensor_min_u = std::stod(intrinsicElem->Attribute("sensorMinU", "0"));
+            camera.intrinsic.sensor_max_u = std::stod(intrinsicElem->Attribute("sensorMaxU", "0"));
+            camera.intrinsic.sensor_min_v = std::stod(intrinsicElem->Attribute("sensorMinV", "0"));
+            camera.intrinsic.sensor_max_v = std::stod(intrinsicElem->Attribute("sensorMaxV", "0"));
+            camera.intrinsic.focal_length_u = std::stod(intrinsicElem->Attribute("focalLengthU", "0"));
+            camera.intrinsic.focal_length_v = std::stod(intrinsicElem->Attribute("focalLengthV", "0"));
+            camera.intrinsic.center_point_u = std::stod(intrinsicElem->Attribute("centerPointU", "0"));
+            camera.intrinsic.center_point_v = std::stod(intrinsicElem->Attribute("centerPointV", "0"));
+            camera.intrinsic.skew = std::stod(intrinsicElem->Attribute("skew", "0"));
+            camera.intrinsic.radial_distortion_1 = std::stod(intrinsicElem->Attribute("radialDistortion1", "0"));
+            camera.intrinsic.radial_distortion_2 = std::stod(intrinsicElem->Attribute("radialDistortion2", "0"));
+            camera.intrinsic.radial_distortion_3 = std::stod(intrinsicElem->Attribute("radialDistortion3", "0"));
+            camera.intrinsic.tangental_distortion_1 = std::stod(intrinsicElem->Attribute("tangentalDistortion1", "0"));
+            camera.intrinsic.tangental_distortion_2 = std::stod(intrinsicElem->Attribute("tangentalDistortion2", "0"));
+
+            // Add the parsed camera to the settings
             settings.cameras.push_back(camera);
+
+            // Move to the next camera element
+            cameraElem = cameraElem->NextSiblingElement("Camera");
         }
-        oXML.OutOfElem(); // cameras
     }
-    catch (...)
+    catch (const std::exception&)
     {
         return false;
     }
-
-    oXML.OutOfElem(); // calibration
 
     mCalibrationSettings = settings;
 
