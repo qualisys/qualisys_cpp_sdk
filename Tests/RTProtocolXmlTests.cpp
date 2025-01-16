@@ -5,27 +5,36 @@
 #include "../RTProtocol.h"
 #include "TestUtils.h"
 #include "XmlTestData.h"
-#include <iostream>
 
+namespace
+{
+    std::unique_ptr<CRTProtocol> CreateConnectedWithData(const char* xmlData)
+    {
+        auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlReceiverNetwork{};
+
+        auto protocol = std::make_unique<CRTProtocol>();
+
+        protocol->OverrideNetwork(networkDummy);
+
+        if (!protocol->Connect(""))
+        {
+            FAIL(protocol->GetErrorString());
+        }
+
+        networkDummy->QueueResponse(xmlData, CRTPacket::EPacketType::PacketXML);
+
+        if (!protocol->ReadGeneralSettings())
+        {
+            FAIL(protocol->GetErrorString());
+        }
+
+        return protocol;
+    }
+}
 
 TEST_CASE("GetGeneralSettingsTest") {
-    auto versionString = std::string{ "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) };
-    auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlReceiverNetwork{};
 
-    CRTProtocol protocol{};
-    protocol.OverrideNetwork(networkDummy);
-
-    if (!protocol.Connect(""))
-    {
-        FAIL(protocol.GetErrorString());
-    }
-   
-    networkDummy->QueueResponse(qualisys_cpp_sdk::xml_test_data::generalSettingsXml, CRTPacket::EPacketType::PacketXML);
-
-    if (!protocol.ReadGeneralSettings())
-    {
-        FAIL(protocol.GetErrorString());
-    }
+    auto protocol = CreateConnectedWithData(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
 
     unsigned int nCaptureFrequency;
     float fCaptureTime;
@@ -37,7 +46,7 @@ TEST_CASE("GetGeneralSettingsTest") {
     CRTProtocol::EProcessingActions eRtProcessingActions;
     CRTProtocol::EProcessingActions eReprocessingActions;
 
-    protocol.GetGeneralSettings(
+    protocol->GetGeneralSettings(
     nCaptureFrequency,
     fCaptureTime,
     bStartOnExtTrig,
@@ -51,19 +60,3 @@ TEST_CASE("GetGeneralSettingsTest") {
 
     CHECK_EQ(100, nCaptureFrequency);
 }
-
-
-//
-//TEST_CASE("Test XML Parsing") {
-//
-//    auto* network = new DummyXmlReceiverNetwork{};
-//
-//    CRTProtocol protocol{};
-//
-//    protocol.OverrideNetwork(network);
-//
-//    network->SetXmlData("");
-//    
-//    protocol.ReadGeneralSettings();
-//
-//}
