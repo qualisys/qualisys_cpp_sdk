@@ -92,7 +92,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${DOCTEST_INCLUDE_DIR})
 enable_testing()
 
 add_executable(tests
-    Tests/tests.cpp
+    "Tests/RTProtocolXmlTests.cpp"
 )
 
 target_link_libraries(tests 
