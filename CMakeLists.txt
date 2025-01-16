@@ -3,6 +3,13 @@ project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
 
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+include(Doctest)
+
+include(TinyXml2)
+
 add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
@@ -77,3 +84,20 @@ if (BUILD_EXAMPLES)
             qualisys_cpp_sdk
     )
 endif ()
+
+# Link libraries to the project
+target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2)
+target_include_directories(${PROJECT_NAME} PRIVATE ${DOCTEST_INCLUDE_DIR})
+
+enable_testing()
+
+add_executable(tests
+    Tests/tests.cpp
+)
+
+target_link_libraries(tests 
+    PRIVATE tinyxml2
+    PRIVATE ${PROJECT_NAME}
+)
+
+add_test(NAME QualisysCppSdkTests COMMAND tests)

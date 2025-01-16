@@ -711,6 +711,7 @@ public:
     bool       SaveCapture(const std::string& fileName, bool bOverwrite, std::string* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
     bool       LoadProject(const std::string& fileName);
     bool       Reprocess();
+    void       OverrideNetwork(INetwork* network);
 
     static double SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, unsigned int subFrame);
     static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr);
@@ -956,7 +957,7 @@ private:
     bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
 
 private:
-    CNetwork*                      mpoNetwork;
+    INetwork*                      mpoNetwork;
     CRTPacket*                     mpoRTPacket;
     std::vector<char>              mDataBuff;
     std::vector<char>              mSendBuffer;
