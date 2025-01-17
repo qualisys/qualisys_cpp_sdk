@@ -66,7 +66,56 @@ TEST_CASE("SetExtTimeBaseSettingsTest")
     CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
 }
 
-TEST_CASE("SetGeneralSettingsTest")
+TEST_CASE("GetExtTimeBaseSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    bool bEnabled;
+    CRTProtocol::ESignalSource eSignalSource;
+    bool bSignalModePeriodic;
+    unsigned int nFreqMultiplier;
+    unsigned int nFreqDivisor;
+    unsigned int nFreqTolerance;
+    float fNominalFrequency;
+    bool bNegativeEdge;
+    unsigned int nSignalShutterDelay;
+    float fNonPeriodicTimeout;
+
+    protocol->GetExtTimeBaseSettings(
+        bEnabled,
+        eSignalSource,
+        bSignalModePeriodic,
+        nFreqMultiplier,
+        nFreqDivisor,
+        nFreqTolerance,
+        fNominalFrequency,
+        bNegativeEdge,
+        nSignalShutterDelay,
+        fNonPeriodicTimeout
+    );
+
+    volatile char breaker = 1;
+
+    CHECK_EQ(false, bEnabled);
+    CHECK_EQ(CRTProtocol::ESignalSource::SourceControlPort, eSignalSource);
+    CHECK_EQ(true, bSignalModePeriodic);
+    CHECK_EQ(1, nFreqMultiplier);
+    CHECK_EQ(1, nFreqDivisor);
+    CHECK_EQ(1000 , nFreqTolerance);
+    CHECK_EQ(-1.0f, fNominalFrequency); // nominal frequency of "None" becomes -1
+    CHECK_EQ(true, bNegativeEdge);
+    CHECK_EQ(0, nSignalShutterDelay);
+    CHECK_EQ(10.0f, fNonPeriodicTimeout);
+}
+
+TEST_CASE("GetExtTimeBaseSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
 
