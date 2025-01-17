@@ -3,9 +3,11 @@ namespace qualisys_cpp_sdk
 {
     namespace test_utils
     {
-        class DummyXmlReceiverNetwork : public INetwork {
+        class DummyXmlNetwork : public INetwork {
             bool mConnected = false;
+            bool theRealBool = false;
             std::stringstream mStringStream;
+            std::stringstream mOutputStream;
         public:
             bool Connect(const char* pServerAddr, unsigned short nPort) override
             {
@@ -13,6 +15,7 @@ namespace qualisys_cpp_sdk
                 QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
                 QueueResponse(versionString.data(), CRTPacket::EPacketType::PacketCommand);
                 mConnected = true;
+                theRealBool = true;
                 return mConnected;
             }
             void Disconnect() override
@@ -52,13 +55,28 @@ namespace qualisys_cpp_sdk
 
             bool Send(const char* pSendBuf, int nSize) override
             {
+                if (theRealBool)
+                {
+                    mOutputStream.clear();
+                    mOutputStream.write(pSendBuf + 8, nSize - 8); // Ignore first 8 bytes / header data
+
+                    mStringStream.clear();
+                    QueueResponse("OK", CRTPacket::EPacketType::PacketCommand);
+                }
+
                 return true;
+            }
+
+            std::string ReadSentData()
+            {
+                return mOutputStream.str();
             }
 
             bool SendUDPBroadcast(const char* pSendBuf, int nSize, short nPort, unsigned nFilterAddr) override
             {
                 return true;
             }
+
             char* GetErrorString() override
             {
                 return nullptr;
@@ -78,6 +96,7 @@ namespace qualisys_cpp_sdk
             {
                 return 0;
             }
+
             unsigned short GetUdpBroadcastServerPort() override
             {
                 return 0;

@@ -94,6 +94,7 @@ enable_testing()
 add_executable(tests
     "Tests/RTProtocolXmlTests.cpp"
 )
+target_compile_features(tests PUBLIC cxx_std_17)  # C++ 17 for tests
 
 target_link_libraries(tests 
     PRIVATE tinyxml2

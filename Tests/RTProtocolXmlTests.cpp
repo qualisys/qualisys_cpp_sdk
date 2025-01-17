@@ -8,9 +8,15 @@
 
 namespace
 {
-    std::unique_ptr<CRTProtocol> CreateConnectedRtProtocolWithDummyXml(const char* xmlData)
+    struct TestContext
     {
-        auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlReceiverNetwork{};
+        std::unique_ptr<CRTProtocol> mRTProtocol;
+        qualisys_cpp_sdk::test_utils::DummyXmlNetwork* mNetwork;
+    };
+
+    TestContext CreateTestContext(const char* xmlData)
+    {
+        auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlNetwork{};
 
         auto protocol = std::make_unique<CRTProtocol>();
 
@@ -23,13 +29,40 @@ namespace
 
         networkDummy->QueueResponse(xmlData, CRTPacket::EPacketType::PacketXML);
 
-        return protocol;
+        return { std::move(protocol), networkDummy };
     }
+}
+
+TEST_CASE("SetGeneralSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext(qualisys_cpp_sdk::xml_test_data::generalSettingsXml/*nullptr*/);
+
+    unsigned int captureFrequency = 1;
+    float captureTime = 999.0f;
+    bool startOnExtTrig = true;
+    bool startOnTrigNO = true;
+    bool startOnTrigNC = true;
+    bool startOnTrigSoftware = true;
+    CRTProtocol::EProcessingActions peProcessingActions = CRTProtocol::EProcessingActions::ProcessingGazeVector;
+    CRTProtocol::EProcessingActions peRtProcessingActions = CRTProtocol::EProcessingActions::ProcessingExportMatlabFile;
+    CRTProtocol::EProcessingActions peReprocessingActions = CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge;
+
+    if (!protocol->SetGeneralSettings(
+        &captureFrequency, &captureTime,
+        &startOnExtTrig, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware,
+        &peProcessingActions, &peRtProcessingActions, &peReprocessingActions)
+        )
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    auto sentData = network->ReadSentData();
+    const char test = 0;
 }
 
 TEST_CASE("GetGeneralSettingsTest")
 {
-    auto protocol = CreateConnectedRtProtocolWithDummyXml(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
+    auto [protocol, _/*network*/] = CreateTestContext(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
 
     if (!protocol->ReadGeneralSettings())
     {
