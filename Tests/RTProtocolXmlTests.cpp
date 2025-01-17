@@ -98,8 +98,7 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
         fNominalFrequency,
         bNegativeEdge,
         nSignalShutterDelay,
-        fNonPeriodicTimeout
-    );
+        fNonPeriodicTimeout);
 
     volatile char breaker = 1;
 
@@ -114,6 +113,76 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
     CHECK_EQ(0, nSignalShutterDelay);
     CHECK_EQ(10.0f, fNonPeriodicTimeout);
 }
+
+TEST_CASE("SetCameraSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    unsigned int nCameraID = 1;
+    CRTProtocol::ECameraMode peMode = CRTProtocol::ECameraMode::ModeMarkerIntensity;
+    float pfMarkerExposure = 999.0f;
+    float pfMarkerThreshold = 998.0f;
+    int pnOrientation = 1;
+
+    if (!protocol->SetCameraSettings(
+        nCameraID,
+        &peMode,
+        &pfMarkerExposure,
+        &pfMarkerThreshold,
+        &pnOrientation))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraSettingsTest, network->ReadSentData().data()));
+}
+
+//TEST_CASE("GetCameraSettingsTest")
+//{
+//    auto [protocol, network] = CreateTestContext();
+//
+//    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+//
+//    if (!protocol->ReadGeneralSettings())
+//    {
+//        FAIL(protocol->GetErrorString());
+//    }
+//
+//    unsigned int nCaptureFrequency;
+//    float fCaptureTime;
+//    bool bStartOnExtTrig;
+//    bool startOnTrigNO;
+//    bool startOnTrigNC;
+//    bool startOnTrigSoftware;
+//    CRTProtocol::EProcessingActions eProcessingActions;
+//    CRTProtocol::EProcessingActions eRtProcessingActions;
+//    CRTProtocol::EProcessingActions eReprocessingActions;
+//
+//    protocol->GetGeneralSettings(
+//        nCaptureFrequency,
+//        fCaptureTime,
+//        bStartOnExtTrig,
+//        startOnTrigNO,
+//        startOnTrigNC,
+//        startOnTrigSoftware,
+//        eProcessingActions,
+//        eRtProcessingActions,
+//        eReprocessingActions
+//    );
+//
+//    CHECK_EQ(100, nCaptureFrequency);
+//    CHECK_EQ(10.0f, fCaptureTime);
+//    CHECK_EQ(false, bStartOnExtTrig);
+//    CHECK_EQ(false, startOnTrigNO);
+//    CHECK_EQ(false, startOnTrigNC);
+//    CHECK_EQ(false, startOnTrigSoftware);
+//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eProcessingActions);
+//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D, eRtProcessingActions);
+//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eReprocessingActions);
+//}
 
 TEST_CASE("SetGeneralSettingsTest")
 {
@@ -134,8 +203,7 @@ TEST_CASE("SetGeneralSettingsTest")
     if (!protocol->SetGeneralSettings(
         &captureFrequency, &captureTime,
         &startOnExtTrig, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware,
-        &peProcessingActions, &peRtProcessingActions, &peReprocessingActions)
-        )
+        &peProcessingActions, &peRtProcessingActions, &peReprocessingActions))
     {
         FAIL(protocol->GetErrorString());
     }
