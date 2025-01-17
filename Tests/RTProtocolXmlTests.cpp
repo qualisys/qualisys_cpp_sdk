@@ -115,7 +115,7 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
     CHECK_EQ(10.0f, fNonPeriodicTimeout);
 }
 
-TEST_CASE("GetExtTimeBaseSettingsTest")
+TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
 
@@ -143,7 +143,6 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
     using namespace qualisys_cpp_sdk::test_utils;
     CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetGeneralSettingsTest, network->ReadSentData().data()));
 }
-
 
 TEST_CASE("GetGeneralSettingsTest")
 {
