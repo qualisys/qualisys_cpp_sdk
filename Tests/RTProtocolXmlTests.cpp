@@ -30,6 +30,42 @@ namespace
     }
 }
 
+TEST_CASE("SetExtTimeBaseSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    bool pbEnabled = true;
+    CRTProtocol::ESignalSource peSignalSource = CRTProtocol::ESignalSource::SourceVideoSync;
+    bool pbSignalModePeriodic = true;
+    unsigned int pnFreqMultiplier = 999;
+    unsigned int pnFreqDivisor = 998;
+    unsigned int pnFreqTolerance = 997;
+    float pfNominalFrequency = 996.0f;
+    bool pbNegativeEdge = true;
+    unsigned int pnSignalShutterDelay = 995;
+    float pfNonPeriodicTimeout = 994.0f;
+
+    if (!protocol->SetExtTimeBaseSettings(
+        &pbEnabled,
+        &peSignalSource,
+        &pbSignalModePeriodic,
+        &pnFreqMultiplier,
+        &pnFreqDivisor,
+        &pnFreqTolerance,
+        &pfNominalFrequency,
+        &pbNegativeEdge,
+        &pnSignalShutterDelay,
+        &pfNonPeriodicTimeout))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
+}
+
 TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
@@ -56,7 +92,7 @@ TEST_CASE("SetGeneralSettingsTest")
     }
 
     using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::expected, network->ReadSentData().data()));
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetGeneralSettingsTest, network->ReadSentData().data()));
 }
 
 
@@ -64,7 +100,7 @@ TEST_CASE("GetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::generalSettingsXml, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
     
     if (!protocol->ReadGeneralSettings())
     {

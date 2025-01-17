@@ -4,7 +4,27 @@ namespace qualisys_cpp_sdk
 {
     namespace xml_test_data 
     {
-        const char* generalSettingsXml =
+        const char* SetExtTimeBaseSettingsTest =
+R"XMLDATA(<QTM_Settings>
+    <General>
+        <External_Time_Base>
+            <Enabled>True</Enabled>
+            <Signal_Source>Video sync</Signal_Source>
+            <Signal_Mode>Periodic</Signal_Mode>
+            <Frequency_Multiplier>999</Frequency_Multiplier>
+            <Frequency_Divisor>998</Frequency_Divisor>
+            <Frequency_Tolerance>997</Frequency_Tolerance>
+            <Nominal_Frequency>996.000</Nominal_Frequency>
+            <Signal_Edge>Negative</Signal_Edge>
+            <Signal_Shutter_Delay>995</Signal_Shutter_Delay>
+            <Non_Periodic_Timeout>994.000</Non_Periodic_Timeout>
+        </External_Time_Base>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+
+        const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
         <Frequency>100</Frequency>
@@ -620,7 +640,7 @@ R"XMLDATA(
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
 
-        const char* expected = R"XMLDATA(
+        const char* SetGeneralSettingsTest = R"XMLDATA(
 <QTM_Settings>
     <General>
         <Frequency>1</Frequency>
