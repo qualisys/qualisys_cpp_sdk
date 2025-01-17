@@ -5,17 +5,16 @@ namespace qualisys_cpp_sdk
     {
         class DummyXmlNetwork : public INetwork {
             bool mConnected = false;
-            bool theRealBool = false;
             std::stringstream mStringStream;
             std::stringstream mOutputStream;
         public:
+            bool theRealBool = false;
             bool Connect(const char* pServerAddr, unsigned short nPort) override
             {
                 auto versionString = std::string{ "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) };
                 QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
                 QueueResponse(versionString.data(), CRTPacket::EPacketType::PacketCommand);
                 mConnected = true;
-                theRealBool = true;
                 return mConnected;
             }
             void Disconnect() override
@@ -57,11 +56,11 @@ namespace qualisys_cpp_sdk
             {
                 if (theRealBool)
                 {
-                    mOutputStream.clear();
+                    mOutputStream.str(std::string());
                     mOutputStream.write(pSendBuf + 8, nSize - 8); // Ignore first 8 bytes / header data
 
-                    mStringStream.clear();
-                    QueueResponse("OK", CRTPacket::EPacketType::PacketCommand);
+                    mStringStream.str(std::string());
+                    QueueResponse("Setting parameters succeeded", CRTPacket::EPacketType::PacketCommand);
                 }
 
                 return true;

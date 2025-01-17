@@ -28,6 +28,7 @@ namespace
         }
 
         networkDummy->QueueResponse(xmlData, CRTPacket::EPacketType::PacketXML);
+        networkDummy->theRealBool = true;
 
         return { std::move(protocol), networkDummy };
     }
