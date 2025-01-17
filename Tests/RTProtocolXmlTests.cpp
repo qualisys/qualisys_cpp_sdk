@@ -27,8 +27,8 @@ namespace
     }
 }
 
-TEST_CASE("GetGeneralSettingsTest") {
-
+TEST_CASE("GetGeneralSettingsTest")
+{
     auto protocol = CreateConnectedRtProtocolWithDummyXml(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
 
     if (!protocol->ReadGeneralSettings())
@@ -39,7 +39,7 @@ TEST_CASE("GetGeneralSettingsTest") {
     unsigned int nCaptureFrequency;
     float fCaptureTime;
     bool bStartOnExtTrig;
-    bool startOnTrigNO; 
+    bool startOnTrigNO;
     bool startOnTrigNC;
     bool startOnTrigSoftware;
     CRTProtocol::EProcessingActions eProcessingActions;
@@ -47,15 +47,15 @@ TEST_CASE("GetGeneralSettingsTest") {
     CRTProtocol::EProcessingActions eReprocessingActions;
 
     protocol->GetGeneralSettings(
-    nCaptureFrequency,
-    fCaptureTime,
-    bStartOnExtTrig,
-    startOnTrigNO,
-    startOnTrigNC,
-    startOnTrigSoftware,
-    eProcessingActions,
-    eRtProcessingActions,
-    eReprocessingActions
+        nCaptureFrequency,
+        fCaptureTime,
+        bStartOnExtTrig,
+        startOnTrigNO,
+        startOnTrigNC,
+        startOnTrigSoftware,
+        eProcessingActions,
+        eRtProcessingActions,
+        eReprocessingActions
     );
 
     CHECK_EQ(100, nCaptureFrequency);
