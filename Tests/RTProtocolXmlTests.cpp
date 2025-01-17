@@ -8,7 +8,7 @@
 
 namespace
 {
-    std::unique_ptr<CRTProtocol> CreateConnectedWithData(const char* xmlData)
+    std::unique_ptr<CRTProtocol> CreateConnectedRtProtocolWithDummyXml(const char* xmlData)
     {
         auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlReceiverNetwork{};
 
@@ -23,18 +23,18 @@ namespace
 
         networkDummy->QueueResponse(xmlData, CRTPacket::EPacketType::PacketXML);
 
-        if (!protocol->ReadGeneralSettings())
-        {
-            FAIL(protocol->GetErrorString());
-        }
-
         return protocol;
     }
 }
 
 TEST_CASE("GetGeneralSettingsTest") {
 
-    auto protocol = CreateConnectedWithData(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
+    auto protocol = CreateConnectedRtProtocolWithDummyXml(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
 
     unsigned int nCaptureFrequency;
     float fCaptureTime;
@@ -59,4 +59,12 @@ TEST_CASE("GetGeneralSettingsTest") {
     );
 
     CHECK_EQ(100, nCaptureFrequency);
+    CHECK_EQ(10.0f, fCaptureTime);
+    CHECK_EQ(false, bStartOnExtTrig);
+    CHECK_EQ(false, startOnTrigNO);
+    CHECK_EQ(false, startOnTrigNC);
+    CHECK_EQ(false, startOnTrigSoftware);
+    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eProcessingActions);
+    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D, eRtProcessingActions);
+    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eReprocessingActions);
 }
