@@ -140,49 +140,40 @@ TEST_CASE("SetCameraSettingsTest")
     CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraSettingsTest, network->ReadSentData().data()));
 }
 
-//TEST_CASE("GetCameraSettingsTest")
-//{
-//    auto [protocol, network] = CreateTestContext();
-//
-//    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
-//
-//    if (!protocol->ReadGeneralSettings())
-//    {
-//        FAIL(protocol->GetErrorString());
-//    }
-//
-//    unsigned int nCaptureFrequency;
-//    float fCaptureTime;
-//    bool bStartOnExtTrig;
-//    bool startOnTrigNO;
-//    bool startOnTrigNC;
-//    bool startOnTrigSoftware;
-//    CRTProtocol::EProcessingActions eProcessingActions;
-//    CRTProtocol::EProcessingActions eRtProcessingActions;
-//    CRTProtocol::EProcessingActions eReprocessingActions;
-//
-//    protocol->GetGeneralSettings(
-//        nCaptureFrequency,
-//        fCaptureTime,
-//        bStartOnExtTrig,
-//        startOnTrigNO,
-//        startOnTrigNC,
-//        startOnTrigSoftware,
-//        eProcessingActions,
-//        eRtProcessingActions,
-//        eReprocessingActions
-//    );
-//
-//    CHECK_EQ(100, nCaptureFrequency);
-//    CHECK_EQ(10.0f, fCaptureTime);
-//    CHECK_EQ(false, bStartOnExtTrig);
-//    CHECK_EQ(false, startOnTrigNO);
-//    CHECK_EQ(false, startOnTrigNC);
-//    CHECK_EQ(false, startOnTrigSoftware);
-//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eProcessingActions);
-//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D, eRtProcessingActions);
-//    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eReprocessingActions);
-//}
+TEST_CASE("GetCameraSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 0;
+    unsigned int nID = 1;
+    CRTProtocol::ECameraModel eModel;
+    bool bUnderwater;
+    bool bSupportsHwSync;
+    unsigned int nSerial;
+    CRTProtocol::ECameraMode eMode;
+
+    protocol->GetCameraSettings(
+        nCameraIndex,
+        nID,
+        eModel,
+        bUnderwater,
+        bSupportsHwSync,
+        nSerial,
+        eMode);
+
+    CHECK_EQ(CRTProtocol::ECameraModel::ModelMiqusHybrid, eModel);
+    CHECK_EQ(false, bUnderwater);
+    CHECK_EQ(false, bSupportsHwSync);
+    CHECK_EQ(21310, nSerial);
+    CHECK_EQ(CRTProtocol::ECameraMode::ModeMarker, eMode);
+}
 
 TEST_CASE("SetGeneralSettingsTest")
 {
