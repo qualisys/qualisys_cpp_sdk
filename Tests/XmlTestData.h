@@ -619,6 +619,55 @@ R"XMLDATA(
     </General>
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
+
+        const char* expected = R"XMLDATA(
+<QTM_Settings>
+    <General>
+        <Frequency>1</Frequency>
+        <Capture_Time>999.000</Capture_Time>
+        <Start_On_External_Trigger>True</Start_On_External_Trigger>
+        <Start_On_Trigger_NO>True</Start_On_Trigger_NO>
+        <Start_On_Trigger_NC>True</Start_On_Trigger_NC>
+        <Start_On_Trigger_Software>True</Start_On_Trigger_Software>
+        <Processing_Actions>
+            <PreProcessing2D>False</PreProcessing2D>
+            <Tracking>False</Tracking>
+            <TwinSystemMerge>False</TwinSystemMerge>
+            <SplineFill>False</SplineFill>
+            <AIM>False</AIM>
+            <Track6DOF>False</Track6DOF>
+            <ForceData>False</ForceData>
+            <GazeVector>True</GazeVector>
+            <ExportTSV>False</ExportTSV>
+            <ExportC3D>False</ExportC3D>
+            <ExportMatlabFile>False</ExportMatlabFile>
+            <ExportAviFile>False</ExportAviFile>
+        </Processing_Actions>
+        <RealTime_Processing_Actions>
+            <PreProcessing2D>False</PreProcessing2D>
+            <Tracking>False</Tracking>
+            <AIM>False</AIM>
+            <Track6DOF>False</Track6DOF>
+            <ForceData>False</ForceData>
+            <GazeVector>False</GazeVector>
+        </RealTime_Processing_Actions>
+        <Reprocessing_Actions>
+            <PreProcessing2D>False</PreProcessing2D>
+            <Tracking>False</Tracking>
+            <TwinSystemMerge>True</TwinSystemMerge>
+            <SplineFill>False</SplineFill>
+            <AIM>False</AIM>
+            <Track6DOF>False</Track6DOF>
+            <ForceData>False</ForceData>
+            <GazeVector>False</GazeVector>
+            <ExportTSV>False</ExportTSV>
+            <ExportC3D>False</ExportC3D>
+            <ExportMatlabFile>False</ExportMatlabFile>
+            <ExportAviFile>False</ExportAviFile>
+        </Reprocessing_Actions>
+    </General>
+</QTM_Settings>
+)XMLDATA";
     }
 }
 #endif // ! XMLTESTDATA_H

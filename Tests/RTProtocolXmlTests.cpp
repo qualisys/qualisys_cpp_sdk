@@ -1,6 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest.h>
-#include <tinyxml2.h>
 #include "../Network.h"
 #include "../RTProtocol.h"
 #include "TestUtils.h"
@@ -14,7 +13,7 @@ namespace
         qualisys_cpp_sdk::test_utils::DummyXmlNetwork* mNetwork;
     };
 
-    TestContext CreateTestContext(const char* xmlData)
+    TestContext CreateTestContext()
     {
         auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlNetwork{};
 
@@ -27,16 +26,13 @@ namespace
             FAIL(protocol->GetErrorString());
         }
 
-        networkDummy->QueueResponse(xmlData, CRTPacket::EPacketType::PacketXML);
-        networkDummy->theRealBool = true;
-
         return { std::move(protocol), networkDummy };
     }
 }
 
 TEST_CASE("SetGeneralSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext(qualisys_cpp_sdk::xml_test_data::generalSettingsXml/*nullptr*/);
+    auto [protocol, network] = CreateTestContext();
 
     unsigned int captureFrequency = 1;
     float captureTime = 999.0f;
@@ -48,6 +44,8 @@ TEST_CASE("SetGeneralSettingsTest")
     CRTProtocol::EProcessingActions peRtProcessingActions = CRTProtocol::EProcessingActions::ProcessingExportMatlabFile;
     CRTProtocol::EProcessingActions peReprocessingActions = CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge;
 
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
     if (!protocol->SetGeneralSettings(
         &captureFrequency, &captureTime,
         &startOnExtTrig, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware,
@@ -57,14 +55,17 @@ TEST_CASE("SetGeneralSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    auto sentData = network->ReadSentData();
-    const char test = 0;
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::expected, network->ReadSentData().data()));
 }
+
 
 TEST_CASE("GetGeneralSettingsTest")
 {
-    auto [protocol, _/*network*/] = CreateTestContext(qualisys_cpp_sdk::xml_test_data::generalSettingsXml);
+    auto [protocol, network] = CreateTestContext();
 
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::generalSettingsXml, CRTPacket::PacketXML);
+    
     if (!protocol->ReadGeneralSettings())
     {
         FAIL(protocol->GetErrorString());

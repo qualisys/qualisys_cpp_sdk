@@ -1,19 +1,36 @@
+#include <unordered_map>
 #include "../Network.h"
+#include "doctest.h"
+#include <optional>
+#include <tinyxml2.h>
+
 namespace qualisys_cpp_sdk
 {
     namespace test_utils
     {
+        struct MessageFilter
+        {
+            std::string startWith;
+            std::string response;
+            CRTPacket::EPacketType packetType;
+
+            bool Compare(const std::string& message) const
+            {
+                return message.rfind(startWith, 0) == 0;
+            }
+        };
+
         class DummyXmlNetwork : public INetwork {
             bool mConnected = false;
             std::stringstream mStringStream;
             std::stringstream mOutputStream;
+            std::vector<MessageFilter> mMessageAndResponses;
+
         public:
-            bool theRealBool = false;
             bool Connect(const char* pServerAddr, unsigned short nPort) override
             {
-                auto versionString = std::string{ "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) };
                 QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
-                QueueResponse(versionString.data(), CRTPacket::EPacketType::PacketCommand);
+                PrepareResponse("Version ", std::string{ "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) }, CRTPacket::EPacketType::PacketCommand);
                 mConnected = true;
                 return mConnected;
             }
@@ -54,15 +71,18 @@ namespace qualisys_cpp_sdk
 
             bool Send(const char* pSendBuf, int nSize) override
             {
-                if (theRealBool)
+                std::string sendText(pSendBuf + 8, nSize - 8);
+
+                for (const auto x : mMessageAndResponses )
                 {
-                    mOutputStream.str(std::string());
-                    mOutputStream.write(pSendBuf + 8, nSize - 8); // Ignore first 8 bytes / header data
-
-                    mStringStream.str(std::string());
-                    QueueResponse("Setting parameters succeeded", CRTPacket::EPacketType::PacketCommand);
+                    if (x.Compare(sendText))
+                    {
+                        QueueResponse(x.response.data(), x.packetType);
+                        break;
+                    }
                 }
-
+                mOutputStream.str(std::string{});
+                mOutputStream.write(sendText.data(), static_cast<long long>(sendText.length() + 1));
                 return true;
             }
 
@@ -121,6 +141,38 @@ namespace qualisys_cpp_sdk
                 mStringStream.write(header, headerSize);
                 mStringStream.write(str, dataSize);
             }
+
+            void PrepareResponse(const std::string& message, const std::string& response, const CRTPacket::EPacketType responsePacketType)
+            {
+                mMessageAndResponses.push_back(MessageFilter{
+                message,
+                    response,
+                    responsePacketType
+                });
+            }
         };
+
+        inline bool CompareXmlIgnoreWhitespace(const char* expected, const char* actual)
+        {
+            tinyxml2::XMLDocument docExpected, docActual;
+
+            if (auto error = docExpected.Parse(expected);  error != tinyxml2::XML_SUCCESS)
+            {
+                return false;
+            }
+
+            if (auto error = docActual.Parse(actual); error != tinyxml2::XML_SUCCESS)
+            {
+                return false;
+            }
+
+            tinyxml2::XMLPrinter printer1, printer2;
+
+            docExpected.Print(&printer1);
+
+            docActual.Print(&printer2);
+
+            return strcmp(printer1.CStr(), printer2.CStr()) == 0;
+        }
     }
 }
