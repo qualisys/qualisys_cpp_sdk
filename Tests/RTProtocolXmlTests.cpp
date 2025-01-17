@@ -34,6 +34,8 @@ TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
 
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
     unsigned int captureFrequency = 1;
     float captureTime = 999.0f;
     bool startOnExtTrig = true;
@@ -43,8 +45,6 @@ TEST_CASE("SetGeneralSettingsTest")
     CRTProtocol::EProcessingActions peProcessingActions = CRTProtocol::EProcessingActions::ProcessingGazeVector;
     CRTProtocol::EProcessingActions peRtProcessingActions = CRTProtocol::EProcessingActions::ProcessingExportMatlabFile;
     CRTProtocol::EProcessingActions peReprocessingActions = CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge;
-
-    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
     if (!protocol->SetGeneralSettings(
         &captureFrequency, &captureTime,
