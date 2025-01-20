@@ -139,6 +139,23 @@ TEST_CASE("SetExtTimestampSettingsTest")
     CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetExtTimestampSettingsTest, network->ReadSentData().data()));
 }
 
+TEST_CASE("GetExtTimestampSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
+    timestampSettings.bEnabled = true;
+    timestampSettings.nFrequency = 999;
+    timestampSettings.nType = CRTProtocol::ETimestampType::Timestamp_IRIG;
+    protocol->GetExtTimestampSettings(timestampSettings);
+
+    CHECK_EQ(false, timestampSettings.bEnabled);
+    CHECK_EQ(0, timestampSettings.nFrequency);
+    CHECK_EQ(CRTProtocol::ETimestampType::Timestamp_SMPTE, timestampSettings.nType);
+}
+
 TEST_CASE("SetCameraSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
