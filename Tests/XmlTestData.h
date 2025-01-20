@@ -23,6 +23,18 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetExtTimestampSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <External_Timestamp>
+            <Enabled>True</Enabled>
+            <Type>IRIG</Type>
+            <Frequency>999</Frequency>
+        </External_Timestamp>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* SetCameraSettingsTest =
             R"XMLDATA(<QTM_Settings>
     <General>
