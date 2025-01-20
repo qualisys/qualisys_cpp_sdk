@@ -23,6 +23,19 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <Mode>Marker Intensity</Mode>
+            <Marker_Exposure>999.000000</Marker_Exposure>
+            <Marker_Threshold>998.000000</Marker_Threshold>
+            <Orientation>1</Orientation>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
 
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
