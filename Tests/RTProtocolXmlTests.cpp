@@ -1,9 +1,14 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest.h>
 #include "../Network.h"
 #include "../RTProtocol.h"
+
 #include "TestUtils.h"
 #include "XmlTestData.h"
+
+#include <doctest/doctest.h>
+#include <tinyxml2.h>
+
+#include <memory>
+#include <utility>
 
 namespace
 {

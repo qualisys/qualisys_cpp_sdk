@@ -1,8 +1,11 @@
-#include <unordered_map>
 #include "../Network.h"
-#include "doctest.h"
-#include <optional>
+
+#include <doctest/doctest.h>
 #include <tinyxml2.h>
+
+#include <optional>
+#include <sstream>
+#include <vector>
 
 namespace qualisys_cpp_sdk
 {

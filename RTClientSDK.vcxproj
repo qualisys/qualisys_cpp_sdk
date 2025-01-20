@@ -186,6 +186,7 @@
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
+    <ClCompile Include="Tests\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Markup.h" />

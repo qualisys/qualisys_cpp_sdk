@@ -10,8 +10,9 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(doctest)
 
-set(doctest_INCLUDE_DIR "${doctest_SOURCE_DIR}/doctest")
+include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 
-message(STATUS "Setting doctest include directory: ${doctest_INCLUDE_DIR}")
+message(STATUS "Setting doctest include directory: ${doctest_SOURCE_DIR}")
 
-include_directories(${doctest_INCLUDE_DIR})
+include_directories(PUBLIC ${doctest_SOURCE_DIR})
+

@@ -3,10 +3,7 @@ project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
 
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
-include(Doctest)
 
 include(TinyXml2)
 
@@ -16,6 +13,7 @@ add_library(${PROJECT_NAME}
         RTPacket.cpp
         RTProtocol.cpp
 )
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
@@ -85,20 +83,4 @@ if (BUILD_EXAMPLES)
     )
 endif ()
 
-# Link libraries to the project
-target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2)
-target_include_directories(${PROJECT_NAME} PRIVATE ${DOCTEST_INCLUDE_DIR})
-
-enable_testing()
-
-add_executable(tests
-    "Tests/RTProtocolXmlTests.cpp"
-)
-target_compile_features(tests PUBLIC cxx_std_17)  # C++ 17 for tests
-
-target_link_libraries(tests 
-    PRIVATE tinyxml2
-    PRIVATE ${PROJECT_NAME}
-)
-
-add_test(NAME QualisysCppSdkTests COMMAND tests)
+add_subdirectory(Tests)
