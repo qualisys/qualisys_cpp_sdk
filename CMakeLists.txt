@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TESTS "Build tests" ON) #Todo: OFF by default
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -83,4 +84,7 @@ if (BUILD_EXAMPLES)
     )
 endif ()
 
-add_subdirectory(Tests)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()
