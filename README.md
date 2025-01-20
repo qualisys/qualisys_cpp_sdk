@@ -35,13 +35,13 @@ target_link_libraries(myapplication
         qualisys_cpp_sdk)
 ```
 
-[] ReceiveCalibrationSettings
-[] SetCameraVideoSettings
-[] SetCameraSyncOutSettings
-[] SetCameraLensControlSettings
-[] SetCameraAutoExposureSettings
-[] SetCameraAutoWhiteBalance
-[] SetImageSettings
-[] SetForceSettings
-[] Set6DOFBodySettings
-[] SetSkeletonSettings
+[ ] ReceiveCalibrationSettings
+[ ] SetCameraVideoSettings
+[ ] SetCameraSyncOutSettings
+[ ] SetCameraLensControlSettings
+[ ] SetCameraAutoExposureSettings
+[ ] SetCameraAutoWhiteBalance
+[ ] SetImageSettings
+[ ] SetForceSettings
+[ ] Set6DOFBodySettings
+[ ] SetSkeletonSettings
