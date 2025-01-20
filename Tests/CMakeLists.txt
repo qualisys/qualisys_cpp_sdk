@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27.1)
 
 option(BUILD_TESTS "Build tests" OFF)
 
-if (BUILD_TESTS)
+# if (BUILD_TESTS)
     project(qualisys_cpp_sdk_tests LANGUAGES CXX)
     
     include(TinyXml2)
@@ -34,4 +34,4 @@ if (BUILD_TESTS)
 
     enable_testing()
     doctest_discover_tests(${PROJECT_NAME})
-endif()
+# endif()
