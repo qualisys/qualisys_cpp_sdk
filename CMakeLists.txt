@@ -73,8 +73,6 @@ install(
 )
 
 # ----------- EXAMPLES -----------
-
-# example: RigidBodyStreaming
 if (BUILD_EXAMPLES)
     add_executable(RigidBodyStreaming
             RigidBodyStreaming/RigidBodyStreaming.cpp
@@ -84,6 +82,7 @@ if (BUILD_EXAMPLES)
     )
 endif ()
 
+# ----------- TESTS -----------
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
