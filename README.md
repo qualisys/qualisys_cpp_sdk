@@ -34,7 +34,14 @@ find_package(qualisys_cpp_sdk REQUIRED)
 target_link_libraries(myapplication
         qualisys_cpp_sdk)
 ```
-
+- [X] SetExtTimeBaseSettingsTest
+- [X] GetExtTimeBaseSettingsTest
+- [X] SetExtTimestampSettingsTest
+- [X] GetExtTimestampSettingsTest
+- [X] SetCameraSettingsTest
+- [X] GetCameraSettingsTest
+- [X] SetGeneralSettingsTest
+- [X] GetGeneralSettingsTest
 - [ ] ReceiveCalibrationSettings
 - [ ] SetCameraVideoSettings
 - [ ] SetCameraSyncOutSettings
