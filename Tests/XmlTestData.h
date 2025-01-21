@@ -91,6 +91,34 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraLensControlSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <LensControl>
+                <Focus Value="99.000000"/>
+                <Aperture Value="98.000000"/>
+            </LensControl>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+        const char* GetCameraLensControlSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <LensControl>
+                <Focus Value="99.000000"/>
+                <Aperture Value="98.000000"/>
+            </LensControl>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
@@ -228,6 +256,10 @@ R"XMLDATA(<QTM_Parameters_Ver_1.25>
                 <Right>1919</Right>
                 <Bottom>1087</Bottom>
             </Video_FOV>
+            <LensControl>
+                <Focus Value="99.000000"/>
+                <Aperture Value="98.000000"/>
+            </LensControl>
             <AutoExposure Enabled="false" Compensation="0.000000"/>
             <AutoWhiteBalance>true</AutoWhiteBalance>
         </Camera>
