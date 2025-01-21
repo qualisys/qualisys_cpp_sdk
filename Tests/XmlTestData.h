@@ -62,6 +62,21 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraVideoSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <Video_Resolution>1080p</Video_Resolution>
+            <Video_Aspect_Ratio>4x3</Video_Aspect_Ratio>
+            <Video_Frequency>23</Video_Frequency>
+            <Video_Exposure>0.123000</Video_Exposure>
+            <Video_Flash_Time>0.456000</Video_Flash_Time>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
