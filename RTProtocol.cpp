@@ -4409,7 +4409,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                                     marker.weight = 1.0;
 
                                     xml.IntoElem();
-                                    marker.position = segmentHierarchical.endpoint = ReadXMLPosition(xml, "Position");
+                                    marker.position = ReadXMLPosition(xml, "Position");
                                     if (xml.FindElem("Weight"))
                                     {
                                         ParseString(xml.GetData(), marker.weight);
