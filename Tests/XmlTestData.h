@@ -77,6 +77,20 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraSyncOutSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>7</ID>
+            <Sync_Out>
+                <Mode>System live time</Mode>
+                <Signal_Polarity>Negative</Signal_Polarity>
+            </Sync_Out>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
@@ -689,6 +703,12 @@ R"XMLDATA(
                 <Signal_Polarity>Negative</Signal_Polarity>
             </Sync_Out_MT>
         </Camera>
+        <Sync_Out>
+            <Mode>Multiplier</Mode>
+            <Value>1</Value>
+            <Duty_Cycle>50.000</Duty_Cycle>
+            <Signal_Polarity>Negative</Signal_Polarity>
+        </Sync_Out>
     </General>
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
