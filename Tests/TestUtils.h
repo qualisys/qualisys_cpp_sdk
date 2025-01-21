@@ -89,7 +89,7 @@ namespace qualisys_cpp_sdk
                 return true;
             }
 
-            std::string ReadSentData()
+            std::string ReadSentData() const
             {
                 return mOutputStream.str();
             }
