@@ -105,15 +105,12 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
-        const char* GetCameraLensControlSettingsTest =
+        const char* SetCameraAutoWhiteBalanceTest =
             R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
-            <LensControl>
-                <Focus Value="99.000000"/>
-                <Aperture Value="98.000000"/>
-            </LensControl>
+            <AutoWhiteBalance>true</AutoWhiteBalance>
         </Camera>
     </General>
 </QTM_Settings>

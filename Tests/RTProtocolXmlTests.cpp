@@ -419,6 +419,45 @@ TEST_CASE("GetCameraLensControlSettingsTest")
     CHECK_EQ(98.0f, aperture);
 }
 
+TEST_CASE("SetCameraAutoWhiteBalanceTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 1u;
+    const bool enable = true;
+
+    if (!protocol->SetCameraAutoWhiteBalance(
+        nCameraID, enable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraAutoWhiteBalanceTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    const unsigned int nCameraIndex = 0u;
+    bool autoWhiteBalanceEnable = false;
+
+    protocol->GetCameraAutoWhiteBalance(nCameraIndex, &autoWhiteBalanceEnable);
+
+    CHECK_EQ(0, nCameraIndex);
+    CHECK_EQ(true, autoWhiteBalanceEnable);
+}
+
 TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
