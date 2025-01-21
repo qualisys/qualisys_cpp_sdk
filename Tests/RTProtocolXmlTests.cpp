@@ -44,12 +44,12 @@ TEST_CASE("SetExtTimeBaseSettingsTest")
     bool pbEnabled = true;
     CRTProtocol::ESignalSource peSignalSource = CRTProtocol::ESignalSource::SourceVideoSync;
     bool pbSignalModePeriodic = true;
-    unsigned int pnFreqMultiplier = 999;
-    unsigned int pnFreqDivisor = 998;
-    unsigned int pnFreqTolerance = 997;
+    unsigned int pnFreqMultiplier = 999u;
+    unsigned int pnFreqDivisor = 998u;
+    unsigned int pnFreqTolerance = 997u;
     float pfNominalFrequency = 996.0f;
     bool pbNegativeEdge = true;
-    unsigned int pnSignalShutterDelay = 995;
+    unsigned int pnSignalShutterDelay = 995u;
     float pfNonPeriodicTimeout = 994.0f;
 
     if (!protocol->SetExtTimeBaseSettings(
@@ -104,8 +104,6 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
         bNegativeEdge,
         nSignalShutterDelay,
         fNonPeriodicTimeout);
-
-    volatile char breaker = 1;
 
     CHECK_EQ(false, bEnabled);
     CHECK_EQ(CRTProtocol::ESignalSource::SourceControlPort, eSignalSource);
@@ -162,7 +160,7 @@ TEST_CASE("SetCameraSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    unsigned int nCameraID = 1;
+    unsigned int nCameraID = 1u;
     CRTProtocol::ECameraMode peMode = CRTProtocol::ECameraMode::ModeMarkerIntensity;
     float pfMarkerExposure = 999.0f;
     float pfMarkerThreshold = 998.0f;
@@ -193,8 +191,8 @@ TEST_CASE("GetCameraSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    unsigned int nCameraIndex = 0;
-    unsigned int nID = 1;
+    unsigned int nCameraIndex = 0u;
+    unsigned int nID = 1u;
     CRTProtocol::ECameraModel eModel;
     bool bUnderwater;
     bool bSupportsHwSync;
@@ -260,13 +258,257 @@ TEST_CASE("GetCameraAutoExposureSettings")
     CHECK_EQ(0.0f, fCompensation);
 }
 
+TEST_CASE("SetCameraVideoSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 1u;
+    const CRTProtocol::EVideoResolution eVideoResolution = CRTProtocol::EVideoResolution::VideoResolution1080p;
+    const CRTProtocol::EVideoAspectRatio eVideoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatio4x3;
+    const unsigned int pnVideoFrequency = 23u;
+    const float pfVideoExposure = 0.123f;
+    const float pfVideoFlashTime = 0.456f;
+
+    if (!protocol->SetCameraVideoSettings(
+        nCameraID, &eVideoResolution,
+        &eVideoAspectRatio, &pnVideoFrequency,
+        &pfVideoExposure, &pfVideoFlashTime))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraVideoSettingsTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraVideoSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 0u;
+    CRTProtocol::EVideoResolution eVideoResolution = CRTProtocol::EVideoResolution::VideoResolutionNone;
+    CRTProtocol::EVideoAspectRatio eVideoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone;
+    unsigned int nVideoFrequency = 999u;
+    unsigned int nCurrentExposure = 999u;
+    unsigned int nMinExposure = 999u;
+    unsigned int nMaxExposure = 999u;
+    unsigned int nCurrentFlashTime = 999u;
+    unsigned int nMinFlashTime = 999u;
+    unsigned int nMaxFlashTime = 999u;
+
+    protocol->GetCameraVideoSettings(
+        nCameraIndex, eVideoResolution,
+        eVideoAspectRatio, nVideoFrequency,
+        nCurrentExposure, nMinExposure,
+        nMaxExposure, nCurrentFlashTime,
+        nMinFlashTime, nMaxFlashTime
+    );
+
+    CHECK_EQ(CRTProtocol::EVideoResolution::VideoResolution1080p, eVideoResolution);
+    CHECK_EQ(CRTProtocol::EVideoAspectRatio::VideoAspectRatio16x9, eVideoAspectRatio);
+    CHECK_EQ(25, nVideoFrequency);
+    CHECK_EQ(500, nCurrentExposure);
+    CHECK_EQ(5, nMinExposure);
+    CHECK_EQ(39940, nMaxExposure);
+    CHECK_EQ(500, nCurrentFlashTime);
+    CHECK_EQ(0, nMinFlashTime);
+    CHECK_EQ(500, nMaxFlashTime);
+}
+
+TEST_CASE("SetCameraSyncOutSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 7u;
+    const unsigned int portNumber = 1u;
+    const CRTProtocol::ESyncOutFreqMode peSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime;
+    const unsigned int pnSyncOutValue = 15u;
+    const float pfSyncOutDutyCycle = 22.0f;
+    const bool pbSyncOutNegativePolarity = true;
+
+    if (!protocol->SetCameraSyncOutSettings(
+        nCameraID, portNumber, &peSyncOutMode,
+        &pnSyncOutValue, &pfSyncOutDutyCycle,
+        &pbSyncOutNegativePolarity))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraSyncOutSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 7u;
+    unsigned int portNumber = 1u;
+    CRTProtocol::ESyncOutFreqMode eSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
+    unsigned int nSyncOutValue = 99u;
+    float fSyncOutDutyCycle = 99.0f;
+    bool bSyncOutNegativePolarity = false;
+
+    protocol->GetCameraSyncOutSettings(
+        nCameraIndex, portNumber, eSyncOutMode,
+        nSyncOutValue, fSyncOutDutyCycle,
+        bSyncOutNegativePolarity
+    );
+
+    CHECK_EQ(CRTProtocol::ESyncOutFreqMode::ModeMultiplier, eSyncOutMode);
+    CHECK_EQ(1, nSyncOutValue);
+    CHECK_EQ(50.0f, fSyncOutDutyCycle);
+    CHECK_EQ(true, bSyncOutNegativePolarity);
+}
+
+TEST_CASE("SetCameraLensControlSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 1u;
+    const float focus = 99.0f;
+    const float aperture = 98.0f;
+
+    if (!protocol->SetCameraLensControlSettings(nCameraID, focus, aperture))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraLensControlSettingsTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraLensControlSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    const unsigned int nCameraIndex = 0u;
+    float focus = 0.0f;
+    float aperture = 0.0f;
+
+    protocol->GetCameraLensControlSettings(nCameraIndex, &focus, &aperture);
+
+    CHECK_EQ(99.0f, focus);
+    CHECK_EQ(98.0f, aperture);
+}
+
+TEST_CASE("SetCameraAutoWhiteBalanceTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 1u;
+    const bool enable = true;
+
+    if (!protocol->SetCameraAutoWhiteBalance(
+        nCameraID, enable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraAutoWhiteBalanceTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    const unsigned int nCameraIndex = 0u;
+    bool autoWhiteBalanceEnable = false;
+
+    protocol->GetCameraAutoWhiteBalance(nCameraIndex, &autoWhiteBalanceEnable);
+
+    CHECK_EQ(0, nCameraIndex);
+    CHECK_EQ(true, autoWhiteBalanceEnable);
+}
+
+TEST_CASE("GetImageCameraTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 0u;
+    unsigned int nCameraID = 99u;
+    bool bEnabled = false;
+    CRTPacket::EImageFormat eFormat = CRTPacket::EImageFormat::FormatRawGrayscale;
+    unsigned int nWidth = 99u;
+    unsigned int nHeight = 99u;
+    float fCropLeft = 99.0f;
+    float fCropTop = 99.0f;
+    float fCropRight = 99.0f;
+    float fCropBottom = 99.0f;
+
+    // TODO : New test data required that has "Image" tag? Or perhaps "Camera" tag that contains "Image" tag?
+
+    if (!protocol->GetImageCamera(
+        nCameraIndex, nCameraID, bEnabled,
+        eFormat, nWidth, nHeight,
+        fCropLeft, fCropTop, fCropRight, fCropBottom
+    ));
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    //CHECK_EQ(TODO, nCameraID);
+    //CHECK_EQ(TODO, bEnabled);
+    //CHECK_EQ(TODO, eFormat);
+    //CHECK_EQ(TODO, nWidth);
+    //CHECK_EQ(TODO, nHeight);
+    //CHECK_EQ(TODO, fCropLeft);
+    //CHECK_EQ(TODO, fCropTop);
+    //CHECK_EQ(TODO, fCropRight);
+    //CHECK_EQ(TODO, fCropBottom);
+}
+
 TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    unsigned int captureFrequency = 1;
+    unsigned int captureFrequency = 1u;
     float captureTime = 999.0f;
     bool startOnExtTrig = true;
     bool startOnTrigNO = true;

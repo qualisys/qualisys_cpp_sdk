@@ -62,6 +62,60 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraVideoSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <Video_Resolution>1080p</Video_Resolution>
+            <Video_Aspect_Ratio>4x3</Video_Aspect_Ratio>
+            <Video_Frequency>23</Video_Frequency>
+            <Video_Exposure>0.123000</Video_Exposure>
+            <Video_Flash_Time>0.456000</Video_Flash_Time>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+        const char* SetCameraSyncOutSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>7</ID>
+            <Sync_Out>
+                <Mode>System live time</Mode>
+                <Signal_Polarity>Negative</Signal_Polarity>
+            </Sync_Out>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+        const char* SetCameraLensControlSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <LensControl>
+                <Focus Value="99.000000"/>
+                <Aperture Value="98.000000"/>
+            </LensControl>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+        const char* SetCameraAutoWhiteBalanceTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <AutoWhiteBalance>true</AutoWhiteBalance>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
@@ -199,6 +253,10 @@ R"XMLDATA(<QTM_Parameters_Ver_1.25>
                 <Right>1919</Right>
                 <Bottom>1087</Bottom>
             </Video_FOV>
+            <LensControl>
+                <Focus Value="99.000000"/>
+                <Aperture Value="98.000000"/>
+            </LensControl>
             <AutoExposure Enabled="false" Compensation="0.000000"/>
             <AutoWhiteBalance>true</AutoWhiteBalance>
         </Camera>
@@ -674,6 +732,12 @@ R"XMLDATA(
                 <Signal_Polarity>Negative</Signal_Polarity>
             </Sync_Out_MT>
         </Camera>
+        <Sync_Out>
+            <Mode>Multiplier</Mode>
+            <Value>1</Value>
+            <Duty_Cycle>50.000</Duty_Cycle>
+            <Signal_Polarity>Negative</Signal_Polarity>
+        </Sync_Out>
     </General>
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
