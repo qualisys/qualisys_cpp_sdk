@@ -458,6 +458,50 @@ TEST_CASE("GetCameraAutoWhiteBalanceTest")
     CHECK_EQ(true, autoWhiteBalanceEnable);
 }
 
+TEST_CASE("GetImageCameraTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 0u;
+    unsigned int nCameraID = 99u;
+    bool bEnabled = false;
+    CRTPacket::EImageFormat eFormat = CRTPacket::EImageFormat::FormatRawGrayscale;
+    unsigned int nWidth = 99u;
+    unsigned int nHeight = 99u;
+    float fCropLeft = 99.0f;
+    float fCropTop = 99.0f;
+    float fCropRight = 99.0f;
+    float fCropBottom = 99.0f;
+
+    // TODO : New test data required that has "Image" tag? Or perhaps "Camera" tag that contains "Image" tag?
+
+    if (!protocol->GetImageCamera(
+        nCameraIndex, nCameraID, bEnabled,
+        eFormat, nWidth, nHeight,
+        fCropLeft, fCropTop, fCropRight, fCropBottom
+    ));
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    //CHECK_EQ(TODO, nCameraID);
+    //CHECK_EQ(TODO, bEnabled);
+    //CHECK_EQ(TODO, eFormat);
+    //CHECK_EQ(TODO, nWidth);
+    //CHECK_EQ(TODO, nHeight);
+    //CHECK_EQ(TODO, fCropLeft);
+    //CHECK_EQ(TODO, fCropTop);
+    //CHECK_EQ(TODO, fCropRight);
+    //CHECK_EQ(TODO, fCropBottom);
+}
+
 TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();
