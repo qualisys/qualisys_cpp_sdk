@@ -296,37 +296,37 @@ TEST_CASE("GetCameraVideoSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    unsigned int nCaptureFrequency;
-    float fCaptureTime;
-    bool bStartOnExtTrig;
-    bool startOnTrigNO;
-    bool startOnTrigNC;
-    bool startOnTrigSoftware;
-    CRTProtocol::EProcessingActions eProcessingActions;
-    CRTProtocol::EProcessingActions eRtProcessingActions;
-    CRTProtocol::EProcessingActions eReprocessingActions;
+    unsigned int nCameraIndex = 0u;
+    CRTProtocol::EVideoResolution eVideoResolution = CRTProtocol::EVideoResolution::VideoResolutionNone;
+    CRTProtocol::EVideoAspectRatio eVideoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone;
+    unsigned int nVideoFrequency = 999;
+    unsigned int nCurrentExposure = 999;
+    unsigned int nMinExposure = 999;
+    unsigned int nMaxExposure = 999;
+    unsigned int nCurrentFlashTime = 999;
+    unsigned int nMinFlashTime = 999;
+    unsigned int nMaxFlashTime = 999;
 
-    protocol->GetGeneralSettings(
-        nCaptureFrequency,
-        fCaptureTime,
-        bStartOnExtTrig,
-        startOnTrigNO,
-        startOnTrigNC,
-        startOnTrigSoftware,
-        eProcessingActions,
-        eRtProcessingActions,
-        eReprocessingActions
+    protocol->GetCameraVideoSettings(
+        nCameraIndex, eVideoResolution,
+        eVideoAspectRatio, nVideoFrequency,
+        nCurrentExposure, nMinExposure,
+        nMaxExposure, nCurrentFlashTime,
+        nMinFlashTime, nMaxFlashTime
     );
 
-    CHECK_EQ(100, nCaptureFrequency);
-    CHECK_EQ(10.0f, fCaptureTime);
-    CHECK_EQ(false, bStartOnExtTrig);
-    CHECK_EQ(false, startOnTrigNO);
-    CHECK_EQ(false, startOnTrigNC);
-    CHECK_EQ(false, startOnTrigSoftware);
-    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eProcessingActions);
-    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D, eRtProcessingActions);
-    CHECK_EQ(CRTProtocol::EProcessingActions::ProcessingTracking3D | CRTProtocol::EProcessingActions::ProcessingSplineFill, eReprocessingActions);
+    auto testData = network->ReadSentData();
+    volatile char breaker = 1;
+
+    CHECK_EQ(CRTProtocol::EVideoResolution::VideoResolution1080p, eVideoResolution);
+    CHECK_EQ(CRTProtocol::EVideoAspectRatio::VideoAspectRatio16x9, eVideoAspectRatio);
+    CHECK_EQ(25, nVideoFrequency);
+    CHECK_EQ(500, nCurrentExposure);
+    CHECK_EQ(5, nMinExposure);
+    CHECK_EQ(39940, nMaxExposure);
+    CHECK_EQ(500, nCurrentFlashTime);
+    CHECK_EQ(0, nMinFlashTime);
+    CHECK_EQ(500, nMaxFlashTime);
 }
 
 
