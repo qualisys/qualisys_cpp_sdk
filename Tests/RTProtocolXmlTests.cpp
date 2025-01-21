@@ -458,6 +458,34 @@ TEST_CASE("GetCameraAutoWhiteBalanceTest")
     CHECK_EQ(true, autoWhiteBalanceEnable);
 }
 
+TEST_CASE("SetImageSettingsTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 1u;
+    const bool bEnable = true;
+    const CRTPacket::EImageFormat eFormat = CRTPacket::EImageFormat::FormatRawGrayscale;
+    const unsigned int nWidth = 99u;
+    const unsigned int nHeight = 98u;
+    const float fLeftCrop = 97.0f;
+    const float fTopCrop = 96.0f;
+    const float fRightCrop = 95.0f;
+    const float fBottomCrop = 94.0f;
+
+    if (!protocol->SetImageSettings(
+        nCameraID, &bEnable, &eFormat,
+        &nWidth, &nHeight, &fLeftCrop,
+        &fTopCrop, &fRightCrop, &fBottomCrop))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetImageSettingsTest, network->ReadSentData().data()));
+}
+
 TEST_CASE("GetImageCameraTest")
 {
     auto [protocol, network] = CreateTestContext();
