@@ -217,6 +217,49 @@ TEST_CASE("GetCameraSettingsTest")
     CHECK_EQ(CRTProtocol::ECameraMode::ModeMarker, eMode);
 }
 
+TEST_CASE("SetCameraAutoExposureSettings")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    int nCameraID = 1;
+    bool autoExposure = true;
+    float compensation = 1.2345f;
+
+    if (!protocol->SetCameraAutoExposureSettings(nCameraID, autoExposure, compensation))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    using namespace qualisys_cpp_sdk::test_utils;
+    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraAutoExposureSettingsTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("GetCameraAutoExposureSettings")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    int nCameraID = 6;
+    bool bAutoExposure = true;
+    float fCompensation = 1.0f;
+
+    if (!protocol->GetCameraAutoExposureSettings(nCameraID, &bAutoExposure, &fCompensation))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CHECK_EQ(false, bAutoExposure);
+    CHECK_EQ(0.0f, fCompensation);
+}
+
 TEST_CASE("SetGeneralSettingsTest")
 {
     auto [protocol, network] = CreateTestContext();

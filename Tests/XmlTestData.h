@@ -49,6 +49,19 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+        const char* SetCameraAutoExposureSettingsTest =
+            R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>1</ID>
+            <LensControl>
+                <AutoExposure Enabled="true" Compensation="1.234500"/>
+            </LensControl>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
         const char* GetGeneralSettingsTest =
 R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
