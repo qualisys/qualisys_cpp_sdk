@@ -490,44 +490,41 @@ TEST_CASE("GetImageCameraTest")
 {
     auto [protocol, network] = CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Image", qualisys_cpp_sdk::xml_test_data::GetImageSettingsTest, CRTPacket::PacketXML);
 
-    if (!protocol->ReadGeneralSettings())
+    bool dataAvailable = false;
+    if (!protocol->ReadImageSettings(dataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
 
-    unsigned int nCameraIndex = 0u;
-    unsigned int nCameraID = 99u;
-    bool bEnabled = false;
-    CRTPacket::EImageFormat eFormat = CRTPacket::EImageFormat::FormatRawGrayscale;
-    unsigned int nWidth = 99u;
-    unsigned int nHeight = 99u;
-    float fCropLeft = 99.0f;
-    float fCropTop = 99.0f;
-    float fCropRight = 99.0f;
-    float fCropBottom = 99.0f;
+    CHECK_EQ(true, dataAvailable);
 
-    // TODO : New test data required that has "Image" tag? Or perhaps "Camera" tag that contains "Image" tag?
+    unsigned int id = 0xffffffff;
+    bool enabled = false;
+    CRTPacket::EImageFormat format = CRTPacket::EImageFormat::FormatRawBGR;
+    unsigned int width;
+    unsigned int height;
+    float cropLeft;
+    float cropTop;
+    float cropRight;
+    float cropButton;
 
     if (!protocol->GetImageCamera(
-        nCameraIndex, nCameraID, bEnabled,
-        eFormat, nWidth, nHeight,
-        fCropLeft, fCropTop, fCropRight, fCropBottom
-    ));
-    {
+    0, id, enabled, format, width, height, cropLeft, cropTop, cropRight, cropButton
+    )) {
         FAIL(protocol->GetErrorString());
     }
 
-    //CHECK_EQ(TODO, nCameraID);
-    //CHECK_EQ(TODO, bEnabled);
-    //CHECK_EQ(TODO, eFormat);
-    //CHECK_EQ(TODO, nWidth);
-    //CHECK_EQ(TODO, nHeight);
-    //CHECK_EQ(TODO, fCropLeft);
-    //CHECK_EQ(TODO, fCropTop);
-    //CHECK_EQ(TODO, fCropRight);
-    //CHECK_EQ(TODO, fCropBottom);
+    CHECK_EQ(1, id);
+    CHECK_EQ(true, enabled);
+    CHECK_EQ(CRTPacket::EImageFormat::FormatJPG, format);
+    CHECK_EQ(1920, width);
+    CHECK_EQ(1088, height);
+    CHECK_EQ(0.0, cropLeft);
+    CHECK_EQ(0.0, cropTop);
+    CHECK_EQ(1.0, cropRight);
+    CHECK_EQ(1.0, cropButton);
 }
 
 TEST_CASE("SetGeneralSettingsTest")

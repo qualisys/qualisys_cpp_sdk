@@ -808,6 +808,24 @@ R"XMLDATA(
     </General>
 </QTM_Settings>
 )XMLDATA";
+
+        const char* GetImageSettingsTest = R"XMLDATA(
+<QTM_Parameters_Ver_1.25>
+    <Image>
+        <Camera>
+            <ID>1</ID>
+            <Enabled>true</Enabled>
+            <Format>JPG</Format>
+            <Width>1920</Width>
+            <Height>1088</Height>
+            <Left_Crop>0.000000</Left_Crop>
+            <Top_Crop>0.000000</Top_Crop>
+            <Right_Crop>1.000000</Right_Crop>
+            <Bottom_Crop>1.000000</Bottom_Crop>
+        </Camera>
+    </Image>
+</QTM_Parameters_Ver_1.25>
+)XMLDATA";
     }
 }
 #endif // ! XMLTESTDATA_H
