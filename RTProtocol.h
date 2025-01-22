@@ -741,6 +741,8 @@ public:
     bool ReadImageSettings(bool &bDataAvailable);
     bool ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobalData = false);
 
+
+    void Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones);
     void GetGeneralSettings(
         unsigned int &nCaptureFrequency, float &fCaptureTime,
         bool& bStartOnExtTrig, bool& trigNO, bool& trigNC, bool& trigSoftware,

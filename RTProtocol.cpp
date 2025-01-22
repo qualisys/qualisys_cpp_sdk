@@ -4635,6 +4635,13 @@ bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& eleme
     return false;
 }
 
+void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
+{
+    axisUpwards = ms3DSettings.eAxisUpwards;
+    calibrationTime = static_cast<std::string>(ms3DSettings.pCalibrationTime);
+    labels3D = ms3DSettings.s3DLabels;
+    bones = ms3DSettings.sBones;
+}
 
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
