@@ -701,28 +701,151 @@ TEST_CASE("GetSettings3DTest")
 
 namespace
 {
-    bool VerifySettings6DOF(std::vector<CRTProtocol::SSettings6DOFBody>& settings6DOF)
+    bool settings6DMeshEqualityOperator(const CRTProtocol::SSettings6DMesh& lhs, const CRTProtocol::SSettings6DMesh& rhs)
     {
-        CHECK_EQ(6, settings6DOF.size());
+        if (lhs.name != rhs.name ||
+            lhs.opacity != rhs.opacity ||
+            lhs.position.fX != rhs.position.fX ||
+            lhs.position.fY != rhs.position.fY ||
+            lhs.position.fZ != rhs.position.fZ ||
+            lhs.rotation.fX != rhs.rotation.fX ||
+            lhs.rotation.fY != rhs.rotation.fY ||
+            lhs.rotation.fZ != rhs.rotation.fZ ||
+            lhs.scale != rhs.scale)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool originEqualityOperator(const CRTProtocol::SOrigin& lhs, const CRTProtocol::SOrigin& rhs)
+    {
+        if (lhs.position.fX != rhs.position.fX ||
+            lhs.position.fY != rhs.position.fY ||
+            lhs.position.fZ != rhs.position.fZ ||
+            lhs.relativeBody != rhs.relativeBody ||
+            lhs.rotation[0] != rhs.rotation[0] ||
+            lhs.rotation[1] != rhs.rotation[1] ||
+            lhs.rotation[2] != rhs.rotation[2] ||
+            lhs.rotation[3] != rhs.rotation[3] ||
+            lhs.rotation[4] != rhs.rotation[4] ||
+            lhs.rotation[5] != rhs.rotation[5] ||
+            lhs.rotation[6] != rhs.rotation[6] ||
+            lhs.rotation[7] != rhs.rotation[7] ||
+            lhs.rotation[8] != rhs.rotation[8] ||
+            lhs.type != rhs.type)
+        {
+            return false;
+        }
+
+        return true;
+    }
+    
+    bool bodyPointsVectorEqualityOperator(const std::vector<CRTProtocol::SBodyPoint>& lhs, const std::vector<CRTProtocol::SBodyPoint>& rhs)
+    {
+        if (lhs.size() != rhs.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < lhs.size(); i++)
+        {
+            if (lhs[i].name != rhs[i].name ||
+                lhs[i].fX != rhs[i].fX ||
+                lhs[i].fX != rhs[i].fX ||
+                lhs[i].fX != rhs[i].fX ||
+                lhs[i].virtual_ != rhs[i].virtual_ ||
+                lhs[i].physicalId != rhs[i].physicalId)
+            {
+                return false;
+            }
+        }
+
+
+        return true;
+    }
+
+    bool VerifySettings6DOF(const std::vector<CRTProtocol::SSettings6DOFBody>& settings6DOF)
+    {
+        if (settings6DOF.size() != 6)
+        {
+            return false;
+        }
 
         std::vector<std::string> expectedNames = {
-            "Eye Tracker_refined", "Table", "Screen2",
+            "refined", "Table", "Screen2",
             "Cup", "Phone", "Screen1"
         };
         std::vector<std::uint32_t> expectedColors = { 65280, 16711680, 16711935, 65535, 16776960, 127 };
         std::vector<float> expectedMaxResiduals = { 20.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f };
         std::vector<float> expectedBoneLengthTolerances = { 20.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f };
+        CRTProtocol::SSettings6DMesh arqusMesh{ "Arqus.obj", {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.00999999978f, 1.0f };
+        CRTProtocol::SSettings6DMesh emptyMesh{ "", {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 1.0f, 1.0f };
+        std::vector<CRTProtocol::SSettings6DMesh> expectedMeshes = { arqusMesh, emptyMesh, emptyMesh, emptyMesh, emptyMesh, emptyMesh };
+        CRTProtocol::SOrigin defaultOrigin{
+            CRTProtocol::EOriginType::GlobalOrigin, 1, CRTProtocol::SPoint{ 0.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f }
+        };
+        std::vector<std::vector<CRTProtocol::SBodyPoint>> expectedPoints = {
+            {
+            CRTProtocol::SBodyPoint{ "Layout 3 - 1", -67.9271545, 29.8100796, -1.59297097, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 2", -95.0230560, 1.74239099, -19.5413551, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 3", -90.0171738, 19.8888149, -57.4946556, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 4", 68.3161087, 29.1735229, -1.82902002, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 5", 95.0272446, 1.47444904, -19.1718693, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 6", 89.6240387, 20.6907444, -57.4501305, false, 0 }
+            },
+            {
+            CRTProtocol::SBodyPoint{ "Table - 1", 801.421997, 29.8100796, 2.14241600, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 2", 777.315125, -413.341278, 4.12720299, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 3", -778.145569, 412.610626, -2.27826405, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 4", -800.591614, -368.158539, -3.99135494, false, 0 }
+            },
+            {
+            CRTProtocol::SBodyPoint{ "Screen2 - 1", 177.895599, -40.2035255, -276.061218, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 2", -176.929245, 41.0591507, 276.110107, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 3", -111.494820, 129.602188, -283.761566, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 4", 110.528465, -130.457809, 283.712677, false, 0 }
+            },
+            {
+            CRTProtocol::SBodyPoint{ "Cup - 1", -16.4094849, 43.2384529, -7.37500811, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 2", 41.2375832, 9.39587307, -14.9948711, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 3", -6.34368896, -32.7491074, -24.3911552, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 4", 27.2115021, -35.5109825, 31.2080975, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 5", -45.6959114, 15.6257639, 15.5529385, false, 0 }
+            },
+            {
+            CRTProtocol::SBodyPoint{ "Phone - 1", -39.9740448, -68.1382675, -0.101278998, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 2", 43.3482971, 64.0306702, -2.40792704, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 3", -31.9067173, 75.0699539, 1.21390605, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 4", 28.5324669, -70.9623566, 1.29529905, false, 0 }
+            },
+            {
+            CRTProtocol::SBodyPoint{ "Screen - 1", -395.500610, 5.13963413, -195.481262, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 2", 392.106415, -2.13840294, 196.007095, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 3", 402.905762, 26.1865349, -178.268143, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 4", -399.511597, -29.1877670, 177.742310, false, 0 }
+            }
+        };
         for (int i = 0; i < settings6DOF.size(); i++)
         {
-            CHECK_EQ(settings6DOF[i].name, expectedNames[i]);
-            CHECK_EQ(settings6DOF[i].enabled, true);
-            CHECK_EQ(settings6DOF[i].color, expectedColors[i]);
-            CHECK_EQ(settings6DOF[i].filterPreset, "No filter");
-            CHECK_EQ(settings6DOF[i].maxResidual, expectedMaxResiduals[i]);
-            CHECK_EQ(settings6DOF[i].minMarkersInBody, 3);
-            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
-            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
+            if (settings6DOF[i].name != expectedNames[i] ||
+                settings6DOF[i].enabled != true ||
+                settings6DOF[i].color != expectedColors[i] ||
+                settings6DOF[i].filterPreset != "No filter" ||
+                settings6DOF[i].maxResidual != expectedMaxResiduals[i] ||
+                settings6DOF[i].minMarkersInBody != 3 ||
+                settings6DOF[i].boneLengthTolerance != expectedBoneLengthTolerances[i] ||
+                settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]) == false ||
+                originEqualityOperator(settings6DOF[i].origin, defaultOrigin) == false ||
+                bodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]) == false
+                )
+            {
+                return false;
+            }
         }
+
+        return true;
     }
 }
 
@@ -744,8 +867,5 @@ TEST_CASE("GetSettings6DOFTest")
     protocol->Get6DOFBodySettings(settings6DOF);
     volatile char breaker = 1;
 
-    //CHECK_EQ(CRTProtocol::EAxis::ZPos, axisUpwards);
-    //CHECK_EQ("2019-09-17 16:00:43", calibrationTime);
-    //CHECK_EQ(true, Verify3DLabels(labels3D));
-    //CHECK_EQ(true, Verify3DBones(bones));
+    CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
 }
