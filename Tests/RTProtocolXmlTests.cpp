@@ -817,6 +817,35 @@ namespace
     }
 }
 
+TEST_CASE("SetSettings6DOFTest")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    CRTProtocol::SBodyPoint bodyPoint{ "bodyName", 41.0f, 42.0f, 43.0f, false, 65 };
+
+    CRTProtocol::SSettings6DOFBody settings = {
+        "test", true, 123, "false", 999.0f, 321, 888.0f,
+        CRTProtocol::SSettings6DMesh {
+            "test2",
+            CRTProtocol::SPoint { 1.0f, 2.0f, 3.0f },
+            CRTProtocol::SPoint { 4.0f, 5.0f, 6.0f },
+            22.0f, 11.0f },
+        CRTProtocol::SOrigin {
+            CRTProtocol::EOriginType::GlobalOrigin, 7, CRTProtocol::SPoint { 7.0f, 8.0f, 9.0f },
+            { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f },
+        }, { bodyPoint }
+    };
+
+    if (!protocol->Set6DOFBodySettings({ settings }))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::Set6DSettingsTest, network->ReadSentData().data()));
+}
+
 TEST_CASE("GetSettings6DOFTest")
 {
     auto [protocol, network] = utils::CreateTestContext();

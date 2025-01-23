@@ -154,4 +154,32 @@ namespace qualisys_cpp_sdk::tests::data
     </The_6D>
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
+
+    inline const char* Set6DSettingsTest = R"XMLDATA(
+<QTM_Settings>
+    <The_6D>
+        <Body>
+            <Name>test</Name>
+            <Enabled>true</Enabled>
+            <Color R="123" G="0" B="0"/>
+            <MaximumResidual>999.000000</MaximumResidual>
+            <MinimumMarkersInBody>321</MinimumMarkersInBody>
+            <BoneLengthTolerance>888.000000</BoneLengthTolerance>
+            <Filter Preset="false"/>
+            <Mesh>
+                <Name>test2</Name>
+                <Position X="1.000000" Y="2.000000" Z="3.000000"/>
+                <Rotation X="4.000000" Y="5.000000" Z="6.000000"/>
+                <Scale>22.000000</Scale>
+                <Opacity>11.000000</Opacity>
+            </Mesh>
+            <Points>
+                <Point X="41.000000" Y="42.000000" Z="43.000000" Virtual="0" PhysicalId="65" Name="bodyName"/>
+            </Points>
+            <Data_origin X="7.000000" Y="8.000000" Z="9.000000" Relative_body="7">0</Data_origin>
+            <Data_orientation R11="0.100000" R12="0.200000" R13="0.300000" R21="0.400000" R22="0.500000" R23="0.600000" R31="0.700000" R32="0.800000" R33="0.900000" Relative_body="7">0</Data_orientation>
+        </Body>
+    </The_6D>
+</QTM_Settings>
+)XMLDATA";
 }
