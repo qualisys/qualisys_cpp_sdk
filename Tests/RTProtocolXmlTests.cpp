@@ -834,9 +834,9 @@ namespace
             CHECK_EQ(settings6DOF[i].maxResidual, expectedMaxResiduals[i]);
             CHECK_EQ(settings6DOF[i].minMarkersInBody, 3);
             CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
-            CHECK_EQ(settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]), true);
-            CHECK_EQ(originEqualityOperator(settings6DOF[i].origin, defaultOrigin), true);
-            CHECK_EQ(bodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]), true);
+            CHECK_EQ(Settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]), true);
+            CHECK_EQ(OriginEqualityOperator(settings6DOF[i].origin, defaultOrigin), true);
+            CHECK_EQ(BodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]), true);
         }
 
         return true;
