@@ -2,7 +2,7 @@
 namespace qualisys_cpp_sdk::tests::data
 {
     inline const char* SetExtTimeBaseSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <External_Time_Base>
             <Enabled>True</Enabled>
@@ -21,7 +21,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetExtTimestampSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <External_Timestamp>
             <Enabled>True</Enabled>
@@ -33,7 +33,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
@@ -47,7 +47,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraAutoExposureSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
@@ -60,7 +60,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraVideoSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
@@ -75,7 +75,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraSyncOutSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>7</ID>
@@ -89,7 +89,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraLensControlSettingsTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
@@ -103,7 +103,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* SetCameraAutoWhiteBalanceTest =
-        R"XMLDATA(<QTM_Settings>
+R"XMLDATA(<QTM_Settings>
     <General>
         <Camera>
             <ID>1</ID>
@@ -114,7 +114,7 @@ namespace qualisys_cpp_sdk::tests::data
 )XMLDATA";
 
     inline const char* GetGeneralSettingsTest =
-        R"XMLDATA(<QTM_Parameters_Ver_1.25>
+R"XMLDATA(<QTM_Parameters_Ver_1.25>
     <General>
         <Frequency>100</Frequency>
         <Capture_Time>10.000000</Capture_Time>

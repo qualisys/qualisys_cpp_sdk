@@ -1,8 +1,7 @@
 #pragma once
 namespace qualisys_cpp_sdk::tests::data
 {
-
-inline const char* GetEyeTrackerSettingsTest = R"XMLDATA(
+    inline const char* GetEyeTrackerSettingsTest = R"XMLDATA(
 <QTM_Parameters_Ver_1.25>
     <Eye_Tracker>
         <Device>

@@ -1,7 +1,7 @@
 #pragma once
 namespace qualisys_cpp_sdk::tests::data
 {
-    const char* SkeletonSettingsSet = R"XMLDATA(
+    inline const char* SkeletonSettingsSet = R"XMLDATA(
 <QTM_Settings>
     <Skeletons>
         <Skeleton Name="skeleton1">

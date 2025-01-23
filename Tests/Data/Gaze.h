@@ -1,8 +1,7 @@
 #pragma once
 namespace qualisys_cpp_sdk::tests::data
 {
-
-    inline inline const char* GetGazeVectorSettingsTest = R"XMLDATA(
+    inline const char* GetGazeVectorSettingsTest = R"XMLDATA(
 <QTM_Parameters_Ver_1.25>
     <Gaze_Vector>
         <Vector>

@@ -1,7 +1,6 @@
 #pragma once
 namespace qualisys_cpp_sdk::tests::data
-{ 
-
+{
     inline const char* GetAnalogSettingsTest = R"XMLDATA(
 <QTM_Parameters_Ver_1.25>
     <Analog>
