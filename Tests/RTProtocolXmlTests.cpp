@@ -767,11 +767,6 @@ namespace
 
     bool VerifySettings6DOF(const std::vector<CRTProtocol::SSettings6DOFBody>& settings6DOF)
     {
-        if (settings6DOF.size() != 6)
-        {
-            return false;
-        }
-
         std::vector<std::string> expectedNames = {
             "refined", "Table", "Screen2",
             "Cup", "Phone", "Screen1"
@@ -827,22 +822,21 @@ namespace
             CRTProtocol::SBodyPoint{ "Screen - 4", -399.511597f, -29.1877670f, 177.742310f, false, 0 }
             }
         };
+
+        CHECK_EQ(settings6DOF.size(), 6);
+
         for (int i = 0; i < settings6DOF.size(); i++)
         {
-            if (settings6DOF[i].name != expectedNames[i] ||
-                settings6DOF[i].enabled != true ||
-                settings6DOF[i].color != expectedColors[i] ||
-                settings6DOF[i].filterPreset != "No filter" ||
-                settings6DOF[i].maxResidual != expectedMaxResiduals[i] ||
-                settings6DOF[i].minMarkersInBody != 3 ||
-                settings6DOF[i].boneLengthTolerance != expectedBoneLengthTolerances[i] ||
-                settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]) == false ||
-                originEqualityOperator(settings6DOF[i].origin, defaultOrigin) == false ||
-                bodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]) == false
-                )
-            {
-                return false;
-            }
+            CHECK_EQ(settings6DOF[i].name, expectedNames[i]);
+            CHECK_EQ(settings6DOF[i].enabled, true);
+            CHECK_EQ(settings6DOF[i].color, expectedColors[i]);
+            CHECK_EQ(settings6DOF[i].filterPreset, "No filter");
+            CHECK_EQ(settings6DOF[i].maxResidual, expectedMaxResiduals[i]);
+            CHECK_EQ(settings6DOF[i].minMarkersInBody, 3);
+            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
+            CHECK_EQ(settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]), true);
+            CHECK_EQ(originEqualityOperator(settings6DOF[i].origin, defaultOrigin), true);
+            CHECK_EQ(bodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]), true);
         }
 
         return true;
@@ -887,6 +881,12 @@ TEST_CASE("GetSettingsGazeVectorTest")
     protocol->GetGazeVectorSettings(gazeVectorSettings);
     volatile char breaker = 1;
 
-    // TODO: Verify that the gaze vector settings are correct
-    //CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
+    CHECK_EQ("Gaze vector 1 (L)", gazeVectorSettings[0].name);
+    CHECK_EQ(240.0f, gazeVectorSettings[0].frequency);
+    CHECK_EQ(true, gazeVectorSettings[0].hwSync);
+    CHECK_EQ(false, gazeVectorSettings[0].filter);
+    CHECK_EQ("Gaze vector 1 (R)", gazeVectorSettings[1].name);
+    CHECK_EQ(240.0f, gazeVectorSettings[1].frequency);
+    CHECK_EQ(true, gazeVectorSettings[1].hwSync);
+    CHECK_EQ(false, gazeVectorSettings[1].filter);
 }
