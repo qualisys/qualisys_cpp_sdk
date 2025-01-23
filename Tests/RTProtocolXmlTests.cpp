@@ -701,7 +701,7 @@ TEST_CASE("GetSettings3DTest")
 
 namespace
 {
-    bool settings6DMeshEqualityOperator(const CRTProtocol::SSettings6DMesh& lhs, const CRTProtocol::SSettings6DMesh& rhs)
+    bool Settings6DMeshEqualityOperator(const CRTProtocol::SSettings6DMesh& lhs, const CRTProtocol::SSettings6DMesh& rhs)
     {
         if (lhs.name != rhs.name ||
             lhs.opacity != rhs.opacity ||
@@ -718,7 +718,7 @@ namespace
         return true;
     }
 
-    bool originEqualityOperator(const CRTProtocol::SOrigin& lhs, const CRTProtocol::SOrigin& rhs)
+    bool OriginEqualityOperator(const CRTProtocol::SOrigin& lhs, const CRTProtocol::SOrigin& rhs)
     {
         if (lhs.position.fX != rhs.position.fX ||
             lhs.position.fY != rhs.position.fY ||
@@ -741,7 +741,7 @@ namespace
         return true;
     }
     
-    bool bodyPointsVectorEqualityOperator(const std::vector<CRTProtocol::SBodyPoint>& lhs, const std::vector<CRTProtocol::SBodyPoint>& rhs)
+    bool BodyPointsVectorEqualityOperator(const std::vector<CRTProtocol::SBodyPoint>& lhs, const std::vector<CRTProtocol::SBodyPoint>& rhs)
     {
         if (lhs.size() != rhs.size())
         {
