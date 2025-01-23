@@ -10,7 +10,7 @@ using namespace qualisys_cpp_sdk::tests;
 
 TEST_CASE("GetSettingsGazeVectorTest")
 {
-    auto [protocol, network] = qualisys_cpp_sdk::test_utils::CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("GetParameters GazeVector", data::GetGazeVectorSettingsTest, CRTPacket::PacketXML);
 
@@ -36,7 +36,7 @@ TEST_CASE("GetSettingsGazeVectorTest")
 
 TEST_CASE("GetSettingsEyeTrackerTest")
 {
-    auto [protocol, network] = qualisys_cpp_sdk::test_utils::CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("GetParameters EyeTracker", data::GetEyeTrackerSettingsTest, CRTPacket::PacketXML);
 

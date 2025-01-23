@@ -10,9 +10,10 @@
 
 #include <doctest/doctest.h>
 
+using namespace qualisys_cpp_sdk::tests;
+
 namespace
 {
-    using namespace qualisys_cpp_sdk::tests;
     std::vector<CRTProtocol::SSettingsSkeletonHierarchical> CreateDummySkeletons()
     {
         auto markers = std::vector<CRTProtocol::SMarker>{
@@ -91,7 +92,7 @@ namespace
 
 TEST_CASE("SetSkeletonSettings")
 {
-    auto [protocol, network] = qualisys_cpp_sdk::test_utils::CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -104,13 +105,13 @@ TEST_CASE("SetSkeletonSettings")
     
     using namespace qualisys_cpp_sdk::tests;
 
-    CHECK(qualisys_cpp_sdk::test_utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet, result.data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet, result.data()));
 }
 
 
 TEST_CASE("GetSkeletonSettings")
 {
-    auto [protocol, network] = qualisys_cpp_sdk::test_utils::CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet, CRTPacket::PacketXML);
 
