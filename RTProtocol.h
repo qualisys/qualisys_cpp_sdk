@@ -746,6 +746,7 @@ public:
     void GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings);
     void GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings);
     void GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings);
+    void GetForceSettings(SSettingsForce& forceSettings);
     void GetGeneralSettings(
         unsigned int &nCaptureFrequency, float &fCaptureTime,
         bool& bStartOnExtTrig, bool& trigNO, bool& trigNC, bool& trigSoftware,

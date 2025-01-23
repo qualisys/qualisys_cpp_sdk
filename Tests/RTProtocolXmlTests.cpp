@@ -955,3 +955,145 @@ TEST_CASE("GetSettingsAnalogTest")
 
     CHECK_EQ(true, VerifySettingsAnalog(analogSettings));
 }
+
+namespace
+{
+    bool VerifyForceSettings(const CRTProtocol::SSettingsForce& forceSettings)
+    {
+        float defaultCalibrationMatrix[12][12];
+        for (int i = 0; i < 12; i++)
+        {
+            for (int j = 0; j < 12; j++)
+            {
+                defaultCalibrationMatrix[i][j] = -107374176.0f;
+            }
+        }
+
+        float fVal = -107374176.0f;
+
+        std::vector<CRTProtocol::SForcePlate> expectedPlates = {
+            CRTProtocol::SForcePlate {
+                1, 1, "Kistler", "Force-plate 1", 1000, 600.0f, 400.0f,
+                { CRTProtocol::SPoint { 4.66907978, 3.01687002, 1.71506000 },
+                  CRTProtocol::SPoint { 3.84404993, 394.877991, 1.08413005 },
+                  CRTProtocol::SPoint { 593.901978, 395.980011, -0.707184970 },
+                  CRTProtocol::SPoint { 594.333008, 2.39286995, -0.577087998 }
+                }, CRTProtocol::SPoint { 120.0f, 200.0f, 63.0f },
+                { CRTProtocol::SForceChannel { 1, -263.227173 },
+                  CRTProtocol::SForceChannel { 2, -262.536102 },
+                  CRTProtocol::SForceChannel { 3, -262.536102 },
+                  CRTProtocol::SForceChannel { 4, -262.123199 },
+                  CRTProtocol::SForceChannel { 5, -513.610657 },
+                  CRTProtocol::SForceChannel { 6, -515.729736 },
+                  CRTProtocol::SForceChannel { 7, -512.557678 },
+                  CRTProtocol::SForceChannel { 8, -512.557678 },
+                }, false,
+                {
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal }
+                }, 6, 6
+            },
+            CRTProtocol::SForcePlate {
+                2, 1, "Kistler", "Force-plate 2", 1000, 600.0f, 400.0f,
+                { CRTProtocol::SPoint { 606.708984, 2.52706003, -0.719672978 },
+                  CRTProtocol::SPoint { 608.502014, 397.065002, -0.878275990 },
+                  CRTProtocol::SPoint { 1200.28003, 396.040985, -2.18829012 },
+                  CRTProtocol::SPoint { 1200.19995, 3.80520010, -1.57172000 }
+                }, CRTProtocol::SPoint { 120.0f, 200.0f, 63.0f },
+                { CRTProtocol::SForceChannel { 9, -263.227173 },
+                  CRTProtocol::SForceChannel { 10, -262.536102 },
+                  CRTProtocol::SForceChannel { 11, -262.605042 },
+                  CRTProtocol::SForceChannel { 12, -262.881195 },
+                  CRTProtocol::SForceChannel { 13, -513.083618 },
+                  CRTProtocol::SForceChannel { 14, -512.557678 },
+                  CRTProtocol::SForceChannel { 15, -513.083618 },
+                  CRTProtocol::SForceChannel { 16, -513.347046 },
+                }, false,
+                {
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
+                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal }
+                }, 6, 6
+            }
+        };
+
+        CHECK_EQ("N", forceSettings.oUnitForce);
+        CHECK_EQ("mm", forceSettings.oUnitLength);
+        CHECK_EQ(2, forceSettings.vsForcePlates.size());
+
+        for (int i = 0; i < forceSettings.vsForcePlates.size(); i++)
+        {
+            CHECK_EQ(expectedPlates[i].nID, forceSettings.vsForcePlates[i].nID);
+            CHECK_EQ(expectedPlates[i].nAnalogDeviceID , forceSettings.vsForcePlates[i].nAnalogDeviceID);
+            CHECK_EQ(expectedPlates[i].oType , forceSettings.vsForcePlates[i].oType);
+            CHECK_EQ(expectedPlates[i].oName , forceSettings.vsForcePlates[i].oName);
+            CHECK_EQ(expectedPlates[i].nFrequency , forceSettings.vsForcePlates[i].nFrequency);
+            CHECK_EQ(expectedPlates[i].fLength , forceSettings.vsForcePlates[i].fLength);
+            CHECK_EQ(expectedPlates[i].fWidth , forceSettings.vsForcePlates[i].fWidth);
+            for (int j = 0; j < 4; j++)
+            {
+                CHECK_EQ(expectedPlates[i].asCorner[j].fX, forceSettings.vsForcePlates[i].asCorner[j].fX);
+                CHECK_EQ(expectedPlates[i].asCorner[j].fY , forceSettings.vsForcePlates[i].asCorner[j].fY);
+                CHECK_EQ(expectedPlates[i].asCorner[j].fZ , forceSettings.vsForcePlates[i].asCorner[j].fZ);
+            }
+            CHECK_EQ(expectedPlates[i].sOrigin.fX , forceSettings.vsForcePlates[i].sOrigin.fX);
+            CHECK_EQ(expectedPlates[i].sOrigin.fY , forceSettings.vsForcePlates[i].sOrigin.fY);
+            CHECK_EQ(expectedPlates[i].sOrigin.fZ , forceSettings.vsForcePlates[i].sOrigin.fZ);
+            for (int j = 0; j < 8; j++)
+            {
+                CHECK_EQ(((8 * i) + ( j + 1 )), forceSettings.vsForcePlates[i].vChannels[j].nChannelNumber);
+                CHECK_EQ(expectedPlates[i].vChannels[j].fConversionFactor, forceSettings.vsForcePlates[i].vChannels[j].fConversionFactor);
+            }
+            CHECK_EQ(expectedPlates[i].bValidCalibrationMatrix, forceSettings.vsForcePlates[i].bValidCalibrationMatrix);
+            for (int j = 0; j < 12; j++)
+            {
+                for (int k = 0; k < 12; k++)
+                {
+                    CHECK_EQ(expectedPlates[i].afCalibrationMatrix[j][k], forceSettings.vsForcePlates[i].afCalibrationMatrix[j][k]);
+                }
+            }
+            CHECK_EQ(expectedPlates[i].nCalibrationMatrixRows, forceSettings.vsForcePlates[i].nCalibrationMatrixRows);
+            CHECK_EQ(expectedPlates[i].nCalibrationMatrixColumns, forceSettings.vsForcePlates[i].nCalibrationMatrixColumns);
+        }
+
+        return true;
+    }
+}
+
+TEST_CASE("GetSettingsForceTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters Force", qualisys_cpp_sdk::xml_test_data::GetForceSettingsTest, CRTPacket::PacketXML);
+
+    bool bDataAvailable = true;
+
+    if (!protocol->ReadForceSettings(bDataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CRTProtocol::SSettingsForce forceSettings;
+    protocol->GetForceSettings(forceSettings);
+
+    CHECK_EQ(true, VerifyForceSettings(forceSettings));
+}
