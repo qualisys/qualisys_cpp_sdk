@@ -788,43 +788,43 @@ namespace
         };
         std::vector<std::vector<CRTProtocol::SBodyPoint>> expectedPoints = {
             {
-            CRTProtocol::SBodyPoint{ "Layout 3 - 1", -67.9271545, 29.8100796, -1.59297097, false, 0 },
-            CRTProtocol::SBodyPoint{ "Layout 3 - 2", -95.0230560, 1.74239099, -19.5413551, false, 0 },
-            CRTProtocol::SBodyPoint{ "Layout 3 - 3", -90.0171738, 19.8888149, -57.4946556, false, 0 },
-            CRTProtocol::SBodyPoint{ "Layout 3 - 4", 68.3161087, 29.1735229, -1.82902002, false, 0 },
-            CRTProtocol::SBodyPoint{ "Layout 3 - 5", 95.0272446, 1.47444904, -19.1718693, false, 0 },
-            CRTProtocol::SBodyPoint{ "Layout 3 - 6", 89.6240387, 20.6907444, -57.4501305, false, 0 }
+            CRTProtocol::SBodyPoint{ "Layout 3 - 1", -67.9271545f, 29.8100796f, -1.59297097f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 2", -95.0230560f, 1.74239099f, -19.5413551f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 3", -90.0171738f, 19.8888149f, -57.4946556f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 4", 68.3161087f, 29.1735229f, -1.82902002f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 5", 95.0272446f, 1.47444904f, -19.1718693f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Layout 3 - 6", 89.6240387f, 20.6907444f, -57.4501305f, false, 0 }
             },
             {
-            CRTProtocol::SBodyPoint{ "Table - 1", 801.421997, 29.8100796, 2.14241600, false, 0 },
-            CRTProtocol::SBodyPoint{ "Table - 2", 777.315125, -413.341278, 4.12720299, false, 0 },
-            CRTProtocol::SBodyPoint{ "Table - 3", -778.145569, 412.610626, -2.27826405, false, 0 },
-            CRTProtocol::SBodyPoint{ "Table - 4", -800.591614, -368.158539, -3.99135494, false, 0 }
+            CRTProtocol::SBodyPoint{ "Table - 1", 801.421997f, 29.8100796f, 2.14241600f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 2", 777.315125f, -413.341278f, 4.12720299f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 3", -778.145569f, 412.610626f, -2.27826405f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Table - 4", -800.591614f, -368.158539f, -3.99135494f, false, 0 }
             },
             {
-            CRTProtocol::SBodyPoint{ "Screen2 - 1", 177.895599, -40.2035255, -276.061218, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen2 - 2", -176.929245, 41.0591507, 276.110107, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen2 - 3", -111.494820, 129.602188, -283.761566, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen2 - 4", 110.528465, -130.457809, 283.712677, false, 0 }
+            CRTProtocol::SBodyPoint{ "Screen2 - 1", 177.895599f, -40.2035255f, -276.061218f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 2", -176.929245f, 41.0591507f, 276.110107f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 3", -111.494820f, 129.602188f, -283.761566f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen2 - 4", 110.528465f, -130.457809f, 283.712677f, false, 0 }
             },
             {
-            CRTProtocol::SBodyPoint{ "Cup - 1", -16.4094849, 43.2384529, -7.37500811, false, 0 },
-            CRTProtocol::SBodyPoint{ "Cup - 2", 41.2375832, 9.39587307, -14.9948711, false, 0 },
-            CRTProtocol::SBodyPoint{ "Cup - 3", -6.34368896, -32.7491074, -24.3911552, false, 0 },
-            CRTProtocol::SBodyPoint{ "Cup - 4", 27.2115021, -35.5109825, 31.2080975, false, 0 },
-            CRTProtocol::SBodyPoint{ "Cup - 5", -45.6959114, 15.6257639, 15.5529385, false, 0 }
+            CRTProtocol::SBodyPoint{ "Cup - 1", -16.4094849f, 43.2384529f, -7.37500811f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 2", 41.2375832f, 9.39587307f, -14.9948711f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 3", -6.34368896f, -32.7491074f, -24.3911552f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 4", 27.2115021f, -35.5109825f, 31.2080975f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Cup - 5", -45.6959114f, 15.6257639f, 15.5529385f, false, 0 }
             },
             {
-            CRTProtocol::SBodyPoint{ "Phone - 1", -39.9740448, -68.1382675, -0.101278998, false, 0 },
-            CRTProtocol::SBodyPoint{ "Phone - 2", 43.3482971, 64.0306702, -2.40792704, false, 0 },
-            CRTProtocol::SBodyPoint{ "Phone - 3", -31.9067173, 75.0699539, 1.21390605, false, 0 },
-            CRTProtocol::SBodyPoint{ "Phone - 4", 28.5324669, -70.9623566, 1.29529905, false, 0 }
+            CRTProtocol::SBodyPoint{ "Phone - 1", -39.9740448f, -68.1382675f, -0.101278998f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 2", 43.3482971f, 64.0306702f, -2.40792704f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 3", -31.9067173f, 75.0699539f, 1.21390605f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Phone - 4", 28.5324669f, -70.9623566f, 1.29529905f, false, 0 }
             },
             {
-            CRTProtocol::SBodyPoint{ "Screen - 1", -395.500610, 5.13963413, -195.481262, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen - 2", 392.106415, -2.13840294, 196.007095, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen - 3", 402.905762, 26.1865349, -178.268143, false, 0 },
-            CRTProtocol::SBodyPoint{ "Screen - 4", -399.511597, -29.1877670, 177.742310, false, 0 }
+            CRTProtocol::SBodyPoint{ "Screen - 1", -395.500610f, 5.13963413f, -195.481262f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 2", 392.106415f, -2.13840294f, 196.007095f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 3", 402.905762f, 26.1865349f, -178.268143f, false, 0 },
+            CRTProtocol::SBodyPoint{ "Screen - 4", -399.511597f, -29.1877670f, 177.742310f, false, 0 }
             }
         };
         for (int i = 0; i < settings6DOF.size(); i++)
@@ -868,4 +868,25 @@ TEST_CASE("GetSettings6DOFTest")
     volatile char breaker = 1;
 
     CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
+}
+
+TEST_CASE("GetSettingsGazeVectorTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters GazeVector", qualisys_cpp_sdk::xml_test_data::GetGazeVectorSettingsTest, CRTPacket::PacketXML);
+
+    bool bDataAvailable = true;
+
+    if (!protocol->ReadGazeVectorSettings(bDataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    std::vector<CRTProtocol::SGazeVector> gazeVectorSettings;
+    protocol->GetGazeVectorSettings(gazeVectorSettings);
+    volatile char breaker = 1;
+
+    // TODO: Verify that the gaze vector settings are correct
+    //CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
 }

@@ -1498,7 +1498,6 @@ R"XMLDATA(
     </The_3D>
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
-
     }
 }
 #endif // ! XMLTESTDATA_H

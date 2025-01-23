@@ -4642,6 +4642,16 @@ void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime
     bones = ms3DSettings.sBones;
 }
 
+void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings)
+{
+    gazeVectorSettings.clear();
+    gazeVectorSettings.resize(mvsGazeVectorSettings.size());
+
+    for (int i = 0; i < mvsGazeVectorSettings.size(); i++)
+    {
+        gazeVectorSettings.at(i) = mvsGazeVectorSettings.at(i);
+    }
+}
 
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
