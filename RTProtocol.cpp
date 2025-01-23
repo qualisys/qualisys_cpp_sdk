@@ -4653,6 +4653,17 @@ void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSett
     }
 }
 
+void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
+{
+    eyeTrackerSettings.clear();
+    eyeTrackerSettings.resize(mvsEyeTrackerSettings.size());
+
+    for (int i = 0; i < mvsEyeTrackerSettings.size(); i++)
+    {
+        eyeTrackerSettings.at(i) = mvsEyeTrackerSettings.at(i);
+    }
+}
+
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
     bool& bStartOnExtTrig, bool& startOnTrigNO, bool& startOnTrigNC, bool& startOnTrigSoftware,

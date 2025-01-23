@@ -744,6 +744,7 @@ public:
 
     void Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones);
     void GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings);
+    void GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings);
     void GetGeneralSettings(
         unsigned int &nCaptureFrequency, float &fCaptureTime,
         bool& bStartOnExtTrig, bool& trigNO, bool& trigNC, bool& trigSoftware,
