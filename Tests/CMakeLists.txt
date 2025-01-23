@@ -9,6 +9,7 @@ set(SOURCE_LIST
     ${PROJECT_SOURCE_DIR}/Main.cpp
     ${PROJECT_SOURCE_DIR}/RTProtocolXmlTests.cpp
     ${PROJECT_SOURCE_DIR}/RTProtocolSkeletonSettingsXmlTests.cpp
+    ${PROJECT_SOURCE_DIR}/GazeVectorParameterXmlTests.cpp
 )
 
 add_executable(

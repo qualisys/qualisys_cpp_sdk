@@ -1,8 +1,10 @@
-#include "../Network.h"
-#include "../RTProtocol.h"
 
 #include "TestUtils.h"
-#include "XmlTestData.h"
+#include "Data/General.h"
+#include "Data/3D.h"
+#include "Data/6Dof.h"
+
+#include "Data/Image.h"
 
 #include <doctest/doctest.h>
 #include <tinyxml2.h>
@@ -10,34 +12,12 @@
 #include <memory>
 #include <utility>
 
-namespace
-{
-    struct TestContext
-    {
-        std::unique_ptr<CRTProtocol> mRTProtocol;
-        qualisys_cpp_sdk::test_utils::DummyXmlNetwork* mNetwork;
-    };
 
-    TestContext CreateTestContext()
-    {
-        auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlNetwork{};
-
-        auto protocol = std::make_unique<CRTProtocol>();
-
-        protocol->OverrideNetwork(networkDummy);
-
-        if (!protocol->Connect(""))
-        {
-            FAIL(protocol->GetErrorString());
-        }
-
-        return { std::move(protocol), networkDummy };
-    }
-}
+using namespace qualisys_cpp_sdk::tests;
 
 TEST_CASE("SetExtTimeBaseSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -67,15 +47,14 @@ TEST_CASE("SetExtTimeBaseSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetExtTimeBaseSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -110,7 +89,7 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
     CHECK_EQ(true, bSignalModePeriodic);
     CHECK_EQ(1, nFreqMultiplier);
     CHECK_EQ(1, nFreqDivisor);
-    CHECK_EQ(1000 , nFreqTolerance);
+    CHECK_EQ(1000, nFreqTolerance);
     CHECK_EQ(-1.0f, fNominalFrequency); // nominal frequency of "None" becomes -1
     CHECK_EQ(true, bNegativeEdge);
     CHECK_EQ(0, nSignalShutterDelay);
@@ -119,7 +98,7 @@ TEST_CASE("GetExtTimeBaseSettingsTest")
 
 TEST_CASE("SetExtTimestampSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -133,15 +112,14 @@ TEST_CASE("SetExtTimestampSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetExtTimestampSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimestampSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetExtTimestampSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
     timestampSettings.bEnabled = true;
@@ -156,7 +134,7 @@ TEST_CASE("GetExtTimestampSettingsTest")
 
 TEST_CASE("SetCameraSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -176,15 +154,14 @@ TEST_CASE("SetCameraSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -217,7 +194,7 @@ TEST_CASE("GetCameraSettingsTest")
 
 TEST_CASE("SetCameraAutoExposureSettings")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -230,15 +207,14 @@ TEST_CASE("SetCameraAutoExposureSettings")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraAutoExposureSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoExposureSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraAutoExposureSettings")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -260,7 +236,7 @@ TEST_CASE("GetCameraAutoExposureSettings")
 
 TEST_CASE("SetCameraVideoSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -279,15 +255,14 @@ TEST_CASE("SetCameraVideoSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraVideoSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraVideoSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraVideoSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -326,7 +301,7 @@ TEST_CASE("GetCameraVideoSettingsTest")
 
 TEST_CASE("SetCameraSyncOutSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -345,15 +320,14 @@ TEST_CASE("SetCameraSyncOutSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraSyncOutSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -381,7 +355,7 @@ TEST_CASE("GetCameraSyncOutSettingsTest")
 
 TEST_CASE("SetCameraLensControlSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -394,15 +368,14 @@ TEST_CASE("SetCameraLensControlSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraLensControlSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraLensControlSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraLensControlSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -421,7 +394,7 @@ TEST_CASE("GetCameraLensControlSettingsTest")
 
 TEST_CASE("SetCameraAutoWhiteBalanceTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -434,15 +407,14 @@ TEST_CASE("SetCameraAutoWhiteBalanceTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraAutoWhiteBalanceTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     if (!protocol->ReadGeneralSettings())
     {
@@ -460,7 +432,7 @@ TEST_CASE("GetCameraAutoWhiteBalanceTest")
 
 TEST_CASE("SetImageSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -482,15 +454,14 @@ TEST_CASE("SetImageSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetImageSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetImageSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetImageCameraTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Image", qualisys_cpp_sdk::xml_test_data::GetImageSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Image", qualisys_cpp_sdk::tests::data::GetImageSettingsTest, CRTPacket::PacketXML);
 
     bool dataAvailable = false;
     if (!protocol->ReadImageSettings(dataAvailable))
@@ -511,7 +482,7 @@ TEST_CASE("GetImageCameraTest")
     float cropButton;
 
     if (!protocol->GetImageCamera(
-    0, id, enabled, format, width, height, cropLeft, cropTop, cropRight, cropButton
+        0, id, enabled, format, width, height, cropLeft, cropTop, cropRight, cropButton
     )) {
         FAIL(protocol->GetErrorString());
     }
@@ -529,7 +500,7 @@ TEST_CASE("GetImageCameraTest")
 
 TEST_CASE("SetGeneralSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -551,16 +522,15 @@ TEST_CASE("SetGeneralSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    using namespace qualisys_cpp_sdk::test_utils;
-    CHECK_EQ(true, CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::xml_test_data::SetGeneralSettingsTest, network->ReadSentData().data()));
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetGeneralSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetGeneralSettingsTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::xml_test_data::GetGeneralSettingsTest, CRTPacket::PacketXML);
-    
+    network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
+
     if (!protocol->ReadGeneralSettings())
     {
         FAIL(protocol->GetErrorString());
@@ -675,9 +645,9 @@ namespace
 
 TEST_CASE("GetSettings3DTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters 3D", qualisys_cpp_sdk::xml_test_data::Get3DSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters 3D", qualisys_cpp_sdk::tests::data::Get3DSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
 
@@ -740,7 +710,7 @@ namespace
 
         return true;
     }
-    
+
     bool BodyPointsVectorEqualityOperator(const std::vector<CRTProtocol::SBodyPoint>& lhs, const std::vector<CRTProtocol::SBodyPoint>& rhs)
     {
         if (lhs.size() != rhs.size())
@@ -845,9 +815,9 @@ namespace
 
 TEST_CASE("GetSettings6DOFTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::xml_test_data::Get6DSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::tests::data::Get6DSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
     

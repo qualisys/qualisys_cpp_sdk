@@ -1,10 +1,7 @@
-namespace qualisys_cpp_sdk
+#pragma once
+namespace qualisys_cpp_sdk::tests::data
 {
-    namespace tests::data
-    {
-        inline const char* SkeletonSettingsSet()
-        {
-            return R"XMLDATA(
+    inline const char* SkeletonSettingsSet = R"XMLDATA(
 <QTM_Settings>
     <Skeletons>
         <Skeleton Name="skeleton1">
@@ -131,6 +128,5 @@ namespace qualisys_cpp_sdk
     </Skeletons>
 </QTM_Settings>
 )XMLDATA";
-        }
-    }
+
 }

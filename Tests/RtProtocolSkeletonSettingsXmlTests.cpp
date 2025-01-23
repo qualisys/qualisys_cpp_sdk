@@ -5,34 +5,15 @@
 #include "../RTProtocol.h"
 #include "../RTPacket.h"
 #include "Data/Skeleton.h"
+
 #include "TestUtils.h"
 
 #include <doctest/doctest.h>
 
+using namespace qualisys_cpp_sdk::tests;
+
 namespace
 {
-    struct TestContext
-    {
-        std::unique_ptr<CRTProtocol> mRTProtocol;
-        qualisys_cpp_sdk::test_utils::DummyXmlNetwork* mNetwork;
-    };
-
-    TestContext CreateTestContext()
-    {
-        auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlNetwork{};
-
-        auto protocol = std::make_unique<CRTProtocol>();
-
-        protocol->OverrideNetwork(networkDummy);
-
-        if (!protocol->Connect(""))
-        {
-            FAIL(protocol->GetErrorString());
-        }
-
-        return {std::move(protocol), networkDummy};
-    }
-
     std::vector<CRTProtocol::SSettingsSkeletonHierarchical> CreateDummySkeletons()
     {
         auto markers = std::vector<CRTProtocol::SMarker>{
@@ -111,7 +92,7 @@ namespace
 
 TEST_CASE("SetSkeletonSettings")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
@@ -124,15 +105,15 @@ TEST_CASE("SetSkeletonSettings")
     
     using namespace qualisys_cpp_sdk::tests;
 
-    CHECK(qualisys_cpp_sdk::test_utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet(), result.data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet, result.data()));
 }
 
 
 TEST_CASE("GetSkeletonSettings")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet(), CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet, CRTPacket::PacketXML);
 
     using namespace qualisys_cpp_sdk::tests;
 
