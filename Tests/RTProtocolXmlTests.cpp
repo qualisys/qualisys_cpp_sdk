@@ -3,6 +3,10 @@
 #include "Data/General.h"
 #include "Data/3D.h"
 #include "Data/6Dof.h"
+#include "Data/Gaze.h"
+#include "Data/EyeTracker.h"
+#include "Data/Analog.h"
+#include "Data/Force.h"
 
 #include "Data/Image.h"
 
@@ -835,9 +839,9 @@ TEST_CASE("GetSettings6DOFTest")
 
 TEST_CASE("GetSettingsGazeVectorTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters GazeVector", qualisys_cpp_sdk::xml_test_data::GetGazeVectorSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters GazeVector", qualisys_cpp_sdk::tests::data::GetGazeVectorSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
 
@@ -861,9 +865,9 @@ TEST_CASE("GetSettingsGazeVectorTest")
 
 TEST_CASE("GetSettingsEyeTrackerTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters EyeTracker", qualisys_cpp_sdk::xml_test_data::GetEyeTrackerSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters EyeTracker", qualisys_cpp_sdk::tests::data::GetEyeTrackerSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
 
@@ -909,9 +913,9 @@ namespace
 
 TEST_CASE("GetSettingsAnalogTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils:: CreateTestContext();
 
-    network->PrepareResponse("GetParameters Analog", qualisys_cpp_sdk::xml_test_data::GetAnalogSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Analog", qualisys_cpp_sdk::tests::data::GetAnalogSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
 
@@ -944,19 +948,19 @@ namespace
         std::vector<CRTProtocol::SForcePlate> expectedPlates = {
             CRTProtocol::SForcePlate {
                 1, 1, "Kistler", "Force-plate 1", 1000, 600.0f, 400.0f,
-                { CRTProtocol::SPoint { 4.66907978, 3.01687002, 1.71506000 },
-                  CRTProtocol::SPoint { 3.84404993, 394.877991, 1.08413005 },
-                  CRTProtocol::SPoint { 593.901978, 395.980011, -0.707184970 },
-                  CRTProtocol::SPoint { 594.333008, 2.39286995, -0.577087998 }
+                { CRTProtocol::SPoint { 4.66907978f, 3.01687002f, 1.71506000f },
+                  CRTProtocol::SPoint { 3.84404993f, 394.877991f, 1.08413005f },
+                  CRTProtocol::SPoint { 593.901978f, 395.980011f, -0.707184970f },
+                  CRTProtocol::SPoint { 594.333008f, 2.39286995f, -0.577087998f }
                 }, CRTProtocol::SPoint { 120.0f, 200.0f, 63.0f },
-                { CRTProtocol::SForceChannel { 1, -263.227173 },
-                  CRTProtocol::SForceChannel { 2, -262.536102 },
-                  CRTProtocol::SForceChannel { 3, -262.536102 },
-                  CRTProtocol::SForceChannel { 4, -262.123199 },
-                  CRTProtocol::SForceChannel { 5, -513.610657 },
-                  CRTProtocol::SForceChannel { 6, -515.729736 },
-                  CRTProtocol::SForceChannel { 7, -512.557678 },
-                  CRTProtocol::SForceChannel { 8, -512.557678 },
+                { CRTProtocol::SForceChannel { 1, -263.227173f },
+                  CRTProtocol::SForceChannel { 2, -262.536102f },
+                  CRTProtocol::SForceChannel { 3, -262.536102f },
+                  CRTProtocol::SForceChannel { 4, -262.123199f },
+                  CRTProtocol::SForceChannel { 5, -513.610657f },
+                  CRTProtocol::SForceChannel { 6, -515.729736f },
+                  CRTProtocol::SForceChannel { 7, -512.557678f },
+                  CRTProtocol::SForceChannel { 8, -512.557678f },
                 }, false,
                 {
                  { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
@@ -975,19 +979,19 @@ namespace
             },
             CRTProtocol::SForcePlate {
                 2, 1, "Kistler", "Force-plate 2", 1000, 600.0f, 400.0f,
-                { CRTProtocol::SPoint { 606.708984, 2.52706003, -0.719672978 },
-                  CRTProtocol::SPoint { 608.502014, 397.065002, -0.878275990 },
-                  CRTProtocol::SPoint { 1200.28003, 396.040985, -2.18829012 },
-                  CRTProtocol::SPoint { 1200.19995, 3.80520010, -1.57172000 }
+                { CRTProtocol::SPoint { 606.708984f, 2.52706003f, -0.719672978f },
+                  CRTProtocol::SPoint { 608.502014f, 397.065002f, -0.878275990f },
+                  CRTProtocol::SPoint { 1200.28003f, 396.040985f, -2.18829012f },
+                  CRTProtocol::SPoint { 1200.19995f, 3.80520010f, -1.57172000f }
                 }, CRTProtocol::SPoint { 120.0f, 200.0f, 63.0f },
-                { CRTProtocol::SForceChannel { 9, -263.227173 },
-                  CRTProtocol::SForceChannel { 10, -262.536102 },
-                  CRTProtocol::SForceChannel { 11, -262.605042 },
-                  CRTProtocol::SForceChannel { 12, -262.881195 },
-                  CRTProtocol::SForceChannel { 13, -513.083618 },
-                  CRTProtocol::SForceChannel { 14, -512.557678 },
-                  CRTProtocol::SForceChannel { 15, -513.083618 },
-                  CRTProtocol::SForceChannel { 16, -513.347046 },
+                { CRTProtocol::SForceChannel { 9, -263.227173f },
+                  CRTProtocol::SForceChannel { 10, -262.536102f },
+                  CRTProtocol::SForceChannel { 11, -262.605042f },
+                  CRTProtocol::SForceChannel { 12, -262.881195f },
+                  CRTProtocol::SForceChannel { 13, -513.083618f },
+                  CRTProtocol::SForceChannel { 14, -512.557678f },
+                  CRTProtocol::SForceChannel { 15, -513.083618f },
+                  CRTProtocol::SForceChannel { 16, -513.347046f },
                 }, false,
                 {
                  { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
@@ -1051,9 +1055,9 @@ namespace
 
 TEST_CASE("GetSettingsForceTest")
 {
-    auto [protocol, network] = CreateTestContext();
+    auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Force", qualisys_cpp_sdk::xml_test_data::GetForceSettingsTest, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Force", qualisys_cpp_sdk::tests::data::GetForceSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
 
