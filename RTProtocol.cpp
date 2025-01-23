@@ -18,7 +18,6 @@
 #include "Markup.h"
 #include "Network.h"
 #include <stdexcept>
-#include <iostream> // Don't forget to remove
 
 #ifdef _WIN32
 #include <iphlpapi.h>
@@ -4354,130 +4353,130 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
 
                     std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
                         [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
+                    {
+                        segmentHierarchical.name = xml.GetAttrib("Name");
+                        ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+
+                        segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
+
+                        xml.IntoElem();
+
+                        if (xml.FindElem("Solver"))
                         {
-                            segmentHierarchical.name = xml.GetAttrib("Name");
-                            ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+                            segmentHierarchical.solver = xml.GetData();
+                        }
 
-                            segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
+                        if (xml.FindElem("Transform"))
+                        {
+                            xml.IntoElem();
+                            segmentHierarchical.position = ReadXMLPosition(xml, "Position");
+                            segmentHierarchical.rotation = ReadXMLRotation(xml, "Rotation");
+                            xml.OutOfElem(); // Transform
+                        }
 
+                        if (xml.FindElem("DefaultTransform"))
+                        {
+                            xml.IntoElem();
+                            segmentHierarchical.defaultPosition = ReadXMLPosition(xml, "Position");
+                            segmentHierarchical.defaultRotation = ReadXMLRotation(xml, "Rotation");
+                            xml.OutOfElem(); // DefaultTransform
+                        }
+
+                        if (xml.FindElem("DegreesOfFreedom"))
+                        {
+                            xml.IntoElem();
+                            ReadXMLDegreesOfFreedom(xml, "RotationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "RotationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "RotationZ", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(xml, "TranslationZ", segmentHierarchical.degreesOfFreedom);
+                            xml.OutOfElem(); // DegreesOfFreedom
+                        }
+
+                        segmentHierarchical.endpoint = ReadXMLPosition(xml, "Endpoint");
+
+                        if (xml.FindElem("Markers"))
+                        {
                             xml.IntoElem();
 
-                            if (xml.FindElem("Solver"))
+                            while (xml.FindElem("Marker"))
                             {
-                                segmentHierarchical.solver = xml.GetData();
-                            }
+                                SMarker marker;
 
-                            if (xml.FindElem("Transform"))
-                            {
+                                marker.name = xml.GetAttrib("Name");
+                                marker.weight = 1.0;
+
                                 xml.IntoElem();
-                                segmentHierarchical.position = ReadXMLPosition(xml, "Position");
-                                segmentHierarchical.rotation = ReadXMLRotation(xml, "Rotation");
-                                xml.OutOfElem(); // Transform
-                            }
-
-                            if (xml.FindElem("DefaultTransform"))
-                            {
-                                xml.IntoElem();
-                                segmentHierarchical.defaultPosition = ReadXMLPosition(xml, "Position");
-                                segmentHierarchical.defaultRotation = ReadXMLRotation(xml, "Rotation");
-                                xml.OutOfElem(); // DefaultTransform
-                            }
-
-                            if (xml.FindElem("DegreesOfFreedom"))
-                            {
-                                xml.IntoElem();
-                                ReadXMLDegreesOfFreedom(xml, "RotationX", segmentHierarchical.degreesOfFreedom);
-                                ReadXMLDegreesOfFreedom(xml, "RotationY", segmentHierarchical.degreesOfFreedom);
-                                ReadXMLDegreesOfFreedom(xml, "RotationZ", segmentHierarchical.degreesOfFreedom);
-                                ReadXMLDegreesOfFreedom(xml, "TranslationX", segmentHierarchical.degreesOfFreedom);
-                                ReadXMLDegreesOfFreedom(xml, "TranslationY", segmentHierarchical.degreesOfFreedom);
-                                ReadXMLDegreesOfFreedom(xml, "TranslationZ", segmentHierarchical.degreesOfFreedom);
-                                xml.OutOfElem(); // DegreesOfFreedom
-                            }
-
-                            segmentHierarchical.endpoint = ReadXMLPosition(xml, "Endpoint");
-
-                            if (xml.FindElem("Markers"))
-                            {
-                                xml.IntoElem();
-
-                                while (xml.FindElem("Marker"))
+                                marker.position = ReadXMLPosition(xml, "Position");
+                                if (xml.FindElem("Weight"))
                                 {
-                                    SMarker marker;
-
-                                    marker.name = xml.GetAttrib("Name");
-                                    marker.weight = 1.0;
-
-                                    xml.IntoElem();
-                                    marker.position = ReadXMLPosition(xml, "Position");
-                                    if (xml.FindElem("Weight"))
-                                    {
-                                        ParseString(xml.GetData(), marker.weight);
-                                    }
-
-                                    xml.OutOfElem(); // Marker
-
-                                    segmentHierarchical.markers.push_back(marker);
+                                    ParseString(xml.GetData(), marker.weight);
                                 }
 
-                                xml.OutOfElem(); // Markers
+                                xml.OutOfElem(); // Marker
+
+                                segmentHierarchical.markers.push_back(marker);
                             }
 
-                            if (xml.FindElem("RigidBodies"))
+                            xml.OutOfElem(); // Markers
+                        }
+
+                        if (xml.FindElem("RigidBodies"))
+                        {
+                            xml.IntoElem();
+
+                            while (xml.FindElem("RigidBody"))
                             {
+                                SBody body;
+
+                                body.name = xml.GetAttrib("Name");
+                                body.weight = 1.0;
+
                                 xml.IntoElem();
 
-                                while (xml.FindElem("RigidBody"))
+                                if (xml.FindElem("Transform"))
                                 {
-                                    SBody body;
-
-                                    body.name = xml.GetAttrib("Name");
-                                    body.weight = 1.0;
-
                                     xml.IntoElem();
-
-                                    if (xml.FindElem("Transform"))
-                                    {
-                                        xml.IntoElem();
-                                        body.position = ReadXMLPosition(xml, "Position");
-                                        body.rotation = ReadXMLRotation(xml, "Rotation");
-                                        xml.OutOfElem(); // Transform
-                                    }
-                                    if (xml.FindElem("Weight"))
-                                    {
-                                        ParseString(xml.GetData(), body.weight);
-                                    }
-
-                                    xml.OutOfElem(); // RigidBody
-
-                                    segmentHierarchical.bodies.push_back(body);
+                                    body.position = ReadXMLPosition(xml, "Position");
+                                    body.rotation = ReadXMLRotation(xml, "Rotation");
+                                    xml.OutOfElem(); // Transform
+                                }
+                                if (xml.FindElem("Weight"))
+                                {
+                                    ParseString(xml.GetData(), body.weight);
                                 }
 
-                                xml.OutOfElem(); // RigidBodies
-                            }
-                            SSettingsSkeletonSegment segment;
-                            segment.name = segmentHierarchical.name;
-                            segment.id = segmentHierarchical.id;
-                            segment.parentId = parentId;
-                            segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
-                            segment.positionX = (float)segmentHierarchical.defaultPosition.x;
-                            segment.positionY = (float)segmentHierarchical.defaultPosition.y;
-                            segment.positionZ = (float)segmentHierarchical.defaultPosition.z;
-                            segment.rotationX = (float)segmentHierarchical.defaultRotation.x;
-                            segment.rotationY = (float)segmentHierarchical.defaultRotation.y;
-                            segment.rotationZ = (float)segmentHierarchical.defaultRotation.z;
-                            segment.rotationW = (float)segmentHierarchical.defaultRotation.w;
+                                xml.OutOfElem(); // RigidBody
 
-                            segments.push_back(segment);
-
-                            while (xml.FindElem("Segment"))
-                            {
-                                SSettingsSkeletonSegmentHierarchical childSegment;
-                                recurseSegments(childSegment, skeleton.segments, segmentHierarchical.id);
-                                segmentHierarchical.segments.push_back(childSegment);
+                                segmentHierarchical.bodies.push_back(body);
                             }
-                            xml.OutOfElem();
-                        };
+
+                            xml.OutOfElem(); // RigidBodies
+                        }
+                        SSettingsSkeletonSegment segment;
+                        segment.name = segmentHierarchical.name;
+                        segment.id = segmentHierarchical.id;
+                        segment.parentId = parentId;
+                        segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
+                        segment.positionX = (float)segmentHierarchical.defaultPosition.x;
+                        segment.positionY = (float)segmentHierarchical.defaultPosition.y;
+                        segment.positionZ = (float)segmentHierarchical.defaultPosition.z;
+                        segment.rotationX = (float)segmentHierarchical.defaultRotation.x;
+                        segment.rotationY = (float)segmentHierarchical.defaultRotation.y;
+                        segment.rotationZ = (float)segmentHierarchical.defaultRotation.z;
+                        segment.rotationW = (float)segmentHierarchical.defaultRotation.w;
+
+                        segments.push_back(segment);
+
+                        while (xml.FindElem("Segment"))
+                        {
+                            SSettingsSkeletonSegmentHierarchical childSegment;
+                            recurseSegments(childSegment, skeleton.segments, segmentHierarchical.id);
+                            segmentHierarchical.segments.push_back(childSegment);
+                        }
+                        xml.OutOfElem();
+                    };
 
                     if (xml.FindElem("Segment"))
                     {
@@ -4555,7 +4554,6 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
         xml.OutOfElem(); // Skeletons
         dataAvailable = true;
     }
-
     return true;
 } // ReadSkeletonSettings
 
@@ -4635,6 +4633,7 @@ bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& eleme
     return false;
 }
 
+
 void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
 {
     axisUpwards = ms3DSettings.eAxisUpwards;
@@ -4642,6 +4641,7 @@ void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime
     labels3D = ms3DSettings.s3DLabels;
     bones = ms3DSettings.sBones;
 }
+
 
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
@@ -6307,10 +6307,8 @@ bool CRTProtocol::SendCommand(const char* pCmdStr)
 
 bool CRTProtocol::SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout)
 {
-    std::cout << "CMD cmdStr:" << cmdStr << std::endl;
     if (SendString(cmdStr.c_str(), CRTPacket::PacketCommand))
     {
-        
         CRTPacket::EPacketType eType;
 
         while (Receive(eType, true, timeout) == CNetwork::ResponseType::success)
@@ -6319,7 +6317,6 @@ bool CRTProtocol::SendCommand(const std::string& cmdStr, std::string& commandRes
             {
                 const auto commandResponseArr = mpoRTPacket->GetCommandString();
                 commandResponseStr = (commandResponseArr != nullptr ? std::string(commandResponseArr) : "");
-                std::cout  << commandResponseArr << std::endl;
                 return true;
             }
             if (eType == CRTPacket::PacketError)
