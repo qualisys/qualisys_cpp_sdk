@@ -4664,6 +4664,17 @@ void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSett
     }
 }
 
+void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
+{
+    analogSettings.clear();
+    analogSettings.resize(mvsAnalogDeviceSettings.size());
+
+    for (int i = 0; i < mvsAnalogDeviceSettings.size(); i++)
+    {
+        analogSettings.at(i) = mvsAnalogDeviceSettings.at(i);
+    }
+}
+
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
     bool& bStartOnExtTrig, bool& startOnTrigNO, bool& startOnTrigNC, bool& startOnTrigSoftware,

@@ -910,3 +910,48 @@ TEST_CASE("GetSettingsEyeTrackerTest")
     CHECK_EQ(240.0f, eyeTrackerSettings[0].frequency);
     CHECK_EQ(true, eyeTrackerSettings[0].hwSync);
 }
+
+namespace
+{
+    bool VerifySettingsAnalog(const std::vector<CRTProtocol::SAnalogDevice>& analogSettings)
+    {
+        std::vector<std::string> expectedLabels = { "fx", "fy", "fz", "mx", "my", "mz", "trigger", "aux", "zero", "sync" };
+        std::vector<std::string> expectedUnits = { "newtons", "newtons", "newtons", "newtonmetre", "newtonmetre", "newtonmetre", "", "", "", "" };
+
+        CHECK_EQ(1, analogSettings.size());
+
+        CHECK_EQ(1u, analogSettings[0].nDeviceID);
+        CHECK_EQ(10u, analogSettings[0].nChannels);
+        CHECK_EQ("Force plate 1", analogSettings[0].oName);
+        for (int i = 0; i < analogSettings[0].voLabels.size(); i++)
+        {
+            CHECK_EQ(expectedLabels[i], analogSettings[0].voLabels[i]);
+            CHECK_EQ(expectedUnits[i], analogSettings[0].voUnits[i]);
+        }
+        CHECK_EQ(100u, analogSettings[0].nFrequency);
+        CHECK_EQ("", analogSettings[0].oUnit);
+        CHECK_EQ(0.0f, analogSettings[0].fMinRange);
+        CHECK_EQ(0.0f, analogSettings[0].fMaxRange);
+
+        return true;
+    }
+}
+
+TEST_CASE("GetSettingsAnalogTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters Analog", qualisys_cpp_sdk::xml_test_data::GetAnalogSettingsTest, CRTPacket::PacketXML);
+
+    bool bDataAvailable = true;
+
+    if (!protocol->ReadAnalogSettings(bDataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    std::vector<CRTProtocol::SAnalogDevice> analogSettings;
+    protocol->GetAnalogSettings(analogSettings);
+
+    CHECK_EQ(true, VerifySettingsAnalog(analogSettings));
+}
