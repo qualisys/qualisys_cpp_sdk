@@ -1,5 +1,7 @@
-#include "../Network.h"
+#pragma once
 
+#include "../Network.h"
+#include "../RTProtocol.h"
 #include <doctest/doctest.h>
 #include <tinyxml2.h>
 
@@ -176,6 +178,28 @@ namespace qualisys_cpp_sdk
             docActual.Print(&printer2);
 
             return strcmp(printer1.CStr(), printer2.CStr()) == 0;
+        }
+
+        struct TestContext
+        {
+            std::unique_ptr<CRTProtocol> mRTProtocol;
+            qualisys_cpp_sdk::test_utils::DummyXmlNetwork* mNetwork;
+        };
+
+        inline TestContext CreateTestContext()
+        {
+            auto networkDummy = new qualisys_cpp_sdk::test_utils::DummyXmlNetwork{};
+
+            auto protocol = std::make_unique<CRTProtocol>();
+
+            protocol->OverrideNetwork(networkDummy);
+
+            if (!protocol->Connect(""))
+            {
+                FAIL(protocol->GetErrorString());
+            }
+
+            return { std::move(protocol), networkDummy };
         }
     }
 }

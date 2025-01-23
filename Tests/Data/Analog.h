@@ -1,0 +1,61 @@
+#pragma once
+namespace qualisys_cpp_sdk::tests::data
+{ 
+
+    inline const char* GetAnalogSettingsTest = R"XMLDATA(
+<QTM_Parameters_Ver_1.25>
+    <Analog>
+        <Device>
+            <Device_ID>1</Device_ID>
+            <Device_Name>Force plate 1</Device_Name>
+            <Channels>10</Channels>
+            <Frequency>100</Frequency>
+            <Range>
+                <Min>0.000000</Min>
+                <Max>0.000000</Max>
+            </Range>
+            <Channel>
+                <Label>fx</Label>
+                <Unit>newtons</Unit>
+            </Channel>
+            <Channel>
+                <Label>fy</Label>
+                <Unit>newtons</Unit>
+            </Channel>
+            <Channel>
+                <Label>fz</Label>
+                <Unit>newtons</Unit>
+            </Channel>
+            <Channel>
+                <Label>mx</Label>
+                <Unit>newtonmetre</Unit>
+            </Channel>
+            <Channel>
+                <Label>my</Label>
+                <Unit>newtonmetre</Unit>
+            </Channel>
+            <Channel>
+                <Label>mz</Label>
+                <Unit>newtonmetre</Unit>
+            </Channel>
+            <Channel>
+                <Label>trigger</Label>
+                <Unit/>
+            </Channel>
+            <Channel>
+                <Label>aux</Label>
+                <Unit/>
+            </Channel>
+            <Channel>
+                <Label>zero</Label>
+                <Unit/>
+            </Channel>
+            <Channel>
+                <Label>sync</Label>
+                <Unit/>
+            </Channel>
+        </Device>
+    </Analog>
+</QTM_Parameters_Ver_1.25>
+)XMLDATA";
+}
