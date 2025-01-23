@@ -673,7 +673,7 @@ namespace
     }
 }
 
-TEST_CASE("ReadSettings3DTest")
+TEST_CASE("GetSettings3DTest")
 {
     auto [protocol, network] = CreateTestContext();
 
@@ -686,7 +686,6 @@ TEST_CASE("ReadSettings3DTest")
         FAIL(protocol->GetErrorString());
     }
 
-
     CRTProtocol::EAxis axisUpwards = CRTProtocol::EAxis::ZNeg;
     std::string calibrationTime = "";
     std::vector<CRTProtocol::SSettings3DLabel> labels3D;
@@ -698,4 +697,55 @@ TEST_CASE("ReadSettings3DTest")
     CHECK_EQ("2019-09-17 16:00:43", calibrationTime);
     CHECK_EQ(true, Verify3DLabels(labels3D));
     CHECK_EQ(true, Verify3DBones(bones));
+}
+
+namespace
+{
+    bool VerifySettings6DOF(std::vector<CRTProtocol::SSettings6DOFBody>& settings6DOF)
+    {
+        CHECK_EQ(6, settings6DOF.size());
+
+        std::vector<std::string> expectedNames = {
+            "Eye Tracker_refined", "Table", "Screen2",
+            "Cup", "Phone", "Screen1"
+        };
+        std::vector<std::uint32_t> expectedColors = { 65280, 16711680, 16711935, 65535, 16776960, 127 };
+        std::vector<float> expectedMaxResiduals = { 20.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f };
+        std::vector<float> expectedBoneLengthTolerances = { 20.0f, 10.0f, 10.0f, 10.0f, 10.0f, 10.0f };
+        for (int i = 0; i < settings6DOF.size(); i++)
+        {
+            CHECK_EQ(settings6DOF[i].name, expectedNames[i]);
+            CHECK_EQ(settings6DOF[i].enabled, true);
+            CHECK_EQ(settings6DOF[i].color, expectedColors[i]);
+            CHECK_EQ(settings6DOF[i].filterPreset, "No filter");
+            CHECK_EQ(settings6DOF[i].maxResidual, expectedMaxResiduals[i]);
+            CHECK_EQ(settings6DOF[i].minMarkersInBody, 3);
+            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
+            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
+        }
+    }
+}
+
+TEST_CASE("GetSettings6DOFTest")
+{
+    auto [protocol, network] = CreateTestContext();
+
+    network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::xml_test_data::Get6DSettingsTest, CRTPacket::PacketXML);
+
+    bool bDataAvailable = true;
+    
+    if (!protocol->Read6DOFSettings(bDataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    std::vector<CRTProtocol::SSettings6DOFBody> settings6DOF;
+
+    protocol->Get6DOFBodySettings(settings6DOF);
+    volatile char breaker = 1;
+
+    //CHECK_EQ(CRTProtocol::EAxis::ZPos, axisUpwards);
+    //CHECK_EQ("2019-09-17 16:00:43", calibrationTime);
+    //CHECK_EQ(true, Verify3DLabels(labels3D));
+    //CHECK_EQ(true, Verify3DBones(bones));
 }
