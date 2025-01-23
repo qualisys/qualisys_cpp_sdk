@@ -927,7 +927,7 @@ R"XMLDATA(
 <QTM_Parameters_Ver_1.25>
     <The_6D>
         <Body>
-            <Name>Eye Tracker_refined</Name>
+            <Name>refined</Name>
             <Enabled>true</Enabled>
             <Color R="0" G="255" B="0"/>
             <MaximumResidual>20.000000</MaximumResidual>
@@ -935,19 +935,19 @@ R"XMLDATA(
             <BoneLengthTolerance>20.000000</BoneLengthTolerance>
             <Filter Preset="No filter"/>
             <Mesh>
-                <Name/>
+                <Name>Arqus.obj</Name>
                 <Position X="0.000000" Y="0.000000" Z="0.000000"/>
                 <Rotation X="0.000000" Y="0.000000" Z="0.000000"/>
-                <Scale>1.000000</Scale>
+                <Scale>0.010000</Scale>
                 <Opacity>1.000000</Opacity>
             </Mesh>
             <Points>
-                <Point X="-67.927157" Y="29.810079" Z="-1.592971" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 1"/>
-                <Point X="-95.023059" Y="1.742391" Z="-19.541355" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 2"/>
-                <Point X="-90.017171" Y="19.888814" Z="-57.494654" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 3"/>
-                <Point X="68.316106" Y="29.173523" Z="-1.829020" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 4"/>
-                <Point X="95.027245" Y="1.474449" Z="-19.171870" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 5"/>
-                <Point X="89.624036" Y="20.690744" Z="-57.450130" Virtual="0" PhysicalId="0" Name="Eye Tracker Layout 3 - 6"/>
+                <Point X="-67.927157" Y="29.810079" Z="-1.592971" Virtual="0" PhysicalId="0" Name="Layout 3 - 1"/>
+                <Point X="-95.023059" Y="1.742391" Z="-19.541355" Virtual="0" PhysicalId="0" Name="Layout 3 - 2"/>
+                <Point X="-90.017171" Y="19.888814" Z="-57.494654" Virtual="0" PhysicalId="0" Name="Layout 3 - 3"/>
+                <Point X="68.316106" Y="29.173523" Z="-1.829020" Virtual="0" PhysicalId="0" Name="Layout 3 - 4"/>
+                <Point X="95.027245" Y="1.474449" Z="-19.171870" Virtual="0" PhysicalId="0" Name="Layout 3 - 5"/>
+                <Point X="89.624036" Y="20.690744" Z="-57.450130" Virtual="0" PhysicalId="0" Name="Layout 3 - 6"/>
             </Points>
             <Data_origin X="0.000000" Y="0.000000" Z="0.000000" Relative_body="1">0</Data_origin>
             <Data_orientation R11="1.000000" R12="0.000000" R13="0.000000" R21="0.000000" R22="1.000000" R23="0.000000" R31="0.000000" R32="0.000000" R33="1.000000" Relative_body="1">0</Data_orientation>
