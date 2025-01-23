@@ -859,7 +859,6 @@ TEST_CASE("GetSettings6DOFTest")
     std::vector<CRTProtocol::SSettings6DOFBody> settings6DOF;
 
     protocol->Get6DOFBodySettings(settings6DOF);
-    volatile char breaker = 1;
 
     CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
 }
@@ -879,7 +878,6 @@ TEST_CASE("GetSettingsGazeVectorTest")
 
     std::vector<CRTProtocol::SGazeVector> gazeVectorSettings;
     protocol->GetGazeVectorSettings(gazeVectorSettings);
-    volatile char breaker = 1;
 
     CHECK_EQ("Gaze vector 1 (L)", gazeVectorSettings[0].name);
     CHECK_EQ(240.0f, gazeVectorSettings[0].frequency);
