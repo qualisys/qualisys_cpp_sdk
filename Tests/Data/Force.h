@@ -150,4 +150,33 @@ namespace qualisys_cpp_sdk::tests::data
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
 
+    inline const char* SetForceSettingsTest = R"XMLDATA(
+<QTM_Settings>
+    <Force>
+        <Plate>
+            <Plate_ID>999</Plate_ID>
+            <Corner1>
+                <X>1.000000</X>
+                <Y>2.000000</Y>
+                <Z>3.000000</Z>
+            </Corner1>
+            <Corner2>
+                <X>4.000000</X>
+                <Y>5.000000</Y>
+                <Z>6.000000</Z>
+            </Corner2>
+            <Corner3>
+                <X>7.000000</X>
+                <Y>8.000000</Y>
+                <Z>9.000000</Z>
+            </Corner3>
+            <Corner4>
+                <X>10.000000</X>
+                <Y>11.000000</Y>
+                <Z>12.000000</Z>
+            </Corner4>
+        </Plate>
+    </Force>
+</QTM_Settings>
+)XMLDATA";
 }

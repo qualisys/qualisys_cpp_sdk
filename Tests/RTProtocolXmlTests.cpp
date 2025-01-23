@@ -1053,6 +1053,29 @@ namespace
     }
 }
 
+TEST_CASE("SetSettingsForceTest")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    unsigned int nPlateID = 999;
+    CRTProtocol::SPoint psCorner1 = { 1.0f, 2.0f, 3.0f };
+    CRTProtocol::SPoint psCorner2 = { 4.0f, 5.0f, 6.0f };
+    CRTProtocol::SPoint psCorner3 = { 7.0f, 8.0f, 9.0f };
+    CRTProtocol::SPoint psCorner4 = { 10.0f, 11.0f, 12.0f };
+
+    if (!protocol->SetForceSettings(
+        nPlateID, &psCorner1, &psCorner2,
+        &psCorner3, &psCorner4))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    auto testData = network->ReadSentData();
+    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetForceSettingsTest, network->ReadSentData().data()));
+}
+
 TEST_CASE("GetSettingsForceTest")
 {
     auto [protocol, network] = utils::CreateTestContext();
