@@ -4,7 +4,6 @@
 #include "../RTProtocol.h"
 #include <doctest/doctest.h>
 #include <tinyxml2.h>
-
 #include <optional>
 #include <sstream>
 #include <vector>
@@ -23,36 +22,37 @@ namespace qualisys_cpp_sdk::tests::utils
         }
     };
 
-    class DummyXmlNetwork : public INetwork {
+    class DummyXmlNetwork : public INetwork
+    {
         bool mConnected = false;
         std::stringstream mStringStream;
         std::stringstream mOutputStream;
         std::vector<MessageFilter> mMessageAndResponses;
 
     public:
-        bool Connect(const char* pServerAddr, unsigned short nPort) override
+        bool Connect(const char*, unsigned short) override
         {
             QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
-            PrepareResponse("Version ", std::string{ "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION) }, CRTPacket::EPacketType::PacketCommand);
+            PrepareResponse("Version ", std::string{
+                                "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION)
+                            }, CRTPacket::EPacketType::PacketCommand);
             mConnected = true;
             return mConnected;
         }
-        void Disconnect() override
-        {
-        }
+
+        void Disconnect() override {}
 
         bool Connected() const override
         {
             return mConnected;
         }
 
-        bool CreateUDPSocket(unsigned short& nUDPPort, bool bBroadcast) override
+        bool CreateUDPSocket(unsigned short&, bool) override
         {
             return true;
         }
 
-        Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int timeoutMicroseconds,
-            unsigned* ipAddr) override
+        Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int, unsigned*) override
         {
             auto start = mStringStream.tellg();
             auto sizeRead = mStringStream.readsome(rtDataBuff, bHeader ? 8 : nDataBufSize);
@@ -63,8 +63,7 @@ namespace qualisys_cpp_sdk::tests::utils
             };
         }
 
-        Response ReceiveUdpBroadcast(char* rtDataBuff, int nDataBufSize, int timeoutMicroseconds,
-            unsigned* ipAddr) override
+        Response ReceiveUdpBroadcast(char*, int, int, unsigned*) override
         {
             return Response{
                 ResponseType::timeout,
@@ -76,7 +75,7 @@ namespace qualisys_cpp_sdk::tests::utils
         {
             std::string sendText(pSendBuf + 8, nSize - 8);
 
-            for (const auto x : mMessageAndResponses )
+            for (const auto x : mMessageAndResponses)
             {
                 if (x.Compare(sendText))
                 {
@@ -94,7 +93,7 @@ namespace qualisys_cpp_sdk::tests::utils
             return mOutputStream.str();
         }
 
-        bool SendUDPBroadcast(const char* pSendBuf, int nSize, short nPort, unsigned nFilterAddr) override
+        bool SendUDPBroadcast(const char*, int, short, unsigned) override
         {
             return true;
         }
@@ -109,7 +108,7 @@ namespace qualisys_cpp_sdk::tests::utils
             return 0;
         }
 
-        bool IsLocalAddress(unsigned nAddr) const override
+        bool IsLocalAddress(unsigned) const override
         {
             return true;
         }
@@ -139,16 +138,17 @@ namespace qualisys_cpp_sdk::tests::utils
             header[7] = 0;
             header[6] = 0;
             header[5] = 0;
-            header[4] = p;
+            header[4] = static_cast<char>(p);
 
             mStringStream.write(header, headerSize);
             mStringStream.write(str, dataSize);
         }
 
-        void PrepareResponse(const std::string& message, const std::string& response, const CRTPacket::EPacketType responsePacketType)
+        void PrepareResponse(const std::string& message, const std::string& response,
+                             const CRTPacket::EPacketType responsePacketType)
         {
             mMessageAndResponses.push_back(MessageFilter{
-            message,
+                message,
                 response,
                 responsePacketType
             });
@@ -159,7 +159,7 @@ namespace qualisys_cpp_sdk::tests::utils
     {
         tinyxml2::XMLDocument docExpected, docActual;
 
-        if (auto error = docExpected.Parse(expected);  error != tinyxml2::XML_SUCCESS)
+        if (auto error = docExpected.Parse(expected); error != tinyxml2::XML_SUCCESS)
         {
             return false;
         }
@@ -197,6 +197,6 @@ namespace qualisys_cpp_sdk::tests::utils
             FAIL(protocol->GetErrorString());
         }
 
-        return { std::move(protocol), networkDummy };
+        return {std::move(protocol), networkDummy};
     }
 }
