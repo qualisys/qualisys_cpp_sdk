@@ -23,24 +23,7 @@ TEST_CASE("GetCalibrationTest")
     CRTProtocol::SCalibration actualCalibration;
     protocol->GetCalibrationSettings(actualCalibration);
 
-    CRTProtocol::SCalibrationCamera expectedCamera {
-        true,
-        true,
-        "calibrated",
-        100,
-        .01,
-        12345,
-        "Test Camera",
-        180,
-        {1,2,3,4},
-        {5,6,7,8},
-        {9, 10, 11, 12},
-        {13, 14, 15, 16},
-        {.1, .2, .3, .4, .5, .6, .7, .8, .9, .10, .11, .12 },
-        { .13, .14, .15, .16, .17, .18, .19, .20, .21, .22, .23, .24, .25, .26, .27 }
-    };
-
-    CRTProtocol::SCalibration expectedCalibration {
+    CRTProtocol::SCalibration expectedCalibration{
         true,
         "source.qca",
         "Calibration carried out: 2019-09-17 16:00:43",
@@ -56,7 +39,24 @@ TEST_CASE("GetCalibrationTest")
         41.064426,
         std::numeric_limits<float>::quiet_NaN(),
         0,
-        {expectedCamera}
+        {
+            CRTProtocol::SCalibrationCamera {
+                true,
+                true,
+                "calibrated",
+                100,
+                .01,
+                12345,
+                "Test Camera",
+                180,
+                {1,2,3,4},
+                {5,6,7,8},
+                {9, 10, 11, 12},
+                {13, 14, 15, 16},
+                {.1, .2, .3, .4, .5, .6, .7, .8, .9, .10, .11, .12 },
+                { .13, .14, .15, .16, .17, .18, .19, .20, .21, .22, .23, .24, .25, .26, .27 }
+            }
+        }
     };
 
     CHECK_EQ(expectedCalibration.calibrated, actualCalibration.calibrated);
@@ -74,66 +74,58 @@ TEST_CASE("GetCalibrationTest")
     CHECK_EQ(expectedCalibration.result_min_max_diff, actualCalibration.result_min_max_diff);
     CHECK(std::isnan(actualCalibration.refit_residual));
     CHECK_EQ(expectedCalibration.result_consecutive, actualCalibration.result_consecutive);
-
     CHECK_EQ(expectedCalibration.cameras.size(), actualCalibration.cameras.size());
 
-    const auto compareFov = [](const CRTProtocol::SCalibrationFov& l, const CRTProtocol::SCalibrationFov& r )
-    {
-        CHECK_EQ(l.bottom, r.bottom);
-        CHECK_EQ(l.left, r.left);
-        CHECK_EQ(l.right, r.right);
-        CHECK_EQ(l.top, r.top);
-    };
+    const auto checkFov = [](const CRTProtocol::SCalibrationFov& l, const CRTProtocol::SCalibrationFov& r) {
+            CHECK_EQ(l.bottom, r.bottom);
+            CHECK_EQ(l.left, r.left);
+            CHECK_EQ(l.right, r.right);
+            CHECK_EQ(l.top, r.top);
+        };
 
-    const auto compareTransform = [](const CRTProtocol::SCalibrationTransform& l, const CRTProtocol::SCalibrationTransform& r) -> void
-    {
-        const auto [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12] = l;
-        const auto [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12] = r;
-        CHECK_EQ(l1, r1);
-        CHECK_EQ(l2, r2);
-        CHECK_EQ(l3, r3);
-        CHECK_EQ(l4, r4);
-        CHECK_EQ(l5, r5);
-        CHECK_EQ(l6, r6);
-        CHECK_EQ(l7, r7);
-        CHECK_EQ(l8, r8);
-        CHECK_EQ(l9, r9);
-        CHECK_EQ(l10, r10);
-        CHECK_EQ(l11, r11);
-        CHECK_EQ(l12, r12);
-    };
+    const auto checkTransform = [](const CRTProtocol::SCalibrationTransform& l, const CRTProtocol::SCalibrationTransform& r) -> void {
+            CHECK_EQ(l.x, r.x);
+            CHECK_EQ(l.y, r.y);
+            CHECK_EQ(l.z, r.z);
+            CHECK_EQ(l.r11, r.r11);
+            CHECK_EQ(l.r12, r.r12);
+            CHECK_EQ(l.r13, r.r13);
+            CHECK_EQ(l.r21, r.r21);
+            CHECK_EQ(l.r22, r.r22);
+            CHECK_EQ(l.r23, r.r23);
+            CHECK_EQ(l.r31, r.r31);
+            CHECK_EQ(l.r32, r.r32);
+            CHECK_EQ(l.r33, r.r33);
+        };
 
-    const auto compareIntrinsic = [](const CRTProtocol::SCalibrationIntrinsic& l, const CRTProtocol::SCalibrationIntrinsic& r) -> void
-    {
-        const auto [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15] = l;
-        const auto [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15] = r;
-        CHECK_EQ(l1, r1);
-        CHECK_EQ(l2, r2);
-        CHECK_EQ(l3, r3);
-        CHECK_EQ(l4, r4);
-        CHECK_EQ(l5, r5);
-        CHECK_EQ(l6, r6);
-        CHECK_EQ(l7, r7);
-        CHECK_EQ(l8, r8);
-        CHECK_EQ(l9, r9);
-        CHECK_EQ(l10, r10);
-        CHECK_EQ(l11, r11);
-        CHECK_EQ(l12, r12);
-        CHECK_EQ(l13, r13);
-        CHECK_EQ(l14, r14);
-        CHECK_EQ(l15, r15);
-    };
+    const auto checkIntrinsic = [](const CRTProtocol::SCalibrationIntrinsic& l, const CRTProtocol::SCalibrationIntrinsic& r) -> void {
+            CHECK_EQ(l.focal_length, r.focal_length);
+            CHECK_EQ(l.sensor_min_u, r.sensor_min_u);
+            CHECK_EQ(l.sensor_max_u, r.sensor_max_u);
+            CHECK_EQ(l.sensor_min_v, r.sensor_min_v);
+            CHECK_EQ(l.sensor_max_v, r.sensor_max_v);
+            CHECK_EQ(l.focal_length_u, r.focal_length_u);
+            CHECK_EQ(l.focal_length_v, r.focal_length_v);
+            CHECK_EQ(l.center_point_u, r.center_point_u);
+            CHECK_EQ(l.center_point_v, r.center_point_v);
+            CHECK_EQ(l.skew, r.skew);
+            CHECK_EQ(l.radial_distortion_1, r.radial_distortion_1);
+            CHECK_EQ(l.radial_distortion_2, r.radial_distortion_2);
+            CHECK_EQ(l.radial_distortion_3, r.radial_distortion_3);
+            CHECK_EQ(l.tangental_distortion_1, r.tangental_distortion_1);
+            CHECK_EQ(l.tangental_distortion_2, r.tangental_distortion_2);
+        };
 
     for (std::size_t i = 0; i < expectedCalibration.cameras.size(); ++i)
     {
-        const auto& exectedCamera = expectedCalibration.cameras[i];
+        const auto& expectedCamera = expectedCalibration.cameras[i];
         const auto& actualCamera = actualCalibration.cameras[i];
 
-        compareFov(exectedCamera.fov_marker, actualCamera.fov_marker);
-        compareFov(exectedCamera.fov_video, actualCamera.fov_video);
-        compareFov(exectedCamera.fov_marker_max, actualCamera.fov_marker_max);
-        compareFov(exectedCamera.fov_video_max, actualCamera.fov_video_max);
-        compareTransform(exectedCamera.transform, actualCamera.transform);
-        compareIntrinsic(expectedCamera.intrinsic, actualCamera.intrinsic);
+        checkFov(expectedCamera.fov_marker, actualCamera.fov_marker);
+        checkFov(expectedCamera.fov_video, actualCamera.fov_video);
+        checkFov(expectedCamera.fov_marker_max, actualCamera.fov_marker_max);
+        checkFov(expectedCamera.fov_video_max, actualCamera.fov_video_max);
+        checkTransform(expectedCamera.transform, actualCamera.transform);
+        checkIntrinsic(expectedCamera.intrinsic, actualCamera.intrinsic);
     }
 }
