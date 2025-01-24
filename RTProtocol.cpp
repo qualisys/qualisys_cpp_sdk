@@ -4677,9 +4677,7 @@ void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
 
 void CRTProtocol::GetForceSettings(SSettingsForce& forceSettings)
 {
-    forceSettings.oUnitForce = msForceSettings.oUnitForce;
-    forceSettings.oUnitLength = msForceSettings.oUnitLength;
-    forceSettings.vsForcePlates = msForceSettings.vsForcePlates;
+    forceSettings = msForceSettings;
 }
 
 void CRTProtocol::GetGeneralSettings(

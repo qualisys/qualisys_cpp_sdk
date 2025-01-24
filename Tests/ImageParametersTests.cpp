@@ -15,7 +15,7 @@ TEST_CASE("GetImageCameraTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, dataAvailable);
+    CHECK(dataAvailable);
 
     unsigned int id = 0xffffffff;
     bool enabled = false;
@@ -68,5 +68,5 @@ TEST_CASE("SetImageSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetImageSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetImageSettingsTest, network->ReadSentData().data()));
 }

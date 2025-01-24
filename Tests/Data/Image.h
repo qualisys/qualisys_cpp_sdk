@@ -19,7 +19,8 @@ namespace qualisys_cpp_sdk::tests::data
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
 
-    inline const char* SetImageSettingsTest =  R"XMLDATA(<QTM_Settings>
+    inline const char* SetImageSettingsTest =  R"XMLDATA(
+<QTM_Settings>
 <Image>
     <Camera>
         <ID>1</ID>

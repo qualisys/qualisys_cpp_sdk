@@ -25,10 +25,10 @@ namespace qualisys_cpp_sdk::tests::utils
 
     class DummyXmlNetwork : public INetwork
     {
-        bool mConnected = false;
-        std::stringstream mStringStream;
-        std::stringstream mOutputStream;
-        std::vector<MessageFilter> mMessageAndResponses;
+        bool connected = false;
+        std::stringstream stringStream;
+        std::stringstream outputStream;
+        std::vector<MessageFilter> messageAndResponses;
 
     public:
         bool Connect(const char*, unsigned short) override
@@ -37,15 +37,15 @@ namespace qualisys_cpp_sdk::tests::utils
             PrepareResponse("Version ", std::string{
                                 "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION)
                             }, CRTPacket::EPacketType::PacketCommand);
-            mConnected = true;
-            return mConnected;
+            connected = true;
+            return connected;
         }
 
         void Disconnect() override {}
 
         bool Connected() const override
         {
-            return mConnected;
+            return connected;
         }
 
         bool CreateUDPSocket(unsigned short&, bool) override
@@ -55,9 +55,9 @@ namespace qualisys_cpp_sdk::tests::utils
 
         Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int, unsigned*) override
         {
-            auto start = mStringStream.tellg();
-            auto sizeRead = mStringStream.readsome(rtDataBuff, bHeader ? 8 : nDataBufSize);
-            mStringStream.seekg(start + sizeRead);
+            auto start = stringStream.tellg();
+            auto sizeRead = stringStream.readsome(rtDataBuff, bHeader ? 8 : nDataBufSize);
+            stringStream.seekg(start + sizeRead);
             return Response{
                 sizeRead > 0 ? ResponseType::success : ResponseType::timeout,
                 static_cast<int>(sizeRead),
@@ -76,7 +76,7 @@ namespace qualisys_cpp_sdk::tests::utils
         {
             std::string sendText(pSendBuf + 8, nSize - 8);
 
-            for (const auto x : mMessageAndResponses)
+            for (const auto x : messageAndResponses)
             {
                 if (x.Compare(sendText))
                 {
@@ -84,14 +84,14 @@ namespace qualisys_cpp_sdk::tests::utils
                     break;
                 }
             }
-            mOutputStream.str(std::string{});
-            mOutputStream.write(sendText.data(), static_cast<long long>(sendText.length() + 1));
+            outputStream.str(std::string{});
+            outputStream.write(sendText.data(), static_cast<long long>(sendText.length() + 1));
             return true;
         }
 
         std::string ReadSentData() const
         {
-            return mOutputStream.str();
+            return outputStream.str();
         }
 
         bool SendUDPBroadcast(const char*, int, short, unsigned) override
@@ -141,14 +141,14 @@ namespace qualisys_cpp_sdk::tests::utils
             header[5] = 0;
             header[4] = static_cast<char>(p);
 
-            mStringStream.write(header, headerSize);
-            mStringStream.write(str, dataSize);
+            stringStream.write(header, headerSize);
+            stringStream.write(str, dataSize);
         }
 
         void PrepareResponse(const std::string& message, const std::string& response,
                              const CRTPacket::EPacketType responsePacketType)
         {
-            mMessageAndResponses.push_back(MessageFilter{
+            messageAndResponses.push_back(MessageFilter{
                 message,
                 response,
                 responsePacketType

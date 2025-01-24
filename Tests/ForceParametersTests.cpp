@@ -7,15 +7,6 @@ namespace
 {
     bool VerifyForceSettings(const CRTProtocol::SSettingsForce& forceSettings)
     {
-        float defaultCalibrationMatrix[12][12];
-        for (int i = 0; i < 12; i++)
-        {
-            for (int j = 0; j < 12; j++)
-            {
-                defaultCalibrationMatrix[i][j] = -107374176.0f;
-            }
-        }
-
         float fVal = -107374176.0f;
 
         std::vector<CRTProtocol::SForcePlate> expectedPlates = {
@@ -146,7 +137,7 @@ TEST_CASE("SetSettingsForceTest")
     }
 
     auto testData = network->ReadSentData();
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetForceSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetForceSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetSettingsForceTest")
@@ -166,5 +157,5 @@ TEST_CASE("GetSettingsForceTest")
     CRTProtocol::SSettingsForce forceSettings;
     protocol->GetForceSettings(forceSettings);
 
-    CHECK_EQ(true, VerifyForceSettings(forceSettings));
+    CHECK(VerifyForceSettings(forceSettings));
 }

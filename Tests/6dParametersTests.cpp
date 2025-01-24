@@ -131,16 +131,16 @@ namespace
 
         for (int i = 0; i < settings6DOF.size(); i++)
         {
-            CHECK_EQ(settings6DOF[i].name, expectedNames[i]);
-            CHECK_EQ(settings6DOF[i].enabled, true);
-            CHECK_EQ(settings6DOF[i].color, expectedColors[i]);
-            CHECK_EQ(settings6DOF[i].filterPreset, "No filter");
-            CHECK_EQ(settings6DOF[i].maxResidual, expectedMaxResiduals[i]);
-            CHECK_EQ(settings6DOF[i].minMarkersInBody, 3);
-            CHECK_EQ(settings6DOF[i].boneLengthTolerance, expectedBoneLengthTolerances[i]);
-            CHECK_EQ(Settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]), true);
-            CHECK_EQ(OriginEqualityOperator(settings6DOF[i].origin, defaultOrigin), true);
-            CHECK_EQ(BodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]), true);
+            CHECK_EQ(expectedNames[i], settings6DOF[i].name);
+            CHECK_EQ(true, settings6DOF[i].enabled);
+            CHECK_EQ(expectedColors[i], settings6DOF[i].color);
+            CHECK_EQ("No filter", settings6DOF[i].filterPreset);
+            CHECK_EQ(expectedMaxResiduals[i], settings6DOF[i].maxResidual);
+            CHECK_EQ(3, settings6DOF[i].minMarkersInBody);
+            CHECK_EQ(expectedBoneLengthTolerances[i], settings6DOF[i].boneLengthTolerance);
+            CHECK(Settings6DMeshEqualityOperator(settings6DOF[i].mesh, expectedMeshes[i]));
+            CHECK(OriginEqualityOperator(settings6DOF[i].origin, defaultOrigin));
+            CHECK(BodyPointsVectorEqualityOperator(settings6DOF[i].points, expectedPoints[i]));
         }
 
         return true;
@@ -173,7 +173,7 @@ TEST_CASE("SetSettings6DOFTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::Set6DSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::Set6DSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetSettings6DOFTest")
@@ -194,5 +194,5 @@ TEST_CASE("GetSettings6DOFTest")
 
     protocol->Get6DOFBodySettings(settings6DOF);
 
-    CHECK_EQ(true, VerifySettings6DOF(settings6DOF));
+    CHECK(VerifySettings6DOF(settings6DOF));
 }

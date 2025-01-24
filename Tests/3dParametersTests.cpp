@@ -100,6 +100,6 @@ TEST_CASE("GetSettings3DTest")
 
     CHECK_EQ(CRTProtocol::EAxis::ZPos, axisUpwards);
     CHECK_EQ("2019-09-17 16:00:43", calibrationTime);
-    CHECK_EQ(true, Verify3DLabels(labels3D));
-    CHECK_EQ(true, Verify3DBones(bones));
+    CHECK(Verify3DLabels(labels3D));
+    CHECK(Verify3DBones(bones));
 }
