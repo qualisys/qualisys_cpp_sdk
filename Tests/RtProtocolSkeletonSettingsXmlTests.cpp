@@ -1,7 +1,5 @@
-#include <queue>
 #include <stack>
 
-#include "../Network.h"
 #include "../RTProtocol.h"
 #include "../RTPacket.h"
 #include "Data/Skeleton.h"
@@ -102,7 +100,7 @@ TEST_CASE("SetSkeletonSettings")
     }
 
     auto result = network->ReadSentData();
-    
+
     using namespace qualisys_cpp_sdk::tests;
 
     CHECK(utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet, result.data()));
@@ -113,7 +111,8 @@ TEST_CASE("GetSkeletonSettings")
 {
     auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet, CRTPacket::PacketXML);
+    network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet,
+                             CRTPacket::PacketXML);
 
     using namespace qualisys_cpp_sdk::tests;
 
@@ -130,7 +129,8 @@ TEST_CASE("GetSkeletonSettings")
     auto expectedSkeletons = CreateDummySkeletons();
     CHECK_EQ(expectedSkeletons.size(), actualSkeletons.size());
 
-    auto testSegment = [](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& expectedSegment, const CRTProtocol::SSettingsSkeletonSegmentHierarchical& actualSegment)
+    auto testSegment = [](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& expectedSegment,
+                          const CRTProtocol::SSettingsSkeletonSegmentHierarchical& actualSegment)
     {
         CHECK_EQ(expectedSegment.name, actualSegment.name);
 
@@ -202,7 +202,7 @@ TEST_CASE("GetSkeletonSettings")
         CHECK_EQ(expectedSkeleton.name, skeleton.name);
         CHECK_EQ(expectedSkeleton.scale, skeleton.scale);
 
-        stack.push({ expectedSkeleton.rootSegment, skeleton.rootSegment });
+        stack.push({expectedSkeleton.rootSegment, skeleton.rootSegment});
     }
 
     while (!stack.empty())
@@ -214,7 +214,7 @@ TEST_CASE("GetSkeletonSettings")
 
         for (size_t i = 0; i < entry.expected.segments.size(); ++i)
         {
-            stack.push({entry.expected.segments[i], entry.actual.segments[i] });
+            stack.push({entry.expected.segments[i], entry.actual.segments[i]});
         }
     }
 }
