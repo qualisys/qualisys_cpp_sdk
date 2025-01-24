@@ -11,8 +11,6 @@ TEST_CASE("GetCalibrationTest")
 
     network->PrepareResponse("GetParameters Calibration", data::Calibration, CRTPacket::PacketXML);
 
-    bool bDataAvailable = true;
-
     if (!protocol->ReadCalibrationSettings())
     {
         FAIL(protocol->GetErrorString());
