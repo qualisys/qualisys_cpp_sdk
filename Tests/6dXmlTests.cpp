@@ -182,13 +182,13 @@ TEST_CASE("GetSettings6DOFTest")
 
     network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::tests::data::Get6DSettingsTest, CRTPacket::PacketXML);
 
-    bool bDataAvailable = true;
-    if (!protocol->Read6DOFSettings(bDataAvailable))
+    bool dataAvailable = true;
+    if (!protocol->Read6DOFSettings(dataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK(bDataAvailable);
+    CHECK(dataAvailable);
 
     std::vector<CRTProtocol::SSettings6DOFBody> settings6DOF;
 

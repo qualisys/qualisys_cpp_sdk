@@ -9,13 +9,13 @@ TEST_CASE("GetSettingsGazeVectorTest")
 
     network->PrepareResponse("GetParameters GazeVector", data::GetGazeVectorSettingsTest, CRTPacket::PacketXML);
 
-    bool bDataAvailable = true;
-    if (!protocol->ReadGazeVectorSettings(bDataAvailable))
+    bool dataAvailable = true;
+    if (!protocol->ReadGazeVectorSettings(dataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK(bDataAvailable);
+    CHECK(dataAvailable);
 
     std::vector<CRTProtocol::SGazeVector> gazeVectorSettings;
     protocol->GetGazeVectorSettings(gazeVectorSettings);

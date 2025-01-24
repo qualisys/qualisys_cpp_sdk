@@ -37,13 +37,13 @@ TEST_CASE("GetSettingsAnalogTest")
 
     network->PrepareResponse("GetParameters Analog", qualisys_cpp_sdk::tests::data::GetAnalogSettingsTest, CRTPacket::PacketXML);
 
-    bool bDataAvailable = true;
-    if (!protocol->ReadAnalogSettings(bDataAvailable))
+    bool dataAvailable = true;
+    if (!protocol->ReadAnalogSettings(dataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK(bDataAvailable);
+    CHECK(dataAvailable);
 
     std::vector<CRTProtocol::SAnalogDevice> analogSettings;
     protocol->GetAnalogSettings(analogSettings);

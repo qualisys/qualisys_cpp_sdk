@@ -155,13 +155,13 @@ TEST_CASE("GetSettingsForceTest")
 
     network->PrepareResponse("GetParameters Force", qualisys_cpp_sdk::tests::data::GetForceSettingsTest, CRTPacket::PacketXML);
 
-    bool bDataAvailable = true;
-    if (!protocol->ReadForceSettings(bDataAvailable))
+    bool dataAvailable = true;
+    if (!protocol->ReadForceSettings(dataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK(bDataAvailable);
+    CHECK(dataAvailable);
 
     CRTProtocol::SSettingsForce forceSettings;
     protocol->GetForceSettings(forceSettings);
