@@ -4303,46 +4303,54 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
     return true;
 }// ReadImageSettings
 
-bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalData)
+bool CRTProtocol::ReadSkeletonSettings(bool& dataAvailable, bool skeletonGlobalData)
 {
-    tinyxml2::XMLDocument xml;
-
+    tinyxml2::XMLDocument doc;
     dataAvailable = false;
 
     mSkeletonSettings.clear();
     mSkeletonSettingsHierarchical.clear();
 
-    if (!ReadSettings(skeletonGlobalData ? "Skeleton:global" : "Skeleton", xml))
+    // Load the XML document
+    if (!ReadSettings(skeletonGlobalData ? "Skeleton:global" : "Skeleton", doc))
     {
         return false;
     }
 
-    tinyxml2::XMLElement* root = xml.RootElement();
-    if (!root || std::string(root->Name()) != "Skeletons")
-    {
-        return false;
-    }
-
+    int segmentIndex;
     std::map<int, int> segmentIdIndexMap;
-    int segmentIndex = 0;
 
-    for (tinyxml2::XMLElement* skeletonElem = root->FirstChildElement("Skeleton");
-        skeletonElem != nullptr;
-        skeletonElem = skeletonElem->NextSiblingElement("Skeleton"))
+    // Access the root element
+    tinyxml2::XMLElement* root = doc.RootElement();
+    if (!root || strcmp(root->Name(), "QTM_Settings") != 0)
+    {
+        sprintf(maErrorStr, "Root element QTM_Settings not found");
+        return false;
+    }
+
+    // Navigate to Skeletons
+    tinyxml2::XMLElement* skeletonsElem = root->FirstChildElement("Skeletons");
+    if (!skeletonsElem)
+    {
+        sprintf(maErrorStr, "Skeletons element not found");
+        return false;
+    }
+
+    // Iterate through Skeleton elements
+    for (tinyxml2::XMLElement* skeletonElem = skeletonsElem->FirstChildElement("Skeleton"); skeletonElem; skeletonElem = skeletonElem->NextSiblingElement("Skeleton"))
     {
         SSettingsSkeletonHierarchical skeletonHierarchical;
         SSettingsSkeleton skeleton;
-        skeletonHierarchical.name = skeletonElem->Attribute("Name");
+        segmentIndex = 0;
+
+        // Skeleton name
+        const char* skeletonName = skeletonElem->Attribute("Name");
+        skeletonHierarchical.name = skeletonName ? skeletonName : "";
         skeleton.name = skeletonHierarchical.name;
 
-        tinyxml2::XMLElement* solverElem = skeletonElem->FirstChildElement("Solver");
-        if (solverElem && solverElem->GetText())
-        {
-            skeletonHierarchical.rootSegment.solver = solverElem->GetText();
-        }
-
+        // Scale
         tinyxml2::XMLElement* scaleElem = skeletonElem->FirstChildElement("Scale");
-        if (scaleElem && scaleElem->GetText())
+        if (scaleElem)
         {
             if (!ParseString(scaleElem->GetText(), skeletonHierarchical.scale))
             {
@@ -4351,125 +4359,114 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
             }
         }
 
+        // Segments
         tinyxml2::XMLElement* segmentsElem = skeletonElem->FirstChildElement("Segments");
         if (segmentsElem)
         {
-            std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
-                [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
+            // Define the recursive function
+            std::function<void(tinyxml2::XMLElement*, SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, int)> recurseSegments =
+                [&](tinyxml2::XMLElement* segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, int parentId)
                 {
-                    tinyxml2::XMLElement* segmentElem = segmentsElem->FirstChildElement("Segment");
-                    while (segmentElem)
+                    // Segment attributes
+                    const char* segmentName = segmentElem->Attribute("Name");
+                    segmentHierarchical.name = segmentName ? segmentName : "";
+
+                    if (!ParseString(segmentElem->Attribute("ID"), segmentHierarchical.id))
                     {
-                        segmentHierarchical.name = segmentElem->Attribute("Name");
-                        ParseString(segmentElem->Attribute("ID"), segmentHierarchical.id);
+                        sprintf(maErrorStr, "Segment ID parse error");
+                        return;
+                    }
 
-                        segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
+                    segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
-                        tinyxml2::XMLElement* solverElem = segmentElem->FirstChildElement("Solver");
-                        if (solverElem && solverElem->GetText())
+                    // Solver
+                    tinyxml2::XMLElement* solverElem = segmentElem->FirstChildElement("Solver");
+                    if (solverElem)
+                    {
+                        segmentHierarchical.solver = solverElem->GetText() ? solverElem->GetText() : "";
+                    }
+
+                    // Transform
+                    tinyxml2::XMLElement* transformElem = segmentElem->FirstChildElement("Transform");
+                    if (transformElem)
+                    {
+                        segmentHierarchical.position = ReadXMLPosition(*transformElem, "Position");
+                        segmentHierarchical.rotation = ReadXMLRotation(*transformElem, "Rotation");
+                    }
+
+                    // Default Transform
+                    tinyxml2::XMLElement* defaultTransformElem = segmentElem->FirstChildElement("DefaultTransform");
+                    if (defaultTransformElem)
+                    {
+                        segmentHierarchical.defaultPosition = ReadXMLPosition(*defaultTransformElem, "Position");
+                        segmentHierarchical.defaultRotation = ReadXMLRotation(*defaultTransformElem, "Rotation");
+                    }
+
+                    // DegreesOfFreedom
+                    tinyxml2::XMLElement* dofElem = segmentElem->FirstChildElement("DegreesOfFreedom");
+                    if (dofElem)
+                    {
+                        ReadXMLDegreesOfFreedom(*dofElem, "RotationX", segmentHierarchical.degreesOfFreedom);
+                        ReadXMLDegreesOfFreedom(*dofElem, "RotationY", segmentHierarchical.degreesOfFreedom);
+                        ReadXMLDegreesOfFreedom(*dofElem, "RotationZ", segmentHierarchical.degreesOfFreedom);
+                        ReadXMLDegreesOfFreedom(*dofElem, "TranslationX", segmentHierarchical.degreesOfFreedom);
+                        ReadXMLDegreesOfFreedom(*dofElem, "TranslationY", segmentHierarchical.degreesOfFreedom);
+                        ReadXMLDegreesOfFreedom(*dofElem, "TranslationZ", segmentHierarchical.degreesOfFreedom);
+                    }
+
+                    // Endpoint
+                    segmentHierarchical.endpoint = ReadXMLPosition(*segmentElem, "Endpoint");
+
+                    // Markers
+                    tinyxml2::XMLElement* markersElem = segmentElem->FirstChildElement("Markers");
+                    if (markersElem)
+                    {
+                        for (tinyxml2::XMLElement* markerElem = markersElem->FirstChildElement("Marker"); markerElem; markerElem = markerElem->NextSiblingElement("Marker"))
                         {
-                            segmentHierarchical.solver = solverElem->GetText();
+                            SMarker marker;
+                            marker.name = markerElem->Attribute("Name");
+                            marker.position = ReadXMLPosition(*markerElem, "Position");
+                            ParseString(markerElem->FirstChildElement("Weight")->GetText(), marker.weight);
+                            segmentHierarchical.markers.push_back(marker);
                         }
+                    }
 
-                        tinyxml2::XMLElement* transformElem = segmentElem->FirstChildElement("Transform");
-                        if (transformElem)
+                    // RigidBodies
+                    tinyxml2::XMLElement* rigidBodiesElem = segmentElem->FirstChildElement("RigidBodies");
+                    if (rigidBodiesElem)
+                    {
+                        for (tinyxml2::XMLElement* bodyElem = rigidBodiesElem->FirstChildElement("RigidBody"); bodyElem; bodyElem = bodyElem->NextSiblingElement("RigidBody"))
                         {
-                            segmentHierarchical.position = ReadXMLPosition(*transformElem, "Position");
-                            segmentHierarchical.rotation = ReadXMLRotation(*transformElem, "Rotation");
+                            SBody body;
+                            body.name = bodyElem->Attribute("Name");
+                            body.position = ReadXMLPosition(*bodyElem->FirstChildElement("Transform"), "Position");
+                            body.rotation = ReadXMLRotation(*bodyElem->FirstChildElement("Transform"), "Rotation");
+                            ParseString(bodyElem->FirstChildElement("Weight")->GetText(), body.weight);
+                            segmentHierarchical.bodies.push_back(body);
                         }
+                    }
 
-                        tinyxml2::XMLElement* defaultTransformElem = segmentElem->FirstChildElement("DefaultTransform");
-                        if (defaultTransformElem)
-                        {
-                            segmentHierarchical.defaultPosition = ReadXMLPosition(*defaultTransformElem, "Position");
-                            segmentHierarchical.defaultRotation = ReadXMLRotation(*defaultTransformElem, "Rotation");
-                        }
+                    // Push segment data
+                    SSettingsSkeletonSegment segment;
+                    segment.name = segmentHierarchical.name;
+                    segment.id = segmentHierarchical.id;
+                    segment.parentId = parentId;
+                    segment.parentIndex = parentId != -1 ? segmentIdIndexMap[parentId] : -1;
+                    segments.push_back(segment);
 
-                        tinyxml2::XMLElement* degreesOfFreedomElem = segmentElem->FirstChildElement("DegreesOfFreedom");
-                        if (degreesOfFreedomElem)
-                        {
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationX", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationY", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationZ", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationX", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationY", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationZ", segmentHierarchical.degreesOfFreedom);
-                        }
-
-                        segmentHierarchical.endpoint = ReadXMLPosition(*segmentElem, "Endpoint");
-
-                        tinyxml2::XMLElement* markersElem = segmentElem->FirstChildElement("Markers");
-                        if (markersElem)
-                        {
-                            for (tinyxml2::XMLElement* markerElem = markersElem->FirstChildElement("Marker");
-                                markerElem != nullptr;
-                                markerElem = markerElem->NextSiblingElement("Marker"))
-                            {
-                                SMarker marker;
-                                marker.name = markerElem->Attribute("Name");
-                                marker.weight = 1.0;
-                                tinyxml2::XMLElement* positionElem = markerElem->FirstChildElement("Position");
-                                if (positionElem)
-                                {
-                                    marker.position = ReadXMLPosition(*positionElem, "Position");
-                                }
-                                tinyxml2::XMLElement* weightElem = markerElem->FirstChildElement("Weight");
-                                if (weightElem && weightElem->GetText())
-                                {
-                                    ParseString(weightElem->GetText(), marker.weight);
-                                }
-                                segmentHierarchical.markers.push_back(marker);
-                            }
-                        }
-
-                        tinyxml2::XMLElement* rigidBodiesElem = segmentElem->FirstChildElement("RigidBodies");
-                        if (rigidBodiesElem)
-                        {
-                            for (tinyxml2::XMLElement* bodyElem = rigidBodiesElem->FirstChildElement("RigidBody");
-                                bodyElem != nullptr;
-                                bodyElem = bodyElem->NextSiblingElement("RigidBody"))
-                            {
-                                SBody body;
-                                body.name = bodyElem->Attribute("Name");
-                                body.weight = 1.0;
-                                tinyxml2::XMLElement* transformElem = bodyElem->FirstChildElement("Transform");
-                                if (transformElem)
-                                {
-                                    body.position = ReadXMLPosition(*transformElem, "Position");
-                                    body.rotation = ReadXMLRotation(*transformElem, "Rotation");
-                                }
-                                tinyxml2::XMLElement* weightElem = bodyElem->FirstChildElement("Weight");
-                                if (weightElem && weightElem->GetText())
-                                {
-                                    ParseString(weightElem->GetText(), body.weight);
-                                }
-                                segmentHierarchical.bodies.push_back(body);
-                            }
-                        }
-
-                        SSettingsSkeletonSegment segment;
-                        segment.name = segmentHierarchical.name;
-                        segment.id = segmentHierarchical.id;
-                        segment.parentId = parentId;
-                        segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
-                        segment.positionX = static_cast<float>(segmentHierarchical.defaultPosition.x);
-                        segment.positionY = static_cast<float>(segmentHierarchical.defaultPosition.y);
-                        segment.positionZ = static_cast<float>(segmentHierarchical.defaultPosition.z);
-                        segment.rotationX = static_cast<float>(segmentHierarchical.defaultRotation.x);
-                        segment.rotationY = static_cast<float>(segmentHierarchical.defaultRotation.y);
-                        segment.rotationZ = static_cast<float>(segmentHierarchical.defaultRotation.z);
-                        segment.rotationW = static_cast<float>(segmentHierarchical.defaultRotation.w);
-
-                        segments.push_back(segment);
-
-                        segmentElem = segmentElem->NextSiblingElement("Segment");
+                    // Recurse into child segments
+                    for (tinyxml2::XMLElement* childSegmentElem = segmentElem->FirstChildElement("Segment"); childSegmentElem; childSegmentElem = childSegmentElem->NextSiblingElement("Segment"))
+                    {
+                        SSettingsSkeletonSegmentHierarchical childSegment;
+                        recurseSegments(childSegmentElem, childSegment, skeleton.segments, segmentHierarchical.id);
+                        segmentHierarchical.segments.push_back(childSegment);
                     }
                 };
 
-            tinyxml2::XMLElement* firstSegmentElem = segmentsElem->FirstChildElement("Segment");
-            if (firstSegmentElem)
+            // Start recursion from top-level segments
+            for (tinyxml2::XMLElement* segmentElem = segmentsElem->FirstChildElement("Segment"); segmentElem; segmentElem = segmentElem->NextSiblingElement("Segment"))
             {
-                recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
+                recurseSegments(segmentElem, skeletonHierarchical.rootSegment, skeleton.segments, -1);
             }
         }
 
@@ -4479,7 +4476,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
 
     dataAvailable = true;
     return true;
-} // ReadSkeletonSettings
+}
 
 
 CRTProtocol::SPosition CRTProtocol::ReadXMLPosition(tinyxml2::XMLElement& element, const std::string& subElement)
