@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27.1)
 
 project(qualisys_cpp_sdk_tests LANGUAGES CXX)
-    
+
 include(TinyXml2)
 include(Doctest)
 
@@ -35,13 +35,13 @@ target_link_libraries(${PROJECT_NAME}
         doctest::doctest
         tinyxml2::tinyxml2
 )
-    
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 else()
-  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 doctest_discover_tests(${PROJECT_NAME})
