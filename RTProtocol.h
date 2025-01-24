@@ -960,9 +960,9 @@ private:
     static bool ParseString(const std::string& str, double& value);
     static bool ParseString(const std::string& str, bool& value);
     bool ReadXmlBool(tinyxml2::XMLElement* xmll, const std::string& element, bool& value) const;
-    SPosition ReadXMLPosition(CMarkup& xml, const std::string& element);
-    SRotation ReadXMLRotation(CMarkup& xml, const std::string& element);
-    bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
+    SPosition ReadXMLPosition(tinyxml2::XMLElement& xml, const std::string& element);
+    SRotation ReadXMLRotation(tinyxml2::XMLElement& xml, const std::string& element);
+    bool ReadXMLDegreesOfFreedom(tinyxml2::XMLElement& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
 
 private:
     INetwork*                      mpoNetwork;

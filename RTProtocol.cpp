@@ -1790,7 +1790,7 @@ bool CRTProtocol::ReadGeneralSettings()
     {
         return false;
     }
-    msGeneralSettings.fCaptureTime = std::atof(captureTimeElem->GetText());
+    msGeneralSettings.fCaptureTime = static_cast<float>(std::atof(captureTimeElem->GetText()));
 
     // Refactored variant of all this copy/paste code. TODO: Refactor everything else.
     if (!ReadXmlBool(generalElem, "Start_On_External_Trigger", msGeneralSettings.bStartOnExternalTrigger))
@@ -2446,21 +2446,21 @@ bool CRTProtocol::ReadGeneralSettings()
         {
             return false;
         }
-        sCameraSettings.fPositionX = std::atof(xElem->GetText());
+        sCameraSettings.fPositionX = static_cast<float>(std::atof(xElem->GetText()));
 
         auto* yElem = positionElem->FirstChildElement("Y");
         if (!yElem || !yElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionY = std::atof(yElem->GetText());
+        sCameraSettings.fPositionY = static_cast<float>(std::atof(yElem->GetText()));
 
         auto* zElem = positionElem->FirstChildElement("Z");
         if (!zElem || !zElem->GetText())
         {
             return false;
         }
-        sCameraSettings.fPositionZ = std::atof(zElem->GetText());
+        sCameraSettings.fPositionZ = static_cast<float>(std::atof(zElem->GetText()));
 
         auto* rotElem = positionElem;
         for (int row = 0; row < 3; ++row)
@@ -2474,7 +2474,7 @@ bool CRTProtocol::ReadGeneralSettings()
                 {
                     return false;
                 }
-                sCameraSettings.fPositionRotMatrix[row][col] = std::atof(rotValueElem->GetText());
+                sCameraSettings.fPositionRotMatrix[row][col] = static_cast<float>(std::atof(rotValueElem->GetText()));
             }
         }
         // ==================== Orientation ====================
@@ -2649,7 +2649,7 @@ bool CRTProtocol::ReadGeneralSettings()
                         {
                             return false;
                         }
-                        sCameraSettings.fSyncOutDutyCycle[port] = std::atof(dutyCycleElem->GetText());
+                        sCameraSettings.fSyncOutDutyCycle[port] = static_cast<float>(std::atof(dutyCycleElem->GetText()));
                     }
                 }
                 if (port == 2 || sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz)
@@ -4189,7 +4189,7 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
 
 bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
 {
-    CMarkup oXML;
+    tinyxml2::XMLDocument oXML;
 
     bDataAvailable = false;
 
@@ -4200,49 +4200,39 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
         return false;
     }
 
-    //
-    // Read some Image parameters
-    //
-    if (!oXML.FindChildElem("Image"))
+    tinyxml2::XMLElement* root = oXML.RootElement();
+    if (!root || std::string(root->Name()) != "Image")
     {
         return true;
     }
-    oXML.IntoElem();
 
-    while (oXML.FindChildElem("Camera"))
+    for (tinyxml2::XMLElement* cameraElem = root->FirstChildElement("Camera");
+        cameraElem != nullptr;
+        cameraElem = cameraElem->NextSiblingElement("Camera"))
     {
-        oXML.IntoElem();
-
         SImageCamera sImageCamera;
 
-        if (!oXML.FindChildElem("ID"))
+        tinyxml2::XMLElement* idElem = cameraElem->FirstChildElement("ID");
+        if (!idElem || !idElem->GetText())
         {
             return false;
         }
-        sImageCamera.nID = atoi(oXML.GetChildData().c_str());
+        sImageCamera.nID = atoi(idElem->GetText());
 
-        if (!oXML.FindChildElem("Enabled"))
+        tinyxml2::XMLElement* enabledElem = cameraElem->FirstChildElement("Enabled");
+        if (!enabledElem || !enabledElem->GetText())
         {
             return false;
         }
-        std::string tStr;
-        tStr = ToLower(oXML.GetChildData());
+        std::string tStr = ToLower(enabledElem->GetText());
+        sImageCamera.bEnabled = (tStr == "true");
 
-        if (tStr == "true")
-        {
-            sImageCamera.bEnabled = true;
-        }
-        else
-        {
-            sImageCamera.bEnabled = false;
-        }
-
-        if (!oXML.FindChildElem("Format"))
+        tinyxml2::XMLElement* formatElem = cameraElem->FirstChildElement("Format");
+        if (!formatElem || !formatElem->GetText())
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-
+        tStr = ToLower(formatElem->GetText());
         if (tStr == "rawgrayscale")
         {
             sImageCamera.eFormat = CRTPacket::FormatRawGrayscale;
@@ -4264,55 +4254,58 @@ bool CRTProtocol::ReadImageSettings(bool &bDataAvailable)
             return false;
         }
 
-        if (!oXML.FindChildElem("Width"))
+        tinyxml2::XMLElement* widthElem = cameraElem->FirstChildElement("Width");
+        if (!widthElem || !widthElem->GetText())
         {
             return false;
         }
-        sImageCamera.nWidth = atoi(oXML.GetChildData().c_str());
+        sImageCamera.nWidth = atoi(widthElem->GetText());
 
-        if (!oXML.FindChildElem("Height"))
+        tinyxml2::XMLElement* heightElem = cameraElem->FirstChildElement("Height");
+        if (!heightElem || !heightElem->GetText())
         {
             return false;
         }
-        sImageCamera.nHeight = atoi(oXML.GetChildData().c_str());
+        sImageCamera.nHeight = atoi(heightElem->GetText());
 
-        if (!oXML.FindChildElem("Left_Crop"))
+        tinyxml2::XMLElement* leftCropElem = cameraElem->FirstChildElement("Left_Crop");
+        if (!leftCropElem || !leftCropElem->GetText())
         {
             return false;
         }
-        sImageCamera.fCropLeft = (float)atof(oXML.GetChildData().c_str());
+        sImageCamera.fCropLeft = static_cast<float>(atof(leftCropElem->GetText()));
 
-        if (!oXML.FindChildElem("Top_Crop"))
+        tinyxml2::XMLElement* topCropElem = cameraElem->FirstChildElement("Top_Crop");
+        if (!topCropElem || !topCropElem->GetText())
         {
             return false;
         }
-        sImageCamera.fCropTop = (float)atof(oXML.GetChildData().c_str());
+        sImageCamera.fCropTop = static_cast<float>(atof(topCropElem->GetText()));
 
-        if (!oXML.FindChildElem("Right_Crop"))
+        tinyxml2::XMLElement* rightCropElem = cameraElem->FirstChildElement("Right_Crop");
+        if (!rightCropElem || !rightCropElem->GetText())
         {
             return false;
         }
-        sImageCamera.fCropRight = (float)atof(oXML.GetChildData().c_str());
+        sImageCamera.fCropRight = static_cast<float>(atof(rightCropElem->GetText()));
 
-        if (!oXML.FindChildElem("Bottom_Crop"))
+        tinyxml2::XMLElement* bottomCropElem = cameraElem->FirstChildElement("Bottom_Crop");
+        if (!bottomCropElem || !bottomCropElem->GetText())
         {
             return false;
         }
-        sImageCamera.fCropBottom = (float)atof(oXML.GetChildData().c_str());
-
-        oXML.OutOfElem(); // "Camera"
+        sImageCamera.fCropBottom = static_cast<float>(atof(bottomCropElem->GetText()));
 
         mvsImageSettings.push_back(sImageCamera);
         bDataAvailable = true;
     }
 
     return true;
-} // ReadImageSettings
-
+}// ReadImageSettings
 
 bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalData)
 {
-    CMarkup xml;
+    tinyxml2::XMLDocument xml;
 
     dataAvailable = false;
 
@@ -4324,330 +4317,244 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
         return false;
     }
 
-    int segmentIndex;
-    std::map<int, int> segmentIdIndexMap;
-    xml.ResetPos();
-
-    xml.FindElem();
-    xml.IntoElem();
-
-    if (xml.FindElem("Skeletons"))
+    tinyxml2::XMLElement* root = xml.RootElement();
+    if (!root || std::string(root->Name()) != "Skeletons")
     {
-        xml.IntoElem();
+        return false;
+    }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 20)
+    std::map<int, int> segmentIdIndexMap;
+    int segmentIndex = 0;
+
+    for (tinyxml2::XMLElement* skeletonElem = root->FirstChildElement("Skeleton");
+        skeletonElem != nullptr;
+        skeletonElem = skeletonElem->NextSiblingElement("Skeleton"))
+    {
+        SSettingsSkeletonHierarchical skeletonHierarchical;
+        SSettingsSkeleton skeleton;
+        skeletonHierarchical.name = skeletonElem->Attribute("Name");
+        skeleton.name = skeletonHierarchical.name;
+
+        tinyxml2::XMLElement* solverElem = skeletonElem->FirstChildElement("Solver");
+        if (solverElem && solverElem->GetText())
         {
-            while (xml.FindElem("Skeleton"))
+            skeletonHierarchical.rootSegment.solver = solverElem->GetText();
+        }
+
+        tinyxml2::XMLElement* scaleElem = skeletonElem->FirstChildElement("Scale");
+        if (scaleElem && scaleElem->GetText())
+        {
+            if (!ParseString(scaleElem->GetText(), skeletonHierarchical.scale))
             {
-                SSettingsSkeletonHierarchical skeletonHierarchical;
-                SSettingsSkeleton skeleton;
-                segmentIndex = 0;
+                sprintf(maErrorStr, "Scale element parse error");
+                return false;
+            }
+        }
 
-                skeletonHierarchical.name = xml.GetAttrib("Name");
-                skeleton.name = skeletonHierarchical.name;
-
-                xml.IntoElem();
-
-                if (xml.FindElem("Solver"))
+        tinyxml2::XMLElement* segmentsElem = skeletonElem->FirstChildElement("Segments");
+        if (segmentsElem)
+        {
+            std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
+                [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
                 {
-                    skeletonHierarchical.rootSegment.solver = xml.GetData();
-                }
-
-                if (xml.FindElem("Scale"))
-                {
-                    if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
+                    tinyxml2::XMLElement* segmentElem = segmentsElem->FirstChildElement("Segment");
+                    while (segmentElem)
                     {
-                        sprintf(maErrorStr, "Scale element parse error");
-                        return false;
-                    }
-                }
-
-                if (xml.FindElem("Segments"))
-                {
-                    xml.IntoElem();
-
-                    std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
-                        [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
-                    {
-                        segmentHierarchical.name = xml.GetAttrib("Name");
-                        ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+                        segmentHierarchical.name = segmentElem->Attribute("Name");
+                        ParseString(segmentElem->Attribute("ID"), segmentHierarchical.id);
 
                         segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
-                        xml.IntoElem();
-
-                        if (xml.FindElem("Solver"))
+                        tinyxml2::XMLElement* solverElem = segmentElem->FirstChildElement("Solver");
+                        if (solverElem && solverElem->GetText())
                         {
-                            segmentHierarchical.solver = xml.GetData();
+                            segmentHierarchical.solver = solverElem->GetText();
                         }
 
-                        if (xml.FindElem("Transform"))
+                        tinyxml2::XMLElement* transformElem = segmentElem->FirstChildElement("Transform");
+                        if (transformElem)
                         {
-                            xml.IntoElem();
-                            segmentHierarchical.position = ReadXMLPosition(xml, "Position");
-                            segmentHierarchical.rotation = ReadXMLRotation(xml, "Rotation");
-                            xml.OutOfElem(); // Transform
+                            segmentHierarchical.position = ReadXMLPosition(*transformElem, "Position");
+                            segmentHierarchical.rotation = ReadXMLRotation(*transformElem, "Rotation");
                         }
 
-                        if (xml.FindElem("DefaultTransform"))
+                        tinyxml2::XMLElement* defaultTransformElem = segmentElem->FirstChildElement("DefaultTransform");
+                        if (defaultTransformElem)
                         {
-                            xml.IntoElem();
-                            segmentHierarchical.defaultPosition = ReadXMLPosition(xml, "Position");
-                            segmentHierarchical.defaultRotation = ReadXMLRotation(xml, "Rotation");
-                            xml.OutOfElem(); // DefaultTransform
+                            segmentHierarchical.defaultPosition = ReadXMLPosition(*defaultTransformElem, "Position");
+                            segmentHierarchical.defaultRotation = ReadXMLRotation(*defaultTransformElem, "Rotation");
                         }
 
-                        if (xml.FindElem("DegreesOfFreedom"))
+                        tinyxml2::XMLElement* degreesOfFreedomElem = segmentElem->FirstChildElement("DegreesOfFreedom");
+                        if (degreesOfFreedomElem)
                         {
-                            xml.IntoElem();
-                            ReadXMLDegreesOfFreedom(xml, "RotationX", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(xml, "RotationY", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(xml, "RotationZ", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(xml, "TranslationX", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(xml, "TranslationY", segmentHierarchical.degreesOfFreedom);
-                            ReadXMLDegreesOfFreedom(xml, "TranslationZ", segmentHierarchical.degreesOfFreedom);
-                            xml.OutOfElem(); // DegreesOfFreedom
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "RotationZ", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationX", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationY", segmentHierarchical.degreesOfFreedom);
+                            ReadXMLDegreesOfFreedom(*degreesOfFreedomElem, "TranslationZ", segmentHierarchical.degreesOfFreedom);
                         }
 
-                        segmentHierarchical.endpoint = ReadXMLPosition(xml, "Endpoint");
+                        segmentHierarchical.endpoint = ReadXMLPosition(*segmentElem, "Endpoint");
 
-                        if (xml.FindElem("Markers"))
+                        tinyxml2::XMLElement* markersElem = segmentElem->FirstChildElement("Markers");
+                        if (markersElem)
                         {
-                            xml.IntoElem();
-
-                            while (xml.FindElem("Marker"))
+                            for (tinyxml2::XMLElement* markerElem = markersElem->FirstChildElement("Marker");
+                                markerElem != nullptr;
+                                markerElem = markerElem->NextSiblingElement("Marker"))
                             {
                                 SMarker marker;
-
-                                marker.name = xml.GetAttrib("Name");
+                                marker.name = markerElem->Attribute("Name");
                                 marker.weight = 1.0;
-
-                                xml.IntoElem();
-                                marker.position = ReadXMLPosition(xml, "Position");
-                                if (xml.FindElem("Weight"))
+                                tinyxml2::XMLElement* positionElem = markerElem->FirstChildElement("Position");
+                                if (positionElem)
                                 {
-                                    ParseString(xml.GetData(), marker.weight);
+                                    marker.position = ReadXMLPosition(*positionElem, "Position");
                                 }
-
-                                xml.OutOfElem(); // Marker
-
+                                tinyxml2::XMLElement* weightElem = markerElem->FirstChildElement("Weight");
+                                if (weightElem && weightElem->GetText())
+                                {
+                                    ParseString(weightElem->GetText(), marker.weight);
+                                }
                                 segmentHierarchical.markers.push_back(marker);
                             }
-
-                            xml.OutOfElem(); // Markers
                         }
 
-                        if (xml.FindElem("RigidBodies"))
+                        tinyxml2::XMLElement* rigidBodiesElem = segmentElem->FirstChildElement("RigidBodies");
+                        if (rigidBodiesElem)
                         {
-                            xml.IntoElem();
-
-                            while (xml.FindElem("RigidBody"))
+                            for (tinyxml2::XMLElement* bodyElem = rigidBodiesElem->FirstChildElement("RigidBody");
+                                bodyElem != nullptr;
+                                bodyElem = bodyElem->NextSiblingElement("RigidBody"))
                             {
                                 SBody body;
-
-                                body.name = xml.GetAttrib("Name");
+                                body.name = bodyElem->Attribute("Name");
                                 body.weight = 1.0;
-
-                                xml.IntoElem();
-
-                                if (xml.FindElem("Transform"))
+                                tinyxml2::XMLElement* transformElem = bodyElem->FirstChildElement("Transform");
+                                if (transformElem)
                                 {
-                                    xml.IntoElem();
-                                    body.position = ReadXMLPosition(xml, "Position");
-                                    body.rotation = ReadXMLRotation(xml, "Rotation");
-                                    xml.OutOfElem(); // Transform
+                                    body.position = ReadXMLPosition(*transformElem, "Position");
+                                    body.rotation = ReadXMLRotation(*transformElem, "Rotation");
                                 }
-                                if (xml.FindElem("Weight"))
+                                tinyxml2::XMLElement* weightElem = bodyElem->FirstChildElement("Weight");
+                                if (weightElem && weightElem->GetText())
                                 {
-                                    ParseString(xml.GetData(), body.weight);
+                                    ParseString(weightElem->GetText(), body.weight);
                                 }
-
-                                xml.OutOfElem(); // RigidBody
-
                                 segmentHierarchical.bodies.push_back(body);
                             }
-
-                            xml.OutOfElem(); // RigidBodies
                         }
+
                         SSettingsSkeletonSegment segment;
                         segment.name = segmentHierarchical.name;
                         segment.id = segmentHierarchical.id;
                         segment.parentId = parentId;
                         segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
-                        segment.positionX = (float)segmentHierarchical.defaultPosition.x;
-                        segment.positionY = (float)segmentHierarchical.defaultPosition.y;
-                        segment.positionZ = (float)segmentHierarchical.defaultPosition.z;
-                        segment.rotationX = (float)segmentHierarchical.defaultRotation.x;
-                        segment.rotationY = (float)segmentHierarchical.defaultRotation.y;
-                        segment.rotationZ = (float)segmentHierarchical.defaultRotation.z;
-                        segment.rotationW = (float)segmentHierarchical.defaultRotation.w;
+                        segment.positionX = static_cast<float>(segmentHierarchical.defaultPosition.x);
+                        segment.positionY = static_cast<float>(segmentHierarchical.defaultPosition.y);
+                        segment.positionZ = static_cast<float>(segmentHierarchical.defaultPosition.z);
+                        segment.rotationX = static_cast<float>(segmentHierarchical.defaultRotation.x);
+                        segment.rotationY = static_cast<float>(segmentHierarchical.defaultRotation.y);
+                        segment.rotationZ = static_cast<float>(segmentHierarchical.defaultRotation.z);
+                        segment.rotationW = static_cast<float>(segmentHierarchical.defaultRotation.w);
 
                         segments.push_back(segment);
 
-                        while (xml.FindElem("Segment"))
-                        {
-                            SSettingsSkeletonSegmentHierarchical childSegment;
-                            recurseSegments(childSegment, skeleton.segments, segmentHierarchical.id);
-                            segmentHierarchical.segments.push_back(childSegment);
-                        }
-                        xml.OutOfElem();
-                    };
-
-                    if (xml.FindElem("Segment"))
-                    {
-                        recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
+                        segmentElem = segmentElem->NextSiblingElement("Segment");
                     }
-                    xml.OutOfElem(); // Segments
-                }
-                xml.OutOfElem(); // Skeleton
-                mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
-                mSkeletonSettings.push_back(skeleton);
-            }
-            dataAvailable = true;
-        }
-        else
-        {
-            while (xml.FindElem("Skeleton"))
+                };
+
+            tinyxml2::XMLElement* firstSegmentElem = segmentsElem->FirstChildElement("Segment");
+            if (firstSegmentElem)
             {
-                SSettingsSkeleton skeleton;
-                segmentIndex = 0;
-
-                skeleton.name = xml.GetAttrib("Name");
-                xml.IntoElem();
-
-                while (xml.FindElem("Segment"))
-                {
-                    SSettingsSkeletonSegment segment;
-
-                    segment.name = xml.GetAttrib("Name");
-                    if (segment.name.size() == 0 || sscanf(xml.GetAttrib("ID").c_str(), "%u", &segment.id) != 1)
-                    {
-                        return false;
-                    }
-
-                    segmentIdIndexMap[segment.id] = segmentIndex++;
-
-                    int parentId;
-                    if (sscanf(xml.GetAttrib("Parent_ID").c_str(), "%d", &parentId) != 1)
-                    {
-                        segment.parentId = -1;
-                        segment.parentIndex = -1;
-                    }
-                    else if (segmentIdIndexMap.count(parentId) > 0)
-                    {
-                        segment.parentId = parentId;
-                        segment.parentIndex = segmentIdIndexMap[parentId];
-                    }
-
-                    xml.IntoElem();
-
-                    if (xml.FindElem("Position"))
-                    {
-                        ParseString(xml.GetAttrib("X"), segment.positionX);
-                        ParseString(xml.GetAttrib("Y"), segment.positionY);
-                        ParseString(xml.GetAttrib("Z"), segment.positionZ);
-                    }
-
-                    if (xml.FindElem("Rotation"))
-                    {
-                        ParseString(xml.GetAttrib("X"), segment.rotationX);
-                        ParseString(xml.GetAttrib("Y"), segment.rotationY);
-                        ParseString(xml.GetAttrib("Z"), segment.rotationZ);
-                        ParseString(xml.GetAttrib("W"), segment.rotationW);
-                    }
-
-                    skeleton.segments.push_back(segment);
-
-                    xml.OutOfElem(); // Segment
-                }
-
-                mSkeletonSettings.push_back(skeleton);
-
-                xml.OutOfElem(); // Skeleton
+                recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
             }
         }
-        xml.OutOfElem(); // Skeletons
-        dataAvailable = true;
+
+        mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
+        mSkeletonSettings.push_back(skeleton);
     }
+
+    dataAvailable = true;
     return true;
 } // ReadSkeletonSettings
 
 
-CRTProtocol::SPosition CRTProtocol::ReadXMLPosition(CMarkup& xml, const std::string& element)
+CRTProtocol::SPosition CRTProtocol::ReadXMLPosition(tinyxml2::XMLElement& element, const std::string& subElement)
 {
     SPosition position;
-
-    if (xml.FindElem(element.c_str()))
+    tinyxml2::XMLElement* subElem = element.FirstChildElement(subElement.c_str());
+    if (subElem)
     {
-        ParseString(xml.GetAttrib("X"), position.x);
-        ParseString(xml.GetAttrib("Y"), position.y);
-        ParseString(xml.GetAttrib("Z"), position.z);
-        xml.ResetMainPos();
+        ParseString(subElem->Attribute("X"), position.x);
+        ParseString(subElem->Attribute("Y"), position.y);
+        ParseString(subElem->Attribute("Z"), position.z);
     }
     return position;
 }
 
-
-CRTProtocol::SRotation CRTProtocol::ReadXMLRotation(CMarkup& xml, const std::string& element)
+CRTProtocol::SRotation CRTProtocol::ReadXMLRotation(tinyxml2::XMLElement& element, const std::string& subElement)
 {
     SRotation rotation;
-
-    if (xml.FindElem(element.c_str()))
+    tinyxml2::XMLElement* subElem = element.FirstChildElement(subElement.c_str());
+    if (subElem)
     {
-        ParseString(xml.GetAttrib("X"), rotation.x);
-        ParseString(xml.GetAttrib("Y"), rotation.y);
-        ParseString(xml.GetAttrib("Z"), rotation.z);
-        ParseString(xml.GetAttrib("W"), rotation.w);
-        xml.ResetMainPos();
+        ParseString(subElem->Attribute("X"), rotation.x);
+        ParseString(subElem->Attribute("Y"), rotation.y);
+        ParseString(subElem->Attribute("Z"), rotation.z);
+        ParseString(subElem->Attribute("W"), rotation.w);
     }
     return rotation;
 }
 
-
-bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
+bool CRTProtocol::ReadXMLDegreesOfFreedom(tinyxml2::XMLElement& element, const std::string& subElement, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
 {
-    SDegreeOfFreedom degreeOfFreedom;
-
-    if (xml.FindElem(element.c_str()))
+    tinyxml2::XMLElement* subElem = element.FirstChildElement(subElement.c_str());
+    if (!subElem)
     {
-        degreeOfFreedom.type = CRTProtocol::SkeletonStringToDof(element);
-        ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
-        ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
-        xml.IntoElem();
-        if (xml.FindElem("Constraint"))
-        {
-            ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
-            ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
-        }
-        if (xml.FindElem("Couplings"))
-        {
-            xml.IntoElem();
-            while (xml.FindElem("Coupling"))
-            {
-                CRTProtocol::SCoupling coupling;
-                coupling.segment = xml.GetAttrib("Segment");
-                auto dof = xml.GetAttrib("DegreeOfFreedom");
-                coupling.degreeOfFreedom = CRTProtocol::SkeletonStringToDof(dof);
-                ParseString(xml.GetAttrib("Coefficient"), coupling.coefficient);
-                degreeOfFreedom.couplings.push_back(coupling);
-            }
-            xml.OutOfElem();
-        }
-        if (xml.FindElem("Goal"))
-        {
-            ParseString(xml.GetAttrib("Value"), degreeOfFreedom.goalValue);
-            ParseString(xml.GetAttrib("Weight"), degreeOfFreedom.goalWeight);
-        }
-        xml.OutOfElem();
-        xml.ResetMainPos();
-    
-        degreesOfFreedom.push_back(degreeOfFreedom);
-        return true;
+        return false;
     }
 
-    return false;
-}
+    SDegreeOfFreedom degreeOfFreedom;
+    degreeOfFreedom.type = CRTProtocol::SkeletonStringToDof(subElement);
+    ParseString(subElem->Attribute("LowerBound"), degreeOfFreedom.lowerBound);
+    ParseString(subElem->Attribute("UpperBound"), degreeOfFreedom.upperBound);
 
+    tinyxml2::XMLElement* constraintElem = subElem->FirstChildElement("Constraint");
+    if (constraintElem)
+    {
+        ParseString(constraintElem->Attribute("LowerBound"), degreeOfFreedom.lowerBound);
+        ParseString(constraintElem->Attribute("UpperBound"), degreeOfFreedom.upperBound);
+    }
+
+    tinyxml2::XMLElement* couplingsElem = subElem->FirstChildElement("Couplings");
+    if (couplingsElem)
+    {
+        for (tinyxml2::XMLElement* couplingElem = couplingsElem->FirstChildElement("Coupling");
+            couplingElem != nullptr;
+            couplingElem = couplingElem->NextSiblingElement("Coupling"))
+        {
+            CRTProtocol::SCoupling coupling;
+            coupling.segment = couplingElem->Attribute("Segment");
+            auto dof = couplingElem->Attribute("DegreeOfFreedom");
+            coupling.degreeOfFreedom = CRTProtocol::SkeletonStringToDof(dof);
+            ParseString(couplingElem->Attribute("Coefficient"), coupling.coefficient);
+            degreeOfFreedom.couplings.push_back(coupling);
+        }
+    }
+
+    tinyxml2::XMLElement* goalElem = subElem->FirstChildElement("Goal");
+    if (goalElem)
+    {
+        ParseString(goalElem->Attribute("Value"), degreeOfFreedom.goalValue);
+        ParseString(goalElem->Attribute("Weight"), degreeOfFreedom.goalWeight);
+    }
+
+    degreesOfFreedom.push_back(degreeOfFreedom);
+    return true;
+}
 
 void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
 {
