@@ -84,11 +84,12 @@ TEST_CASE("GetSettings3DTest")
     network->PrepareResponse("GetParameters 3D", data::Get3DSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
-
     if (!protocol->Read3DSettings(bDataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
+
+    CHECK(bDataAvailable);
 
     CRTProtocol::EAxis axisUpwards = CRTProtocol::EAxis::ZNeg;
     std::string calibrationTime = "";

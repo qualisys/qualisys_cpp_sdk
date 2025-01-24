@@ -10,11 +10,12 @@ TEST_CASE("GetSettingsEyeTrackerTest")
     network->PrepareResponse("GetParameters EyeTracker", data::GetEyeTrackerSettingsTest, CRTPacket::PacketXML);
 
     bool bDataAvailable = true;
-
     if (!protocol->ReadEyeTrackerSettings(bDataAvailable))
     {
         FAIL(protocol->GetErrorString());
     }
+
+    CHECK(bDataAvailable);
 
     std::vector<CRTProtocol::SEyeTracker> eyeTrackerSettings;
     protocol->GetEyeTrackerSettings(eyeTrackerSettings);
