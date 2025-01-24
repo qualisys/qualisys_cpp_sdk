@@ -4371,10 +4371,16 @@ bool CRTProtocol::ReadSkeletonSettings(bool& dataAvailable, bool skeletonGlobalD
                     const char* segmentName = segmentElem->Attribute("Name");
                     segmentHierarchical.name = segmentName ? segmentName : "";
 
-                    if (!ParseString(segmentElem->Attribute("ID"), segmentHierarchical.id))
+                    // Handle missing ID by generating one dynamically
+                    const char* segmentIdStr = segmentElem->Attribute("ID");
+                    if (segmentIdStr)
                     {
-                        sprintf(maErrorStr, "Segment ID parse error");
-                        return;
+                        ParseString(segmentIdStr, segmentHierarchical.id);
+                    }
+                    else
+                    {
+                        // Dynamically assign an ID if it's missing
+                        segmentHierarchical.id = segmentIndex++;
                     }
 
                     segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
@@ -4458,7 +4464,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& dataAvailable, bool skeletonGlobalD
                     for (tinyxml2::XMLElement* childSegmentElem = segmentElem->FirstChildElement("Segment"); childSegmentElem; childSegmentElem = childSegmentElem->NextSiblingElement("Segment"))
                     {
                         SSettingsSkeletonSegmentHierarchical childSegment;
-                        recurseSegments(childSegmentElem, childSegment, skeleton.segments, segmentHierarchical.id);
+                        recurseSegments(childSegmentElem, childSegment, segments, segmentHierarchical.id);
                         segmentHierarchical.segments.push_back(childSegment);
                     }
                 };
@@ -4508,24 +4514,47 @@ CRTProtocol::SRotation CRTProtocol::ReadXMLRotation(tinyxml2::XMLElement& elemen
 
 bool CRTProtocol::ReadXMLDegreesOfFreedom(tinyxml2::XMLElement& element, const std::string& subElement, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
 {
+    // Locate the sub-element
     tinyxml2::XMLElement* subElem = element.FirstChildElement(subElement.c_str());
     if (!subElem)
     {
-        return false;
+        return false; // Sub-element is missing, gracefully exit
     }
 
     SDegreeOfFreedom degreeOfFreedom;
     degreeOfFreedom.type = CRTProtocol::SkeletonStringToDof(subElement);
-    ParseString(subElem->Attribute("LowerBound"), degreeOfFreedom.lowerBound);
-    ParseString(subElem->Attribute("UpperBound"), degreeOfFreedom.upperBound);
 
+    // Parse LowerBound and UpperBound (if attributes are missing, leave them unmodified)
+    const char* lowerBoundAttr = subElem->Attribute("LowerBound");
+    if (lowerBoundAttr)
+    {
+        ParseString(lowerBoundAttr, degreeOfFreedom.lowerBound);
+    }
+
+    const char* upperBoundAttr = subElem->Attribute("UpperBound");
+    if (upperBoundAttr)
+    {
+        ParseString(upperBoundAttr, degreeOfFreedom.upperBound);
+    }
+
+    // Parse "Constraint" sub-element
     tinyxml2::XMLElement* constraintElem = subElem->FirstChildElement("Constraint");
     if (constraintElem)
     {
-        ParseString(constraintElem->Attribute("LowerBound"), degreeOfFreedom.lowerBound);
-        ParseString(constraintElem->Attribute("UpperBound"), degreeOfFreedom.upperBound);
+        const char* constraintLowerBound = constraintElem->Attribute("LowerBound");
+        if (constraintLowerBound)
+        {
+            ParseString(constraintLowerBound, degreeOfFreedom.lowerBound);
+        }
+
+        const char* constraintUpperBound = constraintElem->Attribute("UpperBound");
+        if (constraintUpperBound)
+        {
+            ParseString(constraintUpperBound, degreeOfFreedom.upperBound);
+        }
     }
 
+    // Parse "Couplings" sub-element
     tinyxml2::XMLElement* couplingsElem = subElem->FirstChildElement("Couplings");
     if (couplingsElem)
     {
@@ -4534,21 +4563,43 @@ bool CRTProtocol::ReadXMLDegreesOfFreedom(tinyxml2::XMLElement& element, const s
             couplingElem = couplingElem->NextSiblingElement("Coupling"))
         {
             CRTProtocol::SCoupling coupling;
-            coupling.segment = couplingElem->Attribute("Segment");
-            auto dof = couplingElem->Attribute("DegreeOfFreedom");
-            coupling.degreeOfFreedom = CRTProtocol::SkeletonStringToDof(dof);
-            ParseString(couplingElem->Attribute("Coefficient"), coupling.coefficient);
+            const char* segmentAttr = couplingElem->Attribute("Segment");
+            coupling.segment = segmentAttr ? segmentAttr : "";
+
+            const char* dofAttr = couplingElem->Attribute("DegreeOfFreedom");
+            if (dofAttr)
+            {
+                coupling.degreeOfFreedom = CRTProtocol::SkeletonStringToDof(dofAttr);
+            }
+
+            const char* coefficientAttr = couplingElem->Attribute("Coefficient");
+            if (coefficientAttr)
+            {
+                ParseString(coefficientAttr, coupling.coefficient);
+            }
+
             degreeOfFreedom.couplings.push_back(coupling);
         }
     }
 
+    // Parse "Goal" sub-element
     tinyxml2::XMLElement* goalElem = subElem->FirstChildElement("Goal");
     if (goalElem)
     {
-        ParseString(goalElem->Attribute("Value"), degreeOfFreedom.goalValue);
-        ParseString(goalElem->Attribute("Weight"), degreeOfFreedom.goalWeight);
+        const char* goalValueAttr = goalElem->Attribute("Value");
+        if (goalValueAttr)
+        {
+            ParseString(goalValueAttr, degreeOfFreedom.goalValue);
+        }
+
+        const char* goalWeightAttr = goalElem->Attribute("Weight");
+        if (goalWeightAttr)
+        {
+            ParseString(goalWeightAttr, degreeOfFreedom.goalWeight);
+        }
     }
 
+    // Add the degree of freedom to the vector
     degreesOfFreedom.push_back(degreeOfFreedom);
     return true;
 }
