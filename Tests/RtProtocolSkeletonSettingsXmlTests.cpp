@@ -111,7 +111,7 @@ TEST_CASE("GetSkeletonSettings")
 {
     auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Skeleton", qualisys_cpp_sdk::tests::data::SkeletonSettingsSet,
+    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsSet,
                              CRTPacket::PacketXML);
 
     using namespace qualisys_cpp_sdk::tests;
