@@ -3953,13 +3953,13 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
     bDataAvailable = false;
     msForceSettings.vsForcePlates.clear();
 
-    auto* root = oXML.RootElement();
-    if (!root)
+    if (!ReadSettings("Force", oXML))
     {
         return false;
     }
 
-    if (!ReadSettings("Force", oXML))
+    auto* root = oXML.RootElement();
+    if (!root)
     {
         return false;
     }
@@ -3983,9 +3983,8 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
         return false;
     }
     msForceSettings.oUnitForce = unitForceElem->GetText();
-
-    auto* plateElem = forceElem->FirstChildElement("Plate");
-    while (plateElem)
+    
+    for (tinyxml2::XMLElement* plateElem = forceElem->FirstChildElement("Plate"); plateElem != nullptr; plateElem = plateElem->NextSiblingElement("Plate"))
     {
         SForcePlate sForcePlate = {};
         sForcePlate.bValidCalibrationMatrix = false;

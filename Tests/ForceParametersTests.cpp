@@ -7,7 +7,7 @@ namespace
 {
     bool VerifyForceSettings(const CRTProtocol::SSettingsForce& forceSettings)
     {
-        float fVal = -107374176.0f;
+        float fVal = 0.0f;
 
         std::vector<CRTProtocol::SForcePlate> expectedPlates = {
             CRTProtocol::SForcePlate {
