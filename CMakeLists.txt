@@ -2,14 +2,19 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TESTS "Build tests" OFF)
 
-# Core library
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+include(TinyXml2)
+
 add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
         RTPacket.cpp
         RTProtocol.cpp
 )
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
@@ -77,8 +82,13 @@ install(EXPORT ${PROJECT_NAME}Targets
 )
 
 # ----------- EXAMPLES -----------
-
 if (BUILD_EXAMPLES)
     add_subdirectory(RigidBodyStreaming)
     add_subdirectory(RTClientExample)
 endif ()
+
+# ----------- TESTS -----------
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()

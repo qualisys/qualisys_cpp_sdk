@@ -11,11 +11,17 @@ Build RTClientSDK solution in Visual Studio 2017.
 * _Tested with GCC 7._
 * _Tested with VS 2017._
 
+### Build Examples
 ```
-mkdir build
-cd build
-cmake .. -DBUILD_EXAMPLES=ON
-cmake --build .
+cmake -S . -B build -DBUILD_EXAMPLES=ON
+cmake --build build
+```
+
+### Build & Run Tests 
+```cmake
+cmake -S . -B build -DBUILD_TESTS=ON
+cmake --build build
+ctest --test-dir build
 ```
 
 ## Usage

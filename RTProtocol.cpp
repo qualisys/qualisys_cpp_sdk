@@ -1106,6 +1106,12 @@ bool CRTProtocol::Reprocess()
     return false;
 }
 
+void CRTProtocol::OverrideNetwork(INetwork* network)
+{
+    delete mpoNetwork;
+    mpoNetwork = network;
+}
+
 
 bool CRTProtocol::GetEventString(CRTPacket::EEvent eEvent, char* pStr)
 {
@@ -4417,7 +4423,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                                 marker.weight = 1.0;
 
                                 xml.IntoElem();
-                                marker.position = segmentHierarchical.endpoint = ReadXMLPosition(xml, "Position");
+                                marker.position = ReadXMLPosition(xml, "Position");
                                 if (xml.FindElem("Weight"))
                                 {
                                     ParseString(xml.GetData(), marker.weight);
@@ -4642,6 +4648,52 @@ bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& eleme
     return false;
 }
 
+
+void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
+{
+    axisUpwards = ms3DSettings.eAxisUpwards;
+    calibrationTime = static_cast<std::string>(ms3DSettings.pCalibrationTime);
+    labels3D = ms3DSettings.s3DLabels;
+    bones = ms3DSettings.sBones;
+}
+
+void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings)
+{
+    gazeVectorSettings.clear();
+    gazeVectorSettings.resize(mvsGazeVectorSettings.size());
+
+    for (int i = 0; i < mvsGazeVectorSettings.size(); i++)
+    {
+        gazeVectorSettings.at(i) = mvsGazeVectorSettings.at(i);
+    }
+}
+
+void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
+{
+    eyeTrackerSettings.clear();
+    eyeTrackerSettings.resize(mvsEyeTrackerSettings.size());
+
+    for (int i = 0; i < mvsEyeTrackerSettings.size(); i++)
+    {
+        eyeTrackerSettings.at(i) = mvsEyeTrackerSettings.at(i);
+    }
+}
+
+void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
+{
+    analogSettings.clear();
+    analogSettings.resize(mvsAnalogDeviceSettings.size());
+
+    for (int i = 0; i < mvsAnalogDeviceSettings.size(); i++)
+    {
+        analogSettings.at(i) = mvsAnalogDeviceSettings.at(i);
+    }
+}
+
+void CRTProtocol::GetForceSettings(SSettingsForce& forceSettings)
+{
+    forceSettings = msForceSettings;
+}
 
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,

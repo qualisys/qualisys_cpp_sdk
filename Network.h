@@ -13,8 +13,7 @@
 #endif
 
 #include <vector>
-
-class CNetwork
+class INetwork
 {
 public:
     enum class ResponseType
@@ -35,22 +34,42 @@ public:
         operator ResponseType() { return type; }
     };
 
-    CNetwork();
-    ~CNetwork();
-    bool  Connect(const char* pServerAddr, unsigned short nPort);
-    void  Disconnect();
-    bool  Connected() const;
-    bool  CreateUDPSocket(unsigned short &nUDPPort, bool bBroadcast = false);
+    virtual bool  Connect(const char* pServerAddr, unsigned short nPort) = 0;
+    virtual void  Disconnect() = 0;
+    virtual bool  Connected() const = 0;
+    virtual bool  CreateUDPSocket(unsigned short& nUDPPort, bool bBroadcast = false) = 0;
 
-    Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int timeoutMicroseconds, unsigned int *ipAddr = nullptr);
-    Response ReceiveUdpBroadcast(char* rtDataBuff, int nDataBufSize, int timeoutMicroseconds, unsigned int *ipAddr = nullptr);
-    bool  Send(const char* pSendBuf, int nSize);
-    bool  SendUDPBroadcast(const char* pSendBuf, int nSize, short nPort, unsigned int nFilterAddr = 0);
-    char* GetErrorString();
-    int   GetError() const;
-    bool  IsLocalAddress(unsigned int nAddr) const;
-    unsigned short GetUdpServerPort();
-    unsigned short GetUdpBroadcastServerPort();
+    virtual Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int timeoutMicroseconds, unsigned int* ipAddr = nullptr) = 0;
+    virtual Response ReceiveUdpBroadcast(char* rtDataBuff, int nDataBufSize, int timeoutMicroseconds, unsigned int* ipAddr = nullptr) = 0;
+    virtual bool  Send(const char* pSendBuf, int nSize) = 0;
+    virtual bool  SendUDPBroadcast(const char* pSendBuf, int nSize, short nPort, unsigned int nFilterAddr = 0) = 0;
+    virtual char* GetErrorString() = 0;
+    virtual int   GetError() const = 0;
+    virtual bool  IsLocalAddress(unsigned int nAddr) const = 0;
+    virtual unsigned short GetUdpServerPort() = 0;
+    virtual unsigned short GetUdpBroadcastServerPort() = 0;
+    virtual ~INetwork() = default;
+};
+
+class CNetwork : public INetwork
+{
+public:
+    CNetwork();
+    ~CNetwork() override;
+    bool  Connect(const char* pServerAddr, unsigned short nPort) override;
+    void  Disconnect() override;
+    bool  Connected() const override;
+    bool  CreateUDPSocket(unsigned short &nUDPPort, bool bBroadcast = false) override;
+
+    Response Receive(char* rtDataBuff, int nDataBufSize, bool bHeader, int timeoutMicroseconds, unsigned int *ipAddr = nullptr) override;
+    Response ReceiveUdpBroadcast(char* rtDataBuff, int nDataBufSize, int timeoutMicroseconds, unsigned int *ipAddr = nullptr) override;
+    bool  Send(const char* pSendBuf, int nSize) override;
+    bool  SendUDPBroadcast(const char* pSendBuf, int nSize, short nPort, unsigned int nFilterAddr = 0) override;
+    char* GetErrorString() override;
+    int   GetError() const override;
+    bool  IsLocalAddress(unsigned int nAddr) const override;
+    unsigned short GetUdpServerPort() override;
+    unsigned short GetUdpBroadcastServerPort() override;
 
 private:
     Response Receive(SOCKET socket, SOCKET udpSocket, char* rtDataBuff, int nDataBufSize, bool bHeader, int timeoutMicroseconds, unsigned int *ipAddr = nullptr);
