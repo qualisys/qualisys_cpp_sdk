@@ -1,6 +1,6 @@
 
 #include "Data/Calibration.h"
-#include "XmlTestsShared.h"
+#include "ParametersTestsShared.h"
 
 #include <cmath>
 

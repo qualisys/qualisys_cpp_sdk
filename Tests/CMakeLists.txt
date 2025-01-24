@@ -7,16 +7,16 @@ include(Doctest)
 
 set(SOURCE_LIST
     ${PROJECT_SOURCE_DIR}/Main.cpp
-    ${PROJECT_SOURCE_DIR}/CalibrationXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/EyeTrackerXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/GazeVectorXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/GeneralXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/ImageXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/SkeletonXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/3dXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/6dXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/AnalogXmlTests.cpp
-    ${PROJECT_SOURCE_DIR}/ForceXmlTests.cpp
+    ${PROJECT_SOURCE_DIR}/CalibrationParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/EyeTrackerParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/GazeVectorParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/GeneralParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/ImageParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/SkeletonParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/3dParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/6dParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/AnalogParametersTests.cpp
+    ${PROJECT_SOURCE_DIR}/ForceParametersTests.cpp
 )
 
 add_executable(

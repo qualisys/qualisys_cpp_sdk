@@ -1,5 +1,5 @@
 #include "Data/Skeleton.h"
-#include "XmlTestsShared.h"
+#include "ParametersTestsShared.h"
 
 #include <stack>
 #include <vector>

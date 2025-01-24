@@ -1,5 +1,5 @@
 #include "Data/6d.h"
-#include "XmlTestsShared.h"
+#include "ParametersTestsShared.h"
 
 using namespace qualisys_cpp_sdk::tests;
 
