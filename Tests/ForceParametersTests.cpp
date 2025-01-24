@@ -7,15 +7,6 @@ namespace
 {
     bool VerifyForceSettings(const CRTProtocol::SSettingsForce& forceSettings)
     {
-        float defaultCalibrationMatrix[12][12];
-        for (int i = 0; i < 12; i++)
-        {
-            for (int j = 0; j < 12; j++)
-            {
-                defaultCalibrationMatrix[i][j] = -107374176.0f;
-            }
-        }
-
         float fVal = -107374176.0f;
 
         std::vector<CRTProtocol::SForcePlate> expectedPlates = {
