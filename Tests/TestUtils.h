@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../Network.h"
-#include "../RTProtocol.h"
+#include <Network.h>
+#include <RTProtocol.h>
+
 #include <doctest/doctest.h>
 #include <tinyxml2.h>
 #include <optional>

@@ -1,6 +1,7 @@
-#include "doctest/doctest.h"
-#include "TestUtils.h"
+
 #include "Data/Calibration.h"
+#include "XmlTestsShared.h"
+
 #include <cmath>
 
 using namespace qualisys_cpp_sdk::tests;
@@ -130,7 +131,6 @@ TEST_CASE("GetCalibrationTest")
         CHECK_EQ(expectedCamera.serial, actualCamera.serial);
         CHECK_EQ(expectedCamera.model, actualCamera.model);
         CHECK_EQ(expectedCamera.view_rotation, actualCamera.view_rotation);
-
 
         checkFov(expectedCamera.fov_video_max, actualCamera.fov_video_max);
         checkFov(expectedCamera.fov_marker, actualCamera.fov_marker);

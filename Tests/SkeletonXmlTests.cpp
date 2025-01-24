@@ -1,12 +1,8 @@
-#include <stack>
-
-#include "../RTProtocol.h"
-#include "../RTPacket.h"
 #include "Data/Skeleton.h"
+#include "XmlTestsShared.h"
 
-#include "TestUtils.h"
-
-#include <doctest/doctest.h>
+#include <stack>
+#include <vector>
 
 using namespace qualisys_cpp_sdk::tests;
 
