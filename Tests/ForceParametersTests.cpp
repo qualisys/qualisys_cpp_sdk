@@ -137,7 +137,7 @@ TEST_CASE("SetSettingsForceTest")
     }
 
     auto testData = network->ReadSentData();
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetForceSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetForceSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetSettingsForceTest")
@@ -157,5 +157,5 @@ TEST_CASE("GetSettingsForceTest")
     CRTProtocol::SSettingsForce forceSettings;
     protocol->GetForceSettings(forceSettings);
 
-    CHECK_EQ(true, VerifyForceSettings(forceSettings));
+    CHECK(VerifyForceSettings(forceSettings));
 }

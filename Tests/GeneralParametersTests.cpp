@@ -35,7 +35,7 @@ TEST_CASE("SetExtTimeBaseSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimeBaseSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetExtTimeBaseSettingsTest")
@@ -100,7 +100,7 @@ TEST_CASE("SetExtTimestampSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimestampSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetExtTimestampSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetExtTimestampSettingsTest")
@@ -142,7 +142,7 @@ TEST_CASE("SetCameraSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraSettingsTest")
@@ -195,7 +195,7 @@ TEST_CASE("SetCameraAutoExposureSettings")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoExposureSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoExposureSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraAutoExposureSettings")
@@ -243,7 +243,7 @@ TEST_CASE("SetCameraVideoSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraVideoSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraVideoSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraVideoSettingsTest")
@@ -308,7 +308,7 @@ TEST_CASE("SetCameraSyncOutSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraSyncOutSettingsTest")
@@ -356,7 +356,7 @@ TEST_CASE("SetCameraLensControlSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraLensControlSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraLensControlSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraLensControlSettingsTest")
@@ -395,7 +395,7 @@ TEST_CASE("SetCameraAutoWhiteBalanceTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraAutoWhiteBalanceTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetCameraAutoWhiteBalanceTest")
@@ -442,7 +442,7 @@ TEST_CASE("SetGeneralSettingsTest")
         FAIL(protocol->GetErrorString());
     }
 
-    CHECK_EQ(true, utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetGeneralSettingsTest, network->ReadSentData().data()));
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetGeneralSettingsTest, network->ReadSentData().data()));
 }
 
 TEST_CASE("GetGeneralSettingsTest")
