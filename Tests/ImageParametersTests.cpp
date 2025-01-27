@@ -8,7 +8,6 @@ TEST_CASE("GetImageCameraTest")
     auto [protocol, network] = utils::CreateTestContext();
 
     network->PrepareResponse("GetParameters Image", qualisys_cpp_sdk::tests::data::GetImageSettingsTest, CRTPacket::PacketXML);
-
     bool dataAvailable = false;
     if (!protocol->ReadImageSettings(dataAvailable))
     {

@@ -23,14 +23,13 @@ namespace qualisys_cpp_sdk::tests::utils
         }
     };
 
-    class DummyXmlNetwork : public INetwork
+    class DummyXmlNetwork : private INetwork
     {
         bool connected = false;
         std::stringstream stringStream;
         std::stringstream outputStream;
         std::vector<MessageFilter> messageAndResponses;
 
-    public:
         bool Connect(const char*, unsigned short) override
         {
             QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
@@ -89,11 +88,6 @@ namespace qualisys_cpp_sdk::tests::utils
             return true;
         }
 
-        std::string ReadSentData() const
-        {
-            return outputStream.str();
-        }
-
         bool SendUDPBroadcast(const char*, int, short, unsigned) override
         {
             return true;
@@ -124,6 +118,7 @@ namespace qualisys_cpp_sdk::tests::utils
             return 0;
         }
 
+    public:
         void QueueResponse(const char* str, CRTPacket::EPacketType p)
         {
             auto dataSize = static_cast<long long>(strlen(str) + 1);
@@ -153,6 +148,16 @@ namespace qualisys_cpp_sdk::tests::utils
                 response,
                 responsePacketType
             });
+        }
+
+        std::string ReadSentData() const
+        {
+            return outputStream.str();
+        }
+
+        INetwork* GetInterfacePtr()
+        {
+            return this;
         }
     };
 
@@ -191,7 +196,7 @@ namespace qualisys_cpp_sdk::tests::utils
 
         auto protocol = std::make_unique<CRTProtocol>();
 
-        protocol->OverrideNetwork(networkDummy);
+        protocol->OverrideNetwork(networkDummy->GetInterfacePtr());
 
         if (!protocol->Connect(""))
         {
