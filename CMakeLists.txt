@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
-option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF) #Todo: OFF by default
+option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
