@@ -6,8 +6,6 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-include(TinyXml2)
-
 add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
