@@ -965,13 +965,13 @@ void COutput::PrintSkeletonSettings(CRTProtocol* poRTProtocol, bool skeletonGlob
         for (unsigned int iSkeleton = 0; iSkeleton < poRTProtocol->GetSkeletonCount(); iSkeleton++)
         {
             CRTProtocol::SSettingsSkeletonHierarchical skeleton;
-            uint32_t level = 0;
+            std::uint32_t level = 0;
 
             if ((majorVersion > 1 || minorVersion > 20) && poRTProtocol->GetSkeleton(iSkeleton, skeleton))
             {
                 printf("\nSkeleton Name: %s  Scale: %f", skeleton.name.c_str(), skeleton.scale);
 
-                std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, uint32_t& level)
+                std::function<void(const CRTProtocol::SSettingsSkeletonSegmentHierarchical, std::uint32_t&)> recurseSegments = [&](const CRTProtocol::SSettingsSkeletonSegmentHierarchical& segment, std::uint32_t& level)
                 {
                     level++;
                     std::string indent = std::string(level * 3, ' ');

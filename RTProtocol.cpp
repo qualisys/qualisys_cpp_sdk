@@ -3252,15 +3252,15 @@ namespace
         return true;
     }
 
-    bool TryReadSetColor(CMarkup& oXML, uint32_t& nTarget)
+    bool TryReadSetColor(CMarkup& oXML, std::uint32_t& nTarget)
     {
         if (!oXML.FindChildElem("Color"))
         {
             return false;
         }
-        uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
-        uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
-        uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
+        std::uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
+        std::uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
+        std::uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
         nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
 
         return true;
@@ -3277,7 +3277,7 @@ namespace
         return true;
     }
 
-    bool TryReadSetMinMarkersInBody(CMarkup& oXML, uint32_t& nTarget)
+    bool TryReadSetMinMarkersInBody(CMarkup& oXML, std::uint32_t& nTarget)
     {
         if (!oXML.FindChildElem("MinimumMarkersInBody"))
         {
@@ -3403,14 +3403,14 @@ namespace
     void ReadSetRotations(CMarkup& oXML, CRTProtocol::SOrigin& oTarget)
     {
         char tmpStr[10];
-        for (uint32_t i = 0; i < 9; i++)
+        for (std::uint32_t i = 0; i < 9; i++)
         {
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
             oTarget.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
         }
     }
 
-    bool TryReadSetRGBColor(CMarkup& oXML, uint32_t& oTarget)
+    bool TryReadSetRGBColor(CMarkup& oXML, std::uint32_t& oTarget)
     {
         if (!oXML.FindChildElem("RGBColor"))
         {
@@ -3545,7 +3545,7 @@ bool CRTProtocol::Read6DOFSettings(bool &bDataAvailable)
                 if (!TryReadSetDataOrigin(oXML, s6DOFBodySettings.origin)
                     || !oXML.FindChildElem("Data_orientation")
                     || s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str())
-                    || s6DOFBodySettings.origin.relativeBody != static_cast<uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str()))
+                    || s6DOFBodySettings.origin.relativeBody != static_cast<std::uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str()))
                     )
                 { // Data Orientation, Origin Type / Relative Body --- REQUIRED
                     return false;
@@ -6128,7 +6128,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
         oXML.AddAttrib("Z", std::to_string(body.origin.position.fZ).c_str());
         oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
         oXML.AddElem("Data_orientation", std::to_string(body.origin.type).c_str());
-        for (uint32_t i = 0; i < 9; i++)
+        for (std::uint32_t i = 0; i < 9; i++)
         {
             char tmpStr[16];
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
@@ -6305,8 +6305,8 @@ char* CRTProtocol::GetErrorString()
 
 bool CRTProtocol::SendString(const char* pCmdStr, int nType)
 {
-    uint32_t nCmdStrLen = (int)strlen(pCmdStr);
-    uint32_t nSize = 8 + nCmdStrLen + 1; // Header size + length of the string + terminating null char
+    std::uint32_t nCmdStrLen = (int)strlen(pCmdStr);
+    std::uint32_t nSize = 8 + nCmdStrLen + 1; // Header size + length of the string + terminating null char
 
     if (nSize > mSendBuffer.size())
     {
@@ -6550,7 +6550,7 @@ std::string CRTProtocol::ToLower(std::string str)
     return str;
 }
 
-bool CRTProtocol::ParseString(const std::string& str, uint32_t& value)
+bool CRTProtocol::ParseString(const std::string& str, std::uint32_t& value)
 {
     try
     {
@@ -6563,7 +6563,7 @@ bool CRTProtocol::ParseString(const std::string& str, uint32_t& value)
     return true;
 }
 
-bool CRTProtocol::ParseString(const std::string& str, int32_t& value)
+bool CRTProtocol::ParseString(const std::string& str, std::int32_t& value)
 {
     try
     {

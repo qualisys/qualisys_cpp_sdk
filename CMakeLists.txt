@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
-option(BUILD_EXAMPLES "Build examples" OFF)
-option(BUILD_TESTS "Build tests" OFF)
+option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
+option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF) #Todo: OFF by default
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -73,7 +73,9 @@ install(
 )
 
 # ----------- EXAMPLES -----------
-if (BUILD_EXAMPLES)
+
+# example: RigidBodyStreaming
+if (${PROJECT_NAME}_BUILD_EXAMPLES)
     add_executable(RigidBodyStreaming
             RigidBodyStreaming/RigidBodyStreaming.cpp
     )
@@ -82,8 +84,7 @@ if (BUILD_EXAMPLES)
     )
 endif ()
 
-# ----------- TESTS -----------
-if(BUILD_TESTS)
+if(${PROJECT_NAME}_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
 endif()
