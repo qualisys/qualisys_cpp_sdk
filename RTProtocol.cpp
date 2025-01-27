@@ -4669,9 +4669,9 @@ void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
     analogSettings.clear();
     analogSettings.reserve(mvsAnalogDeviceSettings.size());
     std::copy(
-    mvsAnalogDeviceSettings.begin(), 
-    mvsAnalogDeviceSettings.end(), 
-    std::back_inserter(analogSettings)
+        mvsAnalogDeviceSettings.begin(), 
+        mvsAnalogDeviceSettings.end(), 
+        std::back_inserter(analogSettings)
     );
 }
 
