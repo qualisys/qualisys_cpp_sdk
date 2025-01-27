@@ -28,6 +28,8 @@
 
 #endif
 
+using namespace CRTProtocolNs;
+
 namespace
 {
     inline void RemoveInvalidChars(std::string& str)
@@ -492,22 +494,22 @@ bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentO
 
 bool CRTProtocol::StreamFrames(unsigned int nComponentType)
 {
-    return StreamFrames(RateAllFrames, 0, 0, nullptr, nComponentType);
+    return StreamFrames(EStreamRate::RateAllFrames, 0, 0, nullptr, nComponentType);
 }
 
 bool CRTProtocol::StreamFrames(EStreamRate eRate, unsigned int nRateArg, unsigned short nUDPPort, const char* pUDPAddr, const char* components)
 {
     std::ostringstream commandString;
 
-    if (eRate == RateFrequencyDivisor)
+    if (eRate == EStreamRate::RateFrequencyDivisor)
     {
         commandString << "StreamFrames FrequencyDivisor:" << nRateArg << " ";
     }
-    else if (eRate == RateFrequency)
+    else if (eRate == EStreamRate::RateFrequency)
     {
         commandString << "StreamFrames Frequency:" << nRateArg << " ";
     }
-    else if (eRate == RateAllFrames)
+    else if (eRate == EStreamRate::RateAllFrames)
     {
         commandString << "StreamFrames AllFrames ";
     }
@@ -1163,18 +1165,18 @@ bool CRTProtocol::ConvertRateString(const char* pRate, EStreamRate &eRate, unsig
     rateString.assign(pRate);
     rateString = ToLower(rateString);
 
-    eRate = RateNone;
+    eRate = EStreamRate::RateNone;
 
     if (rateString.compare(0, 9, "allframes", 9) == 0)
     {
-        eRate = RateAllFrames;
+        eRate = EStreamRate::RateAllFrames;
     }
     else if (rateString.compare(0, 10, "frequency:") == 0)
     {
         nRateArg = atoi(rateString.substr(10).c_str());
         if (nRateArg > 0)
         {
-            eRate = RateFrequency;
+            eRate = EStreamRate::RateFrequency;
         }
     }
     else if (rateString.compare(0, 17, "frequencydivisor:") == 0)
@@ -1182,11 +1184,11 @@ bool CRTProtocol::ConvertRateString(const char* pRate, EStreamRate &eRate, unsig
         nRateArg = atoi(rateString.substr(17).c_str());
         if (nRateArg > 0)
         {
-            eRate = RateFrequencyDivisor;
+            eRate = EStreamRate::RateFrequencyDivisor;
         }
     }
 
-    return eRate != RateNone;
+    return eRate != EStreamRate::RateNone;
 }
 
 std::vector<std::pair<unsigned int, std::string>> CRTProtocol::GetComponents(const std::string& componentsString)
@@ -5577,13 +5579,13 @@ bool CRTProtocol::SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExt
     switch (timestampSettings.nType)
     {
     default:
-    case CRTProtocol::Timestamp_SMPTE:
+    case CRTProtocol::ETimestampType::Timestamp_SMPTE:
         oXML.AddElem("Type", "SMPTE");
         break;
-    case CRTProtocol::Timestamp_IRIG:
+    case CRTProtocol::ETimestampType::Timestamp_IRIG:
         oXML.AddElem("Type", "IRIG");
         break;
-    case CRTProtocol::Timestamp_CameraTime:
+    case CRTProtocol::ETimestampType::Timestamp_CameraTime:
         oXML.AddElem("Type", "CameraTime");
         break;
     }
