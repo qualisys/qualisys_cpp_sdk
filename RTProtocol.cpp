@@ -4646,33 +4646,33 @@ void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSett
 {
     gazeVectorSettings.clear();
     gazeVectorSettings.resize(mvsGazeVectorSettings.size());
-
-    for (int i = 0; i < mvsGazeVectorSettings.size(); i++)
-    {
-        gazeVectorSettings.at(i) = mvsGazeVectorSettings.at(i);
-    }
+    std::copy(
+        mvsGazeVectorSettings.begin(),
+        mvsGazeVectorSettings.end(),
+        std::back_inserter(gazeVectorSettings)
+    );
 }
 
 void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
 {
     eyeTrackerSettings.clear();
     eyeTrackerSettings.resize(mvsEyeTrackerSettings.size());
-
-    for (int i = 0; i < mvsEyeTrackerSettings.size(); i++)
-    {
-        eyeTrackerSettings.at(i) = mvsEyeTrackerSettings.at(i);
-    }
+    std::copy(
+        mvsEyeTrackerSettings.begin(),
+        mvsEyeTrackerSettings.end(),
+        std::back_inserter(eyeTrackerSettings)
+    );
 }
 
 void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
 {
     analogSettings.clear();
     analogSettings.resize(mvsAnalogDeviceSettings.size());
-
-    for (int i = 0; i < mvsAnalogDeviceSettings.size(); i++)
-    {
-        analogSettings.at(i) = mvsAnalogDeviceSettings.at(i);
-    }
+    std::copy(
+    mvsAnalogDeviceSettings.begin(), 
+    mvsAnalogDeviceSettings.end(), 
+    std::back_inserter(analogSettings)
+    );
 }
 
 void CRTProtocol::GetForceSettings(SSettingsForce& forceSettings)
