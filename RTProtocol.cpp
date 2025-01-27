@@ -4645,7 +4645,7 @@ void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime
 void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings)
 {
     gazeVectorSettings.clear();
-    gazeVectorSettings.resize(mvsGazeVectorSettings.size());
+    gazeVectorSettings.reserve(mvsGazeVectorSettings.size());
     std::copy(
         mvsGazeVectorSettings.begin(),
         mvsGazeVectorSettings.end(),
@@ -4656,7 +4656,7 @@ void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSett
 void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
 {
     eyeTrackerSettings.clear();
-    eyeTrackerSettings.resize(mvsEyeTrackerSettings.size());
+    eyeTrackerSettings.reserve(mvsEyeTrackerSettings.size());
     std::copy(
         mvsEyeTrackerSettings.begin(),
         mvsEyeTrackerSettings.end(),
@@ -4667,7 +4667,7 @@ void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSett
 void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
 {
     analogSettings.clear();
-    analogSettings.resize(mvsAnalogDeviceSettings.size());
+    analogSettings.reserve(mvsAnalogDeviceSettings.size());
     std::copy(
     mvsAnalogDeviceSettings.begin(), 
     mvsAnalogDeviceSettings.end(), 
