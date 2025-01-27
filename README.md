@@ -14,7 +14,7 @@ Build RTClientSDK solution in Visual Studio 2017.
 ```
 mkdir build
 cd build
-cmake .. -DBUILD_EXAMPLES=ON
+cmake .. -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON
 cmake --build .
 ```
 
