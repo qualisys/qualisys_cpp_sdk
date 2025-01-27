@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
-option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_TESTS "Build tests" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -12,6 +12,7 @@ add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
         RTPacket.cpp
+        Settings/GeneralSettings.cpp
         RTProtocol.cpp
 )
 

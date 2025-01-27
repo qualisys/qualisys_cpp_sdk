@@ -1730,6 +1730,12 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
 bool CRTProtocol::ReadGeneralSettings()
 {
+    if (false /*using tinyxml2*/)
+    {
+        //ReadGeneralSettings(tinyxml2);
+        //msGeneralSettings = ParseGeneralSettings(tinyxml2);
+        return true;
+    }
     CMarkup                 oXML;
     std::string             tStr;
 
