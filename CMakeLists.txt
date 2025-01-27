@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
-option(BUILD_EXAMPLES "Build examples" OFF)
+option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
+
 
 add_library(${PROJECT_NAME}
         Markup.cpp
@@ -69,7 +70,7 @@ install(
 # ----------- EXAMPLES -----------
 
 # example: RigidBodyStreaming
-if (BUILD_EXAMPLES)
+if (${PROJECT_NAME}_BUILD_EXAMPLES)
     add_executable(RigidBodyStreaming
             RigidBodyStreaming/RigidBodyStreaming.cpp
     )
