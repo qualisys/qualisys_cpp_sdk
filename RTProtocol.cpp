@@ -4638,41 +4638,24 @@ void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime
 {
     axisUpwards = ms3DSettings.eAxisUpwards;
     calibrationTime = static_cast<std::string>(ms3DSettings.pCalibrationTime);
+
     labels3D = ms3DSettings.s3DLabels;
     bones = ms3DSettings.sBones;
 }
 
 void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings)
 {
-    gazeVectorSettings.clear();
-    gazeVectorSettings.reserve(mvsGazeVectorSettings.size());
-    std::copy(
-        mvsGazeVectorSettings.begin(),
-        mvsGazeVectorSettings.end(),
-        std::back_inserter(gazeVectorSettings)
-    );
+    gazeVectorSettings = mvsGazeVectorSettings;
 }
 
 void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
 {
-    eyeTrackerSettings.clear();
-    eyeTrackerSettings.reserve(mvsEyeTrackerSettings.size());
-    std::copy(
-        mvsEyeTrackerSettings.begin(),
-        mvsEyeTrackerSettings.end(),
-        std::back_inserter(eyeTrackerSettings)
-    );
+    eyeTrackerSettings = mvsEyeTrackerSettings;
 }
 
 void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
 {
-    analogSettings.clear();
-    analogSettings.reserve(mvsAnalogDeviceSettings.size());
-    std::copy(
-        mvsAnalogDeviceSettings.begin(), 
-        mvsAnalogDeviceSettings.end(), 
-        std::back_inserter(analogSettings)
-    );
+    analogSettings = mvsAnalogDeviceSettings;
 }
 
 void CRTProtocol::GetForceSettings(SSettingsForce& forceSettings)
@@ -5074,6 +5057,7 @@ bool CRTProtocol::Get6DOFBodySettings(std::vector<SSettings6DOFBody>& settings)
         strcpy(maErrorStr, "Get6DOFBodySettings not available before protocol version 1.21");
         return false;
     }
+
     settings = m6DOFSettings;
     return true;
 }
