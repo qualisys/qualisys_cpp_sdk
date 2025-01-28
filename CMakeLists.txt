@@ -70,6 +70,8 @@ install(
         CODE "file( INSTALL \${HEADERS} DESTINATION \"${INSTALL_INCLUDE_DIR}\" )"
 )
 
+add_subdirectory(external/tinyxml2)
+
 # ----------- EXAMPLES -----------
 
 # example: RigidBodyStreaming
@@ -79,6 +81,7 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
     )
     target_link_libraries(RigidBodyStreaming
             qualisys_cpp_sdk
+            tinyxml2
     )
 endif ()
 
