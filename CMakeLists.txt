@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk VERSION 1.0.0)
 
+include(GNUInstallDirs)
+
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
 option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
@@ -106,7 +108,7 @@ configure_package_config_file(${PROJECT_NAME}Config.cmake.in
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-		DESTINATION ${ConfigPackageLocation}
+        DESTINATION ${ConfigPackageLocation}
 )
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
