@@ -15,6 +15,7 @@
 #pragma warning (disable : 4251)
 #endif
 
+#define CHAR_STRING_LENGTH 1024
 
 #ifdef EXPORT_DLL
 #define DLL_EXPORT __declspec(dllexport)
@@ -978,7 +979,7 @@ private:
     std::vector<SSettingsSkeleton> mSkeletonSettings;
     std::vector<SSettingsSkeletonHierarchical> mSkeletonSettingsHierarchical;
     SCalibration                   mCalibrationSettings;
-    char                           maErrorStr[1024];
+    char                           maErrorStr[CHAR_STRING_LENGTH];
     unsigned short                 mnBroadcastPort;
     FILE*                          mpFileBuffer;
     std::vector<SDiscoverResponse> mvsDiscoverResponseList;
