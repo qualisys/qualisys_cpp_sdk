@@ -5,6 +5,7 @@
 #include <string>
 #include <limits>
 #include <cmath>
+#include <stdexcept>
 
 #ifdef EXPORT_DLL
 #define DLL_EXPORT __declspec(dllexport)
@@ -621,4 +622,36 @@ namespace CRTProtocolNs
         std::vector<SSettingsSkeletonSegment> segments;
     };
 
+    constexpr auto DEGREES_OF_FREEDOM =
+    {
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationX, "RotationX"),
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationY, "RotationY"),
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationZ, "RotationZ"),
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationX, "TranslationX"),
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationY, "TranslationY"),
+        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationZ, "TranslationZ")
+    };
+
+    DLL_EXPORT const char* SkeletonDofToStringSettings(EDegreeOfFreedom dof);
+
+    DLL_EXPORT EDegreeOfFreedom SkeletonStringToDofSettings(const std::string& str);
+
+
+    struct DLL_EXPORT ISettingsDeserializer {
+        virtual ~ISettingsDeserializer() = default;
+        virtual bool DeserializeGeneralSettings(SSettingsGeneral& msGeneralSettings) = 0;
+        virtual bool Deserialize3DSettings(SSettings3D& ms3DSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable) = 0;
+        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings, bool& bDataAvailable) = 0;
+        virtual bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) = 0;
+        virtual bool DeserializeCalibrationSettings(SCalibration& mCalibrationSettings) = 0;
+    };
+
+    struct DLL_EXPORT ISettingsSerializer {
+        
+    };
 }

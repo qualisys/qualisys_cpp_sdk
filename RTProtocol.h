@@ -12,7 +12,9 @@
 #include <limits>
 #include <cmath>
 #include <cstdint>
+#include <memory>
 
+#include "MarkupSerializer.h"
 #ifdef _WIN32
 #pragma warning (disable : 4251)
 #endif
@@ -385,27 +387,8 @@ private:
     bool SendCommand(const char* pCmdStr);
     bool SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout = cWaitForDataTimeout);
     bool SendXML(const char* pCmdStr);
-    bool ReadSettings(std::string settingsType, CMarkup &oXML);
-    void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
-    void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
-    void AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue);
-    void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int value);
-    void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue);
-    void AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
-    void AddXMLElementTransform(CMarkup& xml, const std::string& name, const SPosition& position, const SRotation& rotation);
-    void AddXMLElementDOF(CMarkup& xml, const std::string& name, SDegreeOfFreedom degreeOfFreedom);
-    bool CompareNoCase(std::string tStr1, const char* tStr2) const;
+    bool ReadSettings(const std::string& settingsType);
     bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
-    static std::string ToLower(std::string str);
-    static bool ParseString(const std::string& str, std::uint32_t& value);
-    static bool ParseString(const std::string& str, std::int32_t& value);
-    static bool ParseString(const std::string& str, float& value);
-    static bool ParseString(const std::string& str, double& value);
-    static bool ParseString(const std::string& str, bool& value);
-    bool ReadXmlBool(CMarkup* xml, const std::string& element, bool& value) const;
-    SPosition ReadXMLPosition(CMarkup& xml, const std::string& element);
-    SRotation ReadXMLRotation(CMarkup& xml, const std::string& element);
-    bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
 
 private:
     INetwork*                      mpoNetwork;
@@ -433,6 +416,8 @@ private:
     unsigned short                 mnBroadcastPort;
     FILE*                          mpFileBuffer;
     std::vector<SDiscoverResponse> mvsDiscoverResponseList;
+    std::unique_ptr<CRTProtocolNs::ISettingsDeserializer > mpoDeserializer;
+    CRTProtocolNs::CMarkupSerializer serializer;
 };
 
 
