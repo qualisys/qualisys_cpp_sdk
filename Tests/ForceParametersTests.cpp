@@ -78,7 +78,7 @@ namespace
         CHECK_EQ("mm", forceSettings.oUnitLength);
         CHECK_EQ(2, forceSettings.vsForcePlates.size());
 
-        for (int i = 0; i < forceSettings.vsForcePlates.size(); i++)
+        for (std::size_t i = 0; i < forceSettings.vsForcePlates.size(); i++)
         {
             CHECK_EQ(expectedPlates[i].nID, forceSettings.vsForcePlates[i].nID);
             CHECK_EQ(expectedPlates[i].nAnalogDeviceID, forceSettings.vsForcePlates[i].nAnalogDeviceID);
@@ -87,7 +87,7 @@ namespace
             CHECK_EQ(expectedPlates[i].nFrequency, forceSettings.vsForcePlates[i].nFrequency);
             CHECK_EQ(expectedPlates[i].fLength, forceSettings.vsForcePlates[i].fLength);
             CHECK_EQ(expectedPlates[i].fWidth, forceSettings.vsForcePlates[i].fWidth);
-            for (int j = 0; j < 4; j++)
+            for (std::size_t j = 0; j < 4; j++)
             {
                 CHECK_EQ(expectedPlates[i].asCorner[j].fX, forceSettings.vsForcePlates[i].asCorner[j].fX);
                 CHECK_EQ(expectedPlates[i].asCorner[j].fY, forceSettings.vsForcePlates[i].asCorner[j].fY);
@@ -96,15 +96,15 @@ namespace
             CHECK_EQ(expectedPlates[i].sOrigin.fX, forceSettings.vsForcePlates[i].sOrigin.fX);
             CHECK_EQ(expectedPlates[i].sOrigin.fY, forceSettings.vsForcePlates[i].sOrigin.fY);
             CHECK_EQ(expectedPlates[i].sOrigin.fZ, forceSettings.vsForcePlates[i].sOrigin.fZ);
-            for (int j = 0; j < 8; j++)
+            for (std::size_t j = 0; j < 8; j++)
             {
                 CHECK_EQ(((8 * i) + (j + 1)), forceSettings.vsForcePlates[i].vChannels[j].nChannelNumber);
                 CHECK_EQ(expectedPlates[i].vChannels[j].fConversionFactor, forceSettings.vsForcePlates[i].vChannels[j].fConversionFactor);
             }
             CHECK_EQ(expectedPlates[i].bValidCalibrationMatrix, forceSettings.vsForcePlates[i].bValidCalibrationMatrix);
-            for (int j = 0; j < 12; j++)
+            for (std::size_t j = 0; j < 12; j++)
             {
-                for (int k = 0; k < 12; k++)
+                for (std::size_t k = 0; k < 12; k++)
                 {
                     CHECK_EQ(expectedPlates[i].afCalibrationMatrix[j][k], forceSettings.vsForcePlates[i].afCalibrationMatrix[j][k]);
                 }

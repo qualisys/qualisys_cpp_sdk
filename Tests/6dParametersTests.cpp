@@ -52,7 +52,7 @@ namespace
             return false;
         }
 
-        for (int i = 0; i < lhs.size(); i++)
+        for (std::size_t i = 0; i < lhs.size(); i++)
         {
             if (lhs[i].name != rhs[i].name ||
                 lhs[i].fX != rhs[i].fX ||
@@ -129,7 +129,7 @@ namespace
 
         CHECK_EQ(settings6DOF.size(), 6);
 
-        for (int i = 0; i < settings6DOF.size(); i++)
+        for (std::size_t i = 0; i < settings6DOF.size(); i++)
         {
             CHECK_EQ(expectedNames[i], settings6DOF[i].name);
             CHECK_EQ(true, settings6DOF[i].enabled);
