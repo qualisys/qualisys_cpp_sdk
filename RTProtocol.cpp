@@ -1106,6 +1106,12 @@ bool CRTProtocol::Reprocess()
     return false;
 }
 
+void CRTProtocol::OverrideNetwork(INetwork* network)
+{
+    delete mpoNetwork;
+    mpoNetwork = network;
+}
+
 
 bool CRTProtocol::GetEventString(CRTPacket::EEvent eEvent, char* pStr)
 {
@@ -3901,6 +3907,13 @@ bool CRTProtocol::ReadForceSettings(bool &bDataAvailable)
 
     SForcePlate sForcePlate;
     sForcePlate.bValidCalibrationMatrix = false;
+    for (int i = 0; i < 12; i++)
+    {
+        for (int j = 0; j < 12; j++)
+        {
+            sForcePlate.afCalibrationMatrix[i][j] = 0.0f;
+        }
+    }
     sForcePlate.nCalibrationMatrixRows = 6;
     sForcePlate.nCalibrationMatrixColumns = 6;
 
@@ -4402,7 +4415,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool &dataAvailable, bool skeletonGlobalD
                                 marker.weight = 1.0;
 
                                 xml.IntoElem();
-                                marker.position = segmentHierarchical.endpoint = ReadXMLPosition(xml, "Position");
+                                marker.position = ReadXMLPosition(xml, "Position");
                                 if (xml.FindElem("Weight"))
                                 {
                                     ParseString(xml.GetData(), marker.weight);
@@ -4627,6 +4640,35 @@ bool CRTProtocol::ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& eleme
     return false;
 }
 
+
+void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
+{
+    axisUpwards = ms3DSettings.eAxisUpwards;
+    calibrationTime = static_cast<std::string>(ms3DSettings.pCalibrationTime);
+
+    labels3D = ms3DSettings.s3DLabels;
+    bones = ms3DSettings.sBones;
+}
+
+void CRTProtocol::GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings)
+{
+    gazeVectorSettings = mvsGazeVectorSettings;
+}
+
+void CRTProtocol::GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings)
+{
+    eyeTrackerSettings = mvsEyeTrackerSettings;
+}
+
+void CRTProtocol::GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings)
+{
+    analogSettings = mvsAnalogDeviceSettings;
+}
+
+void CRTProtocol::GetForceSettings(SSettingsForce& forceSettings)
+{
+    forceSettings = msForceSettings;
+}
 
 void CRTProtocol::GetGeneralSettings(
     unsigned int       &nCaptureFrequency, float &fCaptureTime,
@@ -5022,6 +5064,7 @@ bool CRTProtocol::Get6DOFBodySettings(std::vector<SSettings6DOFBody>& settings)
         strcpy(maErrorStr, "Get6DOFBodySettings not available before protocol version 1.21");
         return false;
     }
+
     settings = m6DOFSettings;
     return true;
 }

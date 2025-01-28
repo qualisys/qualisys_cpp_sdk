@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
+option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 add_library(${PROJECT_NAME}
         Markup.cpp
@@ -10,6 +12,7 @@ add_library(${PROJECT_NAME}
         RTPacket.cpp
         RTProtocol.cpp
 )
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
@@ -78,3 +81,8 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
             qualisys_cpp_sdk
     )
 endif ()
+
+if(${PROJECT_NAME}_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()

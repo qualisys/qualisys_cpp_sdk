@@ -712,6 +712,7 @@ public:
     bool       SaveCapture(const std::string& fileName, bool bOverwrite, std::string* pNewFileName = nullptr, int nSizeOfNewFileName = 0);
     bool       LoadProject(const std::string& fileName);
     bool       Reprocess();
+    void       OverrideNetwork(INetwork* network);
 
     static double SMPTENormalizedSubFrame(unsigned int captureFrequency, unsigned int timestampFrequency, unsigned int subFrame);
     static bool GetEventString(CRTPacket::EEvent eEvent, char* pStr);
@@ -741,6 +742,12 @@ public:
     bool ReadImageSettings(bool &bDataAvailable);
     bool ReadSkeletonSettings(bool &bDataAvailable, bool skeletonGlobalData = false);
 
+
+    void Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones);
+    void GetGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings);
+    void GetEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings);
+    void GetAnalogSettings(std::vector<SAnalogDevice>& analogSettings);
+    void GetForceSettings(SSettingsForce& forceSettings);
     void GetGeneralSettings(
         unsigned int &nCaptureFrequency, float &fCaptureTime,
         bool& bStartOnExtTrig, bool& trigNO, bool& trigNC, bool& trigSoftware,
@@ -957,7 +964,7 @@ private:
     bool ReadXMLDegreesOfFreedom(CMarkup& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
 
 private:
-    CNetwork*                      mpoNetwork;
+    INetwork*                      mpoNetwork;
     CRTPacket*                     mpoRTPacket;
     std::vector<char>              mDataBuff;
     std::vector<char>              mSendBuffer;
