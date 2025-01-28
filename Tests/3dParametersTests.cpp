@@ -5,7 +5,7 @@ using namespace qualisys_cpp_sdk::tests;
 
 namespace
 {
-    bool Verify3DLabels(const std::vector<CRTProtocol::SSettings3DLabel>& labels3D)
+    void Verify3DLabels(const std::vector<CRTProtocol::SSettings3DLabel>& labels3D)
     {
         std::vector<std::string> expectedLabels = {
             "VF_LeftShoulder", "VF_Spine", "VF_RightShoulder", "VF_HeadL", "VF_HeadTop", "VF_HeadR", "VF_HeadFront",
@@ -21,23 +21,15 @@ namespace
             "Screen - 1","Screen - 2","Screen - 3", "Screen - 4"
         };
 
-        if (expectedLabels.size() != labels3D.size())
-        {
-            return false;
-        }
+        CHECK_EQ(expectedLabels.size(), labels3D.size());
 
         for (int i = 0; i < labels3D.size(); i++)
         {
-            if (labels3D[i].oName != expectedLabels[i])
-            {
-                return false;
-            }
+            CHECK_EQ(labels3D[i].oName, expectedLabels[i]);
         }
-
-        return true;
     }
 
-    bool Verify3DBones(const std::vector<CRTProtocol::SSettingsBone>& bones)
+    void Verify3DBones(const std::vector<CRTProtocol::SSettingsBone>& bones)
     {
         std::vector<std::tuple<std::string, std::string>> expectedFromAndToBoneNames = {
             {"VF_WaistLBack", "VF_WaistRBack"}, {"VF_LWristOut", "VF_LWristIn"}, {"VF_RWristOut", "VF_RWristIn"},
@@ -59,21 +51,13 @@ namespace
             {"VF_RKneeOut", "VF_RAnkleOut"}, {"VF_RHeelBack", "VF_RForefootOut"}, {"VF_HeadL", "VF_HeadFront"}
         };
 
-        if (expectedFromAndToBoneNames.size() != bones.size())
-        {
-            return false;
-        }
+        CHECK_EQ(expectedFromAndToBoneNames.size(), bones.size());
 
         for (int i = 0; i < bones.size(); i++)
         {
-            if (bones[i].fromName != std::get<0>(expectedFromAndToBoneNames[i]) ||
-                bones[i].toName != std::get<1>(expectedFromAndToBoneNames[i]))
-            {
-                return false;
-            }
+            CHECK_EQ(bones[i].fromName, std::get<0>(expectedFromAndToBoneNames[i]));
+            CHECK_EQ(bones[i].toName, std::get<1>(expectedFromAndToBoneNames[i]));
         }
-
-        return true;
     }
 }
 
@@ -100,6 +84,6 @@ TEST_CASE("GetSettings3DTest")
 
     CHECK_EQ(CRTProtocol::EAxis::ZPos, axisUpwards);
     CHECK_EQ("2019-09-17 16:00:43", calibrationTime);
-    CHECK(Verify3DLabels(labels3D));
-    CHECK(Verify3DBones(bones));
+    Verify3DLabels(labels3D);
+    Verify3DBones(bones);
 }
