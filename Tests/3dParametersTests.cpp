@@ -23,7 +23,7 @@ namespace
 
         CHECK_EQ(expectedLabels.size(), labels3D.size());
 
-        for (int i = 0; i < labels3D.size(); i++)
+        for (std::size_t i = 0; i < labels3D.size(); i++)
         {
             CHECK_EQ(labels3D[i].oName, expectedLabels[i]);
         }
@@ -53,7 +53,7 @@ namespace
 
         CHECK_EQ(expectedFromAndToBoneNames.size(), bones.size());
 
-        for (int i = 0; i < bones.size(); i++)
+        for (std::size_t i = 0; i < bones.size(); i++)
         {
             CHECK_EQ(bones[i].fromName, std::get<0>(expectedFromAndToBoneNames[i]));
             CHECK_EQ(bones[i].toName, std::get<1>(expectedFromAndToBoneNames[i]));

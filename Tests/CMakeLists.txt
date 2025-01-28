@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.27.1)
 
 project(qualisys_cpp_sdk_tests LANGUAGES CXX)
 
-include(TinyXml2)
-include(Doctest)
+include(tinyxml2)
+include(doctest)
 
 set(SOURCE_LIST
     ${PROJECT_SOURCE_DIR}/Main.cpp

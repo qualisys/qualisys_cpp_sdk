@@ -15,7 +15,7 @@ namespace
         CHECK_EQ(10u, analogSettings[0].nChannels);
         CHECK_EQ("Force plate 1", analogSettings[0].oName);
 
-        for (int i = 0; i < analogSettings[0].voLabels.size(); i++)
+        for (std::size_t i = 0; i < analogSettings[0].voLabels.size(); i++)
         {
             CHECK_EQ(expectedLabels[i], analogSettings[0].voLabels[i]);
             CHECK_EQ(expectedUnits[i], analogSettings[0].voUnits[i]);

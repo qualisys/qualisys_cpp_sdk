@@ -8,6 +8,7 @@
 #include <optional>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 namespace qualisys_cpp_sdk::tests::utils
 {
@@ -75,7 +76,7 @@ namespace qualisys_cpp_sdk::tests::utils
         {
             std::string sendText(pSendBuf + 8, nSize - 8);
 
-            for (const auto x : messageAndResponses)
+            for (const auto& x : messageAndResponses)
             {
                 if (x.Compare(sendText))
                 {
@@ -83,6 +84,7 @@ namespace qualisys_cpp_sdk::tests::utils
                     break;
                 }
             }
+
             outputStream.str(std::string{});
             outputStream.write(sendText.data(), static_cast<long long>(sendText.length() + 1));
             return true;
