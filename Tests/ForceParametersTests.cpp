@@ -7,8 +7,6 @@ namespace
 {
     bool VerifyForceSettings(const CRTProtocol::SSettingsForce& forceSettings)
     {
-        float fVal = -107374176.0f;
-
         std::vector<CRTProtocol::SForcePlate> expectedPlates = {
             CRTProtocol::SForcePlate {
                 1, 1, "Kistler", "Force-plate 1", 1000, 600.0f, 400.0f,
@@ -27,18 +25,18 @@ namespace
                   CRTProtocol::SForceChannel { 8, -512.557678f },
                 }, false,
                 {
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal }
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }
                 }, 6, 6
             },
             CRTProtocol::SForcePlate {
@@ -58,18 +56,18 @@ namespace
                   CRTProtocol::SForceChannel { 16, -513.347046f },
                 }, false,
                 {
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal },
-                 { fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal, fVal }
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }
                 }, 6, 6
             }
         };
