@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
+option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
+if(SUFFIX_SO_VERSION)
+	  option(CMAKE_POSITION_INDEPENDENT_CODE "Use position independent code" ON)
+endif()
 
 add_library(${PROJECT_NAME}
         Markup.cpp
