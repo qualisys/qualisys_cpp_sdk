@@ -696,7 +696,16 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                     }
                     else
                     {
-                        snprintf(maErrorStr, CHAR_STRING_LENGTH, "No packet received. %s.", maErrorStr);
+                        char tempStr[CHAR_STRING_LENGTH];
+                        maErrorStr[CHAR_STRING_LENGTH - 1] = '\0';
+                        // Calculate available space for formatting
+                        size_t maxMessageLength = CHAR_STRING_LENGTH - strlen("No packet received. ") - 1;
+                        size_t maxCopyLength = (strlen(maErrorStr) < maxMessageLength) ? strlen(maErrorStr) : maxMessageLength;
+                        // Format the message into tempStr
+                        snprintf(tempStr, CHAR_STRING_LENGTH, "No packet received. %.*s", (int)maxCopyLength, maErrorStr);
+                        // Safely copy tempStr back to maErrorStr
+                        strncpy(maErrorStr, tempStr, CHAR_STRING_LENGTH - 1);
+                        maErrorStr[CHAR_STRING_LENGTH - 1] = '\0';
                     }
                 }
                 else
