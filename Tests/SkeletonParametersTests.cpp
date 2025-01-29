@@ -82,6 +82,44 @@ namespace
             {"skeleton2", 1.0, rootSegment2}
         };
     }
+
+    std::vector<CRTProtocol::SSettingsSkeleton> CreateDummySkeletonsNonHierarchical()
+    {
+        auto segmentsSkeleton1 = std::vector<CRTProtocol::SSettingsSkeletonSegment>{
+            { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, -0.707000017f, 0.0f, 0.0f, "segment1", -1, -1 },
+            { 0, 3.0f, 4.0f, 5.0f, 0.707000017f, 0.707000017f, 0.0f, 0.0f, "segment3", 0, 1 }
+        };
+        auto segmentsSkeleton2 = std::vector<CRTProtocol::SSettingsSkeletonSegment>{
+            { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, 0.0f, 0.707000017f, 0.0f, "segment2", -1, -1 }
+        };
+
+        CRTProtocol::SSettingsSkeleton skeleton1 = { "skeleton1", segmentsSkeleton1 };
+        CRTProtocol::SSettingsSkeleton skeleton2 = { "skeleton2", segmentsSkeleton2 };
+
+        return { skeleton1, skeleton2 };
+    }
+
+    void VerifySettingsSkeletonData(const std::vector<CRTProtocol::SSettingsSkeleton>& expectedData, const std::vector<CRTProtocol::SSettingsSkeleton>& actualData)
+    {
+        CHECK_EQ(expectedData.size(), actualData.size());
+
+        for (int i = 0; i < expectedData.size(); i++)
+        {
+            CHECK_EQ(expectedData[i].name, actualData[i].name);
+            CHECK_EQ(expectedData[i].segments.size(), actualData[i].segments.size());
+            for (int j = 0; j < expectedData[i].segments.size(); j++)
+            {
+                CHECK_EQ(expectedData[i].segments[j].id, actualData[i].segments[j].id);
+                CHECK_EQ(expectedData[i].segments[j].positionX, actualData[i].segments[j].positionX);
+                CHECK_EQ(expectedData[i].segments[j].positionY, actualData[i].segments[j].positionY);
+                CHECK_EQ(expectedData[i].segments[j].positionZ, actualData[i].segments[j].positionZ);
+                CHECK_EQ(expectedData[i].segments[j].rotationX, actualData[i].segments[j].rotationX);
+                CHECK_EQ(expectedData[i].segments[j].rotationY, actualData[i].segments[j].rotationY);
+                CHECK_EQ(expectedData[i].segments[j].rotationZ, actualData[i].segments[j].rotationZ);
+                CHECK_EQ(expectedData[i].segments[j].rotationW, actualData[i].segments[j].rotationW);
+            }
+        }
+    }
 }
 
 TEST_CASE("SetSkeletonSettings")
@@ -101,7 +139,6 @@ TEST_CASE("SetSkeletonSettings")
 
     CHECK(utils::CompareXmlIgnoreWhitespace(data::SkeletonSettingsSet, result.data()));
 }
-
 
 TEST_CASE("GetSkeletonSettings")
 {
@@ -213,4 +250,31 @@ TEST_CASE("GetSkeletonSettings")
             stack.push({entry.expected.segments[i], entry.actual.segments[i]});
         }
     }
+}
+
+TEST_CASE("GetSkeletonSettingsNonHierarchical")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsSet,
+        CRTPacket::PacketXML);
+
+    using namespace qualisys_cpp_sdk::tests;
+
+    auto dataAvailable = false;
+    if (!protocol->ReadSkeletonSettings(dataAvailable, false))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+    CHECK(dataAvailable);
+
+    auto expectedSkeletons = CreateDummySkeletonsNonHierarchical();
+
+    CRTProtocol::SSettingsSkeleton dataSkeleton1;
+    CRTProtocol::SSettingsSkeleton dataSkeleton2;
+    protocol->GetSkeleton(0, &dataSkeleton1);
+    protocol->GetSkeleton(1, &dataSkeleton2);
+    auto actualSkeletons = { dataSkeleton1, dataSkeleton2 };
+
+    VerifySettingsSkeletonData(expectedSkeletons, actualSkeletons);
 }
