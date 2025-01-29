@@ -3414,8 +3414,8 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetCameraLensControlSettings(const unsigned int pCameraId, const float focus,
-    const float aperture)
+std::string CMarkupSerializer::SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
+    const float pAperture)
 {
     CMarkup oXML;
 
@@ -3433,9 +3433,9 @@ std::string CMarkupSerializer::SetCameraLensControlSettings(const unsigned int p
     oXML.IntoElem();
 
     oXML.AddElem("Focus");
-    oXML.AddAttrib("Value", CMarkup::Format("%f", focus).c_str());
+    oXML.AddAttrib("Value", CMarkup::Format("%f", pFocus).c_str());
     oXML.AddElem("Aperture");
-    oXML.AddAttrib("Value", CMarkup::Format("%f", aperture).c_str());
+    oXML.AddAttrib("Value", CMarkup::Format("%f", pAperture).c_str());
 
     oXML.OutOfElem(); // LensControl
     oXML.OutOfElem(); // Camera
@@ -3445,8 +3445,8 @@ std::string CMarkupSerializer::SetCameraLensControlSettings(const unsigned int p
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool autoExposure,
-    const float compensation)
+std::string CMarkupSerializer::SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
+    const float pCompensation)
 {
     CMarkup oXML;
 
@@ -3464,8 +3464,8 @@ std::string CMarkupSerializer::SetCameraAutoExposureSettings(const unsigned int 
     oXML.IntoElem();
 
     oXML.AddElem("AutoExposure");
-    oXML.AddAttrib("Enabled", autoExposure ? "true" : "false");
-    oXML.AddAttrib("Compensation", CMarkup::Format("%f", compensation).c_str());
+    oXML.AddAttrib("Enabled", pAutoExposure ? "true" : "false");
+    oXML.AddAttrib("Compensation", CMarkup::Format("%f", pCompensation).c_str());
 
     oXML.OutOfElem(); // AutoExposure
     oXML.OutOfElem(); // Camera
@@ -3475,7 +3475,7 @@ std::string CMarkupSerializer::SetCameraAutoExposureSettings(const unsigned int 
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool enable)
+std::string CMarkupSerializer::SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable)
 {
     CMarkup oXML;
 
@@ -3489,7 +3489,7 @@ std::string CMarkupSerializer::SetCameraAutoWhiteBalance(const unsigned int pCam
 
     AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
 
-    oXML.AddElem("AutoWhiteBalance", enable ? "true" : "false");
+    oXML.AddElem("AutoWhiteBalance", pEnable ? "true" : "false");
 
     oXML.OutOfElem(); // Camera
     oXML.OutOfElem(); // General

@@ -682,9 +682,9 @@ namespace CRTProtocolNs
             const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
             const bool* pbSyncOutNegativePolarity) = 0;
 
-        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float focus, const float aperture) = 0;
-        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool autoExposure, const float compensation) = 0;
-        virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool enable) = 0;
+        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) = 0;
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure, const float pCompensation) = 0;
+        virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) = 0;
         virtual std::string SetImageSettings(
             const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
             const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
