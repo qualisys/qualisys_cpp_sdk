@@ -94,8 +94,8 @@ namespace CRTProtocolNs {
         void AddXMLElementUnsignedInt(tinyxml2::XMLDocument* oXML, const char* tTag, const unsigned int value);
         void AddXMLElementUnsignedInt(tinyxml2::XMLDocument* oXML, const char* tTag, const unsigned int* pnValue);
         void AddXMLElementFloat(tinyxml2::XMLDocument* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
-        void AddXMLElementTransform(tinyxml2::XMLDocument& xml, const std::string& name, const SPosition& position, const SRotation& rotation);
-        void AddXMLElementDOF(tinyxml2::XMLDocument& xml, const std::string& name, SDegreeOfFreedom degreeOfFreedom);
+        void AddXMLElementTransform(tinyxml2::XMLDocument& xmlDoc, tinyxml2::XMLElement* parentElem, const std::string& name, const SPosition& position, const SRotation& rotation);
+        void AddXMLElementDOF(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement* parentElem, const std::string& name, const SDegreeOfFreedom& degreeOfFreedoms);
     };
 }
 
