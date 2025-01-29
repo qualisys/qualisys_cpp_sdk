@@ -639,16 +639,16 @@ namespace CRTProtocolNs
 
     struct DLL_EXPORT ISettingsDeserializer {
         virtual ~ISettingsDeserializer() = default;
-        virtual bool DeserializeGeneralSettings(SSettingsGeneral& msGeneralSettings) = 0;
-        virtual bool Deserialize3DSettings(SSettings3D& ms3DSettings, bool& bDataAvailable) = 0;
-        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) = 0;
-        virtual bool DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable) = 0;
-        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable) = 0;
-        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral&, bool& bDataAvailable) = 0;
-        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable) = 0;
-        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings, bool& bDataAvailable) = 0;
-        virtual bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) = 0;
-        virtual bool DeserializeCalibrationSettings(SCalibration& mCalibrationSettings) = 0;
+        virtual bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) = 0;
+        virtual bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable) = 0;
+        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral& pGeneralSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) = 0;
+        virtual bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) = 0;
     };
 
     struct DLL_EXPORT ISettingsSerializer {

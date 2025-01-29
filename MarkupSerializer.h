@@ -7,16 +7,16 @@ namespace CRTProtocolNs {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
         CMarkupDeserializer(const char* data, std::uint32_t versionMajor, std::uint32_t versionMinor );
-        bool DeserializeGeneralSettings(SSettingsGeneral& msGeneralSettings) override;
-        bool Deserialize3DSettings(SSettings3D& ms3DSettings, bool& bDataAvailable) override;
-        bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) override;
-        bool DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable) override;
-        bool DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable) override;
-        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral&, bool& bDataAvailable)  override;
-        bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable) override;
-        bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings, bool& bDataAvailable)  override;
-        bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) override;
-        bool DeserializeCalibrationSettings(SCalibration& mCalibrationSettings) override;
+        bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) override;
+        bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) override;
+        bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) override;
+        bool DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable) override;
+        bool DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable) override;
+        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral&, bool& pDataAvailable)  override;
+        bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable) override;
+        bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable)  override;
+        bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) override;
+        bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) override;
     private:
         std::uint32_t mnMajorVersion;
         std::uint32_t mnMinorVersion;

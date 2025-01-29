@@ -290,11 +290,11 @@ CMarkupDeserializer::CMarkupDeserializer(const char* data, std::uint32_t version
 {
 }
 
-bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneralSettings)
+bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings)
 {
     std::string             tStr;
 
-    msGeneralSettings.vsCameras.clear();
+    pGeneralSettings.vsCameras.clear();
 
     // ==================== General ====================
     if (!oXML.FindChildElem("General"))
@@ -307,30 +307,30 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     {
         return false;
     }
-    msGeneralSettings.nCaptureFrequency = atoi(oXML.GetChildData().c_str());
+    pGeneralSettings.nCaptureFrequency = atoi(oXML.GetChildData().c_str());
 
     if (!oXML.FindChildElem("Capture_Time"))
     {
         return false;
     }
-    msGeneralSettings.fCaptureTime = (float)atof(oXML.GetChildData().c_str());
+    pGeneralSettings.fCaptureTime = (float)atof(oXML.GetChildData().c_str());
 
     // Refactored variant of all this copy/paste code. TODO: Refactor everything else.
-    if (!ReadXmlBool(&oXML, "Start_On_External_Trigger", msGeneralSettings.bStartOnExternalTrigger))
+    if (!ReadXmlBool(&oXML, "Start_On_External_Trigger", pGeneralSettings.bStartOnExternalTrigger))
     {
         return false;
     }
     if (mnMajorVersion > 1 || mnMinorVersion > 14)
     {
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", msGeneralSettings.bStartOnTrigNO))
+        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
         {
             return false;
         }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NC", msGeneralSettings.bStartOnTrigNC))
+        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NC", pGeneralSettings.bStartOnTrigNC))
         {
             return false;
         }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_Software", msGeneralSettings.bStartOnTrigSoftware))
+        if (!ReadXmlBool(&oXML, "Start_On_Trigger_Software", pGeneralSettings.bStartOnTrigSoftware))
         {
             return false;
         }
@@ -348,7 +348,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
         return false;
     }
     tStr = ToLower(oXML.GetChildData());
-    msGeneralSettings.sExternalTimebase.bEnabled = (tStr == "true");
+    pGeneralSettings.sExternalTimebase.bEnabled = (tStr == "true");
 
     if (!oXML.FindChildElem("Signal_Source"))
     {
@@ -357,23 +357,23 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = ToLower(oXML.GetChildData());
     if (tStr == "control port")
     {
-        msGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
+        pGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
     }
     else if (tStr == "ir receiver")
     {
-        msGeneralSettings.sExternalTimebase.eSignalSource = SourceIRReceiver;
+        pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRReceiver;
     }
     else if (tStr == "smpte")
     {
-        msGeneralSettings.sExternalTimebase.eSignalSource = SourceSMPTE;
+        pGeneralSettings.sExternalTimebase.eSignalSource = SourceSMPTE;
     }
     else if (tStr == "irig")
     {
-        msGeneralSettings.sExternalTimebase.eSignalSource = SourceIRIG;
+        pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRIG;
     }
     else if (tStr == "video sync")
     {
-        msGeneralSettings.sExternalTimebase.eSignalSource = SourceVideoSync;
+        pGeneralSettings.sExternalTimebase.eSignalSource = SourceVideoSync;
     }
     else
     {
@@ -387,11 +387,11 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = ToLower(oXML.GetChildData());
     if (tStr == "periodic")
     {
-        msGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
+        pGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
     }
     else if (tStr == "non-periodic")
     {
-        msGeneralSettings.sExternalTimebase.bSignalModePeriodic = false;
+        pGeneralSettings.sExternalTimebase.bSignalModePeriodic = false;
     }
     else
     {
@@ -406,7 +406,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = oXML.GetChildData();
     if (sscanf(tStr.c_str(), "%u", &nMultiplier) == 1)
     {
-        msGeneralSettings.sExternalTimebase.nFreqMultiplier = nMultiplier;
+        pGeneralSettings.sExternalTimebase.nFreqMultiplier = nMultiplier;
     }
     else
     {
@@ -421,7 +421,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = oXML.GetChildData();
     if (sscanf(tStr.c_str(), "%u", &nDivisor) == 1)
     {
-        msGeneralSettings.sExternalTimebase.nFreqDivisor = nDivisor;
+        pGeneralSettings.sExternalTimebase.nFreqDivisor = nDivisor;
     }
     else
     {
@@ -436,7 +436,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = oXML.GetChildData();
     if (sscanf(tStr.c_str(), "%u", &nTolerance) == 1)
     {
-        msGeneralSettings.sExternalTimebase.nFreqTolerance = nTolerance;
+        pGeneralSettings.sExternalTimebase.nFreqTolerance = nTolerance;
     }
     else
     {
@@ -451,14 +451,14 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
 
     if (tStr == "none")
     {
-        msGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
+        pGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
     }
     else
     {
         float fFrequency;
         if (sscanf(tStr.c_str(), "%f", &fFrequency) == 1)
         {
-            msGeneralSettings.sExternalTimebase.fNominalFrequency = fFrequency;
+            pGeneralSettings.sExternalTimebase.fNominalFrequency = fFrequency;
         }
         else
         {
@@ -473,11 +473,11 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = ToLower(oXML.GetChildData());
     if (tStr == "negative")
     {
-        msGeneralSettings.sExternalTimebase.bNegativeEdge = true;
+        pGeneralSettings.sExternalTimebase.bNegativeEdge = true;
     }
     else if (tStr == "positive")
     {
-        msGeneralSettings.sExternalTimebase.bNegativeEdge = false;
+        pGeneralSettings.sExternalTimebase.bNegativeEdge = false;
     }
     else
     {
@@ -492,7 +492,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = oXML.GetChildData();
     if (sscanf(tStr.c_str(), "%u", &nDelay) == 1)
     {
-        msGeneralSettings.sExternalTimebase.nSignalShutterDelay = nDelay;
+        pGeneralSettings.sExternalTimebase.nSignalShutterDelay = nDelay;
     }
     else
     {
@@ -507,7 +507,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     tStr = oXML.GetChildData();
     if (sscanf(tStr.c_str(), "%f", &fTimeout) == 1)
     {
-        msGeneralSettings.sExternalTimebase.fNonPeriodicTimeout = fTimeout;
+        pGeneralSettings.sExternalTimebase.fNonPeriodicTimeout = fTimeout;
     }
     else
     {
@@ -525,22 +525,22 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
         if (oXML.FindChildElem("Enabled"))
         {
             tStr = ToLower(oXML.GetChildData());
-            msGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
+            pGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
         }
         if (oXML.FindChildElem("Type"))
         {
             tStr = ToLower(oXML.GetChildData());
             if (tStr == "smpte")
             {
-                msGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
+                pGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
             }
             else if (tStr == "irig")
             {
-                msGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
+                pGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
             }
             else
             {
-                msGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
+                pGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
             }
         }
         if (oXML.FindChildElem("Frequency"))
@@ -549,7 +549,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
             tStr = oXML.GetChildData();
             if (sscanf(tStr.c_str(), "%u", &timestampFrequency) == 1)
             {
-                msGeneralSettings.sTimestamp.nFrequency = timestampFrequency;
+                pGeneralSettings.sTimestamp.nFrequency = timestampFrequency;
             }
         }
         oXML.OutOfElem();
@@ -560,9 +560,9 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     EProcessingActions* processingActions[3] =
     {
-        &msGeneralSettings.eProcessingActions,
-        &msGeneralSettings.eRtProcessingActions,
-        &msGeneralSettings.eReprocessingActions
+        &pGeneralSettings.eProcessingActions,
+        &pGeneralSettings.eRtProcessingActions,
+        &pGeneralSettings.eReprocessingActions
     };
     auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
@@ -709,9 +709,9 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
     if (oXML.FindChildElem("EulerAngles"))
     {
         oXML.IntoElem();
-        msGeneralSettings.eulerRotations[0] = oXML.GetAttrib("First");
-        msGeneralSettings.eulerRotations[1] = oXML.GetAttrib("Second");
-        msGeneralSettings.eulerRotations[2] = oXML.GetAttrib("Third");
+        pGeneralSettings.eulerRotations[0] = oXML.GetAttrib("First");
+        pGeneralSettings.eulerRotations[1] = oXML.GetAttrib("Second");
+        pGeneralSettings.eulerRotations[2] = oXML.GetAttrib("Third");
         oXML.OutOfElem();
     }
 
@@ -1412,21 +1412,21 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& msGeneral
 
         oXML.OutOfElem(); // Camera
 
-        msGeneralSettings.vsCameras.push_back(sCameraSettings);
+        pGeneralSettings.vsCameras.push_back(sCameraSettings);
     }
 
     return true;
 
 }
 
-bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable)
 {
     std::string tStr;
 
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    ms3DSettings.s3DLabels.clear();
-    ms3DSettings.pCalibrationTime[0] = 0;
+    p3dSettings.s3DLabels.clear();
+    p3dSettings.pCalibrationTime[0] = 0;
 
     if (!oXML.FindChildElem("The_3D"))
     {
@@ -1443,27 +1443,27 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
 
     if (tStr == "+x")
     {
-        ms3DSettings.eAxisUpwards = XPos;
+        p3dSettings.eAxisUpwards = XPos;
     }
     else if (tStr == "-x")
     {
-        ms3DSettings.eAxisUpwards = XNeg;
+        p3dSettings.eAxisUpwards = XNeg;
     }
     else if (tStr == "+y")
     {
-        ms3DSettings.eAxisUpwards = YPos;
+        p3dSettings.eAxisUpwards = YPos;
     }
     else if (tStr == "-y")
     {
-        ms3DSettings.eAxisUpwards = YNeg;
+        p3dSettings.eAxisUpwards = YNeg;
     }
     else if (tStr == "+z")
     {
-        ms3DSettings.eAxisUpwards = ZPos;
+        p3dSettings.eAxisUpwards = ZPos;
     }
     else if (tStr == "-z")
     {
-        ms3DSettings.eAxisUpwards = ZNeg;
+        p3dSettings.eAxisUpwards = ZNeg;
     }
     else
     {
@@ -1475,7 +1475,7 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
         return false;
     }
     tStr = oXML.GetChildData();
-    strcpy(ms3DSettings.pCalibrationTime, tStr.c_str());
+    strcpy(p3dSettings.pCalibrationTime, tStr.c_str());
 
     if (!oXML.FindChildElem("Labels"))
     {
@@ -1483,7 +1483,7 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
     }
     unsigned int nNumberOfLabels = atoi(oXML.GetChildData().c_str());
 
-    ms3DSettings.s3DLabels.resize(nNumberOfLabels);
+    p3dSettings.s3DLabels.resize(nNumberOfLabels);
     SSettings3DLabel sLabel;
 
     for (unsigned int iLabel = 0; iLabel < nNumberOfLabels; iLabel++)
@@ -1502,7 +1502,7 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
                 {
                     sLabel.type = oXML.GetChildData();
                 }
-                ms3DSettings.s3DLabels[iLabel] = sLabel;
+                p3dSettings.s3DLabels[iLabel] = sLabel;
             }
             oXML.OutOfElem();
         }
@@ -1512,7 +1512,7 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
         }
     }
 
-    ms3DSettings.sBones.clear();
+    p3dSettings.sBones.clear();
     if (oXML.FindChildElem("Bones"))
     {
         oXML.IntoElem();
@@ -1528,13 +1528,13 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& ms3DSettings, bool&
             {
                 bone.color = atoi(colorString.c_str());
             }
-            ms3DSettings.sBones.push_back(bone);
+            p3dSettings.sBones.push_back(bone);
             oXML.OutOfElem();
         }
         oXML.OutOfElem();
     }
 
-    bDataAvailable = true;
+    pDataAvailable = true;
     return true;
 } // Read3DSettings
 
@@ -1797,11 +1797,11 @@ namespace
     }
 }
 
-bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral& msGeneralSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral& pGeneralSettings, bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    m6DOFSettings.clear();
+    p6DOFSettings.clear();
 
     if (oXML.FindChildElem("The_6D"))
     {
@@ -1862,10 +1862,10 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                 // Rotation values --- NOTE : Does NOT(!) 'Try'; just reads and sets (no boolean return)
                 ReadSetRotations(oXML, s6DOFBodySettings.origin);
 
-                m6DOFSettings.push_back(s6DOFBodySettings);
+                p6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
 
-                bDataAvailable = true;
+                pDataAvailable = true;
             }
         }
         else
@@ -1892,28 +1892,28 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                     return false;
                 }
 
-                m6DOFSettings.push_back(s6DOFBodySettings);
+                p6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
             }
             if (mnMajorVersion > 1 || mnMinorVersion > 15)
             {
-                if (!TryReadSetEuler(oXML, msGeneralSettings.eulerRotations[0], msGeneralSettings.eulerRotations[1], msGeneralSettings.eulerRotations[2]))
+                if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 { // Euler --- REQUIRED
                     return false;
                 }
             }
-            bDataAvailable = true;
+            pDataAvailable = true;
         }
     }
 
     return true;
 } // Read6DOFSettings
 
-bool CMarkupDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    mvsGazeVectorSettings.clear();
+    pGazeVectorSettings.clear();
 
     //
     // Read gaze vectors
@@ -1949,20 +1949,20 @@ bool CMarkupDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>
         bool filter = false;
         ReadXmlBool(&oXML, "Filter", filter);
 
-        mvsGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
+        pGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
         nGazeVectorCount++;
         oXML.OutOfElem(); // Vector
     }
 
-    bDataAvailable = true;
+    pDataAvailable = true;
     return true;
 } // ReadGazeVectorSettings
 
-bool CMarkupDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings,bool& bDataAvailable)
+bool CMarkupDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings,bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    mvsEyeTrackerSettings.clear();
+    pEyeTrackerSettings.clear();
 
     if (!oXML.FindChildElem("Eye_Tracker"))
     {
@@ -1993,20 +1993,20 @@ bool CMarkupDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>
         bool hwSync = false;
         ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
 
-        mvsEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
+        pEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
         nEyeTrackerCount++;
         oXML.OutOfElem(); // Vector
     }
 
-    bDataAvailable = true;
+    pDataAvailable = true;
     return true;
 } // ReadEyeTrackerSettings
 
-bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    mvsAnalogDeviceSettings.clear();
+    pAnalogDeviceSettings.clear();
 
     if (!oXML.FindChildElem("Analog"))
     {
@@ -2052,8 +2052,8 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
             return false;
         }
         sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
-        mvsAnalogDeviceSettings.push_back(sAnalogDevice);
-        bDataAvailable = true;
+        pAnalogDeviceSettings.push_back(sAnalogDevice);
+        pDataAvailable = true;
         return true;
     }
     else
@@ -2162,19 +2162,19 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
                 }
             }
             oXML.OutOfElem(); // Device
-            mvsAnalogDeviceSettings.push_back(sAnalogDevice);
-            bDataAvailable = true;
+            pAnalogDeviceSettings.push_back(sAnalogDevice);
+            pDataAvailable = true;
         }
     }
 
     return true;
 } // ReadAnalogSettings
 
-bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    msForceSettings.vsForcePlates.clear();
+    pForceSettings.vsForcePlates.clear();
 
     //
     // Read some force plate parameters
@@ -2202,13 +2202,13 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& msForceSettin
     {
         return false;
     }
-    msForceSettings.oUnitLength = oXML.GetChildData();
+    pForceSettings.oUnitLength = oXML.GetChildData();
 
     if (!oXML.FindChildElem("Unit_Force"))
     {
         return false;
     }
-    msForceSettings.oUnitForce = oXML.GetChildData();
+    pForceSettings.oUnitForce = oXML.GetChildData();
 
     int  iPlate = 1;
     while (oXML.FindChildElem("Plate"))
@@ -2453,18 +2453,18 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& msForceSettin
         }
         oXML.OutOfElem(); // "Plate"
 
-        bDataAvailable = true;
-        msForceSettings.vsForcePlates.push_back(sForcePlate);
+        pDataAvailable = true;
+        pForceSettings.vsForcePlates.push_back(sForcePlate);
     }
 
     return true;
 } // Read force settings
 
-bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable)
 {
-    bDataAvailable = false;
+    pDataAvailable = false;
 
-    mvsImageSettings.clear();
+    pImageSettings.clear();
 
     //
     // Read some Image parameters
@@ -2568,19 +2568,19 @@ bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& mv
 
         oXML.OutOfElem(); // "Camera"
 
-        mvsImageSettings.push_back(sImageCamera);
-        bDataAvailable = true;
+        pImageSettings.push_back(sImageCamera);
+        pDataAvailable = true;
     }
 
     return true;
 } // ReadImageSettings
 
 
-bool CMarkupDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& mSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& mSkeletonSettings, bool& dataAvailable)
+bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& mSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& mSkeletonSettings, bool& pDataAvailable)
 {
     CMarkup xml = oXML;
 
-    dataAvailable = false;
+    pDataAvailable = false;
 
     mSkeletonSettings.clear();
     mSkeletonSettingsHierarchical.clear();
@@ -2764,7 +2764,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData, s
                 mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
                 mSkeletonSettings.push_back(skeleton);
             }
-            dataAvailable = true;
+            pDataAvailable = true;
         }
         else
         {
@@ -2828,7 +2828,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData, s
             }
         }
         xml.OutOfElem(); // Skeletons
-        dataAvailable = true;
+        pDataAvailable = true;
     }
     return true;
 } // ReadSkeletonSettings
@@ -2850,7 +2850,7 @@ namespace
     }
 }
 
-bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& mCalibrationSettings)
+bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrationSettings)
 {
     SCalibration settings;
 
@@ -3005,7 +3005,7 @@ bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& mCalibrat
 
     oXML.OutOfElem(); // calibration
 
-    mCalibrationSettings = settings;
+    pCalibrationSettings = settings;
     return true;
 }
 
