@@ -387,7 +387,7 @@ private:
     bool SendCommand(const char* pCmdStr);
     bool SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout = cWaitForDataTimeout);
     bool SendXML(const char* pCmdStr);
-    bool ReadSettings(const std::string& settingsType);
+    const char * ReadSettings(const std::string& settingsType);
     bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
 
 private:
@@ -416,8 +416,6 @@ private:
     unsigned short                 mnBroadcastPort;
     FILE*                          mpFileBuffer;
     std::vector<SDiscoverResponse> mvsDiscoverResponseList;
-    std::unique_ptr<CRTProtocolNs::ISettingsDeserializer > mpoDeserializer;
-    CRTProtocolNs::CMarkupSerializer serializer;
 };
 
 

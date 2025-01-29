@@ -1633,7 +1633,7 @@ CRTPacket* CRTProtocol::GetRTPacket()
 }
 
 
-bool CRTProtocol::ReadSettings(const std::string& settingsType)
+const char * CRTProtocol::ReadSettings(const std::string& settingsType)
 {
     CRTPacket::EPacketType eType;
 
@@ -1642,7 +1642,7 @@ bool CRTProtocol::ReadSettings(const std::string& settingsType)
     if (!SendCommand(sendStr.c_str()))
     {
         sprintf(maErrorStr, "GetParameters %s failed", settingsType.c_str());
-        return false;
+        return nullptr;
     }
 
 retry:
@@ -1651,11 +1651,11 @@ retry:
     if (received == CNetwork::ResponseType::timeout)
     {
         strcat(maErrorStr, " Expected XML packet.");
-        return false;
+        return nullptr;
     }
     if (received == CNetwork::ResponseType::error)
     {
-        return false;
+        return nullptr;
     }
 
     if (eType != CRTPacket::PacketXML)
@@ -1663,7 +1663,7 @@ retry:
         if (eType == CRTPacket::PacketError)
         {
             sprintf(maErrorStr, "%s.", mpoRTPacket->GetErrorString());
-            return false;
+            return nullptr;
         }
         else
         {
@@ -1672,10 +1672,9 @@ retry:
         }
     }
 
-    mpoDeserializer = std::make_unique<CMarkupDeserializer>(mpoRTPacket->GetXMLString());
-    
-    return true;
+    return mpoRTPacket->GetXMLString();
 }
+
 
 
 bool CRTProtocol::ReadCameraSystemSettings()
@@ -1690,12 +1689,16 @@ bool CRTProtocol::ReadGeneralSettings()
 
     msGeneralSettings.vsCameras.clear();
 
-    if (!ReadSettings("General"))
+    const char* data = ReadSettings("General");
+
+    if (!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeGeneralSettings(msGeneralSettings);
+    auto serializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+
+    return serializer.DeserializeGeneralSettings(msGeneralSettings);
 
 } // ReadGeneralSettings
 
@@ -1716,24 +1719,28 @@ bool CRTProtocol::Read3DSettings(bool& bDataAvailable)
     ms3DSettings.s3DLabels.clear();
     ms3DSettings.pCalibrationTime[0] = 0;
 
-    if (!ReadSettings("3D"))
+    const char* data = ReadSettings("3D");
+    if (!data)
     {
         return false;
     }
 
-    return mpoDeserializer->Deserialize3DSettings(ms3DSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.Deserialize3DSettings(ms3DSettings, bDataAvailable);
 }
 
 bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
 {
     m6DOFSettings.clear();
 
-    if (!ReadSettings("6D"))
+    const auto* data = ReadSettings("6D");
+    if(!data)
     {
         return false;
     }
 
-    return mpoDeserializer->Deserialize6DOFSettings(m6DOFSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.Deserialize6DOFSettings(m6DOFSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
@@ -1742,12 +1749,14 @@ bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
 
     mvsGazeVectorSettings.clear();
 
-    if (!ReadSettings("GazeVector"))
+    const auto* data = ReadSettings("GazeVector");
+    if(!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeGazeVectorSettings(mvsGazeVectorSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeGazeVectorSettings(mvsGazeVectorSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
@@ -1756,12 +1765,14 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
 
     mvsEyeTrackerSettings.clear();
 
-    if (!ReadSettings("EyeTracker"))
+    const auto* data = ReadSettings("EyeTracker");
+    if(!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeEyeTrackerSettings(mvsEyeTrackerSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeEyeTrackerSettings(mvsEyeTrackerSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
@@ -1770,12 +1781,13 @@ bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
 
     mvsAnalogDeviceSettings.clear();
 
-    if (!ReadSettings("Analog"))
+    const auto* data = ReadSettings("Analog");
+    if(!data)
     {
         return false;
     }
-
-    return mpoDeserializer->DeserializeAnalogSettings(mvsAnalogDeviceSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeAnalogSettings(mvsAnalogDeviceSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
@@ -1784,12 +1796,14 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
 
     msForceSettings.vsForcePlates.clear();
 
-    if (!ReadSettings("Force"))
+    const auto* data = ReadSettings("Force");
+    if(!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeForceSettings(msForceSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeForceSettings(msForceSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadImageSettings(bool& bDataAvailable)
@@ -1798,12 +1812,14 @@ bool CRTProtocol::ReadImageSettings(bool& bDataAvailable)
 
     mvsImageSettings.clear();
 
-    if (!ReadSettings("Image"))
+    const auto* data = ReadSettings("Image");
+    if(!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeImageSettings(mvsImageSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeImageSettings(mvsImageSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobalData)
@@ -1813,12 +1829,14 @@ bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobal
     mSkeletonSettings.clear();
     mSkeletonSettingsHierarchical.clear();
 
-    if (!ReadSettings(skeletonGlobalData ? "Skeleton:global" : "Skeleton"))
+    const auto* data = ReadSettings(skeletonGlobalData ? "Skeleton:global" : "Skeleton");
+    if (!data)
     {
         return false;
     }
 
-    return mpoDeserializer->DeserializeSkeletonSettings(skeletonGlobalData, mSkeletonSettingsHierarchical, mSkeletonSettings, bDataAvailable);
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeSkeletonSettings(skeletonGlobalData, mSkeletonSettingsHierarchical, mSkeletonSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
@@ -1869,8 +1887,10 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
         }
         return false;
     }
-    mpoDeserializer = std::make_unique<CMarkupDeserializer>(mpoRTPacket->GetXMLString());
-    return mpoDeserializer->DeserializeCalibrationSettings(mCalibrationSettings);
+
+    auto data = mpoRTPacket->GetXMLString();
+    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    return deserializer.DeserializeCalibrationSettings(mCalibrationSettings);
 } // ReadCalibrationSettings
 
 void CRTProtocol::Get3DSettings(EAxis& axisUpwards, std::string& calibrationTime, std::vector<SSettings3DLabel>& labels3D, std::vector<SSettingsBone>& bones)
@@ -2634,9 +2654,9 @@ bool CRTProtocol::SetGeneralSettings(
     const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
     const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
-
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetGeneralSettings(pnCaptureFrequency, pfCaptureTime, pbStartOnExtTrig,startOnTrigNO, startOnTrigNC, startOnTrigSoftware, peProcessingActions, peRtProcessingActions, peReprocessingActions);
-
+    
     if (SendXML(message.data()))
     {
         return true;
@@ -2653,6 +2673,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
     const float*        pfNominalFrequency,   const bool*          pbNegativeEdge,
     const unsigned int* pnSignalShutterDelay, const float*         pfNonPeriodicTimeout)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetExtTimeBaseSettings(
         pbEnabled, peSignalSource,
         pbSignalModePeriodic, pnFreqMultiplier,
@@ -2667,6 +2688,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
 
 bool CRTProtocol::SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetExtTimestampSettings(timestampSettings);
 
     return SendXML(message.data());
@@ -2679,6 +2701,7 @@ bool CRTProtocol::SetCameraSettings(
     const float*       pfMarkerExposure, const float*       pfMarkerThreshold,
     const int*         pnOrientation)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraSettings(
         nCameraID, peMode,
         pfMarkerExposure, pfMarkerThreshold,
@@ -2694,6 +2717,7 @@ bool CRTProtocol::SetCameraVideoSettings(
     const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
     const float* pfVideoExposure,                const float* pfVideoFlashTime)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraVideoSettings(
         nCameraID, eVideoResolution,
         eVideoAspectRatio, pnVideoFrequency,
@@ -2711,6 +2735,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
     const unsigned int* pnSyncOutValue, const float*       pfSyncOutDutyCycle,
     const bool*         pbSyncOutNegativePolarity)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraSyncOutSettings(
         nCameraID, portNumber, peSyncOutMode,
         pnSyncOutValue, pfSyncOutDutyCycle,
@@ -2724,6 +2749,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
   // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraLensControlSettings(nCameraID, focus, aperture);
     return SendXML(message.data());
 
@@ -2732,6 +2758,7 @@ bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, con
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraAutoExposureSettings(nCameraID, autoExposure, compensation);
     return SendXML(message.data());
 }
@@ -2739,6 +2766,7 @@ bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, co
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraAutoWhiteBalance(nCameraID, enable);
     return SendXML(message.data());
 }
@@ -2749,6 +2777,7 @@ bool CRTProtocol::SetImageSettings(
     const unsigned int* pnWidth,   const unsigned int* pnHeight,    const float* pfLeftCrop,
     const float*        pfTopCrop, const float*        pfRightCrop, const float* pfBottomCrop)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetImageSettings(
         nCameraID, pbEnable, peFormat,
         pnWidth, pnHeight, pfLeftCrop,
@@ -2765,6 +2794,7 @@ bool CRTProtocol::SetForceSettings(
 {
     if (nPlateID > 0)
     {
+        auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
         auto message = serializer.SetForceSettings(nPlateID, psCorner1, psCorner2,
             psCorner3, psCorner4);
         return SendXML(message.data());
@@ -2785,6 +2815,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
         return false;
     }
 
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.Set6DOFBodySettings(settings);
 
     return SendXML(message.data());
@@ -2792,6 +2823,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
 
 bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons)
 {
+    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetSkeletonSettings(skeletons);
 
     return SendXML(message.data());

@@ -6,7 +6,7 @@
 namespace CRTProtocolNs {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
-        CMarkupDeserializer(const char* data);
+        CMarkupDeserializer(const char* data, std::uint32_t versionMajor, std::uint32_t versionMinor );
         bool DeserializeGeneralSettings(SSettingsGeneral& msGeneralSettings) override;
         bool Deserialize3DSettings(SSettings3D& ms3DSettings, bool& bDataAvailable) override;
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) override;
@@ -19,8 +19,8 @@ namespace CRTProtocolNs {
         bool DeserializeCalibrationSettings(SCalibration& mCalibrationSettings) override;
     private:
         // TODO: Set these
-        std::uint32_t mnMajorVersion = MAJOR_VERSION;
-        std::uint32_t mnMinorVersion = MINOR_VERSION;
+        std::uint32_t mnMajorVersion;
+        std::uint32_t mnMinorVersion;
         char maErrorStr[1024];
         CMarkup oXML;
         bool CompareNoCase(std::string tStr1, const char* tStr2) const;
@@ -41,6 +41,7 @@ namespace CRTProtocolNs {
     };
 
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
+        CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
         CMarkup oXML;
         std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
             const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,

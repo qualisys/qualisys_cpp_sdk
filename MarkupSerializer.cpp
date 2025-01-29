@@ -285,7 +285,8 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 }
 
 
-CMarkupDeserializer::CMarkupDeserializer(const char* data) : maErrorStr{0}, oXML(data)
+CMarkupDeserializer::CMarkupDeserializer(const char* data, std::uint32_t versionMajor, std::uint32_t versionMinor)
+    : mnMajorVersion(versionMajor), mnMinorVersion(versionMinor), maErrorStr{0}, oXML(data)
 {
 }
 
@@ -3040,10 +3041,15 @@ SRotation CMarkupDeserializer::DeserializeXMLRotation(CMarkup& xml, const std::s
     return rotation;
 }
 
+CMarkupSerializer::CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
+    : mnMajorVersion(majorVersion), mnMinorVersion(minorVersion)
+{
+}
+
 std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureFrequency,
-    const float* pfCaptureTime, const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC,
-    const bool* startOnTrigSoftware, const EProcessingActions* peProcessingActions,
-    const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
+                                                  const float* pfCaptureTime, const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC,
+                                                  const bool* startOnTrigSoftware, const EProcessingActions* peProcessingActions,
+                                                  const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
     CMarkup oXML;
 
