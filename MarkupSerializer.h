@@ -36,7 +36,6 @@ namespace CRTProtocolNs {
         
         SPosition DeserializeXMLPosition(CMarkup& xml, const std::string& element);
         SRotation DeserializeXMLRotation(CMarkup& xml, const std::string& element);
-        
     };
 
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
@@ -86,7 +85,6 @@ namespace CRTProtocolNs {
         std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons) override;
 
     private:
-        // TODO: Set these
         std::uint32_t mnMajorVersion;
         std::uint32_t mnMinorVersion;
         void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
