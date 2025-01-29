@@ -12,13 +12,12 @@ namespace CRTProtocolNs {
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) override;
         bool DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable) override;
         bool DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable) override;
-        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, bool& bDataAvailable)  override;
+        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral&, bool& bDataAvailable)  override;
         bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable) override;
         bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings, bool& bDataAvailable)  override;
         bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) override;
         bool DeserializeCalibrationSettings(SCalibration& mCalibrationSettings) override;
     private:
-        // TODO: Set these
         std::uint32_t mnMajorVersion;
         std::uint32_t mnMinorVersion;
         char maErrorStr[1024];
@@ -45,49 +44,46 @@ namespace CRTProtocolNs {
         CMarkup oXML;
         std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
             const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
-            const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions);
+            const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
             const bool* pbEnabled, const ESignalSource* peSignalSource,
             const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
             const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
             const float* pfNominalFrequency, const bool* pbNegativeEdge,
-            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout);
+            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) override;
 
-        std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings);
+        std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
         std::string SetCameraSettings(
             const unsigned int nCameraID, const ECameraMode* peMode,
             const float* pfMarkerExposure, const float* pfMarkerThreshold,
-            const int* pnOrientation);
+            const int* pnOrientation) override;
 
         std::string SetCameraVideoSettings(
             const unsigned int nCameraID, const EVideoResolution* eVideoResolution,
             const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
-            const float* pfVideoExposure, const float* pfVideoFlashTime);
+            const float* pfVideoExposure, const float* pfVideoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(
             const unsigned int  nCameraID, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
             const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
-            const bool* pbSyncOutNegativePolarity);
+            const bool* pbSyncOutNegativePolarity) override;
 
-        std::string SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture);
-        std::string SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation);
-        std::string SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable);
-
+        std::string SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture) override;
+        std::string SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation) override;
+        std::string SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable) override;
         std::string SetImageSettings(
             const unsigned int  nCameraID, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
             const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
-            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop);
+            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) override;
 
         std::string SetForceSettings(
             const unsigned int nPlateID, const SPoint* psCorner1, const SPoint* psCorner2,
-            const SPoint* psCorner3, const SPoint* psCorner4);
+            const SPoint* psCorner3, const SPoint* psCorner4) override;
 
-        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings);
-
-
-        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons);
+        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings) override;
+        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons) override;
 
     private:
         // TODO: Set these

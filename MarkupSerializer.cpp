@@ -1797,7 +1797,7 @@ namespace
     }
 }
 
-bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, bool& bDataAvailable)
+bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral& msGeneralSettings, bool& bDataAvailable)
 {
     bDataAvailable = false;
 
@@ -1897,11 +1897,10 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
             }
             if (mnMajorVersion > 1 || mnMinorVersion > 15)
             {
-                // TODO: Figure this out
-                //if (!TryReadSetEuler(oXML, msGeneralSettings.eulerRotations[0], msGeneralSettings.eulerRotations[1], msGeneralSettings.eulerRotations[2]))
-                //{ // Euler --- REQUIRED
+                if (!TryReadSetEuler(oXML, msGeneralSettings.eulerRotations[0], msGeneralSettings.eulerRotations[1], msGeneralSettings.eulerRotations[2]))
+                { // Euler --- REQUIRED
                     return false;
-                //}
+                }
             }
             bDataAvailable = true;
         }

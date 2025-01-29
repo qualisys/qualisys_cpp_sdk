@@ -1740,7 +1740,7 @@ bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
     }
 
     auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
-    return deserializer.Deserialize6DOFSettings(m6DOFSettings, bDataAvailable);
+    return deserializer.Deserialize6DOFSettings(m6DOFSettings, msGeneralSettings, bDataAvailable);
 }
 
 bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)

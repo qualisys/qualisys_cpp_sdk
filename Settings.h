@@ -644,7 +644,7 @@ namespace CRTProtocolNs
         virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& mvsAnalogDeviceSettings, bool& bDataAvailable) = 0;
         virtual bool DeserializeForceSettings(SSettingsForce& msForceSettings, bool& bDataAvailable) = 0;
         virtual bool DeserializeImageSettings(std::vector<SImageCamera>& mvsImageSettings, bool& bDataAvailable) = 0;
-        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, bool& bDataAvailable) = 0;
+        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& m6DOFSettings, SSettingsGeneral&, bool& bDataAvailable) = 0;
         virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& mvsGazeVectorSettings, bool& bDataAvailable) = 0;
         virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& mvsEyeTrackerSettings, bool& bDataAvailable) = 0;
         virtual bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) = 0;
@@ -652,6 +652,49 @@ namespace CRTProtocolNs
     };
 
     struct DLL_EXPORT ISettingsSerializer {
-        
+        virtual ~ISettingsSerializer() = default;
+
+        virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
+                                               const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+                                               const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) = 0;
+
+        virtual std::string SetExtTimeBaseSettings(
+            const bool* pbEnabled, const ESignalSource* peSignalSource,
+            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
+            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
+            const float* pfNominalFrequency, const bool* pbNegativeEdge,
+            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) = 0;
+
+        virtual std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) = 0;
+
+        virtual std::string SetCameraSettings(
+            const unsigned int nCameraID, const ECameraMode* peMode,
+            const float* pfMarkerExposure, const float* pfMarkerThreshold,
+            const int* pnOrientation) = 0;
+
+        virtual std::string SetCameraVideoSettings(
+            const unsigned int nCameraID, const EVideoResolution* eVideoResolution,
+            const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
+            const float* pfVideoExposure, const float* pfVideoFlashTime) = 0;
+
+        virtual std::string SetCameraSyncOutSettings(
+            const unsigned int  nCameraID, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
+            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
+            const bool* pbSyncOutNegativePolarity) = 0;
+
+        virtual std::string SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture) = 0;
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation) = 0;
+        virtual std::string SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable) = 0;
+        virtual std::string SetImageSettings(
+            const unsigned int  nCameraID, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
+            const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
+            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) = 0;
+
+        virtual std::string SetForceSettings(
+            const unsigned int nPlateID, const SPoint* psCorner1, const SPoint* psCorner2,
+            const SPoint* psCorner3, const SPoint* psCorner4) = 0;
+
+        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings) = 0;
+        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons) = 0;
     };
 }
