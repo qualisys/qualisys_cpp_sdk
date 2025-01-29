@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "MarkupSerializer.h"
 #ifdef _WIN32
 #pragma warning (disable : 4251)
 #endif

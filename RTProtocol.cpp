@@ -16,6 +16,7 @@
 #include <functional>
 
 #include "Network.h"
+#include "MarkupSerializer.h"
 #include <stdexcept>
 
 #ifdef _WIN32
