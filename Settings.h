@@ -655,7 +655,7 @@ namespace CRTProtocolNs
         virtual ~ISettingsSerializer() = default;
 
         virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-                                               const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+                                               const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
                                                const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) = 0;
 
         virtual std::string SetExtTimeBaseSettings(
@@ -668,33 +668,33 @@ namespace CRTProtocolNs
         virtual std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) = 0;
 
         virtual std::string SetCameraSettings(
-            const unsigned int nCameraID, const ECameraMode* peMode,
+            const unsigned int pCameraId, const ECameraMode* peMode,
             const float* pfMarkerExposure, const float* pfMarkerThreshold,
             const int* pnOrientation) = 0;
 
         virtual std::string SetCameraVideoSettings(
-            const unsigned int nCameraID, const EVideoResolution* eVideoResolution,
+            const unsigned int pCameraId, const EVideoResolution* eVideoResolution,
             const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
             const float* pfVideoExposure, const float* pfVideoFlashTime) = 0;
 
         virtual std::string SetCameraSyncOutSettings(
-            const unsigned int  nCameraID, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
+            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
             const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
             const bool* pbSyncOutNegativePolarity) = 0;
 
-        virtual std::string SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture) = 0;
-        virtual std::string SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation) = 0;
-        virtual std::string SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable) = 0;
+        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float focus, const float aperture) = 0;
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool autoExposure, const float compensation) = 0;
+        virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool enable) = 0;
         virtual std::string SetImageSettings(
-            const unsigned int  nCameraID, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
+            const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
             const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
             const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) = 0;
 
         virtual std::string SetForceSettings(
-            const unsigned int nPlateID, const SPoint* psCorner1, const SPoint* psCorner2,
-            const SPoint* psCorner3, const SPoint* psCorner4) = 0;
+            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
+            const SPoint* pCorner3, const SPoint* pCorner4) = 0;
 
-        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings) = 0;
-        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons) = 0;
+        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) = 0;
+        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) = 0;
     };
 }

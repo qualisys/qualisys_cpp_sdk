@@ -6,7 +6,7 @@
 namespace CRTProtocolNs {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
-        CMarkupDeserializer(const char* data, std::uint32_t versionMajor, std::uint32_t versionMinor );
+        CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion );
         bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) override;
         bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) override;
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) override;
@@ -39,10 +39,10 @@ namespace CRTProtocolNs {
     };
 
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
-        CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
+        CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
         CMarkup oXML;
         std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-            const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+            const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
             const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
@@ -55,34 +55,34 @@ namespace CRTProtocolNs {
         std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
         std::string SetCameraSettings(
-            const unsigned int nCameraID, const ECameraMode* peMode,
+            const unsigned int pCameraId, const ECameraMode* peMode,
             const float* pfMarkerExposure, const float* pfMarkerThreshold,
             const int* pnOrientation) override;
 
         std::string SetCameraVideoSettings(
-            const unsigned int nCameraID, const EVideoResolution* eVideoResolution,
+            const unsigned int pCameraId, const EVideoResolution* eVideoResolution,
             const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
             const float* pfVideoExposure, const float* pfVideoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(
-            const unsigned int  nCameraID, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
+            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
             const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
             const bool* pbSyncOutNegativePolarity) override;
 
-        std::string SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture) override;
-        std::string SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation) override;
-        std::string SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable) override;
+        std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float focus, const float aperture) override;
+        std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool autoExposure, const float compensation) override;
+        std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool enable) override;
         std::string SetImageSettings(
-            const unsigned int  nCameraID, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
+            const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
             const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
             const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) override;
 
         std::string SetForceSettings(
-            const unsigned int nPlateID, const SPoint* psCorner1, const SPoint* psCorner2,
-            const SPoint* psCorner3, const SPoint* psCorner4) override;
+            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
+            const SPoint* pCorner3, const SPoint* pCorner4) override;
 
-        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings) override;
-        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons) override;
+        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) override;
+        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) override;
 
     private:
         std::uint32_t mnMajorVersion;
