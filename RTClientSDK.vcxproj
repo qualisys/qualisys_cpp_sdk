@@ -186,12 +186,16 @@
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="MarkupSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Markup.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="RTPacket.h" />
     <ClInclude Include="RTProtocol.h" />
+    <ClCompile Include="Settings.h" />
+    <ClCompile Include="MarkupSerializer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
             if (!streamFrames)
             {
-                if (!rtProtocol.StreamFrames(CRTProtocol::RateAllFrames, 0, udpPort, NULL, CRTProtocol::cComponent6d))
+                if (!rtProtocol.StreamFrames(CRTProtocol::EStreamRate::RateAllFrames, 0, udpPort, NULL, CRTProtocol::cComponent6d))
                 {
                     printf("rtProtocol.StreamFrames: %s\n\n", rtProtocol.GetErrorString());
                     sleep(1);
