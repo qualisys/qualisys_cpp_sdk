@@ -117,7 +117,7 @@ namespace
                 CHECK_EQ(expectedData[i].segments[j].rotationY, actualData[i].segments[j].rotationY);
                 CHECK_EQ(expectedData[i].segments[j].rotationZ, actualData[i].segments[j].rotationZ);
                 CHECK_EQ(expectedData[i].segments[j].rotationW, actualData[i].segments[j].rotationW);
-            }
+}
         }
     }
 }
