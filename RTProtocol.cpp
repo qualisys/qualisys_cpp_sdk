@@ -1696,7 +1696,7 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    auto serializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto serializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
 
     return serializer.DeserializeGeneralSettings(msGeneralSettings);
 
@@ -1725,7 +1725,7 @@ bool CRTProtocol::Read3DSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.Deserialize3DSettings(ms3DSettings, bDataAvailable);
 }
 
@@ -1739,7 +1739,7 @@ bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.Deserialize6DOFSettings(m6DOFSettings, msGeneralSettings, bDataAvailable);
 }
 
@@ -1755,7 +1755,7 @@ bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeGazeVectorSettings(mvsGazeVectorSettings, bDataAvailable);
 }
 
@@ -1771,7 +1771,7 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeEyeTrackerSettings(mvsEyeTrackerSettings, bDataAvailable);
 }
 
@@ -1786,7 +1786,7 @@ bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
     {
         return false;
     }
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeAnalogSettings(mvsAnalogDeviceSettings, bDataAvailable);
 }
 
@@ -1802,7 +1802,7 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeForceSettings(msForceSettings, bDataAvailable);
 }
 
@@ -1818,7 +1818,7 @@ bool CRTProtocol::ReadImageSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeImageSettings(mvsImageSettings, bDataAvailable);
 }
 
@@ -1835,7 +1835,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobal
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeSkeletonSettings(skeletonGlobalData, mSkeletonSettingsHierarchical, mSkeletonSettings, bDataAvailable);
 }
 
@@ -1889,7 +1889,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     }
 
     auto data = mpoRTPacket->GetXMLString();
-    auto deserializer = CMarkupDeserializer(data, mnMinorVersion, mnMajorVersion);
+    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeCalibrationSettings(mCalibrationSettings);
 } // ReadCalibrationSettings
 
