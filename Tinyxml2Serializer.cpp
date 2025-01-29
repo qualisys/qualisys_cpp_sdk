@@ -3568,85 +3568,119 @@ std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, c
 
 std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument doc;
+    auto* root = doc.NewElement("QTM_Settings");
+    doc.InsertFirstChild(root);
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("The_6D");
-    //oXML.IntoElem();
+    auto* the6D = doc.NewElement("The_6D");
+    root->InsertEndChild(the6D);
 
-    //for (auto& body : pSettings6Dofs)
-    //{
-    //    oXML.AddElem("Body");
-    //    oXML.IntoElem();
-    //    oXML.AddElem("Name", body.name.c_str());
-    //    oXML.AddElem("Enabled", body.enabled ? "true" : "false");
-    //    oXML.AddElem("Color");
-    //    oXML.AddAttrib("R", std::to_string(body.color & 0xff).c_str());
-    //    oXML.AddAttrib("G", std::to_string((body.color >> 8) & 0xff).c_str());
-    //    oXML.AddAttrib("B", std::to_string((body.color >> 16) & 0xff).c_str());
-    //    oXML.AddElem("MaximumResidual", std::to_string(body.maxResidual).c_str());
-    //    oXML.AddElem("MinimumMarkersInBody", std::to_string(body.minMarkersInBody).c_str());
-    //    oXML.AddElem("BoneLengthTolerance", std::to_string(body.boneLengthTolerance).c_str());
-    //    oXML.AddElem("Filter");
-    //    oXML.AddAttrib("Preset", body.filterPreset.c_str());
+    for (const auto& body : pSettings6Dofs)
+    {
+        auto* bodyElem = doc.NewElement("Body");
+        the6D->InsertEndChild(bodyElem);
 
-    //    if (!body.mesh.name.empty())
-    //    {
-    //        oXML.AddElem("Mesh");
-    //        oXML.IntoElem();
-    //        oXML.AddElem("Name", body.mesh.name.c_str());
-    //        oXML.AddElem("Position");
-    //        oXML.AddAttrib("X", std::to_string(body.mesh.position.fX).c_str());
-    //        oXML.AddAttrib("Y", std::to_string(body.mesh.position.fY).c_str());
-    //        oXML.AddAttrib("Z", std::to_string(body.mesh.position.fZ).c_str());
-    //        oXML.AddElem("Rotation");
-    //        oXML.AddAttrib("X", std::to_string(body.mesh.rotation.fX).c_str());
-    //        oXML.AddAttrib("Y", std::to_string(body.mesh.rotation.fY).c_str());
-    //        oXML.AddAttrib("Z", std::to_string(body.mesh.rotation.fZ).c_str());
-    //        oXML.AddElem("Scale", std::to_string(body.mesh.scale).c_str());
-    //        oXML.AddElem("Opacity", std::to_string(body.mesh.opacity).c_str());
-    //        oXML.OutOfElem(); // Mesh
-    //    }
+        auto* nameElem = doc.NewElement("Name");
+        nameElem->SetText(body.name.c_str());
+        bodyElem->InsertEndChild(nameElem);
 
-    //    if (!body.points.empty())
-    //    {
-    //        oXML.AddElem("Points");
-    //        oXML.IntoElem();
-    //        for (auto& point : body.points)
-    //        {
-    //            oXML.AddElem("Point");
-    //            oXML.AddAttrib("X", std::to_string(point.fX).c_str());
-    //            oXML.AddAttrib("Y", std::to_string(point.fY).c_str());
-    //            oXML.AddAttrib("Z", std::to_string(point.fZ).c_str());
-    //            oXML.AddAttrib("Virtual", point.virtual_ ? "1" : "0");
-    //            oXML.AddAttrib("PhysicalId", std::to_string(point.physicalId).c_str());
-    //            oXML.AddAttrib("Name", point.name.c_str());
-    //        }
-    //        oXML.OutOfElem(); // Points
-    //    }
-    //    oXML.AddElem("Data_origin", std::to_string(body.origin.type).c_str());
-    //    oXML.AddAttrib("X", std::to_string(body.origin.position.fX).c_str());
-    //    oXML.AddAttrib("Y", std::to_string(body.origin.position.fY).c_str());
-    //    oXML.AddAttrib("Z", std::to_string(body.origin.position.fZ).c_str());
-    //    oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
-    //    oXML.AddElem("Data_orientation", std::to_string(body.origin.type).c_str());
-    //    for (std::uint32_t i = 0; i < 9; i++)
-    //    {
-    //        char tmpStr[16];
-    //        sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-    //        oXML.AddAttrib(tmpStr, std::to_string(body.origin.rotation[i]).c_str());
-    //    }
-    //    oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
+        auto* enabledElem = doc.NewElement("Enabled");
+        enabledElem->SetText(body.enabled ? "true" : "false");
+        bodyElem->InsertEndChild(enabledElem);
 
-    //    oXML.OutOfElem(); // Body
-    //}
-    //oXML.OutOfElem(); // The_6D
-    //oXML.OutOfElem(); // QTM_Settings
+        auto* colorElem = doc.NewElement("Color");
+        colorElem->SetAttribute("R", body.color & 0xff);
+        colorElem->SetAttribute("G", (body.color >> 8) & 0xff);
+        colorElem->SetAttribute("B", (body.color >> 16) & 0xff);
+        bodyElem->InsertEndChild(colorElem);
 
-    //return oXML.GetDoc();
+        auto* maxResidualElem = doc.NewElement("MaximumResidual");
+        maxResidualElem->SetText(std::to_string(body.maxResidual).c_str());
+        bodyElem->InsertEndChild(maxResidualElem);
 
-    return "";
+        auto* minMarkersElem = doc.NewElement("MinimumMarkersInBody");
+        minMarkersElem->SetText(std::to_string(body.minMarkersInBody).c_str());
+        bodyElem->InsertEndChild(minMarkersElem);
+
+        auto* boneToleranceElem = doc.NewElement("BoneLengthTolerance");
+        boneToleranceElem->SetText(std::to_string(body.boneLengthTolerance).c_str());
+        bodyElem->InsertEndChild(boneToleranceElem);
+
+        auto* filterElem = doc.NewElement("Filter");
+        filterElem->SetAttribute("Preset", body.filterPreset.c_str());
+        bodyElem->InsertEndChild(filterElem);
+
+        if (!body.mesh.name.empty())
+        {
+            auto* meshElem = doc.NewElement("Mesh");
+            bodyElem->InsertEndChild(meshElem);
+
+            auto* meshNameElem = doc.NewElement("Name");
+            meshNameElem->SetText(body.mesh.name.c_str());
+            meshElem->InsertEndChild(meshNameElem);
+
+            auto* positionElem = doc.NewElement("Position");
+            positionElem->SetAttribute("X", body.mesh.position.fX);
+            positionElem->SetAttribute("Y", body.mesh.position.fY);
+            positionElem->SetAttribute("Z", body.mesh.position.fZ);
+            meshElem->InsertEndChild(positionElem);
+
+            auto* rotationElem = doc.NewElement("Rotation");
+            rotationElem->SetAttribute("X", body.mesh.rotation.fX);
+            rotationElem->SetAttribute("Y", body.mesh.rotation.fY);
+            rotationElem->SetAttribute("Z", body.mesh.rotation.fZ);
+            meshElem->InsertEndChild(rotationElem);
+
+            auto* scaleElem = doc.NewElement("Scale");
+            scaleElem->SetText(std::to_string(body.mesh.scale).c_str());
+            meshElem->InsertEndChild(scaleElem);
+
+            auto* opacityElem = doc.NewElement("Opacity");
+            opacityElem->SetText(std::to_string(body.mesh.opacity).c_str());
+            meshElem->InsertEndChild(opacityElem);
+        }
+
+        if (!body.points.empty())
+        {
+            auto* pointsElem = doc.NewElement("Points");
+            bodyElem->InsertEndChild(pointsElem);
+
+            for (const auto& point : body.points)
+            {
+                auto* pointElem = doc.NewElement("Point");
+                pointElem->SetAttribute("X", point.fX);
+                pointElem->SetAttribute("Y", point.fY);
+                pointElem->SetAttribute("Z", point.fZ);
+                pointElem->SetAttribute("Virtual", point.virtual_ ? "1" : "0");
+                pointElem->SetAttribute("PhysicalId", point.physicalId);
+                pointElem->SetAttribute("Name", point.name.c_str());
+                pointsElem->InsertEndChild(pointElem);
+            }
+        }
+
+        auto* dataOriginElem = doc.NewElement("Data_origin");
+        dataOriginElem->SetText(std::to_string(body.origin.type).c_str());
+        dataOriginElem->SetAttribute("X", body.origin.position.fX);
+        dataOriginElem->SetAttribute("Y", body.origin.position.fY);
+        dataOriginElem->SetAttribute("Z", body.origin.position.fZ);
+        dataOriginElem->SetAttribute("Relative_body", body.origin.relativeBody);
+        bodyElem->InsertEndChild(dataOriginElem);
+
+        auto* dataOrientationElem = doc.NewElement("Data_orientation");
+        dataOrientationElem->SetText(std::to_string(body.origin.type).c_str());
+        for (std::uint32_t i = 0; i < 9; i++)
+        {
+            char tmpStr[16];
+            sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            dataOrientationElem->SetAttribute(tmpStr, body.origin.rotation[i]);
+        }
+        dataOrientationElem->SetAttribute("Relative_body", body.origin.relativeBody);
+        bodyElem->InsertEndChild(dataOrientationElem);
+    }
+
+    tinyxml2::XMLPrinter printer;
+    doc.Print(&printer);
+    return std::string(printer.CStr());
 }
 
 std::string CTinyxml2Serializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons)
