@@ -13,6 +13,7 @@ add_library(${PROJECT_NAME}
         RTProtocol.cpp
         Settings.cpp
         MarkupSerializer.cpp
+        Tinyxml2Serializer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
