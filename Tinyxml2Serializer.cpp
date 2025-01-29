@@ -3672,7 +3672,7 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
         {
             char tmpStr[16];
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-            dataOrientationElem->SetAttribute(tmpStr, body.origin.rotation[i]);
+            dataOrientationElem->SetAttribute(tmpStr, std::to_string(body.origin.rotation[i]).c_str());
         }
         dataOrientationElem->SetAttribute("Relative_body", body.origin.relativeBody);
         bodyElem->InsertEndChild(dataOrientationElem);
