@@ -655,8 +655,11 @@ namespace CRTProtocolNs
         virtual ~ISettingsSerializer() = default;
 
         virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-                                               const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
-                                               const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) = 0;
+                                               const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO,
+                                               const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
+                                               const EProcessingActions* peProcessingActions,
+                                               const EProcessingActions* peRtProcessingActions,
+                                               const EProcessingActions* peReprocessingActions) = 0;
 
         virtual std::string SetExtTimeBaseSettings(
             const bool* pbEnabled, const ESignalSource* peSignalSource,
@@ -678,15 +681,20 @@ namespace CRTProtocolNs
             const float* pfVideoExposure, const float* pfVideoFlashTime) = 0;
 
         virtual std::string SetCameraSyncOutSettings(
-            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
+            const unsigned int pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
             const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
             const bool* pbSyncOutNegativePolarity) = 0;
 
-        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) = 0;
-        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure, const float pCompensation) = 0;
+        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
+                                                         const float pAperture) = 0;
+
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
+                                                          const float pCompensation) = 0;
+
         virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) = 0;
+
         virtual std::string SetImageSettings(
-            const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
+            const unsigned int pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
             const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
             const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) = 0;
 
@@ -695,6 +703,7 @@ namespace CRTProtocolNs
             const SPoint* pCorner3, const SPoint* pCorner4) = 0;
 
         virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) = 0;
+
         virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) = 0;
     };
 }
