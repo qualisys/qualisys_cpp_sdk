@@ -4,7 +4,7 @@
 
 #include <tinyxml2.h>
 
-namespace CRTProtocolNs {
+namespace qualisys_cpp_sdk {
 
     struct DLL_EXPORT CTinyxml2Deserializer : ISettingsDeserializer {
         CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
