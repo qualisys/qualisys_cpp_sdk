@@ -52,19 +52,14 @@ void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent,
     }
 }
 
-void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLElement* parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument* oXML)
+void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument& oXML)
 {
-    if (!pfValue || !parent || !oXML)
-    {
-        return;
-    }
-
     char formattedValue[32];
     snprintf(formattedValue, sizeof(formattedValue), "%.*f", pnDecimals, *pfValue);
 
-    tinyxml2::XMLElement* elem = oXML->NewElement(tTag);
+    tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
     elem->SetText(formattedValue);
-    parent->InsertEndChild(elem);
+    parent.InsertEndChild(elem);
 }
 
 
@@ -3533,9 +3528,9 @@ std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, c
                 tinyxml2::XMLElement* cornerElem = oXML.NewElement(name);
                 plateElem->InsertEndChild(cornerElem);
 
-                AddXMLElementFloat(cornerElem, "X", &(pCorner->fX), 6, &oXML);
-                AddXMLElementFloat(cornerElem, "Y", &(pCorner->fY), 6, &oXML);
-                AddXMLElementFloat(cornerElem, "Z", &(pCorner->fZ), 6, &oXML);
+                AddXMLElementFloat(*cornerElem, "X", &(pCorner->fX), 6, oXML);
+                AddXMLElementFloat(*cornerElem, "Y", &(pCorner->fY), 6, oXML);
+                AddXMLElementFloat(*cornerElem, "Z", &(pCorner->fZ), 6, oXML);
             }
         };
 
