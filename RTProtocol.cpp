@@ -2,6 +2,7 @@
 #define NOMINMAX
 
 #include "RTProtocol.h"
+#include "Tinyxml2Serializer.h"
 
 #include <float.h>
 #include <cctype>
@@ -2794,7 +2795,7 @@ bool CRTProtocol::SetForceSettings(
 {
     if (nPlateID > 0)
     {
-        auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+        CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
         auto message = serializer.SetForceSettings(nPlateID, psCorner1, psCorner2,
             psCorner3, psCorner4);
         return SendXML(message.data());
