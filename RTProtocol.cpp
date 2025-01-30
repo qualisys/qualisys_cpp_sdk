@@ -17,6 +17,7 @@
 #include <functional>
 
 #include "Network.h"
+#include "MarkupSerializer.h"
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -28,7 +29,7 @@
 
 #endif
 
-using namespace CRTProtocolNs;
+using namespace qualisys_cpp_sdk;
 
 namespace
 {
@@ -2832,12 +2833,12 @@ bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarc
 
 const char* CRTProtocol::SkeletonDofToString(EDegreeOfFreedom dof)
 {
-    return CRTProtocolNs::SkeletonDofToStringSettings(dof);
+    return qualisys_cpp_sdk::SkeletonDofToStringSettings(dof);
 }
 
 EDegreeOfFreedom CRTProtocol::SkeletonStringToDof(const std::string& str)
 {
-    return CRTProtocolNs::SkeletonStringToDofSettings(str);
+    return qualisys_cpp_sdk::SkeletonStringToDofSettings(str);
 }
 
 
