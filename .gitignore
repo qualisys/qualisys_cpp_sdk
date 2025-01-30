@@ -1,5 +1,6 @@
 /build/*
 /out/*
+CMakeSettings.json
 
 # Prerequisites
 *.d

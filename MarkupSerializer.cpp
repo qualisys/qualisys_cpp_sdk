@@ -10,7 +10,7 @@
 #include <functional>
 #include <stdexcept>
 
-using namespace CRTProtocolNs;
+using namespace qualisys_cpp_sdk;
 
 void CMarkupSerializer::AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
 {

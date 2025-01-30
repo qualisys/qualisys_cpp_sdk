@@ -1,6 +1,6 @@
 #include "Settings.h"
 
-const char* CRTProtocolNs::SkeletonDofToStringSettings(EDegreeOfFreedom dof)
+const char* qualisys_cpp_sdk::SkeletonDofToStringSettings(EDegreeOfFreedom dof)
 {
     auto it = std::find_if(DEGREES_OF_FREEDOM.begin(), DEGREES_OF_FREEDOM.end(), [&](const auto& DEGREE_OF_FREEDOM) { return (DEGREE_OF_FREEDOM.first == dof); });
 
@@ -12,7 +12,7 @@ const char* CRTProtocolNs::SkeletonDofToStringSettings(EDegreeOfFreedom dof)
     return it->second;
 }
 
-CRTProtocolNs::EDegreeOfFreedom CRTProtocolNs::SkeletonStringToDofSettings(const std::string& str)
+qualisys_cpp_sdk::EDegreeOfFreedom qualisys_cpp_sdk::SkeletonStringToDofSettings(const std::string& str)
 {
     auto it = std::find_if(DEGREES_OF_FREEDOM.begin(), DEGREES_OF_FREEDOM.end(), [&](const auto& DEGREE_OF_FREEDOM) { return (DEGREE_OF_FREEDOM.second == str); });
 
