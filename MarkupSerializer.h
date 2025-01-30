@@ -3,7 +3,7 @@
 #include "Settings.h"
 #include "Markup.h"
 
-namespace CRTProtocolNs {
+namespace qualisys_cpp_sdk {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
         CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion );
