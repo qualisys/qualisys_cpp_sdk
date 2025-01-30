@@ -13,7 +13,7 @@
 #define DLL_EXPORT
 #endif
 
-namespace CRTProtocolNs
+namespace qualisys_cpp_sdk
 {
     struct DLL_EXPORT SComponentOptions
     {
@@ -624,12 +624,12 @@ namespace CRTProtocolNs
 
     constexpr auto DEGREES_OF_FREEDOM =
     {
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationX, "RotationX"),
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationY, "RotationY"),
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::RotationZ, "RotationZ"),
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationX, "TranslationX"),
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationY, "TranslationY"),
-        std::make_pair(CRTProtocolNs::EDegreeOfFreedom::TranslationZ, "TranslationZ")
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationX, "RotationX"),
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationY, "RotationY"),
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationZ, "RotationZ"),
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationX, "TranslationX"),
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationY, "TranslationY"),
+        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationZ, "TranslationZ")
     };
 
     DLL_EXPORT const char* SkeletonDofToStringSettings(EDegreeOfFreedom dof);
