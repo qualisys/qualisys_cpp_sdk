@@ -19,8 +19,6 @@
 #include "Network.h"
 #include <stdexcept>
 
-#include "Tinyxml2Serializer.h"
-
 #ifdef _WIN32
 #include <iphlpapi.h>
 // import the internet protocol helper library.
