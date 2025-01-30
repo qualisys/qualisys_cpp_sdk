@@ -97,6 +97,12 @@ void CTinyxml2Serializer::AddXMLElementDOF(tinyxml2::XMLDocument& oXML, tinyxml2
             constraintElem->SetAttribute("UpperBound", std::to_string(degreeOfFreedoms.upperBound).c_str());
             dofElem->InsertEndChild(constraintElem);
         }
+        else
+        {
+            // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
+            dofElem->SetAttribute("LowerBound", std::to_string(degreeOfFreedoms.lowerBound).c_str());
+            dofElem->SetAttribute("UpperBound", std::to_string(degreeOfFreedoms.upperBound).c_str());
+        }
     }
 
     if (!degreeOfFreedoms.couplings.empty())
