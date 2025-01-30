@@ -3515,7 +3515,7 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
     tinyxml2::XMLPrinter printer;
     oXML.Print(&printer);
 
-    return std::string(printer.CStr());
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, const SPoint* pCorner1,
