@@ -3779,7 +3779,7 @@ std::string CTinyxml2Serializer::SetSkeletonSettings(const std::vector<SSettings
 
     tinyxml2::XMLPrinter printer;
     xmlDoc.Print(&printer);
-    return std::string(printer.CStr());
+    return printer.CStr();
 }
 
 bool CTinyxml2Deserializer::ReadXMLDegreesOfFreedom(tinyxml2::XMLDocument& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
