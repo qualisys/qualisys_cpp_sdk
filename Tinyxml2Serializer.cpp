@@ -64,10 +64,10 @@ void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLDocument* oXML, const 
     //}
 }
 
-void CTinyxml2Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement* parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
+void CTinyxml2Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
 {
     tinyxml2::XMLElement* transformElem = oXML.NewElement(name.c_str());
-    parentElem->InsertEndChild(transformElem);
+    parentElem.InsertEndChild(transformElem);
 
     tinyxml2::XMLElement* positionElem = oXML.NewElement("Position");
     positionElem->SetAttribute("X", std::to_string(position.x).c_str());
@@ -83,10 +83,10 @@ void CTinyxml2Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& oXML, ti
     transformElem->InsertEndChild(rotationElem);
 }
 
-void CTinyxml2Serializer::AddXMLElementDOF(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement* parentElem, const std::string& name, const SDegreeOfFreedom& degreeOfFreedoms)
+void CTinyxml2Serializer::AddXMLElementDOF(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreeOfFreedoms)
 {
     tinyxml2::XMLElement* dofElem = oXML.NewElement(name.c_str());
-    parentElem->InsertEndChild(dofElem);
+    parentElem.InsertEndChild(dofElem);
 
     if (!std::isnan(degreeOfFreedoms.lowerBound) && !std::isnan(degreeOfFreedoms.upperBound))
     {
@@ -3696,19 +3696,19 @@ std::string CTinyxml2Serializer::SetSkeletonSettings(const std::vector<SSettings
 
                 if (!std::isnan(segment.position.x))
                 {
-                    AddXMLElementTransform(xmlDoc, segmentElem, "Transform", segment.position, segment.rotation);
+                    AddXMLElementTransform(xmlDoc, *segmentElem, "Transform", segment.position, segment.rotation);
                 }
 
                 if (!std::isnan(segment.defaultPosition.x))
                 {
-                    AddXMLElementTransform(xmlDoc, segmentElem, "DefaultTransform", segment.defaultPosition, segment.defaultRotation);
+                    AddXMLElementTransform(xmlDoc, *segmentElem, "DefaultTransform", segment.defaultPosition, segment.defaultRotation);
                 }
 
                 tinyxml2::XMLElement* dofElem = xmlDoc.NewElement("DegreesOfFreedom");
                 segmentElem->InsertEndChild(dofElem);
                 for (const auto& dof : segment.degreesOfFreedom)
                 {
-                    AddXMLElementDOF(xmlDoc, dofElem, SkeletonDofToStringSettings(dof.type), dof);
+                    AddXMLElementDOF(xmlDoc, *dofElem, SkeletonDofToStringSettings(dof.type), dof);
                 }
 
                 tinyxml2::XMLElement* endpointElem = xmlDoc.NewElement("Endpoint");
