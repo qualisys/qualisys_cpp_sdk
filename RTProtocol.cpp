@@ -19,6 +19,8 @@
 #include "Network.h"
 #include <stdexcept>
 
+#include "Tinyxml2Serializer.h"
+
 #ifdef _WIN32
 #include <iphlpapi.h>
 // import the internet protocol helper library.
@@ -1772,7 +1774,7 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeEyeTrackerSettings(mvsEyeTrackerSettings, bDataAvailable);
 }
 
