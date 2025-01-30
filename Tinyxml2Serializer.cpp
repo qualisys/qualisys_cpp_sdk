@@ -3620,15 +3620,15 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
             meshElem->InsertEndChild(meshNameElem);
 
             auto* positionElem = doc.NewElement("Position");
-            positionElem->SetAttribute("X", body.mesh.position.fX);
-            positionElem->SetAttribute("Y", body.mesh.position.fY);
-            positionElem->SetAttribute("Z", body.mesh.position.fZ);
+            positionElem->SetAttribute("X", std::to_string(body.mesh.position.fX).c_str());
+            positionElem->SetAttribute("Y", std::to_string(body.mesh.position.fY).c_str());
+            positionElem->SetAttribute("Z", std::to_string(body.mesh.position.fZ).c_str());
             meshElem->InsertEndChild(positionElem);
 
             auto* rotationElem = doc.NewElement("Rotation");
-            rotationElem->SetAttribute("X", body.mesh.rotation.fX);
-            rotationElem->SetAttribute("Y", body.mesh.rotation.fY);
-            rotationElem->SetAttribute("Z", body.mesh.rotation.fZ);
+            rotationElem->SetAttribute("X", std::to_string(body.mesh.rotation.fX).c_str());
+            rotationElem->SetAttribute("Y", std::to_string(body.mesh.rotation.fY).c_str());
+            rotationElem->SetAttribute("Z", std::to_string(body.mesh.rotation.fZ).c_str());
             meshElem->InsertEndChild(rotationElem);
 
             auto* scaleElem = doc.NewElement("Scale");
@@ -3648,9 +3648,9 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
             for (const auto& point : body.points)
             {
                 auto* pointElem = doc.NewElement("Point");
-                pointElem->SetAttribute("X", point.fX);
-                pointElem->SetAttribute("Y", point.fY);
-                pointElem->SetAttribute("Z", point.fZ);
+                pointElem->SetAttribute("X", std::to_string(point.fX).c_str());
+                pointElem->SetAttribute("Y", std::to_string(point.fY).c_str());
+                pointElem->SetAttribute("Z", std::to_string(point.fZ).c_str());
                 pointElem->SetAttribute("Virtual", point.virtual_ ? "1" : "0");
                 pointElem->SetAttribute("PhysicalId", point.physicalId);
                 pointElem->SetAttribute("Name", point.name.c_str());
@@ -3660,9 +3660,9 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
 
         auto* dataOriginElem = doc.NewElement("Data_origin");
         dataOriginElem->SetText(std::to_string(body.origin.type).c_str());
-        dataOriginElem->SetAttribute("X", body.origin.position.fX);
-        dataOriginElem->SetAttribute("Y", body.origin.position.fY);
-        dataOriginElem->SetAttribute("Z", body.origin.position.fZ);
+        dataOriginElem->SetAttribute("X", std::to_string(body.origin.position.fX).c_str());
+        dataOriginElem->SetAttribute("Y", std::to_string(body.origin.position.fY).c_str());
+        dataOriginElem->SetAttribute("Z", std::to_string(body.origin.position.fZ).c_str());
         dataOriginElem->SetAttribute("Relative_body", body.origin.relativeBody);
         bodyElem->InsertEndChild(dataOriginElem);
 
