@@ -37,19 +37,14 @@ void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const ch
     //}
 }
 
-void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement* parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument* oXML)
+void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument& oXML)
 {
-    if (!parent || !oXML)
-    {
-        return;
-    }
-
-    tinyxml2::XMLElement* elem = oXML->NewElement(tTag);
+    tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
     elem->SetText(nValue);
-    parent->InsertEndChild(elem);
+    parent.InsertEndChild(elem);
 }
 
-void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement* parent, const char* tTag, const unsigned int* pnValue, tinyxml2::XMLDocument* oXML)
+void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int* pnValue, tinyxml2::XMLDocument& oXML)
 {
     if (pnValue)
     {
@@ -3524,11 +3519,11 @@ std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, c
 
     if (mnMajorVersion > 1 || mnMinorVersion > 7)
     {
-        AddXMLElementUnsignedInt(plateElem, "Plate_ID", &pPlateId, &oXML);
+        AddXMLElementUnsignedInt(*plateElem, "Plate_ID", &pPlateId, oXML);
     }
     else
     {
-        AddXMLElementUnsignedInt(plateElem, "Force_Plate_Index", &pPlateId, &oXML);
+        AddXMLElementUnsignedInt(*plateElem, "Force_Plate_Index", &pPlateId, oXML);
     }
 
     auto addCorner = [&](const char* name, const SPoint* pCorner)
