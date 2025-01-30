@@ -6,6 +6,8 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+include(tinyxml2)
+
 add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
@@ -22,7 +24,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
+        PUBLIC 
+            $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
+        PRIVATE
+            tinyxml2::tinyxml2
 )
 
 # Enable C++14
@@ -46,7 +51,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 )
 
 include(CMakePackageConfigHelpers)
-configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+        configure_package_config_file(${PROJECT_NAME}Config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         INSTALL_DESTINATION ${ConfigPackageLocation}
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR

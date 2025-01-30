@@ -2816,7 +2816,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
         return false;
     }
 
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.Set6DOFBodySettings(settings);
 
     return SendXML(message.data());
@@ -2824,7 +2824,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
 
 bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetSkeletonSettings(skeletons);
 
     return SendXML(message.data());
