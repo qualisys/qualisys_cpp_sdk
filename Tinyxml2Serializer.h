@@ -2,7 +2,7 @@
 
 #include "Settings.h"
 
-#include "external/tinyxml2/tinyxml2.h"
+#include <tinyxml2.h>
 
 namespace CRTProtocolNs {
 

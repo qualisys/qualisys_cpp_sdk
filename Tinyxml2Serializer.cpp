@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Tinyxml2Serializer.h"
-#include ".\external\tinyxml2\tinyxml2.h"
+#include <tinyxml2.h>
 
 #include <algorithm>
 #include <map>
