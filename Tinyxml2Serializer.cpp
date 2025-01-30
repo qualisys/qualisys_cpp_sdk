@@ -3568,86 +3568,86 @@ std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, c
 
 std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs)
 {
-    tinyxml2::XMLDocument doc;
-    auto* root = doc.NewElement("QTM_Settings");
-    doc.InsertFirstChild(root);
+    tinyxml2::XMLDocument oXML;
+    auto* root = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(root);
 
-    auto* the6D = doc.NewElement("The_6D");
+    auto* the6D = oXML.NewElement("The_6D");
     root->InsertEndChild(the6D);
 
     for (const auto& body : pSettings6Dofs)
     {
-        auto* bodyElem = doc.NewElement("Body");
+        auto* bodyElem = oXML.NewElement("Body");
         the6D->InsertEndChild(bodyElem);
 
-        auto* nameElem = doc.NewElement("Name");
+        auto* nameElem = oXML.NewElement("Name");
         nameElem->SetText(body.name.c_str());
         bodyElem->InsertEndChild(nameElem);
 
-        auto* enabledElem = doc.NewElement("Enabled");
+        auto* enabledElem = oXML.NewElement("Enabled");
         enabledElem->SetText(body.enabled ? "true" : "false");
         bodyElem->InsertEndChild(enabledElem);
 
-        auto* colorElem = doc.NewElement("Color");
+        auto* colorElem = oXML.NewElement("Color");
         colorElem->SetAttribute("R", body.color & 0xff);
         colorElem->SetAttribute("G", (body.color >> 8) & 0xff);
         colorElem->SetAttribute("B", (body.color >> 16) & 0xff);
         bodyElem->InsertEndChild(colorElem);
 
-        auto* maxResidualElem = doc.NewElement("MaximumResidual");
+        auto* maxResidualElem = oXML.NewElement("MaximumResidual");
         maxResidualElem->SetText(std::to_string(body.maxResidual).c_str());
         bodyElem->InsertEndChild(maxResidualElem);
 
-        auto* minMarkersElem = doc.NewElement("MinimumMarkersInBody");
+        auto* minMarkersElem = oXML.NewElement("MinimumMarkersInBody");
         minMarkersElem->SetText(std::to_string(body.minMarkersInBody).c_str());
         bodyElem->InsertEndChild(minMarkersElem);
 
-        auto* boneToleranceElem = doc.NewElement("BoneLengthTolerance");
+        auto* boneToleranceElem = oXML.NewElement("BoneLengthTolerance");
         boneToleranceElem->SetText(std::to_string(body.boneLengthTolerance).c_str());
         bodyElem->InsertEndChild(boneToleranceElem);
 
-        auto* filterElem = doc.NewElement("Filter");
+        auto* filterElem = oXML.NewElement("Filter");
         filterElem->SetAttribute("Preset", body.filterPreset.c_str());
         bodyElem->InsertEndChild(filterElem);
 
         if (!body.mesh.name.empty())
         {
-            auto* meshElem = doc.NewElement("Mesh");
+            auto* meshElem = oXML.NewElement("Mesh");
             bodyElem->InsertEndChild(meshElem);
 
-            auto* meshNameElem = doc.NewElement("Name");
+            auto* meshNameElem = oXML.NewElement("Name");
             meshNameElem->SetText(body.mesh.name.c_str());
             meshElem->InsertEndChild(meshNameElem);
 
-            auto* positionElem = doc.NewElement("Position");
+            auto* positionElem = oXML.NewElement("Position");
             positionElem->SetAttribute("X", std::to_string(body.mesh.position.fX).c_str());
             positionElem->SetAttribute("Y", std::to_string(body.mesh.position.fY).c_str());
             positionElem->SetAttribute("Z", std::to_string(body.mesh.position.fZ).c_str());
             meshElem->InsertEndChild(positionElem);
 
-            auto* rotationElem = doc.NewElement("Rotation");
+            auto* rotationElem = oXML.NewElement("Rotation");
             rotationElem->SetAttribute("X", std::to_string(body.mesh.rotation.fX).c_str());
             rotationElem->SetAttribute("Y", std::to_string(body.mesh.rotation.fY).c_str());
             rotationElem->SetAttribute("Z", std::to_string(body.mesh.rotation.fZ).c_str());
             meshElem->InsertEndChild(rotationElem);
 
-            auto* scaleElem = doc.NewElement("Scale");
+            auto* scaleElem = oXML.NewElement("Scale");
             scaleElem->SetText(std::to_string(body.mesh.scale).c_str());
             meshElem->InsertEndChild(scaleElem);
 
-            auto* opacityElem = doc.NewElement("Opacity");
+            auto* opacityElem = oXML.NewElement("Opacity");
             opacityElem->SetText(std::to_string(body.mesh.opacity).c_str());
             meshElem->InsertEndChild(opacityElem);
         }
 
         if (!body.points.empty())
         {
-            auto* pointsElem = doc.NewElement("Points");
+            auto* pointsElem = oXML.NewElement("Points");
             bodyElem->InsertEndChild(pointsElem);
 
             for (const auto& point : body.points)
             {
-                auto* pointElem = doc.NewElement("Point");
+                auto* pointElem = oXML.NewElement("Point");
                 pointElem->SetAttribute("X", std::to_string(point.fX).c_str());
                 pointElem->SetAttribute("Y", std::to_string(point.fY).c_str());
                 pointElem->SetAttribute("Z", std::to_string(point.fZ).c_str());
@@ -3658,7 +3658,7 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
             }
         }
 
-        auto* dataOriginElem = doc.NewElement("Data_origin");
+        auto* dataOriginElem = oXML.NewElement("Data_origin");
         dataOriginElem->SetText(std::to_string(body.origin.type).c_str());
         dataOriginElem->SetAttribute("X", std::to_string(body.origin.position.fX).c_str());
         dataOriginElem->SetAttribute("Y", std::to_string(body.origin.position.fY).c_str());
@@ -3666,7 +3666,7 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
         dataOriginElem->SetAttribute("Relative_body", body.origin.relativeBody);
         bodyElem->InsertEndChild(dataOriginElem);
 
-        auto* dataOrientationElem = doc.NewElement("Data_orientation");
+        auto* dataOrientationElem = oXML.NewElement("Data_orientation");
         dataOrientationElem->SetText(std::to_string(body.origin.type).c_str());
         for (std::uint32_t i = 0; i < 9; i++)
         {
@@ -3679,8 +3679,8 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
     }
 
     tinyxml2::XMLPrinter printer;
-    doc.Print(&printer);
-    return std::string(printer.CStr());
+    oXML.Print(&printer);
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons)
