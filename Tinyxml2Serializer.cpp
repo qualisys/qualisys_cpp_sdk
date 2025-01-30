@@ -1992,7 +1992,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
         float frequency = 0;
         if (auto frequencyElem = deviceElem->FirstChildElement("Frequency"))
         {
-            frequency = (float)atof(frequencyElem->GetText());
+            frequency = static_cast<float>(atof(frequencyElem->GetText()));
         }
 
         bool hwSync = false;
