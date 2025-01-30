@@ -1983,7 +1983,8 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
         if (auto nameElem = deviceElem->FirstChildElement("Name"))
         {
             name = nameElem->GetText();
-        }else
+        }
+        else
         {
             return false;
         }
