@@ -11,6 +11,8 @@ add_library(${PROJECT_NAME}
         Network.cpp
         RTPacket.cpp
         RTProtocol.cpp
+        Settings.cpp
+        MarkupSerializer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

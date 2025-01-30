@@ -320,9 +320,9 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
 
             if (eOperation == CInput::ChangeProcessingActionsSettings)
             {
-                CRTProtocol::EProcessingActions eProcessingActions = CRTProtocol::ProcessingNone;
-                CRTProtocol::EProcessingActions eRtProcessingActions = CRTProtocol::ProcessingNone;
-                CRTProtocol::EProcessingActions eReprocessingActions = CRTProtocol::ProcessingNone;
+                CRTProtocol::EProcessingActions eProcessingActions = CRTProtocol::EProcessingActions::ProcessingNone;
+                CRTProtocol::EProcessingActions eRtProcessingActions = CRTProtocol::EProcessingActions::ProcessingNone;
+                CRTProtocol::EProcessingActions eReprocessingActions = CRTProtocol::EProcessingActions::ProcessingNone;
 
                 mpoInput->ReadProcessingActionsSettings(eProcessingActions, eRtProcessingActions, eReprocessingActions);
 
@@ -371,8 +371,8 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 pfVideoFlashTime  = (fVideoFlashTime == -1) ? NULL : &fVideoFlashTime;
                 pfMarkerExposure  = (fMarkerExposure == -1) ? NULL : &fMarkerExposure;
                 pfMarkerThreshold = (fMarkerThreshold == -1) ? NULL : &fMarkerThreshold;
-                pVideoResolution = (videoResolution == CRTProtocol::VideoResolutionNone) ? NULL : &videoResolution;
-                pVideoAspectRatio = (videoAspectRatio == CRTProtocol::VideoAspectRatioNone) ? NULL : &videoAspectRatio;
+                pVideoResolution = (videoResolution == CRTProtocol::EVideoResolution::VideoResolutionNone) ? NULL : &videoResolution;
+                pVideoAspectRatio = (videoAspectRatio == CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone) ? NULL : &videoAspectRatio;
 
                 if (mpoRTProtocol->SetCameraSettings(nCameraId, (CRTProtocol::ECameraMode*)&nMode, 
                                                      pfMarkerExposure, pfMarkerThreshold, &nRotation))

@@ -16,11 +16,11 @@ namespace
         };
 
         auto couplings = std::vector<CRTProtocol::SCoupling>{
-            {"segment1", CRTProtocol::RotationX, 5.5}
+            {"segment1", CRTProtocol::EDegreeOfFreedom::RotationX, 5.5}
         };
 
         const auto dofs = std::vector<CRTProtocol::SDegreeOfFreedom>{
-            {CRTProtocol::RotationX, 2.3, 3.2, couplings, 4.1, 1.4}
+            {CRTProtocol::EDegreeOfFreedom::RotationX, 2.3, 3.2, couplings, 4.1, 1.4}
         };
 
         auto rootSegment1 = CRTProtocol::SSettingsSkeletonSegmentHierarchical{
