@@ -37,31 +37,29 @@ void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const ch
     //}
 }
 
-void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLDocument* oXML, const char* tTag, const unsigned int value)
+void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument& oXML)
 {
-    //std::string tVal = CTinyxml2::Format("%u", value);
-    //oXML->AddElem(tTag, tVal.c_str());
+    tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
+    elem->SetText(nValue);
+    parent.InsertEndChild(elem);
 }
 
-void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLDocument* oXML, const char* tTag, const unsigned int* pnValue)
+void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int* pnValue, tinyxml2::XMLDocument& oXML)
 {
-    //if (pnValue)
-    //{
-    //    AddXMLElementUnsignedInt(oXML, tTag, *pnValue);
-    //}
+    if (pnValue)
+    {
+        AddXMLElementUnsignedInt(parent, tTag, *pnValue, oXML);
+    }
 }
 
-void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLDocument* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals)
+void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument& oXML)
 {
-    //if (pfValue)
-    //{
-    //    std::string tVal;
-    //    char fFormat[10];
+    char formattedValue[32];
+    snprintf(formattedValue, sizeof(formattedValue), "%.*f", pnDecimals, *pfValue);
 
-    //    sprintf(fFormat, "%%.%df", pnDecimals);
-    //    tVal = CTinyxml2::Format(fFormat, *pfValue);
-    //    oXML->AddElem(tTag, tVal.c_str());
-    //}
+    tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
+    elem->SetText(formattedValue);
+    parent.InsertEndChild(elem);
 }
 
 void CTinyxml2Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
@@ -3519,67 +3517,47 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
 std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, const SPoint* pCorner1,
     const SPoint* pCorner2, const SPoint* pCorner3, const SPoint* pCorner4)
 {
-    //CTinyxml2 oXML;
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("Force");
-    //oXML.IntoElem();
+    tinyxml2::XMLDocument oXML;
+    tinyxml2::XMLElement* root = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(root);
 
-    //oXML.AddElem("Plate");
-    //oXML.IntoElem();
+    tinyxml2::XMLElement* forceElem = oXML.NewElement("Force");
+    root->InsertEndChild(forceElem);
 
-    //if (mnMajorVersion > 1 || mnMinorVersion > 7)
-    //{
-    //    AddXMLElementUnsignedInt(&oXML, "Plate_ID", &pPlateId);
-    //}
-    //else
-    //{
-    //    AddXMLElementUnsignedInt(&oXML, "Force_Plate_Index", &pPlateId);
-    //}
-    //if (pCorner1)
-    //{
-    //    oXML.AddElem("Corner1");
-    //    oXML.IntoElem();
-    //    AddXMLElementFloat(&oXML, "X", &(pCorner1->fX));
-    //    AddXMLElementFloat(&oXML, "Y", &(pCorner1->fY));
-    //    AddXMLElementFloat(&oXML, "Z", &(pCorner1->fZ));
-    //    oXML.OutOfElem(); // Corner1
-    //}
-    //if (pCorner2)
-    //{
-    //    oXML.AddElem("Corner2");
-    //    oXML.IntoElem();
-    //    AddXMLElementFloat(&oXML, "X", &(pCorner2->fX));
-    //    AddXMLElementFloat(&oXML, "Y", &(pCorner2->fY));
-    //    AddXMLElementFloat(&oXML, "Z", &(pCorner2->fZ));
-    //    oXML.OutOfElem(); // Corner2
-    //}
-    //if (pCorner3)
-    //{
-    //    oXML.AddElem("Corner3");
-    //    oXML.IntoElem();
-    //    AddXMLElementFloat(&oXML, "X", &(pCorner3->fX));
-    //    AddXMLElementFloat(&oXML, "Y", &(pCorner3->fY));
-    //    AddXMLElementFloat(&oXML, "Z", &(pCorner3->fZ));
-    //    oXML.OutOfElem(); // Corner3
-    //}
-    //if (pCorner4)
-    //{
-    //    oXML.AddElem("Corner4");
-    //    oXML.IntoElem();
-    //    AddXMLElementFloat(&oXML, "X", &(pCorner4->fX));
-    //    AddXMLElementFloat(&oXML, "Y", &(pCorner4->fY));
-    //    AddXMLElementFloat(&oXML, "Z", &(pCorner4->fZ));
-    //    oXML.OutOfElem(); // Corner4
-    //}
-    //oXML.OutOfElem(); // Plate
+    tinyxml2::XMLElement* plateElem = oXML.NewElement("Plate");
+    forceElem->InsertEndChild(plateElem);
 
-    //oXML.OutOfElem(); // Force
-    //oXML.OutOfElem(); // QTM_Settings
+    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+    {
+        AddXMLElementUnsignedInt(*plateElem, "Plate_ID", &pPlateId, oXML);
+    }
+    else
+    {
+        AddXMLElementUnsignedInt(*plateElem, "Force_Plate_Index", &pPlateId, oXML);
+    }
 
-    //return oXML.GetDoc();
+    auto addCorner = [&](const char* name, const SPoint* pCorner)
+        {
+            if (pCorner)
+            {
+                tinyxml2::XMLElement* cornerElem = oXML.NewElement(name);
+                plateElem->InsertEndChild(cornerElem);
 
-    return "";
+                AddXMLElementFloat(*cornerElem, "X", &(pCorner->fX), 6, oXML);
+                AddXMLElementFloat(*cornerElem, "Y", &(pCorner->fY), 6, oXML);
+                AddXMLElementFloat(*cornerElem, "Z", &(pCorner->fZ), 6, oXML);
+            }
+        };
+
+    addCorner("Corner1", pCorner1);
+    addCorner("Corner2", pCorner2);
+    addCorner("Corner3", pCorner3);
+    addCorner("Corner4", pCorner4);
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs)
