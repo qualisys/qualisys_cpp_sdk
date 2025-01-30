@@ -2,6 +2,7 @@
 #define NOMINMAX
 
 #include "RTProtocol.h"
+#include "Tinyxml2Serializer.h"
 
 #include <float.h>
 #include <cctype>
@@ -2823,7 +2824,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
 
 bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetSkeletonSettings(skeletons);
 
     return SendXML(message.data());
