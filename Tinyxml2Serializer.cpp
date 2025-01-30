@@ -11,7 +11,7 @@
 #include <functional>
 #include <stdexcept>
 
-using namespace CRTProtocolNs;
+using namespace qualisys_cpp_sdk;
 
 void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLDocument* oXML, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
 {
