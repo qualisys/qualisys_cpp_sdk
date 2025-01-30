@@ -155,7 +155,8 @@ namespace qualisys_cpp_sdk::tests::data
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
 
-    inline const char* Set6DSettingsTest = R"XMLDATA(<QTM_Settings>
+    inline const char* Set6DSettingsTest = R"XMLDATA(
+<QTM_Settings>
     <The_6D>
         <Body>
             <Name>test</Name>
