@@ -13,17 +13,21 @@
 
 using namespace CRTProtocolNs;
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLDocument* oXML, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool* pbValue, tinyxml2::XMLDocument& oXML)
 {
-    //if (pbValue)
-    //{
-    //    oXML->AddElem(tTag, *pbValue ? tTrue : tFalse);
-    //}
+    if (pbValue)
+    {
+        tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
+        pElement->SetText(*pbValue ? "True" : "False");
+        parent.InsertEndChild(pElement);
+    }
 }
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLDocument* oXML, const char* tTag, const bool pbValue, const char* tTrue, const char* tFalse)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool pbValue, tinyxml2::XMLDocument& oXML)
 {
-    //oXML->AddElem(tTag, pbValue ? tTrue : tFalse);
+    tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
+    pElement->SetText(pbValue ? "True" : "False");
+    parent.InsertEndChild(pElement);
 }
 
 void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const char* tTag, const int* pnValue)
@@ -3466,10 +3470,10 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
     pImage->InsertEndChild(pCamera);
 
     // ID
-    AddXMLElementUnsignedInt(&oXML, pCamera, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(*pCamera, "ID", pCameraId, oXML);
 
     // Enabled
-    AddXMLElementBool(&oXML, pCamera, "Enabled", pbEnable);
+    AddXMLElementBool(*pCamera, "Enabled", pbEnable, oXML);
 
     // Format
     if (peFormat)
@@ -3500,12 +3504,12 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
     }
 
     // Other settings
-    AddXMLElementUnsignedInt(&oXML, pCamera, "Width", pnWidth);
-    AddXMLElementUnsignedInt(&oXML, pCamera, "Height", pnHeight);
-    AddXMLElementFloat(&oXML, pCamera, "Left_Crop", pfLeftCrop);
-    AddXMLElementFloat(&oXML, pCamera, "Top_Crop", pfTopCrop);
-    AddXMLElementFloat(&oXML, pCamera, "Right_Crop", pfRightCrop);
-    AddXMLElementFloat(&oXML, pCamera, "Bottom_Crop", pfBottomCrop);
+    AddXMLElementUnsignedInt(*pCamera, "Width", pnWidth, oXML);
+    AddXMLElementUnsignedInt(*pCamera, "Height", pnHeight, oXML);
+    AddXMLElementFloat(*pCamera, "Left_Crop", pfLeftCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Top_Crop", pfTopCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Right_Crop", pfRightCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Bottom_Crop", pfBottomCrop, 6, oXML);
 
     // Convert to string
     tinyxml2::XMLPrinter printer;
