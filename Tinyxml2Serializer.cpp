@@ -225,7 +225,6 @@ namespace
             };
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
-
 }
 
 bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLDocument* xml, const std::string& element, bool& value) const
@@ -3454,52 +3453,67 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
     const CRTPacket::EImageFormat* peFormat, const unsigned int* pnWidth, const unsigned int* pnHeight,
     const float* pfLeftCrop, const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("Image");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // Image element
+    tinyxml2::XMLElement* pImage = oXML.NewElement("Image");
+    pRoot->InsertEndChild(pImage);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pImage->InsertEndChild(pCamera);
 
-    //AddXMLElementBool(&oXML, "Enabled", pbEnable);
+    // ID
+    AddXMLElementUnsignedInt(&oXML, pCamera, "ID", &pCameraId);
 
-    //if (peFormat)
-    //{
-    //    switch (*peFormat)
-    //    {
-    //    case CRTPacket::FormatRawGrayscale:
-    //        oXML.AddElem("Format", "RAWGrayscale");
-    //        break;
-    //    case CRTPacket::FormatRawBGR:
-    //        oXML.AddElem("Format", "RAWBGR");
-    //        break;
-    //    case CRTPacket::FormatJPG:
-    //        oXML.AddElem("Format", "JPG");
-    //        break;
-    //    case CRTPacket::FormatPNG:
-    //        oXML.AddElem("Format", "PNG");
-    //        break;
-    //    }
-    //}
-    //AddXMLElementUnsignedInt(&oXML, "Width", pnWidth);
-    //AddXMLElementUnsignedInt(&oXML, "Height", pnHeight);
-    //AddXMLElementFloat(&oXML, "Left_Crop", pfLeftCrop);
-    //AddXMLElementFloat(&oXML, "Top_Crop", pfTopCrop);
-    //AddXMLElementFloat(&oXML, "Right_Crop", pfRightCrop);
-    //AddXMLElementFloat(&oXML, "Bottom_Crop", pfBottomCrop);
+    // Enabled
+    AddXMLElementBool(&oXML, pCamera, "Enabled", pbEnable);
 
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // Image
-    //oXML.OutOfElem(); // QTM_Settings
+    // Format
+    if (peFormat)
+    {
+        const char* formatStr = nullptr;
+        switch (*peFormat)
+        {
+        case CRTPacket::FormatRawGrayscale:
+            formatStr = "RAWGrayscale";
+            break;
+        case CRTPacket::FormatRawBGR:
+            formatStr = "RAWBGR";
+            break;
+        case CRTPacket::FormatJPG:
+            formatStr = "JPG";
+            break;
+        case CRTPacket::FormatPNG:
+            formatStr = "PNG";
+            break;
+        }
 
-    //return oXML.GetDoc();
+        if (formatStr)
+        {
+            tinyxml2::XMLElement* pFormat = oXML.NewElement("Format");
+            pFormat->SetText(formatStr);
+            pCamera->InsertEndChild(pFormat);
+        }
+    }
 
-    return "";
+    // Other settings
+    AddXMLElementUnsignedInt(&oXML, pCamera, "Width", pnWidth);
+    AddXMLElementUnsignedInt(&oXML, pCamera, "Height", pnHeight);
+    AddXMLElementFloat(&oXML, pCamera, "Left_Crop", pfLeftCrop);
+    AddXMLElementFloat(&oXML, pCamera, "Top_Crop", pfTopCrop);
+    AddXMLElementFloat(&oXML, pCamera, "Right_Crop", pfRightCrop);
+    AddXMLElementFloat(&oXML, pCamera, "Bottom_Crop", pfBottomCrop);
+
+    // Convert to string
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+
+    return std::string(printer.CStr());
 }
 
 std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, const SPoint* pCorner1,
