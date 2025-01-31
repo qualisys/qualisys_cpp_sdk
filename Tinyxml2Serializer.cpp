@@ -1540,371 +1540,393 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 
 namespace
 {
-    bool TryReadSetEnabled(const int nMajorVer, const int nMinorVer, tinyxml2::XMLDocument& oXML, bool& bTarget)
+    bool TryReadSetEnabled(std::uint32_t nMajorVer, std::uint32_t nMinorVer, tinyxml2::XMLElement& oXML, bool& bTarget)
     {
-        //if (nMajorVer > 1 || nMinorVer > 23)
-        //{
-        //    if (!oXML.FindChildElem("Enabled"))
-        //    {
-        //        bTarget = true;
-        //        return true;
-        //    }
+        if (nMajorVer > 1 || nMinorVer > 23)
+        {
+            if (auto enabledElem = oXML.FirstChildElement("Enabled"))
+            {
+                bTarget = std::string(enabledElem->GetText()) == "true";
+                return true;
+            }
+        }
 
-        //    bTarget = oXML.GetChildData() == "true" ? true : false;
-        //    return false;
-        //}
+        // Enabled is default true for 6dof bodies
+        bTarget = true;
+        return false;
+    }
+
+    bool TryReadSetName(tinyxml2::XMLElement& oXML, std::string& sTarget)
+    {
+        if(auto elem = oXML.FirstChildElement("Name"))
+        {
+            if(auto text = elem->GetText())
+            {
+                sTarget = text;
+            }
+            else
+            {
+                sTarget = {};
+            }
+            return true;
+        }
 
         return false;
     }
 
-    bool TryReadSetName(tinyxml2::XMLDocument& oXML, std::string& sTarget)
+    bool TryReadSetColor(tinyxml2::XMLElement& oXML, std::uint32_t& nTarget)
     {
-        //if (!oXML.FindChildElem("Name"))
-        //{
-        //    return false;
-        //}
-        //sTarget = oXML.GetChildData();
-        return true;
+        if (auto elem = oXML.FirstChildElement("Color"))
+        {
+            std::uint32_t colorR = atoi(elem->Attribute("R"));
+            std::uint32_t colorG = atoi(elem->Attribute("G"));
+            std::uint32_t colorB = atoi(elem->Attribute("B"));
+            nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+            return true;
+        }
+
+        nTarget = 0;
+        return false;
     }
 
-    bool TryReadSetColor(tinyxml2::XMLDocument& oXML, std::uint32_t& nTarget)
+    bool TryReadSetMaxResidual(tinyxml2::XMLElement& oXML, float& fTarget)
     {
-        //if (!oXML.FindChildElem("Color"))
-        //{
-        //    return false;
-        //}
-        //std::uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
-        //std::uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
-        //std::uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
-        //nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+        if (auto elem = oXML.FirstChildElement("MaximumResidual"))
+        {
+            fTarget = static_cast<float>(atof(elem->GetText()));
+            return true;
+        }
 
-        return true;
+        fTarget = .0f;
+        return false;
     }
 
-    bool TryReadSetMaxResidual(tinyxml2::XMLDocument& oXML, float& fTarget)
+    bool TryReadSetMinMarkersInBody(tinyxml2::XMLElement& oXML, std::uint32_t& nTarget)
     {
-        //if (!oXML.FindChildElem("MaximumResidual"))
-        //{
-        //    return false;
-        //}
-        //fTarget = (float)atof(oXML.GetChildData().c_str());
+        if (auto elem = oXML.FirstChildElement("MinimumMarkersInBody"))
+        {
+            nTarget = elem->IntText(0);
+            return true;
+        }
 
-        return true;
+        nTarget = 0;
+        return false;
     }
 
-    bool TryReadSetMinMarkersInBody(tinyxml2::XMLDocument& oXML, std::uint32_t& nTarget)
+    bool TryReadSetBoneLenTolerance(tinyxml2::XMLElement& oXML, float& fTarget)
     {
-        //if (!oXML.FindChildElem("MinimumMarkersInBody"))
-        //{
-        //    return false;
-        //}
-        //nTarget = atoi(oXML.GetChildData().c_str());
+        if (auto elem = oXML.FirstChildElement("BoneLengthTolerance"))
+        {
+            fTarget = static_cast<float>(atof(elem->GetText()));
+            return true;
+        }
 
-        return true;
+        fTarget = .0f;
+        return false;
     }
 
-    bool TryReadSetBoneLenTolerance(tinyxml2::XMLDocument& oXML, float& fTarget)
+    bool TryReadSetFilter(tinyxml2::XMLElement& oXML, std::string& sTarget)
     {
-        //if (!oXML.FindChildElem("BoneLengthTolerance"))
-        //{
-        //    return false;
-        //}
-        //fTarget = (float)atof(oXML.GetChildData().c_str());
-
-        return true;
-    }
-
-    bool TryReadSetFilter(tinyxml2::XMLDocument& oXML, std::string& sTarget)
-    {
-        //if (!oXML.FindChildElem("Filter"))
-        //{
-        //    return false;
-        //}
-        //sTarget = oXML.GetChildAttrib("Preset");
-
-        return true;
-    }
-
-    bool TryReadSetPos(tinyxml2::XMLDocument& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
-    {
-        //if (!oXML.FindChildElem("Position"))
-        //{
-        //    return false;
-        //}
-        //fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        //fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        //fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-        return true;
-    }
-
-    bool TryReadSetRotation(tinyxml2::XMLDocument& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
-    {
-        //if (!oXML.FindChildElem("Rotation"))
-        //{
-        //    return false;
-        //}
-        //fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        //fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        //fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-        return true;
-    }
-
-    bool TryReadSetScale(tinyxml2::XMLDocument& oXML, float& fTarget)
-    {
-        //if (!oXML.FindChildElem("Scale"))
-        //{
-        //    return false;
-        //}
-        //fTarget = (float)atof(oXML.GetChildData().c_str());
-
-        return true;
-    }
-
-    bool TryReadSetOpacity(tinyxml2::XMLDocument& oXML, float& fTarget)
-    {
-        //if (!oXML.FindChildElem("Opacity"))
-        //{
-        //    return false;
-        //}
-        //fTarget = (float)atof(oXML.GetChildData().c_str());
-
-        return true;
-    }
-
-    bool TryReadSetPoints(tinyxml2::XMLDocument& oXML, std::vector<SBodyPoint>& vTarget)
-    {
-        //if (oXML.FindChildElem("Points"))
-        //{
-        //    oXML.IntoElem();
-
-        //    while (oXML.FindChildElem("Point"))
-        //    {
-        //        SBodyPoint sBodyPoint;
-
-        //        sBodyPoint.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        //        sBodyPoint.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        //        sBodyPoint.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-
-        //        sBodyPoint.virtual_ = (0 != atoi(oXML.GetChildAttrib("Virtual").c_str()));
-        //        sBodyPoint.physicalId = atoi(oXML.GetChildAttrib("PhysicalId").c_str());
-        //        sBodyPoint.name = oXML.GetChildAttrib("Name");
-        //        vTarget.push_back(sBodyPoint);
-        //    }
-        //    oXML.OutOfElem(); // Points
-
-        //    return true;
-        //}
+        if (auto elem = oXML.FirstChildElement("Filter"))
+        {
+            sTarget = elem->Attribute("Preset");
+            return true;
+        }
 
         return false;
     }
 
-    bool TryReadSetDataOrigin(tinyxml2::XMLDocument& oXML, SOrigin& oTarget)
+    bool TryReadSetPos(tinyxml2::XMLElement& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
     {
-        //if (!oXML.FindChildElem("Data_origin"))
-        //{
-        //    return false;
-        //}
-        //oTarget.type = (EOriginType)atoi(oXML.GetChildData().c_str());
-        //oTarget.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        //oTarget.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        //oTarget.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-        //oTarget.relativeBody = atoi(oXML.GetChildAttrib("Relative_body").c_str());
+        if (auto elem = oXML.FirstChildElement("Position"))
+        {
+            fTargetX = static_cast<float>(atof(elem->Attribute("X")));
+            fTargetY = static_cast<float>(atof(elem->Attribute("Y")));
+            fTargetZ = static_cast<float>(atof(elem->Attribute("Z")));
+            return true;
+        }
 
-        return true;
+        fTargetZ = fTargetY = fTargetX = .0f;
+        return false;
     }
 
-    void ReadSetRotations(tinyxml2::XMLDocument& oXML, SOrigin& oTarget)
+    bool TryReadSetRotation(tinyxml2::XMLElement& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
     {
-        //char tmpStr[10];
-        //for (std::uint32_t i = 0; i < 9; i++)
-        //{
-        //    sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-        //    oTarget.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
-        //}
+        if (auto elem = oXML.FirstChildElement("Rotation"))
+        {
+            fTargetX = static_cast<float>(atof(elem->Attribute("X")));
+            fTargetY = static_cast<float>(atof(elem->Attribute("Y")));
+            fTargetZ = static_cast<float>(atof(elem->Attribute("Z")));
+            return true;
+        }
+
+        fTargetZ = fTargetY = fTargetX = .0f;
+        return false;
     }
 
-    bool TryReadSetRGBColor(tinyxml2::XMLDocument& oXML, std::uint32_t& oTarget)
+    bool TryReadSetScale(tinyxml2::XMLElement& oXML, float& fTarget)
     {
-        //if (!oXML.FindChildElem("RGBColor"))
-        //{
-        //    return false;
-        //}
-        //oTarget = atoi(oXML.GetChildData().c_str());
+        if (auto elem = oXML.FirstChildElement("Scale"))
+        {
+            fTarget = static_cast<float>(atof(elem->GetText()));
+            return true;
+        }
 
-        //return true;
+        fTarget = .0f;
+        return false;
     }
 
-    bool TryReadSetPointsOld(tinyxml2::XMLDocument& oXML, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetOpacity(tinyxml2::XMLElement& oXML, float& fTarget)
     {
-        //vTarget.clear();
+        if (auto elem = oXML.FirstChildElement("Opacity"))
+        {
+            fTarget = static_cast<float>(atof(elem->GetText()));
+            return true;
+        }
 
-        //while (oXML.FindChildElem("Point"))
-        //{
-        //    SBodyPoint sPoint;
+        fTarget = .0f;
+        return false;
+    }
 
-        //    oXML.IntoElem();
-        //    if (!oXML.FindChildElem("X"))
-        //    {
-        //        return false;
-        //    }
-        //    sPoint.fX = (float)atof(oXML.GetChildData().c_str());
+    bool TryReadSetPoints(tinyxml2::XMLElement& oXML, std::vector<SBodyPoint>& vTarget)
+    {
+        if (auto pointsElem = oXML.FirstChildElement("Points"))
+        {
+            for (auto pointElem = pointsElem->FirstChildElement("Point"); pointElem != nullptr; pointElem = pointElem->NextSiblingElement("Point"))
+            {
+                SBodyPoint sBodyPoint;
 
-        //    if (!oXML.FindChildElem("Y"))
-        //    {
-        //        return false;
-        //    }
-        //    sPoint.fY = (float)atof(oXML.GetChildData().c_str());
+                sBodyPoint.fX = static_cast<float>(atof(pointElem->Attribute("X")));
+                sBodyPoint.fY = static_cast<float>(atof(pointElem->Attribute("Y")));
+                sBodyPoint.fZ = static_cast<float>(atof(pointElem->Attribute("Z")));
 
-        //    if (!oXML.FindChildElem("Z"))
-        //    {
-        //        return false;
-        //    }
-        //    sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
+                sBodyPoint.virtual_ = (0 != atoi(pointElem->Attribute("Virtual")));
+                sBodyPoint.physicalId = atoi(pointElem->Attribute("PhysicalId"));
+                sBodyPoint.name = pointElem->Attribute("Name");
+                vTarget.push_back(sBodyPoint);
+            }
 
-        //    oXML.OutOfElem(); // Point
-        //    vTarget.push_back(sPoint);
-        //}
+            return true;
+        }
 
+        return false;
+    }
+
+    bool TryReadSetDataOrigin(tinyxml2::XMLElement& oXML, SOrigin& oTarget)
+    {
+        if (auto elem = oXML.FirstChildElement("Data_origin"))
+        {
+            oTarget.type = static_cast<EOriginType>(atoi(elem->GetText()));
+            oTarget.position.fX = static_cast<float>(atof(elem->Attribute("X")));
+            oTarget.position.fY = static_cast<float>(atof(elem->Attribute("Y")));
+            oTarget.position.fZ = static_cast<float>(atof(elem->Attribute("Z")));
+            oTarget.relativeBody = atoi(elem->Attribute("Relative_body"));
+        }
+        else
+        {
+            oTarget = {};
+            return false;
+        }
+
+        if (auto elem = oXML.FirstChildElement("Data_orientation"))
+        {
+            char tmpStr[10];
+            for (std::uint32_t i = 0; i < 9; i++)
+            {
+                sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+                oTarget.rotation[i] = static_cast<float>(atof(elem->Attribute(tmpStr)));
+            }
+
+            
+            auto type = static_cast<EOriginType>(atoi(elem->GetText()));
+            auto body = static_cast<std::uint32_t>(atoi(elem->Attribute("Relative_body")));
+
+            // Validation: type and relativeBody must be the same between orientation and origin
+            return type == oTarget.type && body == oTarget.relativeBody;
+        }
+
+        oTarget = {};
+        return false;
+    }
+
+
+    bool TryReadSetRGBColor(tinyxml2::XMLElement& oXML, std::uint32_t& oTarget)
+    {
+        if (auto elem = oXML.FirstChildElement("RGBColor"))
+        {
+            oTarget = atoi(elem->GetText());
+            return true;
+        }
+
+        oTarget = 0;
+        return false;
+    }
+
+    bool TryReadFloatElement(tinyxml2::XMLElement& parent, const char* childElementName, float& output)
+    {
+        if (auto elem = parent.FirstChildElement(childElementName))
+        {
+            output = elem->FloatText(.0f);
+            return true;
+        }
+        output = .0f;
+        return false;
+    }
+
+    bool TryReadTextElement(tinyxml2::XMLElement& parent, const char* childElementName, std::string& output)
+    {
+        if (auto elem = parent.FirstChildElement(childElementName))
+        {
+            output = elem->GetText();
+            return true;
+        }
+
+        output = {};
+        return false;
+    }
+
+    bool TryReadSetPointsOld(tinyxml2::XMLElement& oXML, std::vector<SBodyPoint>& vTarget)
+    {
+        vTarget.clear();
+        for (auto pointElem = oXML.FirstChildElement("Point"); pointElem != nullptr; pointElem = pointElem->NextSiblingElement("Point"))
+        {
+            SBodyPoint sPoint;
+
+            if (!TryReadFloatElement(*pointElem, "X", sPoint.fX))
+            {
+                return false;
+            }
+
+            if (!TryReadFloatElement(*pointElem, "Y", sPoint.fY))
+            {
+                return false;
+            }
+
+            if (!TryReadFloatElement(*pointElem, "Z", sPoint.fZ))
+            {
+                return false;
+            }
+
+            vTarget.push_back(sPoint);
+        }
         return true;
     }
 
     bool TryReadSetEuler(tinyxml2::XMLDocument& oXML, std::string& sTargetFirst, std::string& sTargetSecond, std::string& sTargetThird)
     {
-        //if (oXML.FindChildElem("Euler"))
-        //{
-        //    oXML.IntoElem();
-        //    if (!oXML.FindChildElem("First"))
-        //    {
-        //        return false;
-        //    }
-        //    sTargetFirst = oXML.GetChildData();
-        //    if (!oXML.FindChildElem("Second"))
-        //    {
-        //        return false;
-        //    }
-        //    sTargetSecond = oXML.GetChildData();
-        //    if (!oXML.FindChildElem("Third"))
-        //    {
-        //        return false;
-        //    }
-        //    sTargetThird = oXML.GetChildData();
-        //    oXML.OutOfElem(); // Euler
-        //}
+        if (auto elem = oXML.FirstChildElement("Euler"))
+        {
+            return TryReadTextElement(*elem, "First", sTargetFirst)
+                && TryReadTextElement(*elem, "Second", sTargetSecond)
+                && TryReadTextElement(*elem, "Third", sTargetThird);
+        }
 
-        return true;
+        return false;
     }
 }
 
 bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral& pGeneralSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
 
-    //p6DOFSettings.clear();
+    p6DOFSettings.clear();
 
-    //if (oXML.FindChildElem("The_6D"))
-    //{
-    //    oXML.IntoElem();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //    if (mnMajorVersion > 1 || mnMinorVersion > 20)
-    //    {
-    //        while (oXML.FindChildElem("Body"))
-    //        {
-    //            SSettings6DOFBody s6DOFBodySettings;
-    //            SBodyPoint sBodyPoint;
+    //
+    // Read gaze vectors
+    //
+    tinyxml2::XMLElement* sixdofElem = rootElem->FirstChildElement("The_6D");
+    if (!sixdofElem)
+    {
+        return true; // NO eye tracker data available.
+    }
 
-    //            oXML.IntoElem();
+    if (mnMajorVersion > 1 || mnMinorVersion > 20)
+    {
+        for (auto bodyElem = sixdofElem->FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
+        {
+            SSettings6DOFBody s6DOFBodySettings;
+            
+            if (!TryReadSetName(*bodyElem, s6DOFBodySettings.name))
+            { // Name --- REQUIRED
+                return false;
+            }
 
-    //            // NOTE: READ-ORDER MATTERS!!!
-    //            if (!TryReadSetName(oXML, s6DOFBodySettings.name))
-    //            { // Name --- REQUIRED
-    //                return false;
-    //            }
-    //            // Enabled --- NOT(!) REQUIRED
-    //            TryReadSetEnabled(mnMajorVersion, mnMinorVersion, oXML, s6DOFBodySettings.enabled);
-    //            if (!TryReadSetColor(oXML, s6DOFBodySettings.color)
-    //                || !TryReadSetMaxResidual(oXML, s6DOFBodySettings.maxResidual)
-    //                || !TryReadSetMinMarkersInBody(oXML, s6DOFBodySettings.minMarkersInBody)
-    //                || !TryReadSetBoneLenTolerance(oXML, s6DOFBodySettings.boneLengthTolerance)
-    //                || !TryReadSetFilter(oXML, s6DOFBodySettings.filterPreset))
-    //            { // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
-    //                return false;
-    //            }
+            TryReadSetEnabled(mnMajorVersion, mnMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
+            if (!TryReadSetColor(*bodyElem, s6DOFBodySettings.color)
+                || !TryReadSetMaxResidual(*bodyElem, s6DOFBodySettings.maxResidual)
+                || !TryReadSetMinMarkersInBody(*bodyElem, s6DOFBodySettings.minMarkersInBody)
+                || !TryReadSetBoneLenTolerance(*bodyElem, s6DOFBodySettings.boneLengthTolerance)
+                || !TryReadSetFilter(*bodyElem, s6DOFBodySettings.filterPreset))
+            { // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
+                return false;
+            }
 
-    //            if (oXML.FindChildElem("Mesh"))
-    //            {
-    //                oXML.IntoElem();
 
-    //                if (!TryReadSetName(oXML, s6DOFBodySettings.mesh.name)
-    //                    || !TryReadSetPos(oXML, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
-    //                    || !TryReadSetRotation(oXML, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
-    //                    || !TryReadSetScale(oXML, s6DOFBodySettings.mesh.scale)
-    //                    || !TryReadSetOpacity(oXML, s6DOFBodySettings.mesh.opacity))
-    //                { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
-    //                    return false;
-    //                }
+            if (auto meshElem = bodyElem->FirstChildElement("Mesh"))
+            {
+                if (!TryReadSetName(*meshElem, s6DOFBodySettings.mesh.name)
+                    || !TryReadSetPos(*meshElem, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
+                    || !TryReadSetRotation(*meshElem, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
+                    || !TryReadSetScale(*meshElem, s6DOFBodySettings.mesh.scale)
+                    || !TryReadSetOpacity(*meshElem, s6DOFBodySettings.mesh.opacity))
+                { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
+                    return false;
+                }
+            }
+            // Points --- REQUIRED
+            if (!TryReadSetPoints(*bodyElem, s6DOFBodySettings.points))
+            {
+                return false;
+            }
 
-    //                oXML.OutOfElem(); // Mesh
-    //            }
+            // Data Orientation, Origin --- REQUIRED
+            if (!TryReadSetDataOrigin(*bodyElem, s6DOFBodySettings.origin))
+            { 
+                return false;
+            }
 
-    //            // Points --- REQUIRED
-    //            TryReadSetPoints(oXML, s6DOFBodySettings.points);
-    //            if (!TryReadSetDataOrigin(oXML, s6DOFBodySettings.origin)
-    //                || !oXML.FindChildElem("Data_orientation")
-    //                || s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str())
-    //                || s6DOFBodySettings.origin.relativeBody != static_cast<std::uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str()))
-    //                )
-    //            { // Data Orientation, Origin Type / Relative Body --- REQUIRED
-    //                return false;
-    //            }
+            p6DOFSettings.push_back(s6DOFBodySettings);
+            pDataAvailable = true;
+        }
+    }
+    else
+    {
+        if (!oXML.FirstChildElement("Bodies"))
+        {
+            return false;
+        }
 
-    //            // Rotation values --- NOTE : Does NOT(!) 'Try'; just reads and sets (no boolean return)
-    //            ReadSetRotations(oXML, s6DOFBodySettings.origin);
+        for (auto bodyElem = oXML.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
+        {
+            SSettings6DOFBody s6DOFBodySettings {};
 
-    //            p6DOFSettings.push_back(s6DOFBodySettings);
-    //            oXML.OutOfElem(); // Body
+            // Name, RGBColor, Points(OLD) --- REQUIRED
+            if (!TryReadSetName(*bodyElem, s6DOFBodySettings.name)
+                || !TryReadSetRGBColor(*bodyElem, s6DOFBodySettings.color)
+                || !TryReadSetPointsOld(*bodyElem, s6DOFBodySettings.points))
+            { 
+                return false;
+            }
 
-    //            pDataAvailable = true;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (!oXML.FindChildElem("Bodies"))
-    //        {
-    //            return false;
-    //        }
-    //        int nBodies = atoi(oXML.GetChildData().c_str());
-    //        SSettings6DOFBody s6DOFBodySettings;
+            if (mnMajorVersion > 1 || mnMinorVersion > 15)
+            {
+                // Euler --- REQUIRED
+                if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
+                {
+                    return false;
+                }
+            }
 
-    //        for (int iBody = 0; iBody < nBodies; iBody++)
-    //        {
-    //            if (!oXML.FindChildElem("Body"))
-    //            {
-    //                return false;
-    //            }
-    //            oXML.IntoElem();
-
-    //            if (!TryReadSetName(oXML, s6DOFBodySettings.name)
-    //                || !TryReadSetRGBColor(oXML, s6DOFBodySettings.color)
-    //                || !TryReadSetPointsOld(oXML, s6DOFBodySettings.points))
-    //            { // Name, RGBColor, Points(OLD) --- REQUIRED
-    //                return false;
-    //            }
-
-    //            p6DOFSettings.push_back(s6DOFBodySettings);
-    //            oXML.OutOfElem(); // Body
-    //        }
-    //        if (mnMajorVersion > 1 || mnMinorVersion > 15)
-    //        {
-    //            if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
-    //            { // Euler --- REQUIRED
-    //                return false;
-    //            }
-    //        }
-    //        pDataAvailable = true;
-    //    }
-    //}
+            p6DOFSettings.push_back(s6DOFBodySettings);
+            pDataAvailable = true;
+        }
+    }
 
     return true;
 } // Read6DOFSettings
@@ -2632,8 +2654,8 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
     //            {
     //                xml.IntoElem();
 
-    //                std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, const int)> recurseSegments =
-    //                    [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, const int parentId)
+    //                std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments =
+    //                    [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
     //                    {
     //                        segmentHierarchical.name = xml.GetAttrib("Name");
     //                        ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
@@ -3236,8 +3258,10 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
     return "";
 }
 
-std::string CTinyxml2Serializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* peMode,
-    const float* pfMarkerExposure, const float* pfMarkerThreshold, const int* pnOrientation)
+std::string CTinyxml2Serializer::SetCameraSettings(
+    const unsigned int pCameraId, const ECameraMode* peMode,
+    const float* pfMarkerExposure, const float* pfMarkerThreshold,
+    const int* pnOrientation)
 {
     //CTinyxml2 oXML;
 
