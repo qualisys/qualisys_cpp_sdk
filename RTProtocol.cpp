@@ -1698,7 +1698,7 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    auto serializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer serializer(data, mnMajorVersion, mnMinorVersion);
 
     return serializer.DeserializeGeneralSettings(msGeneralSettings);
 
