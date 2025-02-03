@@ -66,6 +66,20 @@ void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parent, const
     parent.InsertEndChild(elem);
 }
 
+void CTinyxml2Serializer::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLElement& parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument& oXML, const char* tTextAttr)
+{
+    if (pfValue)
+    {
+        char formattedValue[32];
+        snprintf(formattedValue, sizeof(formattedValue), "%.*f", pnDecimals, *pfValue);
+
+        tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
+        elem->SetAttribute(tTextAttr, formattedValue);
+        parent.InsertEndChild(elem);
+    }
+}
+
+
 void CTinyxml2Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
 {
     tinyxml2::XMLElement* transformElem = oXML.NewElement(name.c_str());
@@ -3392,34 +3406,36 @@ std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int pCa
 std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
     const float pAperture)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pGeneral->InsertEndChild(pCamera);
 
-    //oXML.AddElem("LensControl");
-    //oXML.IntoElem();
+    // Add Camera ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", &pCameraId, oXML);
 
-    //oXML.AddElem("Focus");
-    //oXML.AddAttrib("Value", CTinyxml2::Format("%f", pFocus).c_str());
-    //oXML.AddElem("Aperture");
-    //oXML.AddAttrib("Value", CTinyxml2::Format("%f", pAperture).c_str());
+    // LensControl element
+    tinyxml2::XMLElement* pLensControl = oXML.NewElement("LensControl");
+    pCamera->InsertEndChild(pLensControl);
 
-    //oXML.OutOfElem(); // LensControl
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // Add Focus and Aperture as float attributes
+    AddXMLElementFloatWithTextAttribute(*pLensControl, "Focus", &pFocus, 6, oXML, "Value");
+    AddXMLElementFloatWithTextAttribute(*pLensControl, "Aperture", &pAperture, 6, oXML, "Value");
 
-    //return oXML.GetDoc();
+    // Convert document to string
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
 
-    return "";
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
