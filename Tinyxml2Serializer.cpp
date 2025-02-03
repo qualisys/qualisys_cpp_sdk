@@ -3158,67 +3158,78 @@ std::string CTinyxml2Serializer::SetExtTimeBaseSettings(const bool* pbEnabled, c
     const unsigned int* pnFreqTolerance, const float* pfNominalFrequency, const bool* pbNegativeEdge,
     const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
-    //oXML.AddElem("External_Time_Base");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //AddXMLElementBool(&oXML, "Enabled", pbEnabled);
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //if (peSignalSource)
-    //{
-    //    switch (*peSignalSource)
-    //    {
-    //    case SourceControlPort:
-    //        oXML.AddElem("Signal_Source", "Control port");
-    //        break;
-    //    case SourceIRReceiver:
-    //        oXML.AddElem("Signal_Source", "IR receiver");
-    //        break;
-    //    case SourceSMPTE:
-    //        oXML.AddElem("Signal_Source", "SMPTE");
-    //        break;
-    //    case SourceVideoSync:
-    //        oXML.AddElem("Signal_Source", "Video sync");
-    //        break;
-    //    case SourceIRIG:
-    //        oXML.AddElem("Signal_Source", "IRIG");
-    //        break;
-    //    }
-    //}
+    // External Time Base element
+    tinyxml2::XMLElement* pTimeBase = oXML.NewElement("External_Time_Base");
+    pGeneral->InsertEndChild(pTimeBase);
 
-    //AddXMLElementBool(&oXML, "Signal_Mode", pbSignalModePeriodic, "Periodic", "Non-periodic");
-    //AddXMLElementUnsignedInt(&oXML, "Frequency_Multiplier", pnFreqMultiplier);
-    //AddXMLElementUnsignedInt(&oXML, "Frequency_Divisor", pnFreqDivisor);
-    //AddXMLElementUnsignedInt(&oXML, "Frequency_Tolerance", pnFreqTolerance);
+    // Add Enabled element
+    AddXMLElementBool(*pTimeBase, "Enabled", pbEnabled, oXML);
 
-    //if (pfNominalFrequency)
-    //{
-    //    if (*pfNominalFrequency < 0)
-    //    {
-    //        oXML.AddElem("Nominal_Frequency", "None");
-    //    }
-    //    else
-    //    {
-    //        AddXMLElementFloat(&oXML, "Nominal_Frequency", pfNominalFrequency, 3);
-    //    }
-    //}
+    // Add Signal Source if available
+    if (peSignalSource)
+    {
+        tinyxml2::XMLElement* pSignalSource = oXML.NewElement("Signal_Source");
+        switch (*peSignalSource)
+        {
+        case SourceControlPort:
+            pSignalSource->SetText("Control port");
+            break;
+        case SourceIRReceiver:
+            pSignalSource->SetText("IR receiver");
+            break;
+        case SourceSMPTE:
+            pSignalSource->SetText("SMPTE");
+            break;
+        case SourceVideoSync:
+            pSignalSource->SetText("Video sync");
+            break;
+        case SourceIRIG:
+            pSignalSource->SetText("IRIG");
+            break;
+        }
+        pTimeBase->InsertEndChild(pSignalSource);
+    }
 
-    //AddXMLElementBool(&oXML, "Signal_Edge", pbNegativeEdge, "Negative", "Positive");
-    //AddXMLElementUnsignedInt(&oXML, "Signal_Shutter_Delay", pnSignalShutterDelay);
-    //AddXMLElementFloat(&oXML, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3);
+    // Add remaining elements
+    AddXMLElementBool(*pTimeBase, "Signal_Mode", pbSignalModePeriodic, oXML, "Periodic", "Non-periodic");
+    AddXMLElementUnsignedInt(*pTimeBase, "Frequency_Multiplier", pnFreqMultiplier, oXML);
+    AddXMLElementUnsignedInt(*pTimeBase, "Frequency_Divisor", pnFreqDivisor, oXML);
+    AddXMLElementUnsignedInt(*pTimeBase, "Frequency_Tolerance", pnFreqTolerance, oXML);
 
-    //oXML.OutOfElem(); // External_Time_Base            
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // Add Nominal Frequency element
+    if (pfNominalFrequency)
+    {
+        if (*pfNominalFrequency < 0)
+        {
+            tinyxml2::XMLElement* pNominalFreq = oXML.NewElement("Nominal_Frequency");
+            pNominalFreq->SetText("None");
+            pTimeBase->InsertEndChild(pNominalFreq);
+        }
+        else
+        {
+            AddXMLElementFloat(*pTimeBase, "Nominal_Frequency", pfNominalFrequency, 3, oXML);
+        }
+    }
 
-    //return oXML.GetDoc();
-    return "";
+    AddXMLElementBool(*pTimeBase, "Signal_Edge", pbNegativeEdge, oXML, "Negative", "Positive");
+    AddXMLElementUnsignedInt(*pTimeBase, "Signal_Shutter_Delay", pnSignalShutterDelay, oXML);
+    AddXMLElementFloat(*pTimeBase, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3, oXML);
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
+
 
 std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {

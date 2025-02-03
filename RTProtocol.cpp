@@ -2675,7 +2675,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
     const float*        pfNominalFrequency,   const bool*          pbNegativeEdge,
     const unsigned int* pnSignalShutterDelay, const float*         pfNonPeriodicTimeout)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetExtTimeBaseSettings(
         pbEnabled, peSignalSource,
         pbSignalModePeriodic, pnFreqMultiplier,
