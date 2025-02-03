@@ -3425,34 +3425,43 @@ std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int
 std::string CTinyxml2Serializer::SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
     const float pCompensation)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pGeneral->InsertEndChild(pCamera);
 
-    //oXML.AddElem("LensControl");
-    //oXML.IntoElem();
+    // Add Camera ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", &pCameraId, oXML);
 
-    //oXML.AddElem("AutoExposure");
-    //oXML.AddAttrib("Enabled", pAutoExposure ? "true" : "false");
-    //oXML.AddAttrib("Compensation", CTinyxml2::Format("%f", pCompensation).c_str());
+    // LensControl element
+    tinyxml2::XMLElement* pLensControl = oXML.NewElement("LensControl");
+    pCamera->InsertEndChild(pLensControl);
 
-    //oXML.OutOfElem(); // AutoExposure
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // AutoExposure element with attributes
+    tinyxml2::XMLElement* pAutoExposureElem = oXML.NewElement("AutoExposure");
+    pAutoExposureElem->SetAttribute("Enabled", pAutoExposure ? "true" : "false");
 
-    //return oXML.GetDoc();
+    // Format Compensation float value
+    char compensationStr[32];
+    snprintf(compensationStr, sizeof(compensationStr), "%.6f", pCompensation);
+    pAutoExposureElem->SetAttribute("Compensation", compensationStr);
 
-    return "";
+    pLensControl->InsertEndChild(pAutoExposureElem);
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
+
 
 std::string CTinyxml2Serializer::SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable)
 {
