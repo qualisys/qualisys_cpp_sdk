@@ -2779,7 +2779,7 @@ bool CRTProtocol::SetImageSettings(
     const unsigned int* pnWidth,   const unsigned int* pnHeight,    const float* pfLeftCrop,
     const float*        pfTopCrop, const float*        pfRightCrop, const float* pfBottomCrop)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer (mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetImageSettings(
         nCameraID, pbEnable, peFormat,
         pnWidth, pnHeight, pfLeftCrop,
