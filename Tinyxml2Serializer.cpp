@@ -13,20 +13,20 @@
 
 using namespace qualisys_cpp_sdk;
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool* pbValue, tinyxml2::XMLDocument& oXML)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool* pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue, const char* tFalse)
 {
     if (pbValue)
     {
         tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
-        pElement->SetText(*pbValue ? "True" : "False");
+        pElement->SetText(*pbValue ? tTrue : tFalse);
         parent.InsertEndChild(pElement);
     }
 }
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool pbValue, tinyxml2::XMLDocument& oXML)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue, const char* tFalse)
 {
     tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
-    pElement->SetText(pbValue ? "True" : "False");
+    pElement->SetText(pbValue ? tTrue : tFalse);
     parent.InsertEndChild(pElement);
 }
 
