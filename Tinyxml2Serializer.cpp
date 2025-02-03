@@ -1421,120 +1421,149 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
 bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable)
 {
-    //std::string tStr;
+    pDataAvailable = false;
 
-    //pDataAvailable = false;
+    p3dSettings.pCalibrationTime[0] = 0;
 
-    //p3dSettings.s3DLabels.clear();
-    //p3dSettings.pCalibrationTime[0] = 0;
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //if (!oXML.FindChildElem("The_3D"))
-    //{
-    //    // No 3D data available.
-    //    return true;
-    //}
-    //oXML.IntoElem();
+    auto t3dElem = rootElem->FirstChildElement("The_3D");
+    if (!t3dElem)
+    {
+        return true;
+    }
 
-    //if (!oXML.FindChildElem("AxisUpwards"))
-    //{
-    //    return false;
-    //}
-    //tStr = ToLower(oXML.GetChildData());
+    if (auto axisUpwards = t3dElem->FirstChildElement("AxisUpwards"))
+    {
+        if (const char* charptr = axisUpwards->GetText())
+        {
+            auto tStr = ToLower(charptr);
+            if (tStr == "+x")
+            {
+                p3dSettings.eAxisUpwards = XPos;
+            }
+            else if (tStr == "-x")
+            {
+                p3dSettings.eAxisUpwards = XNeg;
+            }
+            else if (tStr == "+y")
+            {
+                p3dSettings.eAxisUpwards = YPos;
+            }
+            else if (tStr == "-y")
+            {
+                p3dSettings.eAxisUpwards = YNeg;
+            }
+            else if (tStr == "+z")
+            {
+                p3dSettings.eAxisUpwards = ZPos;
+            }
+            else if (tStr == "-z")
+            {
+                p3dSettings.eAxisUpwards = ZNeg;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
 
-    //if (tStr == "+x")
-    //{
-    //    p3dSettings.eAxisUpwards = XPos;
-    //}
-    //else if (tStr == "-x")
-    //{
-    //    p3dSettings.eAxisUpwards = XNeg;
-    //}
-    //else if (tStr == "+y")
-    //{
-    //    p3dSettings.eAxisUpwards = YPos;
-    //}
-    //else if (tStr == "-y")
-    //{
-    //    p3dSettings.eAxisUpwards = YNeg;
-    //}
-    //else if (tStr == "+z")
-    //{
-    //    p3dSettings.eAxisUpwards = ZPos;
-    //}
-    //else if (tStr == "-z")
-    //{
-    //    p3dSettings.eAxisUpwards = ZNeg;
-    //}
-    //else
-    //{
-    //    return false;
-    //}
+    if (auto calibrationTimeElem = t3dElem->FirstChildElement("CalibrationTime"))
+    {
+        if (const char* charPtr = calibrationTimeElem->GetText())
+        {
+            strcpy_s(p3dSettings.pCalibrationTime,32, charPtr);
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
+    else
+    {
+        return false;
+    }
 
-    //if (!oXML.FindChildElem("CalibrationTime"))
-    //{
-    //    return false;
-    //}
-    //tStr = oXML.GetChildData();
-    //strcpy(p3dSettings.pCalibrationTime, tStr.c_str());
+    std::size_t labelCount;
+    if (auto labelsElem = t3dElem->FirstChildElement("Labels"))
+    {
+        labelCount = labelsElem->IntText(0);
+    }
+    else
+    {
+        return false;
+    }
 
-    //if (!oXML.FindChildElem("Labels"))
-    //{
-    //    return false;
-    //}
-    //unsigned int nNumberOfLabels = atoi(oXML.GetChildData().c_str());
+    p3dSettings.s3DLabels.clear();
+    p3dSettings.s3DLabels.reserve(labelCount);
+    for (auto labelElem = t3dElem->FirstChildElement("Label"); labelElem != nullptr; labelElem = labelElem->NextSiblingElement("Label"))
+    {
+        SSettings3DLabel label{};
+        if (auto nameElem = labelElem->FirstChildElement("Name"))
+        {
+            if (auto namePtr = nameElem->GetText())
+            {
+                label.oName = namePtr;
+            }
+        }
 
-    //p3dSettings.s3DLabels.resize(nNumberOfLabels);
-    //SSettings3DLabel sLabel;
+        if (auto colorElem = labelElem->FirstChildElement("RGBColor"))
+        {
+            label.nRGBColor = colorElem->IntText(0);
+        }
 
-    //for (unsigned int iLabel = 0; iLabel < nNumberOfLabels; iLabel++)
-    //{
-    //    if (oXML.FindChildElem("Label"))
-    //    {
-    //        oXML.IntoElem();
-    //        if (oXML.FindChildElem("Name"))
-    //        {
-    //            sLabel.oName = oXML.GetChildData();
-    //            if (oXML.FindChildElem("RGBColor"))
-    //            {
-    //                sLabel.nRGBColor = atoi(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Trajectory_Type"))
-    //            {
-    //                sLabel.type = oXML.GetChildData();
-    //            }
-    //            p3dSettings.s3DLabels[iLabel] = sLabel;
-    //        }
-    //        oXML.OutOfElem();
-    //    }
-    //    else
-    //    {
-    //        return false;
-    //    }
-    //}
+        if (auto typeElem = labelElem->FirstChildElement("Trajectory_Type"))
+        {
+            if (auto text = typeElem->GetText())
+            {
+                label.type = text;
+            }
+        }
 
-    //p3dSettings.sBones.clear();
-    //if (oXML.FindChildElem("Bones"))
-    //{
-    //    oXML.IntoElem();
-    //    while (oXML.FindChildElem("Bone"))
-    //    {
-    //        oXML.IntoElem();
-    //        SSettingsBone bone = { };
-    //        bone.fromName = oXML.GetAttrib("From").c_str();
-    //        bone.toName = oXML.GetAttrib("To").c_str();
+        p3dSettings.s3DLabels.push_back(label);
+    }
 
-    //        auto colorString = oXML.GetAttrib("Color");
-    //        if (!colorString.empty())
-    //        {
-    //            bone.color = atoi(colorString.c_str());
-    //        }
-    //        p3dSettings.sBones.push_back(bone);
-    //        oXML.OutOfElem();
-    //    }
-    //    oXML.OutOfElem();
-    //}
+    if (p3dSettings.s3DLabels.size() != labelCount)
+    {
+        return false;
+    }
 
-    //pDataAvailable = true;
+    if(auto bonesElem = t3dElem->FirstChildElement("Bones"))
+    {
+        for (auto boneElem = bonesElem->FirstChildElement("Bone"); boneElem != nullptr; boneElem = boneElem->NextSiblingElement("Bone"))
+        {
+            SSettingsBone bone{};
+            if (auto attribute = boneElem->Attribute("From"))
+            {
+                bone.fromName = attribute;
+            }
+
+            if (auto attribute = boneElem->Attribute("To"))
+            {
+                bone.toName = attribute;
+            }
+
+            bone.color = boneElem->UnsignedAttribute("Color", bone.color);
+
+            p3dSettings.sBones.push_back(bone);
+        }
+    }
+
+    pDataAvailable = true;
     return true;
 } // Read3DSettings
 

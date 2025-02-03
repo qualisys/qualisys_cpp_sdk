@@ -1727,7 +1727,7 @@ bool CRTProtocol::Read3DSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.Deserialize3DSettings(ms3DSettings, bDataAvailable);
 }
 
