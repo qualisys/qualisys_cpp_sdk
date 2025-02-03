@@ -1914,50 +1914,53 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
 bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
 
-    //pGazeVectorSettings.clear();
+    pGazeVectorSettings.clear();
 
-    ////
-    //// Read gaze vectors
-    ////
-    //if (!oXML.FindChildElem("Gaze_Vector"))
-    //{
-    //    return true; // NO gaze vector data available.
-    //}
-    //oXML.IntoElem();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //std::string tGazeVectorName;
+    //
+    // Read gaze vectors
+    //
+    tinyxml2::XMLElement* gazeVectorElem = rootElem->FirstChildElement("Gaze_Vector");
+    if (!gazeVectorElem)
+    {
+        return true; // NO eye tracker data available.
+    }
 
-    //int nGazeVectorCount = 0;
+    for (auto vectorElem = gazeVectorElem->FirstChildElement("Vector"); vectorElem != nullptr; vectorElem = vectorElem->NextSiblingElement("Vector"))
+    {
+        std::string name;
+        if (auto nameElem = vectorElem->FirstChildElement("Name"))
+        {
+            name = nameElem->GetText();
+        }
+        else
+        {
+            return false;
+        }
 
-    //while (oXML.FindChildElem("Vector"))
-    //{
-    //    oXML.IntoElem();
+        float frequency = 0;
+        if (auto frequencyElem = vectorElem->FirstChildElement("Frequency"))
+        {
+            frequency = static_cast<float>(atof(frequencyElem->GetText()));
+        }
 
-    //    if (!oXML.FindChildElem("Name"))
-    //    {
-    //        return false;
-    //    }
-    //    tGazeVectorName = oXML.GetChildData();
+        bool hwSync = false;
+        ReadXmlBool(vectorElem, "Hardware_Sync", hwSync);
 
-    //    float frequency = 0;
-    //    if (oXML.FindChildElem("Frequency"))
-    //    {
-    //        frequency = (float)atof(oXML.GetChildData().c_str());
-    //    }
+        bool filter = false;
+        ReadXmlBool(vectorElem, "Filter", filter);
 
-    //    bool hwSync = false;
-    //    ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
-    //    bool filter = false;
-    //    ReadXmlBool(&oXML, "Filter", filter);
+        pGazeVectorSettings.push_back({ name, frequency, hwSync, filter });
+    }
 
-    //    pGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
-    //    nGazeVectorCount++;
-    //    oXML.OutOfElem(); // Vector
-    //}
-
-    //pDataAvailable = true;
+    pDataAvailable = true;
     return true;
 } // ReadGazeVectorSettings
 
