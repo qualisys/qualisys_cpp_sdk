@@ -2737,7 +2737,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
     const unsigned int* pnSyncOutValue, const float*       pfSyncOutDutyCycle,
     const bool*         pbSyncOutNegativePolarity)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraSyncOutSettings(
         nCameraID, portNumber, peSyncOutMode,
         pnSyncOutValue, pfSyncOutDutyCycle,

@@ -3310,81 +3310,92 @@ std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int pCa
     const ESyncOutFreqMode* peSyncOutMode, const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
     const bool* pbSyncOutNegativePolarity)
 {
-    //CTinyxml2 oXML;
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //int port = portNumber - 1;
-    //if (((port == 0 || port == 1) && peSyncOutMode) || (port == 2))
-    //{
-    //    oXML.AddElem(port == 0 ? "Sync_Out" : (port == 1 ? "Sync_Out2" : "Sync_Out_MT"));
-    //    oXML.IntoElem();
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pGeneral->InsertEndChild(pCamera);
 
-    //    if (port == 0 || port == 1)
-    //    {
-    //        switch (*peSyncOutMode)
-    //        {
-    //        case ModeShutterOut:
-    //            oXML.AddElem("Mode", "Shutter out");
-    //            break;
-    //        case ModeMultiplier:
-    //            oXML.AddElem("Mode", "Multiplier");
-    //            break;
-    //        case ModeDivisor:
-    //            oXML.AddElem("Mode", "Divisor");
-    //            break;
-    //        case ModeIndependentFreq:
-    //            oXML.AddElem("Mode", "Camera independent");
-    //            break;
-    //        case ModeMeasurementTime:
-    //            oXML.AddElem("Mode", "Measurement time");
-    //            break;
-    //        case ModeFixed100Hz:
-    //            oXML.AddElem("Mode", "Continuous 100Hz");
-    //            break;
-    //        case ModeSystemLiveTime:
-    //            oXML.AddElem("Mode", "System live time");
-    //            break;
-    //        default:
-    //            return false; // Should never happen
-    //        }
+    // Add Camera ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", &pCameraId, oXML);
 
-    //        if (*peSyncOutMode == ModeMultiplier ||
-    //            *peSyncOutMode == ModeDivisor ||
-    //            *peSyncOutMode == ModeIndependentFreq)
-    //        {
-    //            if (pnSyncOutValue)
-    //            {
-    //                AddXMLElementUnsignedInt(&oXML, "Value", pnSyncOutValue);
-    //            }
-    //            if (pfSyncOutDutyCycle)
-    //            {
-    //                AddXMLElementFloat(&oXML, "Duty_Cycle", pfSyncOutDutyCycle, 3);
-    //            }
-    //        }
-    //    }
-    //    if (pbSyncOutNegativePolarity && (port == 2 ||
-    //        (peSyncOutMode && *peSyncOutMode != ModeFixed100Hz)))
-    //    {
-    //        AddXMLElementBool(&oXML, "Signal_Polarity", pbSyncOutNegativePolarity, "Negative", "Positive");
-    //    }
-    //    oXML.OutOfElem(); // Sync_Out
-    //}
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // Determine port name
+    int port = portNumber - 1;
+    if (((port == 0 || port == 1) && peSyncOutMode) || (port == 2))
+    {
+        tinyxml2::XMLElement* pSyncOut = nullptr;
+        if (port == 0)
+            pSyncOut = oXML.NewElement("Sync_Out");
+        else if (port == 1)
+            pSyncOut = oXML.NewElement("Sync_Out2");
+        else
+            pSyncOut = oXML.NewElement("Sync_Out_MT");
 
-    //return oXML.GetDoc();
+        pCamera->InsertEndChild(pSyncOut);
 
-    return "";
+        // Add Sync Out Mode
+        if (port == 0 || port == 1)
+        {
+            tinyxml2::XMLElement* pMode = oXML.NewElement("Mode");
+            switch (*peSyncOutMode)
+            {
+            case ModeShutterOut:
+                pMode->SetText("Shutter out");
+                break;
+            case ModeMultiplier:
+                pMode->SetText("Multiplier");
+                break;
+            case ModeDivisor:
+                pMode->SetText("Divisor");
+                break;
+            case ModeIndependentFreq:
+                pMode->SetText("Camera independent");
+                break;
+            case ModeMeasurementTime:
+                pMode->SetText("Measurement time");
+                break;
+            case ModeFixed100Hz:
+                pMode->SetText("Continuous 100Hz");
+                break;
+            case ModeSystemLiveTime:
+                pMode->SetText("System live time");
+                break;
+            default:
+                return ""; // Should never happen
+            }
+            pSyncOut->InsertEndChild(pMode);
+
+            // Add Value and Duty Cycle if applicable
+            if (*peSyncOutMode == ModeMultiplier ||
+                *peSyncOutMode == ModeDivisor ||
+                *peSyncOutMode == ModeIndependentFreq)
+            {
+                AddXMLElementUnsignedInt(*pSyncOut, "Value", pnSyncOutValue, oXML);
+                AddXMLElementFloat(*pSyncOut, "Duty_Cycle", pfSyncOutDutyCycle, 3, oXML);
+            }
+        }
+
+        // Add Signal Polarity
+        if (pbSyncOutNegativePolarity && (port == 2 ||
+            (peSyncOutMode && *peSyncOutMode != ModeFixed100Hz)))
+        {
+            AddXMLElementBool(*pSyncOut, "Signal_Polarity", pbSyncOutNegativePolarity, oXML, "Negative", "Positive");
+        }
+    }
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
+
 
 std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
     const float pAperture)
