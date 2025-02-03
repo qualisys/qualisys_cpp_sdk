@@ -2703,7 +2703,7 @@ bool CRTProtocol::SetCameraSettings(
     const float*       pfMarkerExposure, const float*       pfMarkerThreshold,
     const int*         pnOrientation)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraSettings(
         nCameraID, peMode,
         pfMarkerExposure, pfMarkerThreshold,

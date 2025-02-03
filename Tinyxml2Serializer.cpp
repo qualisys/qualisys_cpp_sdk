@@ -30,15 +30,14 @@ void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const 
     parent.InsertEndChild(pElement);
 }
 
-void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const char* tTag, const int* pnValue)
+void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLElement& parent, const char* tTag, const int* pnValue, tinyxml2::XMLDocument& oXML)
 {
-    //if (pnValue)
-    //{
-    //    std::string tVal;
-
-    //    tVal = CTinyxml2::Format("%d", *pnValue);
-    //    oXML->AddElem(tTag, tVal.c_str());
-    //}
+    if (pnValue)
+    {
+        tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
+        elem->SetText(*pnValue);
+        parent.InsertEndChild(elem);
+    }
 }
 
 void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument& oXML)
@@ -3262,45 +3261,54 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
 std::string CTinyxml2Serializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* peMode,
     const float* pfMarkerExposure, const float* pfMarkerThreshold, const int* pnOrientation)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pGeneral->InsertEndChild(pCamera);
 
-    //if (peMode)
-    //{
-    //    switch (*peMode)
-    //    {
-    //    case ModeMarker:
-    //        oXML.AddElem("Mode", "Marker");
-    //        break;
-    //    case ModeMarkerIntensity:
-    //        oXML.AddElem("Mode", "Marker Intensity");
-    //        break;
-    //    case ModeVideo:
-    //        oXML.AddElem("Mode", "Video");
-    //        break;
-    //    }
-    //}
-    //AddXMLElementFloat(&oXML, "Marker_Exposure", pfMarkerExposure);
-    //AddXMLElementFloat(&oXML, "Marker_Threshold", pfMarkerThreshold);
-    //AddXMLElementInt(&oXML, "Orientation", pnOrientation);
+    // Add Camera ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", &pCameraId, oXML);
 
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // Add Mode
+    if (peMode)
+    {
+        tinyxml2::XMLElement* pMode = oXML.NewElement("Mode");
+        switch (*peMode)
+        {
+        case ModeMarker:
+            pMode->SetText("Marker");
+            break;
+        case ModeMarkerIntensity:
+            pMode->SetText("Marker Intensity");
+            break;
+        case ModeVideo:
+            pMode->SetText("Video");
+            break;
+        }
+        pCamera->InsertEndChild(pMode);
+    }
 
-    //return oXML.GetDoc();
+    // Add remaining elements
+    AddXMLElementFloat(*pCamera, "Marker_Exposure", pfMarkerExposure, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Marker_Threshold", pfMarkerThreshold, 6, oXML);
+    AddXMLElementInt(*pCamera, "Orientation", pnOrientation, oXML);
 
-    return "";
+    // Convert document to string
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+
+    return printer.CStr();
 }
+
 
 std::string CTinyxml2Serializer::SetCameraVideoSettings(const unsigned int pCameraId,
     const EVideoResolution* eVideoResolution, const EVideoAspectRatio* eVideoAspectRatio,
