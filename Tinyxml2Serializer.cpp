@@ -2064,168 +2064,118 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
 
 bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
+    pAnalogDeviceSettings.clear();
 
-    //pAnalogDeviceSettings.clear();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //if (!oXML.FindChildElem("Analog"))
-    //{
-    //    // No analog data available.
-    //    return true;
-    //}
+    auto analogElem = rootElem->FirstChildElement("Analog");
+    if (!analogElem)
+    {
+        // No analog data available.
+        return true;
+    }
 
-    //SAnalogDevice sAnalogDevice;
+    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    {
+        SAnalogDevice analogDevice{};
+        analogDevice.nDeviceID = 1;   // Always channel 1
+        analogDevice.oName = "AnalogDevice";
+        if (!ReadElementUnsignedInt32(*analogElem, "Channels", analogDevice.nChannels) 
+         || !ReadElementUnsignedInt32(*analogElem, "Frequency", analogDevice.nFrequency)
+         || !ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
+        {
+            return false;
+        }
 
-    //oXML.IntoElem();
+        auto rangeElem = analogElem->FirstChildElement("Range");
+        if (!rangeElem
+        || !ReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
+        || !ReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
+        {
+            return false;
+        }
 
-    //if (mnMajorVersion == 1 && mnMinorVersion == 0)
-    //{
-    //    sAnalogDevice.nDeviceID = 1;   // Always channel 1
-    //    sAnalogDevice.oName = "AnalogDevice";
-    //    if (!oXML.FindChildElem("Channels"))
-    //    {
-    //        return false;
-    //    }
-    //    sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
-    //    if (!oXML.FindChildElem("Frequency"))
-    //    {
-    //        return false;
-    //    }
-    //    sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
-    //    if (!oXML.FindChildElem("Unit"))
-    //    {
-    //        return false;
-    //    }
-    //    sAnalogDevice.oUnit = oXML.GetChildData();
-    //    if (!oXML.FindChildElem("Range"))
-    //    {
-    //        return false;
-    //    }
-    //    oXML.IntoElem();
-    //    if (!oXML.FindChildElem("Min"))
-    //    {
-    //        return false;
-    //    }
-    //    sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
-    //    if (!oXML.FindChildElem("Max"))
-    //    {
-    //        return false;
-    //    }
-    //    sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
-    //    pAnalogDeviceSettings.push_back(sAnalogDevice);
-    //    pDataAvailable = true;
-    //    return true;
-    //}
-    //else
-    //{
-    //    while (oXML.FindChildElem("Device"))
-    //    {
-    //        sAnalogDevice.voLabels.clear();
-    //        sAnalogDevice.voUnits.clear();
-    //        oXML.IntoElem();
-    //        if (!oXML.FindChildElem("Device_ID"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            continue;
-    //        }
-    //        sAnalogDevice.nDeviceID = atoi(oXML.GetChildData().c_str());
+        pDataAvailable = true;
+        pAnalogDeviceSettings.push_back(analogDevice);
+        return true;
+    }
 
-    //        if (!oXML.FindChildElem("Device_Name"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            continue;
-    //        }
-    //        sAnalogDevice.oName = oXML.GetChildData();
+    for (auto deviceElem = analogElem->FirstChildElement("Device"); deviceElem != nullptr; deviceElem = deviceElem->NextSiblingElement("Device"))
+    {
+        SAnalogDevice analogDevice{};
+        if (!ReadElementUnsignedInt32(*deviceElem, "Device_ID", analogDevice.nDeviceID)
+            || !ReadElementStringAllowEmpty(*deviceElem, "Device_Name", analogDevice.oName)
+            || !ReadElementUnsignedInt32(*deviceElem, "Channels", analogDevice.nChannels)
+            || !ReadElementUnsignedInt32(*deviceElem, "Frequency", analogDevice.nFrequency)
+        )
+        {
+            continue;
+        }
 
-    //        if (!oXML.FindChildElem("Channels"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            continue;
-    //        }
-    //        sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
+        if (mnMajorVersion == 1 && mnMinorVersion < 11)
+        {
+            if (!ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
+            {
+                continue;
+            }
+        }
 
-    //        if (!oXML.FindChildElem("Frequency"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            continue;
-    //        }
-    //        sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
+        auto rangeElem = deviceElem->FirstChildElement("Range");
+        if (!rangeElem
+            || !ReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
+            || !ReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
+        {
+            continue;
+        }
 
-    //        if (mnMajorVersion == 1 && mnMinorVersion < 11)
-    //        {
-    //            if (!oXML.FindChildElem("Unit"))
-    //            {
-    //                oXML.OutOfElem(); // Device
-    //                continue;
-    //            }
-    //            sAnalogDevice.oUnit = oXML.GetChildData();
-    //        }
-    //        if (!oXML.FindChildElem("Range"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            continue;
-    //        }
-    //        oXML.IntoElem();
+        if (mnMajorVersion == 1 && mnMinorVersion < 11)
+        {
+            for (std::size_t i = 0; i < analogDevice.nChannels; i++)
+            {
+                std::string label;
+                if (ReadElementStringAllowEmpty(*deviceElem, "Label", label))
+                {
+                    analogDevice.voLabels.push_back(label);
+                }
+            }
 
-    //        if (!oXML.FindChildElem("Min"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            oXML.OutOfElem(); // Range
-    //            continue;
-    //        }
-    //        sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
+            if (analogDevice.voLabels.size() != analogDevice.nChannels)
+            {
+                continue;
+            }
+        }
+        else
+        {
+            for (auto channelElem = deviceElem->FirstChildElement("Channel"); channelElem != nullptr; channelElem = channelElem->NextSiblingElement("Channel"))
+            {
+                std::string label;
+                if (ReadElementStringAllowEmpty(*channelElem, "Label", label))
+                {
+                    analogDevice.voLabels.push_back(label);
+                }
 
-    //        if (!oXML.FindChildElem("Max"))
-    //        {
-    //            oXML.OutOfElem(); // Device
-    //            oXML.OutOfElem(); // Range
-    //            continue;
-    //        }
-    //        sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
-    //        oXML.OutOfElem(); // Range
+                std::string unit;
+                if (ReadElementStringAllowEmpty(*channelElem, "Unit", unit))
+                {
+                    analogDevice.voUnits.push_back(unit);
+                }
+            }
 
-    //        if (mnMajorVersion == 1 && mnMinorVersion < 11)
-    //        {
-    //            for (unsigned int i = 0; i < sAnalogDevice.nChannels; i++)
-    //            {
-    //                if (oXML.FindChildElem("Label"))
-    //                {
-    //                    sAnalogDevice.voLabels.push_back(oXML.GetChildData());
-    //                }
-    //            }
-    //            if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels)
-    //            {
-    //                oXML.OutOfElem(); // Device
-    //                continue;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            while (oXML.FindChildElem("Channel"))
-    //            {
-    //                oXML.IntoElem();
-    //                if (oXML.FindChildElem("Label"))
-    //                {
-    //                    sAnalogDevice.voLabels.push_back(oXML.GetChildData());
-    //                }
-    //                if (oXML.FindChildElem("Unit"))
-    //                {
-    //                    sAnalogDevice.voUnits.push_back(oXML.GetChildData());
-    //                }
-    //                oXML.OutOfElem(); // Channel
-    //            }
-    //            if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels ||
-    //                sAnalogDevice.voUnits.size() != sAnalogDevice.nChannels)
-    //            {
-    //                oXML.OutOfElem(); // Device
-    //                continue;
-    //            }
-    //        }
-    //        oXML.OutOfElem(); // Device
-    //        pAnalogDeviceSettings.push_back(sAnalogDevice);
-    //        pDataAvailable = true;
-    //    }
-    //}
+            if (analogDevice.voLabels.size() != analogDevice.nChannels ||
+                analogDevice.voUnits.size() != analogDevice.nChannels)
+            {
+                continue;
+            }
+        }
+
+        pDataAvailable = true;
+        pAnalogDeviceSettings.push_back(analogDevice);
+    }
 
     return true;
 } // ReadAnalogSettings
