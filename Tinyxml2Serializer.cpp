@@ -3222,38 +3222,47 @@ std::string CTinyxml2Serializer::SetExtTimeBaseSettings(const bool* pbEnabled, c
 
 std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
-    //oXML.AddElem("External_Timestamp");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //AddXMLElementBool(&oXML, "Enabled", timestampSettings.bEnabled);
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //switch (timestampSettings.nType)
-    //{
-    //default:
-    //case ETimestampType::Timestamp_SMPTE:
-    //    oXML.AddElem("Type", "SMPTE");
-    //    break;
-    //case ETimestampType::Timestamp_IRIG:
-    //    oXML.AddElem("Type", "IRIG");
-    //    break;
-    //case ETimestampType::Timestamp_CameraTime:
-    //    oXML.AddElem("Type", "CameraTime");
-    //    break;
-    //}
-    //AddXMLElementUnsignedInt(&oXML, "Frequency", timestampSettings.nFrequency);
+    // External Timestamp element
+    tinyxml2::XMLElement* pTimestamp = oXML.NewElement("External_Timestamp");
+    pGeneral->InsertEndChild(pTimestamp);
 
-    //oXML.OutOfElem(); // Timestamp
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+    // Add Enabled element
+    AddXMLElementBool(*pTimestamp, "Enabled", timestampSettings.bEnabled, oXML);
 
-    //return oXML.GetDoc();
-    return "";
+    // Add Type element
+    tinyxml2::XMLElement* pType = oXML.NewElement("Type");
+    switch (timestampSettings.nType)
+    {
+    case ETimestampType::Timestamp_SMPTE:
+        pType->SetText("SMPTE");
+        break;
+    case ETimestampType::Timestamp_IRIG:
+        pType->SetText("IRIG");
+        break;
+    case ETimestampType::Timestamp_CameraTime:
+        pType->SetText("CameraTime");
+        break;
+    default:
+        break;
+    }
+    pTimestamp->InsertEndChild(pType);
+
+    // Add Frequency element
+    AddXMLElementUnsignedInt(*pTimestamp, "Frequency", timestampSettings.nFrequency, oXML);
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* peMode,

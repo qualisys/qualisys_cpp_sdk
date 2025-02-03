@@ -2690,7 +2690,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
 
 bool CRTProtocol::SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetExtTimestampSettings(timestampSettings);
 
     return SendXML(message.data());
