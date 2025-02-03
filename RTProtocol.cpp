@@ -2656,7 +2656,7 @@ bool CRTProtocol::SetGeneralSettings(
     const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
     const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetGeneralSettings(pnCaptureFrequency, pfCaptureTime, pbStartOnExtTrig,startOnTrigNO, startOnTrigNC, startOnTrigSoftware, peProcessingActions, peRtProcessingActions, peReprocessingActions);
     
     if (SendXML(message.data()))
@@ -2779,7 +2779,7 @@ bool CRTProtocol::SetImageSettings(
     const unsigned int* pnWidth,   const unsigned int* pnHeight,    const float* pfLeftCrop,
     const float*        pfTopCrop, const float*        pfRightCrop, const float* pfBottomCrop)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer (mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetImageSettings(
         nCameraID, pbEnable, peFormat,
         pnWidth, pnHeight, pfLeftCrop,

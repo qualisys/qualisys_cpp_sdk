@@ -13,17 +13,21 @@
 
 using namespace qualisys_cpp_sdk;
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLDocument* oXML, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool* pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue, const char* tFalse)
 {
-    //if (pbValue)
-    //{
-    //    oXML->AddElem(tTag, *pbValue ? tTrue : tFalse);
-    //}
+    if (pbValue)
+    {
+        tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
+        pElement->SetText(*pbValue ? tTrue : tFalse);
+        parent.InsertEndChild(pElement);
+    }
 }
 
-void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLDocument* oXML, const char* tTag, const bool pbValue, const char* tTrue, const char* tFalse)
+void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue, const char* tFalse)
 {
-    //oXML->AddElem(tTag, pbValue ? tTrue : tFalse);
+    tinyxml2::XMLElement* pElement = oXML.NewElement(tTag);
+    pElement->SetText(pbValue ? tTrue : tFalse);
+    parent.InsertEndChild(pElement);
 }
 
 void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const char* tTag, const int* pnValue)
@@ -223,7 +227,6 @@ namespace
             };
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
-
 }
 
 bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const
@@ -3046,88 +3049,108 @@ CTinyxml2Serializer::CTinyxml2Serializer(std::uint32_t pMajorVersion, std::uint3
 }
 
 std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* pnCaptureFrequency,
-    const float* pfCaptureTime, const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC,
+    const float* pfCaptureTime, const bool* pbStartOnExtTrig,
+    const bool* pStartOnTrigNO, const bool* pStartOnTrigNC,
     const bool* pStartOnTrigSoftware, const EProcessingActions* peProcessingActions,
     const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("General");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //if (pnCaptureFrequency)
-    //{
-    //    AddXMLElementUnsignedInt(&oXML, "Frequency", pnCaptureFrequency);
-    //}
-    //if (pfCaptureTime)
-    //{
-    //    AddXMLElementFloat(&oXML, "Capture_Time", pfCaptureTime, 3);
-    //}
-    //if (pbStartOnExtTrig)
-    //{
-    //    AddXMLElementBool(&oXML, "Start_On_External_Trigger", pbStartOnExtTrig);
-    //    if (mnMajorVersion > 1 || mnMinorVersion > 14)
-    //    {
-    //        AddXMLElementBool(&oXML, "Start_On_Trigger_NO", pStartOnTrigNO);
-    //        AddXMLElementBool(&oXML, "Start_On_Trigger_NC", pStartOnTrigNC);
-    //        AddXMLElementBool(&oXML, "Start_On_Trigger_Software", pStartOnTrigSoftware);
-    //    }
-    //}
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
 
-    //const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
-    //const EProcessingActions* processingActions[3] = { peProcessingActions, peRtProcessingActions, peReprocessingActions };
+    // Capture Frequency
+    if (pnCaptureFrequency)
+    {
+        AddXMLElementUnsignedInt(*pGeneral, "Frequency", pnCaptureFrequency, oXML);
+    }
 
-    //auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    // Capture Time
+    if (pfCaptureTime)
+    {
+        AddXMLElementFloat(*pGeneral, "Capture_Time", pfCaptureTime, 3, oXML);
+    }
 
-    //for (auto i = 0; i < actionsCount; i++)
-    //{
-    //    if (processingActions[i])
-    //    {
-    //        oXML.AddElem(processings[i]);
-    //        oXML.IntoElem();
+    // External Trigger and additional triggers
+    if (pbStartOnExtTrig)
+    {
+        AddXMLElementBool(*pGeneral, "Start_On_External_Trigger", pbStartOnExtTrig, oXML);
 
-    //        if (mnMajorVersion > 1 || mnMinorVersion > 13)
-    //        {
-    //            AddXMLElementBool(&oXML, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0);
-    //        }
-    //        if (*processingActions[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
-    //        {
-    //            oXML.AddElem("Tracking", "2D");
-    //        }
-    //        else if (*processingActions[i] & ProcessingTracking3D)
-    //        {
-    //            oXML.AddElem("Tracking", "3D");
-    //        }
-    //        else
-    //        {
-    //            oXML.AddElem("Tracking", "False");
-    //        }
-    //        if (i != 1) //Not RtProcessingSettings
-    //        {
-    //            AddXMLElementBool(&oXML, "TwinSystemMerge", (*processingActions[i] & ProcessingTwinSystemMerge) != 0);
-    //            AddXMLElementBool(&oXML, "SplineFill", (*processingActions[i] & ProcessingSplineFill) != 0);
-    //        }
-    //        AddXMLElementBool(&oXML, "AIM", (*processingActions[i] & ProcessingAIM) != 0);
-    //        AddXMLElementBool(&oXML, "Track6DOF", (*processingActions[i] & Processing6DOFTracking) != 0);
-    //        AddXMLElementBool(&oXML, "ForceData", (*processingActions[i] & ProcessingForceData) != 0);
-    //        AddXMLElementBool(&oXML, "GazeVector", (*processingActions[i] & ProcessingGazeVector) != 0);
-    //        if (i != 1) //Not RtProcessingSettings
-    //        {
-    //            AddXMLElementBool(&oXML, "ExportTSV", (*processingActions[i] & ProcessingExportTSV) != 0);
-    //            AddXMLElementBool(&oXML, "ExportC3D", (*processingActions[i] & ProcessingExportC3D) != 0);
-    //            AddXMLElementBool(&oXML, "ExportMatlabFile", (*processingActions[i] & ProcessingExportMatlabFile) != 0);
-    //            AddXMLElementBool(&oXML, "ExportAviFile", (*processingActions[i] & ProcessingExportAviFile) != 0);
-    //        }
-    //        oXML.OutOfElem(); // Processing_Actions
-    //    }
-    //}
-    //oXML.OutOfElem(); // General
-    //oXML.OutOfElem(); // QTM_Settings
+        if (mnMajorVersion > 1 || mnMinorVersion > 14)
+        {
+            AddXMLElementBool(*pGeneral, "Start_On_Trigger_NO", pStartOnTrigNO, oXML);
+            AddXMLElementBool(*pGeneral, "Start_On_Trigger_NC", pStartOnTrigNC, oXML);
+            AddXMLElementBool(*pGeneral, "Start_On_Trigger_Software", pStartOnTrigSoftware, oXML);
+        }
+    }
 
-    //return oXML.GetDoc();
-    return "";
+    // Processing Actions
+    const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
+    const EProcessingActions* processingActions[3] = { peProcessingActions, peRtProcessingActions, peReprocessingActions };
+
+    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+
+    for (auto i = 0; i < actionsCount; i++)
+    {
+        if (processingActions[i])
+        {
+            tinyxml2::XMLElement* pProcessing = oXML.NewElement(processings[i]);
+            pGeneral->InsertEndChild(pProcessing);
+
+            if (mnMajorVersion > 1 || mnMinorVersion > 13)
+            {
+                AddXMLElementBool(*pProcessing, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0, oXML);
+            }
+
+            if (*processingActions[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
+            {
+                tinyxml2::XMLElement* pTracking = oXML.NewElement("Tracking");
+                pTracking->SetText("2D");
+                pProcessing->InsertEndChild(pTracking);
+            }
+            else if (*processingActions[i] & ProcessingTracking3D)
+            {
+                tinyxml2::XMLElement* pTracking = oXML.NewElement("Tracking");
+                pTracking->SetText("3D");
+                pProcessing->InsertEndChild(pTracking);
+            }
+            else
+            {
+                tinyxml2::XMLElement* pTracking = oXML.NewElement("Tracking");
+                pTracking->SetText("False");
+                pProcessing->InsertEndChild(pTracking);
+            }
+
+            if (i != 1) // Not RtProcessingSettings
+            {
+                AddXMLElementBool(*pProcessing, "TwinSystemMerge", (*processingActions[i] & ProcessingTwinSystemMerge) != 0, oXML);
+                AddXMLElementBool(*pProcessing, "SplineFill", (*processingActions[i] & ProcessingSplineFill) != 0, oXML);
+            }
+
+            AddXMLElementBool(*pProcessing, "AIM", (*processingActions[i] & ProcessingAIM) != 0, oXML);
+            AddXMLElementBool(*pProcessing, "Track6DOF", (*processingActions[i] & Processing6DOFTracking) != 0, oXML);
+            AddXMLElementBool(*pProcessing, "ForceData", (*processingActions[i] & ProcessingForceData) != 0, oXML);
+            AddXMLElementBool(*pProcessing, "GazeVector", (*processingActions[i] & ProcessingGazeVector) != 0, oXML);
+
+            if (i != 1) // Not RtProcessingSettings
+            {
+                AddXMLElementBool(*pProcessing, "ExportTSV", (*processingActions[i] & ProcessingExportTSV) != 0, oXML);
+                AddXMLElementBool(*pProcessing, "ExportC3D", (*processingActions[i] & ProcessingExportC3D) != 0, oXML);
+                AddXMLElementBool(*pProcessing, "ExportMatlabFile", (*processingActions[i] & ProcessingExportMatlabFile) != 0, oXML);
+                AddXMLElementBool(*pProcessing, "ExportAviFile", (*processingActions[i] & ProcessingExportAviFile) != 0, oXML);
+            }
+        }
+    }
+
+    // Convert to string
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetExtTimeBaseSettings(const bool* pbEnabled, const ESignalSource* peSignalSource,
@@ -3457,52 +3480,67 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int pCameraId, 
     const CRTPacket::EImageFormat* peFormat, const unsigned int* pnWidth, const unsigned int* pnHeight,
     const float* pfLeftCrop, const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop)
 {
-    //CTinyxml2 oXML;
+    tinyxml2::XMLDocument oXML;
 
-    //oXML.AddElem("QTM_Settings");
-    //oXML.IntoElem();
-    //oXML.AddElem("Image");
-    //oXML.IntoElem();
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
 
-    //oXML.AddElem("Camera");
-    //oXML.IntoElem();
+    // Image element
+    tinyxml2::XMLElement* pImage = oXML.NewElement("Image");
+    pRoot->InsertEndChild(pImage);
 
-    //AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pImage->InsertEndChild(pCamera);
 
-    //AddXMLElementBool(&oXML, "Enabled", pbEnable);
+    // ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", pCameraId, oXML);
 
-    //if (peFormat)
-    //{
-    //    switch (*peFormat)
-    //    {
-    //    case CRTPacket::FormatRawGrayscale:
-    //        oXML.AddElem("Format", "RAWGrayscale");
-    //        break;
-    //    case CRTPacket::FormatRawBGR:
-    //        oXML.AddElem("Format", "RAWBGR");
-    //        break;
-    //    case CRTPacket::FormatJPG:
-    //        oXML.AddElem("Format", "JPG");
-    //        break;
-    //    case CRTPacket::FormatPNG:
-    //        oXML.AddElem("Format", "PNG");
-    //        break;
-    //    }
-    //}
-    //AddXMLElementUnsignedInt(&oXML, "Width", pnWidth);
-    //AddXMLElementUnsignedInt(&oXML, "Height", pnHeight);
-    //AddXMLElementFloat(&oXML, "Left_Crop", pfLeftCrop);
-    //AddXMLElementFloat(&oXML, "Top_Crop", pfTopCrop);
-    //AddXMLElementFloat(&oXML, "Right_Crop", pfRightCrop);
-    //AddXMLElementFloat(&oXML, "Bottom_Crop", pfBottomCrop);
+    // Enabled
+    AddXMLElementBool(*pCamera, "Enabled", pbEnable, oXML);
 
-    //oXML.OutOfElem(); // Camera
-    //oXML.OutOfElem(); // Image
-    //oXML.OutOfElem(); // QTM_Settings
+    // Format
+    if (peFormat)
+    {
+        const char* formatStr = nullptr;
+        switch (*peFormat)
+        {
+        case CRTPacket::FormatRawGrayscale:
+            formatStr = "RAWGrayscale";
+            break;
+        case CRTPacket::FormatRawBGR:
+            formatStr = "RAWBGR";
+            break;
+        case CRTPacket::FormatJPG:
+            formatStr = "JPG";
+            break;
+        case CRTPacket::FormatPNG:
+            formatStr = "PNG";
+            break;
+        }
 
-    //return oXML.GetDoc();
+        if (formatStr)
+        {
+            tinyxml2::XMLElement* pFormat = oXML.NewElement("Format");
+            pFormat->SetText(formatStr);
+            pCamera->InsertEndChild(pFormat);
+        }
+    }
 
-    return "";
+    // Other settings
+    AddXMLElementUnsignedInt(*pCamera, "Width", pnWidth, oXML);
+    AddXMLElementUnsignedInt(*pCamera, "Height", pnHeight, oXML);
+    AddXMLElementFloat(*pCamera, "Left_Crop", pfLeftCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Top_Crop", pfTopCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Right_Crop", pfRightCrop, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Bottom_Crop", pfBottomCrop, 6, oXML);
+
+    // Convert to string
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+
+    return printer.CStr();
 }
 
 std::string CTinyxml2Serializer::SetForceSettings(const unsigned int pPlateId, const SPoint* pCorner1,
