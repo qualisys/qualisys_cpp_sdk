@@ -229,30 +229,31 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLDocument* xml, const std::string& element, bool& value) const
+bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const
 {
-    //if (!xml->FindChildElem(element.c_str()))
-    //{
-    //    return false;
-    //}
+    auto xmlElem = xml->FirstChildElement(element.c_str());
+    if (!xmlElem)
+    {
+        return false;
+    }
 
-    //auto str = xml->GetChildData();
-    //RemoveInvalidChars(str);
-    //str = ToLower(str);
+    auto str = std::string(xmlElem->GetText());
+    RemoveInvalidChars(str);
+    str = ToLower(str);
 
-    //if (str == "true")
-    //{
-    //    value = true;
-    //}
-    //else if (str == "false")
-    //{
-    //    value = false;
-    //}
-    //else
-    //{
-    //    // Don't change value, just report error.
-    //    return false;
-    //}
+    if (str == "true")
+    {
+        value = true;
+    }
+    else if (str == "false")
+    {
+        value = false;
+    }
+    else
+    {
+        // Don't change value, just report error.
+        return false;
+    }
 
     return true;
 }
@@ -287,8 +288,9 @@ SRotation CTinyxml2Deserializer::ReadXMLRotation(tinyxml2::XMLDocument& xml, con
 }
 
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion), maErrorStr{ 0 }, oXML(pData)
+    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion), maErrorStr{ 0 }
 {
+    oXML.Parse(pData);
 }
 
 bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings)
@@ -1961,45 +1963,48 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
 
 bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
 
-    //pEyeTrackerSettings.clear();
+    pEyeTrackerSettings.clear();
 
-    //if (!oXML.FindChildElem("Eye_Tracker"))
-    //{
-    //    return true; // NO eye tracker data available.
-    //}
-    //oXML.IntoElem();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //std::string tEyeTrackerName;
+    tinyxml2::XMLElement* eyeTrackerElem = rootElem->FirstChildElement("Eye_Tracker");
 
-    //int nEyeTrackerCount = 0;
+    if (!eyeTrackerElem)
+    {
+        return true; // NO eye tracker data available.
+    }
 
-    //while (oXML.FindChildElem("Device"))
-    //{
-    //    oXML.IntoElem();
+    for (auto deviceElem = eyeTrackerElem->FirstChildElement("Device"); deviceElem != nullptr; deviceElem = deviceElem->NextSiblingElement("Device"))
+    {
+        std::string name;
+        if (auto nameElem = deviceElem->FirstChildElement("Name"))
+        {
+            name = nameElem->GetText();
+        }
+        else
+        {
+            return false;
+        }
 
-    //    if (!oXML.FindChildElem("Name"))
-    //    {
-    //        return false;
-    //    }
-    //    tEyeTrackerName = oXML.GetChildData();
+        float frequency = 0;
+        if (auto frequencyElem = deviceElem->FirstChildElement("Frequency"))
+        {
+            frequency = static_cast<float>(atof(frequencyElem->GetText()));
+        }
 
-    //    float frequency = 0;
-    //    if (oXML.FindChildElem("Frequency"))
-    //    {
-    //        frequency = (float)atof(oXML.GetChildData().c_str());
-    //    }
+        bool hwSync = false;
+        ReadXmlBool(deviceElem, "Hardware_Sync", hwSync);
 
-    //    bool hwSync = false;
-    //    ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+        pEyeTrackerSettings.push_back({ name, frequency, hwSync });
+    }
 
-    //    pEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
-    //    nEyeTrackerCount++;
-    //    oXML.OutOfElem(); // Vector
-    //}
-
-    //pDataAvailable = true;
+    pDataAvailable = true;
     return true;
 } // ReadEyeTrackerSettings
 

@@ -30,7 +30,7 @@ namespace qualisys_cpp_sdk {
         static bool ParseString(const std::string& str, float& value);
         static bool ParseString(const std::string& str, double& value);
         static bool ParseString(const std::string& str, bool& value);
-        bool ReadXmlBool(tinyxml2::XMLDocument* xml, const std::string& element, bool& value) const;
+        bool ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const;
         SPosition ReadXMLPosition(tinyxml2::XMLDocument& xml, const std::string& element);
         SRotation ReadXMLRotation(tinyxml2::XMLDocument& xml, const std::string& element);
         bool ReadXMLDegreesOfFreedom(tinyxml2::XMLDocument& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom);
