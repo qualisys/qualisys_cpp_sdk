@@ -2768,7 +2768,7 @@ bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, co
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraAutoWhiteBalance(nCameraID, enable);
     return SendXML(message.data());
 }
