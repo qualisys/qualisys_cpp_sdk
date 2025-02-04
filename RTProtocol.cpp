@@ -1741,7 +1741,7 @@ bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.Deserialize6DOFSettings(m6DOFSettings, msGeneralSettings, bDataAvailable);
 }
 
