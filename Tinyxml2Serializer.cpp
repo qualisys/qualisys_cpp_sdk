@@ -1981,6 +1981,7 @@ namespace
 
     public:
         ChildElementRange() = delete;
+
         ChildElementRange(tinyxml2::XMLElement& parent, const char* elementName)
             : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t){ return elementName; })
         {
@@ -2023,8 +2024,16 @@ namespace
                 return current != other.current;
             }
         };
-        Iterator begin() const { return Iterator(*this, 0); }
-        Iterator end() const { return Iterator(*this); }
+
+        Iterator begin() const
+        {
+            return Iterator(*this, 0);
+        }
+
+        Iterator end() const
+        {
+            return Iterator(*this);
+        }
     };
 }
 
