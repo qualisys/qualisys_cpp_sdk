@@ -66,17 +66,14 @@ void CTinyxml2Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parent, const
     parent.InsertEndChild(elem);
 }
 
-void CTinyxml2Serializer::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLElement& parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument& oXML, const char* tTextAttr)
+void CTinyxml2Serializer::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parent, const char* elementName, const char* attributeName, const float& value, unsigned int decimals)
 {
-    if (pfValue)
-    {
-        char formattedValue[32];
-        snprintf(formattedValue, sizeof(formattedValue), "%.*f", pnDecimals, *pfValue);
+    char formattedValue[32];
+    snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
 
-        tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
-        elem->SetAttribute(tTextAttr, formattedValue);
-        parent.InsertEndChild(elem);
-    }
+    tinyxml2::XMLElement* elem = oXML.NewElement(elementName);
+    elem->SetAttribute(attributeName, formattedValue);
+    parent.InsertEndChild(elem);
 }
 
 
@@ -3428,8 +3425,8 @@ std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int
     pCamera->InsertEndChild(pLensControl);
 
     // Add Focus and Aperture as float attributes
-    AddXMLElementFloatWithTextAttribute(*pLensControl, "Focus", &pFocus, 6, oXML, "Value");
-    AddXMLElementFloatWithTextAttribute(*pLensControl, "Aperture", &pAperture, 6, oXML, "Value");
+    AddXMLElementFloatWithTextAttribute(oXML, *pLensControl, "Focus", "Value", pFocus, 6);
+    AddXMLElementFloatWithTextAttribute(oXML, *pLensControl, "Aperture", "Value", pAperture, 6);
 
     tinyxml2::XMLPrinter printer;
     oXML.Print(&printer);
