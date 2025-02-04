@@ -2751,7 +2751,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
   // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraLensControlSettings(nCameraID, focus, aperture);
     return SendXML(message.data());
 
