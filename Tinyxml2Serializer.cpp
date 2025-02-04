@@ -2005,7 +2005,7 @@ namespace
             Iterator(const ChildElementRange& range, std::size_t index)
                 : buffer{}, current(nullptr), range(range), index(index)
             {
-                current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, index));
+                current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, index++));
             }
 
             tinyxml2::XMLElement* operator*() const
@@ -2015,15 +2015,12 @@ namespace
 
             Iterator& operator++()
             {
-                index += 1;
-                current = current->NextSiblingElement(range.elementNameGenerator(buffer, index));
+                current = current->NextSiblingElement(range.elementNameGenerator(buffer, index++));
                 return *this;
             }
 
             bool operator!=(const Iterator& other) const {
-                return
-                    current != other.current
-                    || index != other.index;
+                return current != other.current;
             }
         };
         Iterator begin() const { return Iterator(*this, 0); }
@@ -2180,12 +2177,13 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                     unsigned int nCol = 0;
                     for (const auto col : ChildElementRange{ *row , getColStr })
                     {
-                        sForcePlate.afCalibrationMatrix[nRow][nCol++] = row->FloatText();
+                        sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
                     }
                     nRow++;
                     sForcePlate.nCalibrationMatrixColumns = nCol;
                 }
                 sForcePlate.nCalibrationMatrixRows = nRow;
+                sForcePlate.bValidCalibrationMatrix = true;
             }
             else
             {
@@ -2201,14 +2199,14 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                             unsigned int nCol = 0;
                             for (const auto col : ChildElementRange{ *columns, "Column" })
                             {
-                                // TODO: Test must fail!
-                                sForcePlate.afCalibrationMatrix[nRow][nCol] = 100.0f; //col->FloatText();
+                                sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
                             }
                             sForcePlate.nCalibrationMatrixColumns = nCol;
                         }
                         nRow++;
                     }
                     sForcePlate.nCalibrationMatrixRows = nRow;
+                    sForcePlate.bValidCalibrationMatrix = true;
                 }
             }
         }
