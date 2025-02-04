@@ -3431,10 +3431,8 @@ std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int
     AddXMLElementFloatWithTextAttribute(*pLensControl, "Focus", &pFocus, 6, oXML, "Value");
     AddXMLElementFloatWithTextAttribute(*pLensControl, "Aperture", &pAperture, 6, oXML, "Value");
 
-    // Convert document to string
     tinyxml2::XMLPrinter printer;
     oXML.Print(&printer);
-
     return printer.CStr();
 }
 
