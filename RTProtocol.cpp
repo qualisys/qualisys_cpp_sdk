@@ -2760,7 +2760,7 @@ bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, con
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraAutoExposureSettings(nCameraID, autoExposure, compensation);
     return SendXML(message.data());
 }
