@@ -31,16 +31,16 @@ void CTinyxml2Serializer::AddXMLElementBool(tinyxml2::XMLElement& parent, const 
     parent.InsertEndChild(pElement);
 }
 
-void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLDocument* oXML, const char* tTag, const int* pnValue)
+void CTinyxml2Serializer::AddXMLElementInt(tinyxml2::XMLElement& parent, const char* tTag, const int* pnValue, tinyxml2::XMLDocument& oXML)
 {
-    //if (pnValue)
-    //{
-    //    std::string tVal;
-
-    //    tVal = CTinyxml2::Format("%d", *pnValue);
-    //    oXML->AddElem(tTag, tVal.c_str());
-    //}
+    if (pnValue)
+    {
+        tinyxml2::XMLElement* elem = oXML.NewElement(tTag);
+        elem->SetText(*pnValue);
+        parent.InsertEndChild(elem);
+    }
 }
+
 
 void CTinyxml2Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument& oXML)
 {
@@ -3120,8 +3120,81 @@ std::string CTinyxml2Serializer::SetCameraVideoSettings(const unsigned int pCame
     const EVideoResolution* eVideoResolution, const EVideoAspectRatio* eVideoAspectRatio,
     const unsigned int* pnVideoFrequency, const float* pfVideoExposure, const float* pfVideoFlashTime)
 {
-    return "";
+    tinyxml2::XMLDocument oXML;
+
+    // Root element
+    tinyxml2::XMLElement* pRoot = oXML.NewElement("QTM_Settings");
+    oXML.InsertFirstChild(pRoot);
+
+    // General element
+    tinyxml2::XMLElement* pGeneral = oXML.NewElement("General");
+    pRoot->InsertEndChild(pGeneral);
+
+    // Camera element
+    tinyxml2::XMLElement* pCamera = oXML.NewElement("Camera");
+    pGeneral->InsertEndChild(pCamera);
+
+    // Add Camera ID
+    AddXMLElementUnsignedInt(*pCamera, "ID", &pCameraId, oXML);
+
+    // Add Video Resolution
+    if (eVideoResolution)
+    {
+        tinyxml2::XMLElement* pResolution = oXML.NewElement("Video_Resolution");
+        switch (*eVideoResolution)
+        {
+        case VideoResolution1440p:
+            pResolution->SetText("1440p");
+            break;
+        case VideoResolution1080p:
+            pResolution->SetText("1080p");
+            break;
+        case VideoResolution720p:
+            pResolution->SetText("720p");
+            break;
+        case VideoResolution540p:
+            pResolution->SetText("540p");
+            break;
+        case VideoResolution480p:
+            pResolution->SetText("480p");
+            break;
+        case VideoResolutionNone:
+            break;
+        }
+        pCamera->InsertEndChild(pResolution);
+    }
+
+    // Add Video Aspect Ratio
+    if (eVideoAspectRatio)
+    {
+        tinyxml2::XMLElement* pAspectRatio = oXML.NewElement("Video_Aspect_Ratio");
+        switch (*eVideoAspectRatio)
+        {
+        case VideoAspectRatio16x9:
+            pAspectRatio->SetText("16x9");
+            break;
+        case VideoAspectRatio4x3:
+            pAspectRatio->SetText("4x3");
+            break;
+        case VideoAspectRatio1x1:
+            pAspectRatio->SetText("1x1");
+            break;
+        case VideoAspectRatioNone:
+            break;
+        }
+        pCamera->InsertEndChild(pAspectRatio);
+    }
+
+    // Add remaining elements
+    AddXMLElementUnsignedInt(*pCamera, "Video_Frequency", pnVideoFrequency, oXML);
+    AddXMLElementFloat(*pCamera, "Video_Exposure", pfVideoExposure, 6, oXML);
+    AddXMLElementFloat(*pCamera, "Video_Flash_Time", pfVideoFlashTime, 6, oXML);
+
+    tinyxml2::XMLPrinter printer;
+    oXML.Print(&printer);
+    return printer.CStr();
 }
+
 
 std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int pCameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* peSyncOutMode, const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,

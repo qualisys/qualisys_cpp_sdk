@@ -2719,7 +2719,7 @@ bool CRTProtocol::SetCameraVideoSettings(
     const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
     const float* pfVideoExposure,                const float* pfVideoFlashTime)
 {
-    auto serializer = CMarkupSerializer(mnMajorVersion, mnMinorVersion);
+    CTinyxml2Serializer serializer(mnMajorVersion, mnMinorVersion);
     auto message = serializer.SetCameraVideoSettings(
         nCameraID, eVideoResolution,
         eVideoAspectRatio, pnVideoFrequency,
