@@ -1788,7 +1788,7 @@ bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
     {
         return false;
     }
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeAnalogSettings(mvsAnalogDeviceSettings, bDataAvailable);
 }
 
