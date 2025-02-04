@@ -3302,10 +3302,8 @@ std::string CTinyxml2Serializer::SetCameraSettings(const unsigned int pCameraId,
     AddXMLElementFloat(*pCamera, "Marker_Threshold", pfMarkerThreshold, 6, oXML);
     AddXMLElementInt(*pCamera, "Orientation", pnOrientation, oXML);
 
-    // Convert document to string
     tinyxml2::XMLPrinter printer;
     oXML.Print(&printer);
-
     return printer.CStr();
 }
 
