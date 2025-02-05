@@ -1,6 +1,6 @@
 # Qualisys Realtime SDK
 
-C++ package with SDK and examples.
+C++ package with SDK and examples
 
 ## Build with Visual Studio
 
@@ -23,15 +23,15 @@ If already cloned, initialize and update submodules:
 
 ### Build Examples
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON  
-cmake --build build  
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON
+cmake --build build
 ```
 
 ### Build & Run Tests
 ```cmake
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON  
-cmake --build build  
-ctest --test-dir build  
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON
+cmake --build build
+ctest --test-dir build
 ```
 
 ## Usage
@@ -39,7 +39,7 @@ ctest --test-dir build
 Include the Qualisys SDK in your CMake application:
 
 ```cmake
-find_package(qualisys_cpp_sdk REQUIRED)  
+find_package(qualisys_cpp_sdk REQUIRED)
 
 target_link_libraries(myapplication PRIVATE qualisys_cpp_sdk)
 ```
