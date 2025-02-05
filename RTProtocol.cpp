@@ -1891,7 +1891,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     }
 
     auto data = mpoRTPacket->GetXMLString();
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeCalibrationSettings(mCalibrationSettings);
 } // ReadCalibrationSettings
 

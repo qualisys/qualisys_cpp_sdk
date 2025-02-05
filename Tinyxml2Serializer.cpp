@@ -2612,16 +2612,18 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
 
 namespace
 {
-    bool ReadXmlFov(std::string name, tinyxml2::XMLDocument& oXML, SCalibrationFov& fov)
+    bool ReadXmlFov(std::string name, tinyxml2::XMLElement& parentElement, SCalibrationFov& fov)
     {
-        //if (!oXML.FindChildElem(name.c_str()))
-        //{
-        //    return false;
-        //}
-        //fov.left = std::stoul(oXML.GetChildAttrib("left"));
-        //fov.top = std::stoul(oXML.GetChildAttrib("top"));
-        //fov.right = std::stoul(oXML.GetChildAttrib("right"));
-        //fov.bottom = std::stoul(oXML.GetChildAttrib("bottom"));
+        auto childElement = parentElement.FirstChildElement(name.data());
+        if (!childElement)
+        {
+            return false;
+        }
+
+        fov.left = childElement->UnsignedAttribute("left");
+        fov.top = childElement->UnsignedAttribute("top");
+        fov.right = childElement->UnsignedAttribute("right");
+        fov.bottom = childElement->UnsignedAttribute("bottom");
 
         return true;
     }
@@ -2629,160 +2631,164 @@ namespace
 
 bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& pCalibrationSettings)
 {
-    //SCalibration settings;
+    SCalibration settings{};
 
-    //if (!oXML.FindChildElem("calibration"))
-    //{
-    //    sprintf(maErrorStr, "Missing calibration element");
-    //    return false;
-    //}
-    //oXML.IntoElem();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //try
-    //{
-    //    std::string resultStr = ToLower(oXML.GetAttrib("calibrated"));
+    auto calibrationElem = rootElem->FirstChildElement("calibration");
+    if (!calibrationElem)
+    {
+        sprintf(maErrorStr, "Missing calibration element");
+        return false;
+    }
 
-    //    settings.calibrated = (resultStr == "true");
-    //    settings.source = oXML.GetAttrib("source");
-    //    settings.created = oXML.GetAttrib("created");
-    //    settings.qtm_version = oXML.GetAttrib("qtm-version");
-    //    std::string typeStr = oXML.GetAttrib("type");
-    //    if (typeStr == "regular")
-    //    {
-    //        settings.type = ECalibrationType::regular;
-    //    }
-    //    if (typeStr == "refine")
-    //    {
-    //        settings.type = ECalibrationType::refine;
-    //    }
-    //    if (typeStr == "fixed")
-    //    {
-    //        settings.type = ECalibrationType::fixed;
-    //    }
+    try
+    {
+        settings.calibrated = calibrationElem->BoolAttribute("calibrated");
+        settings.source = calibrationElem->Attribute("source");
+        settings.created = calibrationElem->Attribute("created");
+        settings.qtm_version = calibrationElem->Attribute("qtm-version");
 
-    //    if (settings.type == ECalibrationType::refine)
-    //    {
-    //        settings.refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
-    //    }
-    //    if (settings.type != ECalibrationType::fixed)
-    //    {
-    //        settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
-    //        settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
-    //        settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
-    //        settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
-    //        settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
+        std::string typeStr = ToLower(calibrationElem->Attribute("type"));
+        if (typeStr == "regular")
+        {
+            settings.type = ECalibrationType::regular;
+        }
+        if (typeStr == "refine")
+        {
+            settings.type = ECalibrationType::refine;
+        }
+        if (typeStr == "fixed")
+        {
+            settings.type = ECalibrationType::fixed;
+        }
 
-    //        if (!oXML.FindChildElem("results"))
-    //        {
-    //            return false;
-    //        }
+        if (settings.type == ECalibrationType::refine)
+        {
+            settings.refit_residual = calibrationElem->DoubleAttribute("refit-residual");
+        }
 
-    //        settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
-    //        settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
-    //        if (settings.type == ECalibrationType::refine)
-    //        {
-    //            settings.result_refit_residual = std::stod(oXML.GetChildAttrib("refit-residual"));
-    //            settings.result_consecutive = std::stoul(oXML.GetChildAttrib("consecutive"));
-    //        }
-    //    }
+        if (settings.type != ECalibrationType::fixed)
+        {
+            settings.wand_length = calibrationElem->DoubleAttribute("wandLength");
+            settings.max_frames = calibrationElem->UnsignedAttribute("maximumFrames");
+            settings.short_arm_end = calibrationElem->DoubleAttribute("shortArmEnd");
+            settings.long_arm_end = calibrationElem->DoubleAttribute("longArmEnd");
+            settings.long_arm_middle = calibrationElem->DoubleAttribute("longArmMiddle");
 
-    //    if (!oXML.FindChildElem("cameras"))
-    //    {
-    //        return false;
-    //    }
-    //    oXML.IntoElem();
+            auto resultsElem = calibrationElem->FirstChildElement("results");
+            if (!resultsElem)
+            {
+                return false;
+            }
 
-    //    while (oXML.FindChildElem("camera"))
-    //    {
-    //        oXML.IntoElem();
-    //        SCalibrationCamera camera;
-    //        camera.active = std::stod(oXML.GetAttrib("active")) != 0;
+            settings.result_std_dev = resultsElem->DoubleAttribute("std-dev");
+            settings.result_min_max_diff = resultsElem->DoubleAttribute("min-max-diff");
 
-    //        std::string calibratedStr = ToLower(oXML.GetAttrib("calibrated"));
+            if (settings.type == ECalibrationType::refine)
+            {
+                settings.result_refit_residual = resultsElem->DoubleAttribute("refit-residual");
+                settings.result_consecutive = resultsElem->UnsignedAttribute("consecutive");
+            }
+        }
 
-    //        camera.calibrated = (calibratedStr == "true");
-    //        camera.message = oXML.GetAttrib("message");
+        auto camerasElem = calibrationElem->FirstChildElement("cameras");
+        if (!camerasElem)
+        {
+            return false;
+        }
 
-    //        camera.point_count = std::stoul(oXML.GetAttrib("point-count"));
-    //        camera.avg_residual = std::stod(oXML.GetAttrib("avg-residual"));
-    //        camera.serial = std::stoul(oXML.GetAttrib("serial"));
-    //        camera.model = oXML.GetAttrib("model");
-    //        camera.view_rotation = std::stoul(oXML.GetAttrib("viewrotation"));
-    //        if (!ReadXmlFov("fov_marker", oXML, camera.fov_marker))
-    //        {
-    //            return false;
-    //        }
-    //        if (!ReadXmlFov("fov_marker_max", oXML, camera.fov_marker_max))
-    //        {
-    //            return false;
-    //        }
-    //        if (!ReadXmlFov("fov_video", oXML, camera.fov_video))
-    //        {
-    //            return false;
-    //        }
-    //        if (!ReadXmlFov("fov_video_max", oXML, camera.fov_video_max))
-    //        {
-    //            return false;
-    //        }
-    //        if (!oXML.FindChildElem("transform"))
-    //        {
-    //            return false;
-    //        }
-    //        camera.transform.x = std::stod(oXML.GetChildAttrib("x"));
-    //        camera.transform.y = std::stod(oXML.GetChildAttrib("y"));
-    //        camera.transform.z = std::stod(oXML.GetChildAttrib("z"));
-    //        camera.transform.r11 = std::stod(oXML.GetChildAttrib("r11"));
-    //        camera.transform.r12 = std::stod(oXML.GetChildAttrib("r12"));
-    //        camera.transform.r13 = std::stod(oXML.GetChildAttrib("r13"));
-    //        camera.transform.r21 = std::stod(oXML.GetChildAttrib("r21"));
-    //        camera.transform.r22 = std::stod(oXML.GetChildAttrib("r22"));
-    //        camera.transform.r23 = std::stod(oXML.GetChildAttrib("r23"));
-    //        camera.transform.r31 = std::stod(oXML.GetChildAttrib("r31"));
-    //        camera.transform.r32 = std::stod(oXML.GetChildAttrib("r32"));
-    //        camera.transform.r33 = std::stod(oXML.GetChildAttrib("r33"));
+        for (auto cameraElem : ChildElementRange{*camerasElem, "camera"})
+        {
+            SCalibrationCamera camera{};
+            camera.active = cameraElem->UnsignedAttribute("active") != 0;
+            camera.calibrated = cameraElem->BoolAttribute("calibrated");
+            camera.message = cameraElem->Attribute("message");
 
-    //        if (!oXML.FindChildElem("intrinsic"))
-    //        {
-    //            return false;
-    //        }
+            camera.point_count = cameraElem->UnsignedAttribute("point-count");
+            camera.avg_residual = cameraElem->DoubleAttribute("avg-residual");
+            camera.serial = cameraElem->UnsignedAttribute("serial");
+            camera.model = cameraElem->Attribute("model");
+            camera.view_rotation = cameraElem->UnsignedAttribute("viewrotation");
 
-    //        auto focalLength = oXML.GetChildAttrib("focallength");
-    //        try
-    //        {
-    //            camera.intrinsic.focal_length = std::stod(focalLength);
-    //        }
-    //        catch (const std::invalid_argument&)
-    //        {
-    //            camera.intrinsic.focal_length = 0;
-    //        }
+            if (!ReadXmlFov("fov_marker", *cameraElem, camera.fov_marker))
+            {
+                return false;
+            }
 
-    //        camera.intrinsic.sensor_min_u = std::stod(oXML.GetChildAttrib("sensorMinU"));
-    //        camera.intrinsic.sensor_max_u = std::stod(oXML.GetChildAttrib("sensorMaxU"));
-    //        camera.intrinsic.sensor_min_v = std::stod(oXML.GetChildAttrib("sensorMinV"));
-    //        camera.intrinsic.sensor_max_v = std::stod(oXML.GetChildAttrib("sensorMaxV"));
-    //        camera.intrinsic.focal_length_u = std::stod(oXML.GetChildAttrib("focalLengthU"));
-    //        camera.intrinsic.focal_length_v = std::stod(oXML.GetChildAttrib("focalLengthV"));
-    //        camera.intrinsic.center_point_u = std::stod(oXML.GetChildAttrib("centerPointU"));
-    //        camera.intrinsic.center_point_v = std::stod(oXML.GetChildAttrib("centerPointV"));
-    //        camera.intrinsic.skew = std::stod(oXML.GetChildAttrib("skew"));
-    //        camera.intrinsic.radial_distortion_1 = std::stod(oXML.GetChildAttrib("radialDistortion1"));
-    //        camera.intrinsic.radial_distortion_2 = std::stod(oXML.GetChildAttrib("radialDistortion2"));
-    //        camera.intrinsic.radial_distortion_3 = std::stod(oXML.GetChildAttrib("radialDistortion3"));
-    //        camera.intrinsic.tangental_distortion_1 = std::stod(oXML.GetChildAttrib("tangentalDistortion1"));
-    //        camera.intrinsic.tangental_distortion_2 = std::stod(oXML.GetChildAttrib("tangentalDistortion2"));
-    //        oXML.OutOfElem(); // camera
-    //        settings.cameras.push_back(camera);
-    //    }
-    //    oXML.OutOfElem(); // cameras
-    //}
-    //catch (...)
-    //{
-    //    return false;
-    //}
+            if (!ReadXmlFov("fov_marker_max", *cameraElem, camera.fov_marker_max))
+            {
+                return false;
+            }
 
-    //oXML.OutOfElem(); // calibration
+            if (!ReadXmlFov("fov_video", *cameraElem, camera.fov_video))
+            {
+                return false;
+            }
 
-    //pCalibrationSettings = settings;
+            if (!ReadXmlFov("fov_video_max", *cameraElem, camera.fov_video_max))
+            {
+                return false;
+            }
+
+            auto transformElem = cameraElem->FirstChildElement("transform");
+            if (!transformElem)
+            {
+                return false;
+            }
+
+            camera.transform.x = transformElem->DoubleAttribute("x");
+            camera.transform.y = transformElem->DoubleAttribute("y");
+            camera.transform.z = transformElem->DoubleAttribute("z");
+            camera.transform.r11 = transformElem->DoubleAttribute("r11");
+            camera.transform.r12 = transformElem->DoubleAttribute("r12");
+            camera.transform.r13 = transformElem->DoubleAttribute("r13");
+            camera.transform.r21 = transformElem->DoubleAttribute("r21");
+            camera.transform.r22 = transformElem->DoubleAttribute("r22");
+            camera.transform.r23 = transformElem->DoubleAttribute("r23");
+            camera.transform.r31 = transformElem->DoubleAttribute("r31");
+            camera.transform.r32 = transformElem->DoubleAttribute("r32");
+            camera.transform.r33 = transformElem->DoubleAttribute("r33");
+
+            auto intrinsicElem = cameraElem->FirstChildElement("intrinsic");
+            if (!intrinsicElem)
+            {
+                return false;
+            }
+
+            if (intrinsicElem->QueryDoubleAttribute("focallength", &camera.intrinsic.focal_length) !=
+                tinyxml2::XML_SUCCESS)
+            {
+                camera.intrinsic.focal_length = 0;
+            }
+
+            camera.intrinsic.sensor_min_u = intrinsicElem->DoubleAttribute("sensorMinU");
+            camera.intrinsic.sensor_max_u = intrinsicElem->DoubleAttribute("sensorMaxU");
+            camera.intrinsic.sensor_min_v = intrinsicElem->DoubleAttribute("sensorMinV");
+            camera.intrinsic.sensor_max_v = intrinsicElem->DoubleAttribute("sensorMaxV");
+            camera.intrinsic.focal_length_u = intrinsicElem->DoubleAttribute("focalLengthU");
+            camera.intrinsic.focal_length_v = intrinsicElem->DoubleAttribute("focalLengthV");
+            camera.intrinsic.center_point_u = intrinsicElem->DoubleAttribute("centerPointU");
+            camera.intrinsic.center_point_v = intrinsicElem->DoubleAttribute("centerPointV");
+            camera.intrinsic.skew = intrinsicElem->DoubleAttribute("skew");
+            camera.intrinsic.radial_distortion_1 = intrinsicElem->DoubleAttribute("radialDistortion1");
+            camera.intrinsic.radial_distortion_2 = intrinsicElem->DoubleAttribute("radialDistortion2");
+            camera.intrinsic.radial_distortion_3 = intrinsicElem->DoubleAttribute("radialDistortion3");
+            camera.intrinsic.tangental_distortion_1 = intrinsicElem->DoubleAttribute("tangentalDistortion1");
+            camera.intrinsic.tangental_distortion_2 = intrinsicElem->DoubleAttribute("tangentalDistortion2");
+            settings.cameras.push_back(camera);
+        }
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    pCalibrationSettings = settings;
     return true;
 }
 
