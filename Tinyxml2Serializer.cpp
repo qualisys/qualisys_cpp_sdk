@@ -9,7 +9,6 @@
 #include "Settings.h"
 
 #include <functional>
-#include <optional>
 #include <stdexcept>
 
 using namespace qualisys_cpp_sdk;

@@ -184,20 +184,24 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="external\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="Markup.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="MarkupSerializer.cpp" />
+    <ClCompile Include="Tinyxml2Serializer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="external\tinyxml2\tinyxml2.h" />
     <ClInclude Include="Markup.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="RTPacket.h" />
     <ClInclude Include="RTProtocol.h" />
-    <ClCompile Include="Settings.h" />
-    <ClCompile Include="MarkupSerializer.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="MarkupSerializer.h" />
+    <ClInclude Include="Tinyxml2Serializer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
