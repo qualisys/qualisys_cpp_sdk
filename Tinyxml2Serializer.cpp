@@ -269,33 +269,38 @@ bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLElement* xml, const std::st
     return true;
 }
 
-SPosition CTinyxml2Deserializer::ReadXMLPosition(tinyxml2::XMLDocument& xml, const std::string& element)
+namespace
 {
-    SPosition position;
+    SPosition ReadSPosition(tinyxml2::XMLElement& parentElem, const std::string& element)
+    {
+        auto positionElem = parentElem.FirstChildElement(element.data());
+        if (positionElem)
+        {
+            return {
+                positionElem->DoubleAttribute("X"),
+                positionElem->DoubleAttribute("Y"),
+                positionElem->DoubleAttribute("Z"),
+            };
+        }
 
-    //if (xml.FindElem(element.c_str()))
-    //{
-    //    ParseString(xml.GetAttrib("X"), position.x);
-    //    ParseString(xml.GetAttrib("Y"), position.y);
-    //    ParseString(xml.GetAttrib("Z"), position.z);
-    //    xml.ResetMainPos();
-    //}
-    return position;
-}
+        return {};
+    }
 
-SRotation CTinyxml2Deserializer::ReadXMLRotation(tinyxml2::XMLDocument& xml, const std::string& element)
-{
-    SRotation rotation;
+    SRotation ReadSRotation(tinyxml2::XMLElement& parentElem, const std::string& element)
+    {
+        auto rotationElem = parentElem.FirstChildElement(element.data());
+        if (rotationElem)
+        {
+            return {
+                rotationElem->DoubleAttribute("X"),
+                rotationElem->DoubleAttribute("Y"),
+                rotationElem->DoubleAttribute("Z"),
+                rotationElem->DoubleAttribute("W")
+            };
+        }
 
-    //if (xml.FindElem(element.c_str()))
-    //{
-    //    ParseString(xml.GetAttrib("X"), rotation.x);
-    //    ParseString(xml.GetAttrib("Y"), rotation.y);
-    //    ParseString(xml.GetAttrib("Z"), rotation.z);
-    //    ParseString(xml.GetAttrib("W"), rotation.w);
-    //    xml.ResetMainPos();
-    //}
-    return rotation;
+        return {};
+    }
 }
 
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
@@ -306,6 +311,16 @@ CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pM
 
 namespace 
 {
+    bool ReadElementDouble(tinyxml2::XMLElement& element, const char* elementName, double& output)
+    {
+        if (auto childElem = element.FirstChildElement(elementName))
+        {
+            return childElem->QueryDoubleText(&output) == tinyxml2::XML_SUCCESS;
+        }
+
+        return false;
+    }
+
 
     bool ReadElementFloat(tinyxml2::XMLElement& element, const char* elementName, float& output)
     {
@@ -2312,260 +2327,286 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
     return true;
 } // ReadImageSettings
 
-bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& mSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& mSkeletonSettings, bool& pDataAvailable)
+namespace
 {
-    //CTinyxml2 xml = oXML;
+    bool TryReadSDegreeOfFreedom(tinyxml2::XMLElement& parentElement, const std::string& elementName, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
+    {
+        SDegreeOfFreedom degreeOfFreedom;
 
-    //pDataAvailable = false;
+        auto degreeOfFreedomElement = parentElement.FirstChildElement(elementName.data());
+        if (!degreeOfFreedomElement)
+        {
+            return false;
+        }
 
-    //mSkeletonSettings.clear();
-    //mSkeletonSettingsHierarchical.clear();
+        degreeOfFreedom.type = SkeletonStringToDofSettings(elementName);
 
-    //int segmentIndex;
-    //std::map<int, int> segmentIdIndexMap;
-    //xml.ResetPos();
+        auto constraintElem = degreeOfFreedomElement->FirstChildElement("Constraint");
+        if (constraintElem)
+        {
+            degreeOfFreedom.lowerBound = constraintElem->DoubleAttribute("LowerBound");
+            degreeOfFreedom.upperBound = constraintElem->DoubleAttribute("UpperBound");
+        }
+        else
+        {
+            degreeOfFreedom.lowerBound = degreeOfFreedomElement->DoubleAttribute("LowerBound");
+            degreeOfFreedom.upperBound = degreeOfFreedomElement->DoubleAttribute("UpperBound");
+        }
 
-    //xml.FindElem();
-    //xml.IntoElem();
+        auto couplingsElem = degreeOfFreedomElement->FirstChildElement("Couplings");
+        if (couplingsElem)
+        {
+            for (auto couplingElem : ChildElementRange{*couplingsElem, "Coupling"})
+            {
+                SCoupling coupling{};
+                coupling.segment = couplingElem->Attribute("Segment");
+                auto dof = couplingElem->Attribute("DegreeOfFreedom");
+                coupling.degreeOfFreedom = SkeletonStringToDofSettings(dof);
+                coupling.coefficient = couplingElem->DoubleAttribute("Coefficient");
+                degreeOfFreedom.couplings.push_back(coupling);
+            }
+        }
 
-    //if (xml.FindElem("Skeletons"))
-    //{
-    //    xml.IntoElem();
+        auto goalElem = degreeOfFreedomElement->FirstChildElement("Goal");
+        if (goalElem)
+        {
+            degreeOfFreedom.goalValue = goalElem->DoubleAttribute("Value");
+            degreeOfFreedom.goalWeight = goalElem->DoubleAttribute("Weight");
+        }
 
-    //    if (mnMajorVersion > 1 || mnMinorVersion > 20)
-    //    {
-    //        while (xml.FindElem("Skeleton"))
-    //        {
-    //            SSettingsSkeletonHierarchical skeletonHierarchical;
-    //            SSettingsSkeleton skeleton;
-    //            segmentIndex = 0;
+        degreesOfFreedom.push_back(degreeOfFreedom);
 
-    //            skeletonHierarchical.name = xml.GetAttrib("Name");
-    //            skeleton.name = skeletonHierarchical.name;
+        return true;
+    }
+}
 
-    //            xml.IntoElem();
+bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& pSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& pSkeletonSettings, bool& pDataAvailable)
+{
 
-    //            if (xml.FindElem("Solver"))
-    //            {
-    //                skeletonHierarchical.rootSegment.solver = xml.GetData();
-    //            }
+    pDataAvailable = false;
+    pSkeletonSettings.clear();
+    pSkeletonSettingsHierarchical.clear();
 
-    //            if (xml.FindElem("Scale"))
-    //            {
-    //                if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
-    //                {
-    //                    sprintf(maErrorStr, "Scale element parse error");
-    //                    return false;
-    //                }
-    //            }
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //            if (xml.FindElem("Segments"))
-    //            {
-    //                xml.IntoElem();
+    auto skeletonsElem = rootElem->FirstChildElement("Skeletons");
+    if (!skeletonsElem)
+    {
+        return true;
+    }
 
-    //                std::function<void(SSettingsSkeletonSegmentHierarchical&, std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments =
-    //                    [&](SSettingsSkeletonSegmentHierarchical& segmentHierarchical, std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
-    //                    {
-    //                        segmentHierarchical.name = xml.GetAttrib("Name");
-    //                        ParseString(xml.GetAttrib("ID"), segmentHierarchical.id);
+    int segmentIndex;
+    std::map<int, int> segmentIdIndexMap;
 
-    //                        segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
+    if (mnMajorVersion > 1 || mnMinorVersion > 20)
+    {
+        for (auto skeletonElem : ChildElementRange{*skeletonsElem, "Skeleton"})
+        {
+            SSettingsSkeletonHierarchical skeletonHierarchical{};
+            SSettingsSkeleton skeleton{};
+            segmentIndex = 0;
 
-    //                        xml.IntoElem();
+            skeletonHierarchical.name = skeletonElem->Attribute("Name");
+            skeleton.name = skeletonHierarchical.name;
 
-    //                        if (xml.FindElem("Solver"))
-    //                        {
-    //                            segmentHierarchical.solver = xml.GetData();
-    //                        }
+            ReadElementStringAllowEmpty(*skeletonElem, "Solver", skeletonHierarchical.rootSegment.solver);
+            ReadElementDouble(*skeletonElem, "Scale", skeletonHierarchical.scale);
 
-    //                        if (xml.FindElem("Transform"))
-    //                        {
-    //                            xml.IntoElem();
-    //                            segmentHierarchical.position = ReadXMLPosition(xml, "Position");
-    //                            segmentHierarchical.rotation = ReadXMLRotation(xml, "Rotation");
-    //                            xml.OutOfElem(); // Transform
-    //                        }
+            auto segmentsElem = skeletonElem->FirstChildElement("Segments");
+            if (segmentsElem)
+            {
+                std::function<void(tinyxml2::XMLElement&, SSettingsSkeletonSegmentHierarchical&,
+                                   std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments
+                    = [&recurseSegments, &segmentIdIndexMap, &segmentIndex, &skeleton](
+                    tinyxml2::XMLElement& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
+                    std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
+                {
+                    segmentHierarchical.name = segmentElem.Attribute("Name");
 
-    //                        if (xml.FindElem("DefaultTransform"))
-    //                        {
-    //                            xml.IntoElem();
-    //                            segmentHierarchical.defaultPosition = ReadXMLPosition(xml, "Position");
-    //                            segmentHierarchical.defaultRotation = ReadXMLRotation(xml, "Rotation");
-    //                            xml.OutOfElem(); // DefaultTransform
-    //                        }
+                    ReadElementUnsignedInt32(segmentElem, "ID", segmentHierarchical.id);
+                    segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
-    //                        if (xml.FindElem("DegreesOfFreedom"))
-    //                        {
-    //                            xml.IntoElem();
-    //                            ReadXMLDegreesOfFreedom(xml, "RotationX", segmentHierarchical.degreesOfFreedom);
-    //                            ReadXMLDegreesOfFreedom(xml, "RotationY", segmentHierarchical.degreesOfFreedom);
-    //                            ReadXMLDegreesOfFreedom(xml, "RotationZ", segmentHierarchical.degreesOfFreedom);
-    //                            ReadXMLDegreesOfFreedom(xml, "TranslationX", segmentHierarchical.degreesOfFreedom);
-    //                            ReadXMLDegreesOfFreedom(xml, "TranslationY", segmentHierarchical.degreesOfFreedom);
-    //                            ReadXMLDegreesOfFreedom(xml, "TranslationZ", segmentHierarchical.degreesOfFreedom);
-    //                            xml.OutOfElem(); // DegreesOfFreedom
-    //                        }
+                    ReadElementStringAllowEmpty(segmentElem, "Solver", segmentHierarchical.solver);
 
-    //                        segmentHierarchical.endpoint = ReadXMLPosition(xml, "Endpoint");
+                    auto transformElem = segmentElem.FirstChildElement("Transform");
+                    if (transformElem)
+                    {
+                        segmentHierarchical.position = ReadSPosition(*transformElem, "Position");
+                        segmentHierarchical.rotation = ReadSRotation(*transformElem, "Rotation");
+                    }
 
-    //                        if (xml.FindElem("Markers"))
-    //                        {
-    //                            xml.IntoElem();
+                    auto defaultTransformElem = segmentElem.FirstChildElement("DefaultTransform");
+                    if (defaultTransformElem)
+                    {
+                        segmentHierarchical.defaultPosition = ReadSPosition(*defaultTransformElem, "Position");
+                        segmentHierarchical.defaultRotation = ReadSRotation(*defaultTransformElem, "Rotation");
+                    }
 
-    //                            while (xml.FindElem("Marker"))
-    //                            {
-    //                                SMarker marker;
+                    auto degreesOfFreedomElem = segmentElem.FirstChildElement("DegreesOfFreedom");
+                    if (degreesOfFreedomElem)
+                    {
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "RotationX",
+                                                segmentHierarchical.degreesOfFreedom);
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "RotationY",
+                                                segmentHierarchical.degreesOfFreedom);
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "RotationZ",
+                                                segmentHierarchical.degreesOfFreedom);
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "TranslationX",
+                                                segmentHierarchical.degreesOfFreedom);
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "TranslationY",
+                                                segmentHierarchical.degreesOfFreedom);
+                        TryReadSDegreeOfFreedom(*degreesOfFreedomElem, "TranslationZ",
+                                                segmentHierarchical.degreesOfFreedom);
+                    }
 
-    //                                marker.name = xml.GetAttrib("Name");
-    //                                marker.weight = 1.0;
+                    segmentHierarchical.endpoint = ReadSPosition(segmentElem, "Endpoint");
 
-    //                                xml.IntoElem();
-    //                                marker.position = ReadXMLPosition(xml, "Position");
-    //                                if (xml.FindElem("Weight"))
-    //                                {
-    //                                    ParseString(xml.GetData(), marker.weight);
-    //                                }
+                    auto markersElem = segmentElem.FirstChildElement("Markers");
+                    if (markersElem)
+                    {
+                        for (auto markerElem : ChildElementRange{*markersElem, "Marker"})
+                        {
+                            SMarker marker;
 
-    //                                xml.OutOfElem(); // Marker
+                            marker.name = markerElem->Attribute("Name");
 
-    //                                segmentHierarchical.markers.push_back(marker);
-    //                            }
+                            marker.position = ReadSPosition(*markerElem, "Position");
 
-    //                            xml.OutOfElem(); // Markers
-    //                        }
+                            if (!ReadElementDouble(*markerElem, "Weight", marker.weight))
+                            {
+                                marker.weight = 1.0;
+                            }
 
-    //                        if (xml.FindElem("RigidBodies"))
-    //                        {
-    //                            xml.IntoElem();
+                            segmentHierarchical.markers.push_back(marker);
+                        }
+                    }
+                    auto rigidBodiesElem = segmentElem.FirstChildElement("Markers");
+                    if (rigidBodiesElem)
+                    {
+                        for (auto rigidBodyElem : ChildElementRange{*rigidBodiesElem, "RigidBody"})
+                        {
+                            SBody body;
 
-    //                            while (xml.FindElem("RigidBody"))
-    //                            {
-    //                                SBody body;
+                            body.name = rigidBodyElem->Attribute("Name");
 
-    //                                body.name = xml.GetAttrib("Name");
-    //                                body.weight = 1.0;
+                            auto rbodyTransformElem = rigidBodyElem->FirstChildElement("Transform");
+                            if (rbodyTransformElem)
+                            {
+                                body.position = ReadSPosition(*rbodyTransformElem, "Position");
+                                body.rotation = ReadSRotation(*rbodyTransformElem, "Rotation");
+                            }
 
-    //                                xml.IntoElem();
+                            if (!ReadElementDouble(*rbodyTransformElem, "Weight", body.weight))
+                            {
+                                body.weight = 1.0;
+                            }
 
-    //                                if (xml.FindElem("Transform"))
-    //                                {
-    //                                    xml.IntoElem();
-    //                                    body.position = ReadXMLPosition(xml, "Position");
-    //                                    body.rotation = ReadXMLRotation(xml, "Rotation");
-    //                                    xml.OutOfElem(); // Transform
-    //                                }
-    //                                if (xml.FindElem("Weight"))
-    //                                {
-    //                                    ParseString(xml.GetData(), body.weight);
-    //                                }
+                            segmentHierarchical.bodies.push_back(body);
+                        }
+                    }
 
-    //                                xml.OutOfElem(); // RigidBody
+                    SSettingsSkeletonSegment segment;
+                    segment.name = segmentHierarchical.name;
+                    segment.id = segmentHierarchical.id;
+                    segment.parentId = parentId;
+                    segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
+                    segment.positionX = static_cast<float>(segmentHierarchical.defaultPosition.x);
+                    segment.positionY = static_cast<float>(segmentHierarchical.defaultPosition.y);
+                    segment.positionZ = static_cast<float>(segmentHierarchical.defaultPosition.z);
+                    segment.rotationX = static_cast<float>(segmentHierarchical.defaultRotation.x);
+                    segment.rotationY = static_cast<float>(segmentHierarchical.defaultRotation.y);
+                    segment.rotationZ = static_cast<float>(segmentHierarchical.defaultRotation.z);
+                    segment.rotationW = static_cast<float>(segmentHierarchical.defaultRotation.w);
 
-    //                                segmentHierarchical.bodies.push_back(body);
-    //                            }
+                    segments.push_back(segment);
 
-    //                            xml.OutOfElem(); // RigidBodies
-    //                        }
-    //                        SSettingsSkeletonSegment segment;
-    //                        segment.name = segmentHierarchical.name;
-    //                        segment.id = segmentHierarchical.id;
-    //                        segment.parentId = parentId;
-    //                        segment.parentIndex = (parentId != -1) ? segmentIdIndexMap[parentId] : -1;
-    //                        segment.positionX = (float)segmentHierarchical.defaultPosition.x;
-    //                        segment.positionY = (float)segmentHierarchical.defaultPosition.y;
-    //                        segment.positionZ = (float)segmentHierarchical.defaultPosition.z;
-    //                        segment.rotationX = (float)segmentHierarchical.defaultRotation.x;
-    //                        segment.rotationY = (float)segmentHierarchical.defaultRotation.y;
-    //                        segment.rotationZ = (float)segmentHierarchical.defaultRotation.z;
-    //                        segment.rotationW = (float)segmentHierarchical.defaultRotation.w;
+                    for (auto childSegmentElem : ChildElementRange{segmentElem, "Segment"})
+                    {
+                        SSettingsSkeletonSegmentHierarchical childSegment;
+                        recurseSegments(*childSegmentElem, childSegment, skeleton.segments, segmentHierarchical.id);
+                        segmentHierarchical.segments.push_back(childSegment);
+                    }
+                };
 
-    //                        segments.push_back(segment);
+                auto rootSegmentElem = segmentsElem->FirstChildElement("Segment");
+                if (rootSegmentElem)
+                {
+                    recurseSegments(*rootSegmentElem, skeletonHierarchical.rootSegment, skeleton.segments, -1);
+                }
+            }
 
-    //                        while (xml.FindElem("Segment"))
-    //                        {
-    //                            SSettingsSkeletonSegmentHierarchical childSegment;
-    //                            recurseSegments(childSegment, skeleton.segments, segmentHierarchical.id);
-    //                            segmentHierarchical.segments.push_back(childSegment);
-    //                        }
-    //                        xml.OutOfElem();
-    //                    };
+            pDataAvailable = true;
+            pSkeletonSettings.push_back(skeleton);
+            pSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
+        }
 
-    //                if (xml.FindElem("Segment"))
-    //                {
-    //                    recurseSegments(skeletonHierarchical.rootSegment, skeleton.segments, -1);
-    //                }
-    //                xml.OutOfElem(); // Segments
-    //            }
-    //            xml.OutOfElem(); // Skeleton
-    //            mSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
-    //            mSkeletonSettings.push_back(skeleton);
-    //        }
-    //        pDataAvailable = true;
-    //    }
-    //    else
-    //    {
-    //        while (xml.FindElem("Skeleton"))
-    //        {
-    //            SSettingsSkeleton skeleton;
-    //            segmentIndex = 0;
+        return true;
+    }
 
-    //            skeleton.name = xml.GetAttrib("Name");
-    //            xml.IntoElem();
+    for (auto skeletonElem : ChildElementRange{*skeletonsElem, "Skeleton"})
+    {
+        SSettingsSkeleton skeleton{};
+        segmentIndex = 0;
+        skeleton.name = skeletonElem->Attribute("Name");
+        for (auto segmentElem : ChildElementRange{*skeletonElem, "Segment"})
+        {
+            SSettingsSkeletonSegment segment{};
 
-    //            while (xml.FindElem("Segment"))
-    //            {
-    //                SSettingsSkeletonSegment segment;
+            const char* name;
+            if (segmentElem->QueryAttribute("Name", &name) == tinyxml2::XML_SUCCESS)
+            {
+                segment.name = name;
+            }
+            else
+            {
+                return false;
+            }
 
-    //                segment.name = xml.GetAttrib("Name");
-    //                if (segment.name.size() == 0 || sscanf(xml.GetAttrib("ID").c_str(), "%u", &segment.id) != 1)
-    //                {
-    //                    return false;
-    //                }
+            if (segmentElem->QueryUnsignedAttribute("ID", &segment.id) != tinyxml2::XML_SUCCESS)
+            {
+                return false;
+            }
 
-    //                segmentIdIndexMap[segment.id] = segmentIndex++;
+            segmentIdIndexMap[segment.id] = segmentIndex++;
 
-    //                int parentId;
-    //                if (sscanf(xml.GetAttrib("Parent_ID").c_str(), "%d", &parentId) != 1)
-    //                {
-    //                    segment.parentId = -1;
-    //                    segment.parentIndex = -1;
-    //                }
-    //                else if (segmentIdIndexMap.count(parentId) > 0)
-    //                {
-    //                    segment.parentId = parentId;
-    //                    segment.parentIndex = segmentIdIndexMap[parentId];
-    //                }
+            if (segmentElem->QueryAttribute("Parent_ID", &segment.parentId) != tinyxml2::XML_SUCCESS)
+            {
+                segment.parentId = -1;
+                segment.parentIndex = -1;
+            }
+            else if (segmentIdIndexMap.count(segment.parentId) > 0)
+            {
+                segment.parentIndex = segmentIdIndexMap[segment.parentId];
+            }
 
-    //                xml.IntoElem();
+            auto positionElement = segmentElem->FirstChildElement("Position");
+            if (positionElement)
+            {
+                segment.positionX = positionElement->FloatAttribute("X");
+                segment.positionY = positionElement->FloatAttribute("Y");
+                segment.positionZ = positionElement->FloatAttribute("Z");
+            }
 
-    //                if (xml.FindElem("Position"))
-    //                {
-    //                    ParseString(xml.GetAttrib("X"), segment.positionX);
-    //                    ParseString(xml.GetAttrib("Y"), segment.positionY);
-    //                    ParseString(xml.GetAttrib("Z"), segment.positionZ);
-    //                }
+            auto rotationElement = segmentElem->FirstChildElement("Rotation");
+            if (rotationElement)
+            {
+                segment.rotationX = rotationElement->FloatAttribute("X");
+                segment.rotationY = rotationElement->FloatAttribute("Y");
+                segment.rotationZ = rotationElement->FloatAttribute("Z");
+                segment.rotationW = rotationElement->FloatAttribute("W");
+            }
 
-    //                if (xml.FindElem("Rotation"))
-    //                {
-    //                    ParseString(xml.GetAttrib("X"), segment.rotationX);
-    //                    ParseString(xml.GetAttrib("Y"), segment.rotationY);
-    //                    ParseString(xml.GetAttrib("Z"), segment.rotationZ);
-    //                    ParseString(xml.GetAttrib("W"), segment.rotationW);
-    //                }
+            skeleton.segments.push_back(segment);
+        }
 
-    //                skeleton.segments.push_back(segment);
-
-    //                xml.OutOfElem(); // Segment
-    //            }
-
-    //            mSkeletonSettings.push_back(skeleton);
-
-    //            xml.OutOfElem(); // Skeleton
-    //        }
-    //    }
-    //    xml.OutOfElem(); // Skeletons
-    //    pDataAvailable = true;
-    //}
+        pDataAvailable = true;
+        pSkeletonSettings.push_back(skeleton);
+    }
+ 
     return true;
 } // ReadSkeletonSettings
 
@@ -2743,35 +2784,6 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& pCalibr
 
     //pCalibrationSettings = settings;
     return true;
-}
-
-SPosition CTinyxml2Deserializer::DeserializeXMLPosition(tinyxml2::XMLDocument& xml, const std::string& element)
-{
-    SPosition position;
-
-    //if (xml.FindElem(element.c_str()))
-    //{
-    //    ParseString(xml.GetAttrib("X"), position.x);
-    //    ParseString(xml.GetAttrib("Y"), position.y);
-    //    ParseString(xml.GetAttrib("Z"), position.z);
-    //    xml.ResetMainPos();
-    //}
-    return position;
-}
-
-SRotation CTinyxml2Deserializer::DeserializeXMLRotation(tinyxml2::XMLDocument& xml, const std::string& element)
-{
-    SRotation rotation;
-
-    //if (xml.FindElem(element.c_str()))
-    //{
-    //    ParseString(xml.GetAttrib("X"), rotation.x);
-    //    ParseString(xml.GetAttrib("Y"), rotation.y);
-    //    ParseString(xml.GetAttrib("Z"), rotation.z);
-    //    ParseString(xml.GetAttrib("W"), rotation.w);
-    //    xml.ResetMainPos();
-    //}
-    return rotation;
 }
 
 CTinyxml2Serializer::CTinyxml2Serializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
@@ -3695,46 +3707,4 @@ std::string CTinyxml2Serializer::SetSkeletonSettings(const std::vector<SSettings
     return printer.CStr();
 }
 
-bool CTinyxml2Deserializer::ReadXMLDegreesOfFreedom(tinyxml2::XMLDocument& xml, const std::string& element, std::vector<SDegreeOfFreedom>& degreesOfFreedom)
-{
-    //SDegreeOfFreedom degreeOfFreedom;
 
-    //if (xml.FindElem(element.c_str()))
-    //{
-    //    degreeOfFreedom.type = SkeletonStringToDofSettings(element);
-    //    ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
-    //    ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
-    //    xml.IntoElem();
-    //    if (xml.FindElem("Constraint"))
-    //    {
-    //        ParseString(xml.GetAttrib("LowerBound"), degreeOfFreedom.lowerBound);
-    //        ParseString(xml.GetAttrib("UpperBound"), degreeOfFreedom.upperBound);
-    //    }
-    //    if (xml.FindElem("Couplings"))
-    //    {
-    //        xml.IntoElem();
-    //        while (xml.FindElem("Coupling"))
-    //        {
-    //            SCoupling coupling;
-    //            coupling.segment = xml.GetAttrib("Segment");
-    //            auto dof = xml.GetAttrib("DegreeOfFreedom");
-    //            coupling.degreeOfFreedom = SkeletonStringToDofSettings(dof);
-    //            ParseString(xml.GetAttrib("Coefficient"), coupling.coefficient);
-    //            degreeOfFreedom.couplings.push_back(coupling);
-    //        }
-    //        xml.OutOfElem();
-    //    }
-    //    if (xml.FindElem("Goal"))
-    //    {
-    //        ParseString(xml.GetAttrib("Value"), degreeOfFreedom.goalValue);
-    //        ParseString(xml.GetAttrib("Weight"), degreeOfFreedom.goalWeight);
-    //    }
-    //    xml.OutOfElem();
-    //    xml.ResetMainPos();
-
-    //    degreesOfFreedom.push_back(degreeOfFreedom);
-    //    return true;
-    //}
-
-    return false;
-}
