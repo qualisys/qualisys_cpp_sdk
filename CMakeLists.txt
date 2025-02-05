@@ -6,7 +6,7 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-include(tinyxml2)
+add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME}
         Markup.cpp
@@ -77,8 +77,6 @@ install(
         CODE "file( GLOB HEADERS \"${CMAKE_CURRENT_SOURCE_DIR}/*.h*\" )"
         CODE "file( INSTALL \${HEADERS} DESTINATION \"${INSTALL_INCLUDE_DIR}\" )"
 )
-
-add_subdirectory(external/tinyxml2)
 
 # ----------- EXAMPLES -----------
 
