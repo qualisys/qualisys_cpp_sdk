@@ -1981,292 +1981,252 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     return true;
 } // ReadAnalogSettings
 
+namespace
+{
+    struct ChildElementRange
+    {
+    private:
+        static constexpr std::size_t buffSize = 128;
+
+        tinyxml2::XMLElement& parent;
+        std::function<const char*(char (&buff)[buffSize], std::size_t index)> elementNameGenerator;
+
+    public:
+        ChildElementRange() = delete;
+
+        ChildElementRange(tinyxml2::XMLElement& parent, const char* elementName)
+            : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t) { return elementName; })
+        {
+        }
+
+        ChildElementRange(tinyxml2::XMLElement& parent,
+                          std::function<const char*(char (&buff)[buffSize], std::size_t index)> generator)
+            : parent(parent), elementNameGenerator(std::move(generator))
+        {
+        }
+
+        struct Iterator
+        {
+            char buffer[buffSize];
+            tinyxml2::XMLElement* current;
+            const ChildElementRange& range;
+            std::size_t index;
+
+            explicit Iterator(const ChildElementRange& range)
+                : buffer{}, current(nullptr), range(range), index(std::numeric_limits<std::size_t>::max())
+            {
+            }
+
+            Iterator(const ChildElementRange& range, std::size_t index)
+                : buffer{}, current(nullptr), range(range), index(index)
+            {
+                current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, index++));
+            }
+
+            tinyxml2::XMLElement* operator*() const
+            {
+                return current;
+            }
+
+            Iterator& operator++()
+            {
+                current = current->NextSiblingElement(range.elementNameGenerator(buffer, index++));
+                return *this;
+            }
+
+            bool operator!=(const Iterator& other) const
+            {
+                return current != other.current;
+            }
+        };
+
+        Iterator begin() const
+        {
+            return Iterator(*this, 0);
+        }
+
+        Iterator end() const
+        {
+            return Iterator(*this);
+        }
+    };
+}
+
 bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
 
-    //pForceSettings.vsForcePlates.clear();
+    pForceSettings.vsForcePlates.clear();
 
-    ////
-    //// Read some force plate parameters
-    ////
-    //if (!oXML.FindChildElem("Force"))
-    //{
-    //    return true;
-    //}
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //oXML.IntoElem();
+    auto forceElem = rootElem->FirstChildElement("Force");
+    if (!forceElem)
+    {
+        // No analog data available.
+        return true;
+    }
 
-    //SForcePlate sForcePlate;
-    //sForcePlate.bValidCalibrationMatrix = false;
-    //for (int i = 0; i < 12; i++)
-    //{
-    //    for (int j = 0; j < 12; j++)
-    //    {
-    //        sForcePlate.afCalibrationMatrix[i][j] = 0.0f;
-    //    }
-    //}
-    //sForcePlate.nCalibrationMatrixRows = 6;
-    //sForcePlate.nCalibrationMatrixColumns = 6;
+    SForcePlate sForcePlate{};
+    sForcePlate.bValidCalibrationMatrix = false;
+    sForcePlate.nCalibrationMatrixRows = 6;
+    sForcePlate.nCalibrationMatrixColumns = 6;
 
-    //if (!oXML.FindChildElem("Unit_Length"))
-    //{
-    //    return false;
-    //}
-    //pForceSettings.oUnitLength = oXML.GetChildData();
+    if (!TryReadTextElement(*forceElem, "Unit_Length", pForceSettings.oUnitLength))
+    {
+        return false;
+    }
 
-    //if (!oXML.FindChildElem("Unit_Force"))
-    //{
-    //    return false;
-    //}
-    //pForceSettings.oUnitForce = oXML.GetChildData();
+    if (!TryReadTextElement(*forceElem, "Unit_Force", pForceSettings.oUnitForce))
+    {
+        return false;
+    }
 
-    //int  iPlate = 1;
-    //while (oXML.FindChildElem("Plate"))
-    //{
-    //    //
-    //    // Get name and type of the plates
-    //    //
-    //    oXML.IntoElem(); // "Plate"
-    //    if (oXML.FindChildElem("Force_Plate_Index")) // Version 1.7 and earlier.
-    //    {
-    //        sForcePlate.nID = atoi(oXML.GetChildData().c_str());
-    //    }
-    //    else if (oXML.FindChildElem("Plate_ID")) // Version 1.8 and later.
-    //    {
-    //        sForcePlate.nID = atoi(oXML.GetChildData().c_str());
-    //    }
-    //    else
-    //    {
-    //        return false;
-    //    }
+    std::size_t iPlate = 0;
+    for (auto plateElem : ChildElementRange{*forceElem, "Plate"})
+    {
+        iPlate++;
 
-    //    if (oXML.FindChildElem("Analog_Device_ID"))
-    //    {
-    //        sForcePlate.nAnalogDeviceID = atoi(oXML.GetChildData().c_str());
-    //    }
-    //    else
-    //    {
-    //        sForcePlate.nAnalogDeviceID = 0;
-    //    }
+        if (!ReadElementUnsignedInt32(*plateElem, "Plate_ID", sForcePlate.nID))
+        {
+            if (!ReadElementUnsignedInt32(*plateElem, "Force_Plate_Index", sForcePlate.nID)) // Version 1.7 and earlier.
+            {
+                return false;
+            }
+        }
 
-    //    if (!oXML.FindChildElem("Frequency"))
-    //    {
-    //        return false;
-    //    }
-    //    sForcePlate.nFrequency = atoi(oXML.GetChildData().c_str());
+        if (!ReadElementUnsignedInt32(*plateElem, "Analog_Device_ID", sForcePlate.nAnalogDeviceID))
+        {
+            sForcePlate.nAnalogDeviceID = 0;
+        }
 
-    //    if (oXML.FindChildElem("Type"))
-    //    {
-    //        sForcePlate.oType = oXML.GetChildData();
-    //    }
-    //    else
-    //    {
-    //        sForcePlate.oType = "unknown";
-    //    }
+        if (!ReadElementUnsignedInt32(*plateElem, "Frequency", sForcePlate.nFrequency))
+        {
+            return false;
+        }
 
-    //    if (oXML.FindChildElem("Name"))
-    //    {
-    //        sForcePlate.oName = oXML.GetChildData();
-    //    }
-    //    else
-    //    {
-    //        sForcePlate.oName = CTinyxml2::Format("#%d", iPlate);
-    //    }
+        if (!TryReadTextElement(*plateElem, "Type", sForcePlate.oType))
+        {
+            sForcePlate.oType = "unknown";
+        }
 
-    //    if (oXML.FindChildElem("Length"))
-    //    {
-    //        sForcePlate.fLength = (float)atof(oXML.GetChildData().c_str());
-    //    }
-    //    if (oXML.FindChildElem("Width"))
-    //    {
-    //        sForcePlate.fWidth = (float)atof(oXML.GetChildData().c_str());
-    //    }
+        if (!TryReadTextElement(*plateElem, "Name", sForcePlate.oName))
+        {
+            sForcePlate.oName = "#" + std::to_string(iPlate);
+        }
 
-    //    if (oXML.FindChildElem("Location"))
-    //    {
-    //        oXML.IntoElem();
-    //        if (oXML.FindChildElem("Corner1"))
-    //        {
-    //            oXML.IntoElem();
-    //            if (oXML.FindChildElem("X"))
-    //            {
-    //                sForcePlate.asCorner[0].fX = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Y"))
-    //            {
-    //                sForcePlate.asCorner[0].fY = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Z"))
-    //            {
-    //                sForcePlate.asCorner[0].fZ = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            oXML.OutOfElem();
-    //        }
-    //        if (oXML.FindChildElem("Corner2"))
-    //        {
-    //            oXML.IntoElem();
-    //            if (oXML.FindChildElem("X"))
-    //            {
-    //                sForcePlate.asCorner[1].fX = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Y"))
-    //            {
-    //                sForcePlate.asCorner[1].fY = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Z"))
-    //            {
-    //                sForcePlate.asCorner[1].fZ = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            oXML.OutOfElem();
-    //        }
-    //        if (oXML.FindChildElem("Corner3"))
-    //        {
-    //            oXML.IntoElem();
-    //            if (oXML.FindChildElem("X"))
-    //            {
-    //                sForcePlate.asCorner[2].fX = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Y"))
-    //            {
-    //                sForcePlate.asCorner[2].fY = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Z"))
-    //            {
-    //                sForcePlate.asCorner[2].fZ = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            oXML.OutOfElem();
-    //        }
-    //        if (oXML.FindChildElem("Corner4"))
-    //        {
-    //            oXML.IntoElem();
-    //            if (oXML.FindChildElem("X"))
-    //            {
-    //                sForcePlate.asCorner[3].fX = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Y"))
-    //            {
-    //                sForcePlate.asCorner[3].fY = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("Z"))
-    //            {
-    //                sForcePlate.asCorner[3].fZ = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            oXML.OutOfElem();
-    //        }
-    //        oXML.OutOfElem();
-    //    }
+        TryReadFloatElement(*plateElem, "Length", sForcePlate.fLength);
+        TryReadFloatElement(*plateElem, "Width", sForcePlate.fWidth);
 
-    //    if (oXML.FindChildElem("Origin"))
-    //    {
-    //        oXML.IntoElem();
-    //        if (oXML.FindChildElem("X"))
-    //        {
-    //            sForcePlate.sOrigin.fX = (float)atof(oXML.GetChildData().c_str());
-    //        }
-    //        if (oXML.FindChildElem("Y"))
-    //        {
-    //            sForcePlate.sOrigin.fY = (float)atof(oXML.GetChildData().c_str());
-    //        }
-    //        if (oXML.FindChildElem("Z"))
-    //        {
-    //            sForcePlate.sOrigin.fZ = (float)atof(oXML.GetChildData().c_str());
-    //        }
-    //        oXML.OutOfElem();
-    //    }
+        auto locationElem = plateElem->FirstChildElement("Location");
+        if (locationElem)
+        {
+            struct Corner
+            {
+                std::size_t index;
+                const char* name;
+            };
 
-    //    sForcePlate.vChannels.clear();
-    //    if (oXML.FindChildElem("Channels"))
-    //    {
-    //        oXML.IntoElem();
-    //        SForceChannel sForceChannel;
-    //        while (oXML.FindChildElem("Channel"))
-    //        {
-    //            oXML.IntoElem();
-    //            if (oXML.FindChildElem("Channel_No"))
-    //            {
-    //                sForceChannel.nChannelNumber = atoi(oXML.GetChildData().c_str());
-    //            }
-    //            if (oXML.FindChildElem("ConversionFactor"))
-    //            {
-    //                sForceChannel.fConversionFactor = (float)atof(oXML.GetChildData().c_str());
-    //            }
-    //            sForcePlate.vChannels.push_back(sForceChannel);
-    //            oXML.OutOfElem();
-    //        }
-    //        oXML.OutOfElem();
-    //    }
+            constexpr Corner corners[]
+            {
+                {0, "Corner1"},
+                {1, "Corner2"},
+                {2, "Corner3"},
+                {3, "Corner4"},
+            };
 
-    //    if (oXML.FindChildElem("Calibration_Matrix"))
-    //    {
-    //        oXML.IntoElem();
-    //        int nRow = 0;
+            for (const auto& c : corners)
+            {
+                auto cornerElem = locationElem->FirstChildElement(c.name);
+                TryReadFloatElement(*cornerElem, "X", sForcePlate.asCorner[c.index].fX);
+                TryReadFloatElement(*cornerElem, "Y", sForcePlate.asCorner[c.index].fY);
+                TryReadFloatElement(*cornerElem, "Z", sForcePlate.asCorner[c.index].fZ);
+            }
+        }
 
-    //        if (mnMajorVersion == 1 && mnMinorVersion < 12)
-    //        {
-    //            char strRow[16];
-    //            char strCol[16];
-    //            sprintf(strRow, "Row%d", nRow + 1);
-    //            while (oXML.FindChildElem(strRow))
-    //            {
-    //                oXML.IntoElem();
-    //                int nCol = 0;
-    //                sprintf(strCol, "Col%d", nCol + 1);
-    //                while (oXML.FindChildElem(strCol))
-    //                {
-    //                    sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
-    //                    nCol++;
-    //                    sprintf(strCol, "Col%d", nCol + 1);
-    //                }
-    //                sForcePlate.nCalibrationMatrixColumns = nCol;
+        auto originElem = plateElem->FirstChildElement("Origin");
+        if (originElem)
+        {
+            TryReadFloatElement(*originElem, "X", sForcePlate.sOrigin.fX);
+            TryReadFloatElement(*originElem, "Y", sForcePlate.sOrigin.fY);
+            TryReadFloatElement(*originElem, "Z", sForcePlate.sOrigin.fZ);
+        }
 
-    //                nRow++;
-    //                sprintf(strRow, "Row%d", nRow + 1);
-    //                oXML.OutOfElem(); // RowX
-    //            }
-    //        }
-    //        else
-    //        {
-    //            //<Rows>
-    //            if (oXML.FindChildElem("Rows"))
-    //            {
-    //                oXML.IntoElem();
+        sForcePlate.vChannels.clear();
+        auto channelsElem = plateElem->FirstChildElement("Channels");
+        if (channelsElem)
+        {
+            SForceChannel sForceChannel{};
+            for (auto channelElem : ChildElementRange{*channelsElem, "Channel"})
+            {
+                ReadElementUnsignedInt32(*channelElem, "Channel_No", sForceChannel.nChannelNumber);
+                ReadElementFloat(*channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
+                sForcePlate.vChannels.push_back(sForceChannel);
+            }
+        }
 
-    //                while (oXML.FindChildElem("Row"))
-    //                {
-    //                    oXML.IntoElem();
+        auto calibrationMatrix = plateElem->FirstChildElement("Calibration_Matrix");
+        if (calibrationMatrix)
+        {
+            if (mnMajorVersion == 1 && mnMinorVersion < 12)
+            {
+                auto getRowStr = [](auto& buff, std::size_t index)-> const char* {
+                    sprintf(buff, "Row%zd", index + 1);
+                    return buff;
+                };
 
-    //                    //<Columns>
-    //                    if (oXML.FindChildElem("Columns"))
-    //                    {
-    //                        oXML.IntoElem();
+                auto getColStr = [](auto& buff, std::size_t index)-> const char* {
+                    sprintf(buff, "Col%zd", index + 1);
+                    return buff;
+                };
 
-    //                        int nCol = 0;
-    //                        while (oXML.FindChildElem("Column"))
-    //                        {
-    //                            sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
-    //                            nCol++;
-    //                        }
-    //                        sForcePlate.nCalibrationMatrixColumns = nCol;
+                unsigned int nRow = 0;
+                for (const auto row : ChildElementRange{*calibrationMatrix, getRowStr})
+                {
+                    unsigned int nCol = 0;
+                    for (const auto col : ChildElementRange{*row, getColStr})
+                    {
+                        sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
+                    }
+                    nRow++;
+                    sForcePlate.nCalibrationMatrixColumns = nCol;
+                }
+                sForcePlate.nCalibrationMatrixRows = nRow;
+                sForcePlate.bValidCalibrationMatrix = true;
+            }
+            else
+            {
+                auto rows = calibrationMatrix->FirstChildElement("Rows");
+                if (rows)
+                {
+                    unsigned int nRow = 0;
+                    for (auto rowElement : ChildElementRange{*rows, "Row"})
+                    {
+                        auto columns = rowElement->FirstChildElement("Columns");
+                        if (columns)
+                        {
+                            unsigned int nCol = 0;
+                            for (const auto col : ChildElementRange{*columns, "Column"})
+                            {
+                                sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
+                            }
+                            sForcePlate.nCalibrationMatrixColumns = nCol;
+                        }
+                        nRow++;
+                    }
+                    sForcePlate.nCalibrationMatrixRows = nRow;
+                    sForcePlate.bValidCalibrationMatrix = true;
+                }
+            }
+        }
 
-    //                        nRow++;
-    //                        oXML.OutOfElem(); // Columns
-    //                    }
-    //                    oXML.OutOfElem(); // Row
-    //                }
-    //                oXML.OutOfElem(); // Rows
-    //            }
-    //        }
-    //        sForcePlate.nCalibrationMatrixRows = nRow;
-    //        sForcePlate.bValidCalibrationMatrix = true;
-
-    //        oXML.OutOfElem(); // "Calibration_Matrix"
-    //    }
-    //    oXML.OutOfElem(); // "Plate"
-
-    //    pDataAvailable = true;
-    //    pForceSettings.vsForcePlates.push_back(sForcePlate);
-    //}
+        pDataAvailable = true;
+        pForceSettings.vsForcePlates.push_back(sForcePlate);
+    }
 
     return true;
 } // Read force settings
