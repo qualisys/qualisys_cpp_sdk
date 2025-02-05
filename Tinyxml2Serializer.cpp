@@ -2056,17 +2056,8 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         return true;
     }
 
-    SForcePlate sForcePlate;
+    SForcePlate sForcePlate{};
     sForcePlate.bValidCalibrationMatrix = false;
-
-    for (std::size_t i = 0; i < 12; i++)
-    {
-        for (std::size_t j = 0; j < 12; j++)
-        {
-            sForcePlate.afCalibrationMatrix[i][j] = 0.0f;
-        }
-    }
-
     sForcePlate.nCalibrationMatrixRows = 6;
     sForcePlate.nCalibrationMatrixColumns = 6;
 
