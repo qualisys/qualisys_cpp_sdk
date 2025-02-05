@@ -1,6 +1,6 @@
 #include "RTProtocol.h"
 #include "RTPacket.h"
-#include <tinyxml2>
+#include <tinyxml2.h>
 
 #ifdef _WIN32
 #define sleep Sleep
