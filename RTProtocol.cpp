@@ -1837,7 +1837,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobal
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeSkeletonSettings(skeletonGlobalData, mSkeletonSettingsHierarchical, mSkeletonSettings, bDataAvailable);
 }
 
