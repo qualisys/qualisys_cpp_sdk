@@ -2233,115 +2233,81 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
 
 bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable)
 {
-    //pDataAvailable = false;
+    pDataAvailable = false;
 
-    //pImageSettings.clear();
+    pImageSettings.clear();
 
-    ////
-    //// Read some Image parameters
-    ////
-    //if (!oXML.FindChildElem("Image"))
-    //{
-    //    return true;
-    //}
-    //oXML.IntoElem();
+    auto rootElem = oXML.RootElement();
+    if (!rootElem)
+    {
+        return true;
+    }
 
-    //while (oXML.FindChildElem("Camera"))
-    //{
-    //    oXML.IntoElem();
+    auto imageElem = rootElem->FirstChildElement("Image");
+    if (!imageElem)
+    {
+        return true;
+    }
 
-    //    SImageCamera sImageCamera;
+    for (auto camera : ChildElementRange{*imageElem, "Camera"})
+    {
+        SImageCamera sImageCamera{};
 
-    //    if (!oXML.FindChildElem("ID"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.nID = atoi(oXML.GetChildData().c_str());
+        if (!ReadElementUnsignedInt32(*camera, "ID", sImageCamera.nID))
+        {
+            return false;
+        }
 
-    //    if (!oXML.FindChildElem("Enabled"))
-    //    {
-    //        return false;
-    //    }
-    //    std::string tStr;
-    //    tStr = ToLower(oXML.GetChildData());
+        if (!ReadXmlBool(camera, "Enabled", sImageCamera.bEnabled))
+        {
+            return false;
+        }
 
-    //    if (tStr == "true")
-    //    {
-    //        sImageCamera.bEnabled = true;
-    //    }
-    //    else
-    //    {
-    //        sImageCamera.bEnabled = false;
-    //    }
+        std::string format;
+        if (!ReadElementStringAllowEmpty(*camera, "Format", format))
+        {
+            return false;
+        }
 
-    //    if (!oXML.FindChildElem("Format"))
-    //    {
-    //        return false;
-    //    }
-    //    tStr = ToLower(oXML.GetChildData());
+        format = ToLower(format);
+        if (format == "rawgrayscale")
+        {
+            sImageCamera.eFormat = CRTPacket::FormatRawGrayscale;
+        }
+        else if (format == "rawbgr")
+        {
+            sImageCamera.eFormat = CRTPacket::FormatRawBGR;
+        }
+        else if (format == "jpg")
+        {
+            sImageCamera.eFormat = CRTPacket::FormatJPG;
+        }
+        else if (format == "png")
+        {
+            sImageCamera.eFormat = CRTPacket::FormatPNG;
+        }
+        else
+        {
+            return false;
+        }
 
-    //    if (tStr == "rawgrayscale")
-    //    {
-    //        sImageCamera.eFormat = CRTPacket::FormatRawGrayscale;
-    //    }
-    //    else if (tStr == "rawbgr")
-    //    {
-    //        sImageCamera.eFormat = CRTPacket::FormatRawBGR;
-    //    }
-    //    else if (tStr == "jpg")
-    //    {
-    //        sImageCamera.eFormat = CRTPacket::FormatJPG;
-    //    }
-    //    else if (tStr == "png")
-    //    {
-    //        sImageCamera.eFormat = CRTPacket::FormatPNG;
-    //    }
-    //    else
-    //    {
-    //        return false;
-    //    }
+        if (!ReadElementUnsignedInt32(*camera, "Width", sImageCamera.nWidth)
+            || !ReadElementUnsignedInt32(*camera, "Height", sImageCamera.nHeight))
+        {
+            return false;
+        }
 
-    //    if (!oXML.FindChildElem("Width"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.nWidth = atoi(oXML.GetChildData().c_str());
+        if (!ReadElementFloat(*camera, "Left_Crop", sImageCamera.fCropLeft)
+            || !ReadElementFloat(*camera, "Top_Crop", sImageCamera.fCropTop)
+            || !ReadElementFloat(*camera, "Right_Crop", sImageCamera.fCropRight)
+            || !ReadElementFloat(*camera, "Bottom_Crop", sImageCamera.fCropBottom))
+        {
+            return false;
+        }
 
-    //    if (!oXML.FindChildElem("Height"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.nHeight = atoi(oXML.GetChildData().c_str());
-
-    //    if (!oXML.FindChildElem("Left_Crop"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.fCropLeft = (float)atof(oXML.GetChildData().c_str());
-
-    //    if (!oXML.FindChildElem("Top_Crop"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.fCropTop = (float)atof(oXML.GetChildData().c_str());
-
-    //    if (!oXML.FindChildElem("Right_Crop"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.fCropRight = (float)atof(oXML.GetChildData().c_str());
-
-    //    if (!oXML.FindChildElem("Bottom_Crop"))
-    //    {
-    //        return false;
-    //    }
-    //    sImageCamera.fCropBottom = (float)atof(oXML.GetChildData().c_str());
-
-    //    oXML.OutOfElem(); // "Camera"
-
-    //    pImageSettings.push_back(sImageCamera);
-    //    pDataAvailable = true;
-    //}
+        pDataAvailable = true;
+        pImageSettings.push_back(sImageCamera);
+    }
 
     return true;
 } // ReadImageSettings

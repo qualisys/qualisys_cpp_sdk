@@ -1820,7 +1820,7 @@ bool CRTProtocol::ReadImageSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeImageSettings(mvsImageSettings, bDataAvailable);
 }
 
