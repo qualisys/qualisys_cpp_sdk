@@ -1969,6 +1969,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
     return true;
 } // ReadAnalogSettings
+
 namespace
 {
     struct ChildElementRange
@@ -1977,17 +1978,18 @@ namespace
         static constexpr std::size_t buffSize = 128;
 
         tinyxml2::XMLElement& parent;
-        std::function<const char* (char (&buff)[buffSize], std::size_t index)> elementNameGenerator;
+        std::function<const char*(char (&buff)[buffSize], std::size_t index)> elementNameGenerator;
 
     public:
         ChildElementRange() = delete;
 
         ChildElementRange(tinyxml2::XMLElement& parent, const char* elementName)
-            : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t){ return elementName; })
+            : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t) { return elementName; })
         {
         }
 
-        ChildElementRange(tinyxml2::XMLElement& parent, std::function<const char* (char(&buff)[buffSize], std::size_t index)> generator)
+        ChildElementRange(tinyxml2::XMLElement& parent,
+                          std::function<const char*(char (&buff)[buffSize], std::size_t index)> generator)
             : parent(parent), elementNameGenerator(std::move(generator))
         {
         }
@@ -2001,7 +2003,8 @@ namespace
 
             explicit Iterator(const ChildElementRange& range)
                 : buffer{}, current(nullptr), range(range), index(std::numeric_limits<std::size_t>::max())
-            {}
+            {
+            }
 
             Iterator(const ChildElementRange& range, std::size_t index)
                 : buffer{}, current(nullptr), range(range), index(index)
@@ -2020,7 +2023,8 @@ namespace
                 return *this;
             }
 
-            bool operator!=(const Iterator& other) const {
+            bool operator!=(const Iterator& other) const
+            {
                 return current != other.current;
             }
         };
@@ -2078,7 +2082,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
 
         if (!ReadElementUnsignedInt32(*plateElem, "Plate_ID", sForcePlate.nID))
         {
-            if (!ReadElementUnsignedInt32(*plateElem, "Force_Plate_Index", sForcePlate.nID))  // Version 1.7 and earlier.
+            if (!ReadElementUnsignedInt32(*plateElem, "Force_Plate_Index", sForcePlate.nID)) // Version 1.7 and earlier.
             {
                 return false;
             }
@@ -2127,7 +2131,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
             for (const auto& c : corners)
             {
                 auto cornerElem = locationElem->FirstChildElement(c.name);
-                TryReadFloatElement(*cornerElem,"X", sForcePlate.asCorner[c.index].fX);
+                TryReadFloatElement(*cornerElem, "X", sForcePlate.asCorner[c.index].fX);
                 TryReadFloatElement(*cornerElem, "Y", sForcePlate.asCorner[c.index].fY);
                 TryReadFloatElement(*cornerElem, "Z", sForcePlate.asCorner[c.index].fZ);
             }
@@ -2146,7 +2150,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         if (channelsElem)
         {
             SForceChannel sForceChannel{};
-            for (auto channelElem : ChildElementRange{ *channelsElem, "Channel" })
+            for (auto channelElem : ChildElementRange{*channelsElem, "Channel"})
             {
                 ReadElementUnsignedInt32(*channelElem, "Channel_No", sForceChannel.nChannelNumber);
                 ReadElementFloat(*channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
@@ -2159,24 +2163,21 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         {
             if (mnMajorVersion == 1 && mnMinorVersion < 12)
             {
-                
-                auto getRowStr = [](auto& buff, std::size_t index)-> const char *
-                {
+                auto getRowStr = [](auto& buff, std::size_t index)-> const char* {
                     sprintf(buff, "Row%zd", index + 1);
                     return buff;
                 };
 
-                auto getColStr = [](auto& buff, std::size_t index)-> const char*
-                {
+                auto getColStr = [](auto& buff, std::size_t index)-> const char* {
                     sprintf(buff, "Col%zd", index + 1);
                     return buff;
                 };
 
                 unsigned int nRow = 0;
-                for (const auto row : ChildElementRange{ *calibrationMatrix , getRowStr })
+                for (const auto row : ChildElementRange{*calibrationMatrix, getRowStr})
                 {
                     unsigned int nCol = 0;
-                    for (const auto col : ChildElementRange{ *row , getColStr })
+                    for (const auto col : ChildElementRange{*row, getColStr})
                     {
                         sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
                     }
@@ -2192,13 +2193,13 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                 if (rows)
                 {
                     unsigned int nRow = 0;
-                    for (auto rowElement : ChildElementRange{ *rows , "Row" })
+                    for (auto rowElement : ChildElementRange{*rows, "Row"})
                     {
                         auto columns = rowElement->FirstChildElement("Columns");
                         if (columns)
                         {
                             unsigned int nCol = 0;
-                            for (const auto col : ChildElementRange{ *columns, "Column" })
+                            for (const auto col : ChildElementRange{*columns, "Column"})
                             {
                                 sForcePlate.afCalibrationMatrix[nRow][nCol++] = col->FloatText();
                             }
