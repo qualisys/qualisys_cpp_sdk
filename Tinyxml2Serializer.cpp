@@ -2115,6 +2115,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                 std::size_t index;
                 const char* name;
             };
+
             constexpr Corner corners[]
             {
                 {0, "Corner1"},
