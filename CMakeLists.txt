@@ -6,7 +6,7 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-include(tinyxml2)
+add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME}
         Markup.cpp
@@ -87,6 +87,7 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
     )
     target_link_libraries(RigidBodyStreaming
             qualisys_cpp_sdk
+            tinyxml2
     )
 endif ()
 
