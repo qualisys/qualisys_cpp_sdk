@@ -2081,7 +2081,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     }
 
     std::size_t iPlate = 0;
-    for (auto plateElem = forceElem->FirstChildElement("Plate"); plateElem != nullptr; plateElem = plateElem->NextSiblingElement("Plate"))
+    for (auto plateElem :ChildElementRange{*forceElem, "Plate"})
     {
         iPlate++;
 
@@ -2154,7 +2154,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         if (channelsElem)
         {
             SForceChannel sForceChannel{};
-            for (auto channelElem = channelsElem->FirstChildElement("Channel"); channelElem != nullptr; channelElem = channelElem->NextSiblingElement("Channel"))
+            for (auto channelElem : ChildElementRange{ *channelsElem, "Channel" })
             {
                 ReadElementUnsignedInt32(*channelElem, "Channel_No", sForceChannel.nChannelNumber);
                 ReadElementFloat(*channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
