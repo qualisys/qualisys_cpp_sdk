@@ -2072,7 +2072,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     }
 
     std::size_t iPlate = 0;
-    for (auto plateElem :ChildElementRange{*forceElem, "Plate"})
+    for (auto plateElem : ChildElementRange{*forceElem, "Plate"})
     {
         iPlate++;
 
