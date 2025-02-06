@@ -9,18 +9,18 @@ namespace qualisys_cpp_sdk {
 
 
     struct DLL_EXPORT CTinyxml2Serializer : public ISettingsSerializer {
-        CTinyxml2Serializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
+        CTinyxml2Serializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
         tinyxml2::XMLDocument oXML;
-        std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-            const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
-            const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) override;
+        std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
+            const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+            const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
-            const bool* pbEnabled, const ESignalSource* peSignalSource,
-            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
-            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
-            const float* pfNominalFrequency, const bool* pbNegativeEdge,
-            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) override;
+            const bool* enabled, const ESignalSource* signalSource,
+            const bool* signalModePeriodic, const unsigned int* freqMultiplier,
+            const unsigned int* freqDivisor, const unsigned int* freqTolerance,
+            const float* nominalFrequency, const bool* negativeEdge,
+            const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout) override;
 
         std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
@@ -36,7 +36,7 @@ namespace qualisys_cpp_sdk {
 
         std::string SetCameraSyncOutSettings(
             const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
-            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
+            const unsigned int* pnSyncOutValue, const float* syncOutDutyCycle,
             const bool* pbSyncOutNegativePolarity) override;
 
         std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) override;
