@@ -373,7 +373,7 @@ bool CRTProtocol::CheckLicense(const std::string& licenseCode)
 
 bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResponses, unsigned short nDiscoverPort)
 {
-    char pData[10];
+    char data[10];
     SDiscoverResponse sResponse;        
 
     if (mBroadcastPort == 0)
@@ -390,11 +390,11 @@ bool CRTProtocol::DiscoverRTServer(unsigned short nServerPort, bool bNoLocalResp
         nServerPort = mBroadcastPort;
     }
 
-    *((unsigned int*)pData)         = (unsigned int)10;
-    *((unsigned int*)(pData + 4))   = (unsigned int)CRTPacket::PacketDiscover;
-    *((unsigned short*)(pData + 8)) = htons(nServerPort);
+    *((unsigned int*)data)         = (unsigned int)10;
+    *((unsigned int*)(data + 4))   = (unsigned int)CRTPacket::PacketDiscover;
+    *((unsigned short*)(data + 8)) = htons(nServerPort);
 
-    if (mNetwork->SendUDPBroadcast(pData, 10, nDiscoverPort))
+    if (mNetwork->SendUDPBroadcast(data, 10, nDiscoverPort))
     {
         mDiscoverResponseList.clear();
 
@@ -1687,7 +1687,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
 bool CRTProtocol::ReadGeneralSettings()
 {
-    std::string             tStr;
+    std::string             str;
 
     mGeneralSettings.vsCameras.clear();
 
@@ -1844,7 +1844,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobal
 bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 {
     CRTPacket::EPacketType  eType;
-    std::string             tStr;
+    std::string             str;
     SCalibration            settings;
     CNetwork::ResponseType  response;
     CRTPacket::EEvent       event = CRTPacket::EventNone;
@@ -2088,13 +2088,13 @@ bool CRTProtocol::GetCameraSyncOutSettings(
 
 
 bool CRTProtocol::GetCameraPosition(
-    unsigned int nCameraIndex, SPoint &sPoint, float fvRotationMatrix[3][3]) const
+    unsigned int nCameraIndex, SPoint &point, float fvRotationMatrix[3][3]) const
 {
     if (nCameraIndex < mGeneralSettings.vsCameras.size())
     {
-        sPoint.fX = mGeneralSettings.vsCameras[nCameraIndex].fPositionX;
-        sPoint.fY = mGeneralSettings.vsCameras[nCameraIndex].fPositionY;
-        sPoint.fZ = mGeneralSettings.vsCameras[nCameraIndex].fPositionZ;
+        point.fX = mGeneralSettings.vsCameras[nCameraIndex].fPositionX;
+        point.fY = mGeneralSettings.vsCameras[nCameraIndex].fPositionY;
+        point.fZ = mGeneralSettings.vsCameras[nCameraIndex].fPositionZ;
         memcpy(fvRotationMatrix, mGeneralSettings.vsCameras[nCameraIndex].fPositionRotMatrix, 9 * sizeof(float));
         return true;
     }
@@ -2295,15 +2295,15 @@ unsigned int CRTProtocol::Get6DOFBodyPointCount(unsigned int nBodyIndex) const
 }
 
 
-bool CRTProtocol::Get6DOFBodyPoint(unsigned int nBodyIndex, unsigned int nMarkerIndex, SPoint &sPoint) const
+bool CRTProtocol::Get6DOFBodyPoint(unsigned int nBodyIndex, unsigned int nMarkerIndex, SPoint &point) const
 {
     if (nBodyIndex < m6DOFSettings.size())
     {
         if (nMarkerIndex < m6DOFSettings.at(nBodyIndex).points.size())
         {
-            sPoint.fX = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fX;
-            sPoint.fY = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fY;
-            sPoint.fZ = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fZ;
+            point.fX = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fX;
+            point.fY = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fY;
+            point.fZ = m6DOFSettings.at(nBodyIndex).points[nMarkerIndex].fZ;
             return true;
         }
     }

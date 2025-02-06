@@ -12,48 +12,48 @@
 
 using namespace qualisys_cpp_sdk;
 
-void CMarkupSerializer::AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
+void CMarkupSerializer::AddXMLElementBool(CMarkup* xmlDocument, const char* tTag, const bool* pbValue, const char* tTrue, const char* tFalse)
 {
     if (pbValue)
     {
-        oXML->AddElem(tTag, *pbValue ? tTrue : tFalse);
+        xmlDocument->AddElem(tTag, *pbValue ? tTrue : tFalse);
     }
 }
 
 
-void CMarkupSerializer::AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool pbValue, const char* tTrue, const char* tFalse)
+void CMarkupSerializer::AddXMLElementBool(CMarkup* xmlDocument, const char* tTag, const bool pbValue, const char* tTrue, const char* tFalse)
 {
-    oXML->AddElem(tTag, pbValue ? tTrue : tFalse);
+    xmlDocument->AddElem(tTag, pbValue ? tTrue : tFalse);
 }
 
 
-void CMarkupSerializer::AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue)
+void CMarkupSerializer::AddXMLElementInt(CMarkup* xmlDocument, const char* tTag, const int* pnValue)
 {
     if (pnValue)
     {
         std::string tVal;
 
         tVal = CMarkup::Format("%d", *pnValue);
-        oXML->AddElem(tTag, tVal.c_str());
+        xmlDocument->AddElem(tTag, tVal.c_str());
     }
 }
 
 
-void CMarkupSerializer::AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int value)
+void CMarkupSerializer::AddXMLElementUnsignedInt(CMarkup* xmlDocument, const char* tTag, const unsigned int value)
 {
     std::string tVal = CMarkup::Format("%u", value);
-    oXML->AddElem(tTag, tVal.c_str());
+    xmlDocument->AddElem(tTag, tVal.c_str());
 }
 
-void CMarkupSerializer::AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue)
+void CMarkupSerializer::AddXMLElementUnsignedInt(CMarkup* xmlDocument, const char* tTag, const unsigned int* pnValue)
 {
     if (pnValue)
     {
-        AddXMLElementUnsignedInt(oXML, tTag, *pnValue);
+        AddXMLElementUnsignedInt(xmlDocument, tTag, *pnValue);
     }
 }
 
-void CMarkupSerializer::AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals)
+void CMarkupSerializer::AddXMLElementFloat(CMarkup* xmlDocument, const char* tTag, const float* pfValue, unsigned int pnDecimals)
 {
     if (pfValue)
     {
@@ -62,7 +62,7 @@ void CMarkupSerializer::AddXMLElementFloat(CMarkup* oXML, const char* tTag, cons
 
         sprintf(fFormat, "%%.%df", pnDecimals);
         tVal = CMarkup::Format(fFormat, *pfValue);
-        oXML->AddElem(tTag, tVal.c_str());
+        xmlDocument->AddElem(tTag, tVal.c_str());
     }
 }
 
@@ -286,92 +286,92 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 
 
 CMarkupDeserializer::CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(pData)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, xmlDocument(pData)
 {
 }
 
 bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings)
 {
-    std::string             tStr;
+    std::string             str;
 
     pGeneralSettings.vsCameras.clear();
 
     // ==================== General ====================
-    if (!oXML.FindChildElem("General"))
+    if (!xmlDocument.FindChildElem("General"))
     {
         return false;
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
-    if (!oXML.FindChildElem("Frequency"))
+    if (!xmlDocument.FindChildElem("Frequency"))
     {
         return false;
     }
-    pGeneralSettings.nCaptureFrequency = atoi(oXML.GetChildData().c_str());
+    pGeneralSettings.nCaptureFrequency = atoi(xmlDocument.GetChildData().c_str());
 
-    if (!oXML.FindChildElem("Capture_Time"))
+    if (!xmlDocument.FindChildElem("Capture_Time"))
     {
         return false;
     }
-    pGeneralSettings.fCaptureTime = (float)atof(oXML.GetChildData().c_str());
+    pGeneralSettings.fCaptureTime = (float)atof(xmlDocument.GetChildData().c_str());
 
     // Refactored variant of all this copy/paste code. TODO: Refactor everything else.
-    if (!ReadXmlBool(&oXML, "Start_On_External_Trigger", pGeneralSettings.bStartOnExternalTrigger))
+    if (!ReadXmlBool(&xmlDocument, "Start_On_External_Trigger", pGeneralSettings.bStartOnExternalTrigger))
     {
         return false;
     }
     if (mMajorVersion > 1 || mMinorVersion > 14)
     {
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
+        if (!ReadXmlBool(&xmlDocument, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
         {
             return false;
         }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_NC", pGeneralSettings.bStartOnTrigNC))
+        if (!ReadXmlBool(&xmlDocument, "Start_On_Trigger_NC", pGeneralSettings.bStartOnTrigNC))
         {
             return false;
         }
-        if (!ReadXmlBool(&oXML, "Start_On_Trigger_Software", pGeneralSettings.bStartOnTrigSoftware))
+        if (!ReadXmlBool(&xmlDocument, "Start_On_Trigger_Software", pGeneralSettings.bStartOnTrigSoftware))
         {
             return false;
         }
     }
 
     // ==================== External time base ====================
-    if (!oXML.FindChildElem("External_Time_Base"))
+    if (!xmlDocument.FindChildElem("External_Time_Base"))
     {
         return false;
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
-    if (!oXML.FindChildElem("Enabled"))
+    if (!xmlDocument.FindChildElem("Enabled"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    pGeneralSettings.sExternalTimebase.bEnabled = (tStr == "true");
+    str = ToLower(xmlDocument.GetChildData());
+    pGeneralSettings.sExternalTimebase.bEnabled = (str == "true");
 
-    if (!oXML.FindChildElem("Signal_Source"))
+    if (!xmlDocument.FindChildElem("Signal_Source"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "control port")
+    str = ToLower(xmlDocument.GetChildData());
+    if (str == "control port")
     {
         pGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
     }
-    else if (tStr == "ir receiver")
+    else if (str == "ir receiver")
     {
         pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRReceiver;
     }
-    else if (tStr == "smpte")
+    else if (str == "smpte")
     {
         pGeneralSettings.sExternalTimebase.eSignalSource = SourceSMPTE;
     }
-    else if (tStr == "irig")
+    else if (str == "irig")
     {
         pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRIG;
     }
-    else if (tStr == "video sync")
+    else if (str == "video sync")
     {
         pGeneralSettings.sExternalTimebase.eSignalSource = SourceVideoSync;
     }
@@ -380,16 +380,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Signal_Mode"))
+    if (!xmlDocument.FindChildElem("Signal_Mode"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "periodic")
+    str = ToLower(xmlDocument.GetChildData());
+    if (str == "periodic")
     {
         pGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
     }
-    else if (tStr == "non-periodic")
+    else if (str == "non-periodic")
     {
         pGeneralSettings.sExternalTimebase.bSignalModePeriodic = false;
     }
@@ -398,13 +398,13 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Multiplier"))
+    if (!xmlDocument.FindChildElem("Frequency_Multiplier"))
     {
         return false;
     }
     unsigned int nMultiplier;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nMultiplier) == 1)
+    str = xmlDocument.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nMultiplier) == 1)
     {
         pGeneralSettings.sExternalTimebase.nFreqMultiplier = nMultiplier;
     }
@@ -413,13 +413,13 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Divisor"))
+    if (!xmlDocument.FindChildElem("Frequency_Divisor"))
     {
         return false;
     }
     unsigned int nDivisor;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDivisor) == 1)
+    str = xmlDocument.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nDivisor) == 1)
     {
         pGeneralSettings.sExternalTimebase.nFreqDivisor = nDivisor;
     }
@@ -428,13 +428,13 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Frequency_Tolerance"))
+    if (!xmlDocument.FindChildElem("Frequency_Tolerance"))
     {
         return false;
     }
     unsigned int nTolerance;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nTolerance) == 1)
+    str = xmlDocument.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nTolerance) == 1)
     {
         pGeneralSettings.sExternalTimebase.nFreqTolerance = nTolerance;
     }
@@ -443,20 +443,20 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Nominal_Frequency"))
+    if (!xmlDocument.FindChildElem("Nominal_Frequency"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    str = ToLower(xmlDocument.GetChildData());
 
-    if (tStr == "none")
+    if (str == "none")
     {
         pGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
     }
     else
     {
         float fFrequency;
-        if (sscanf(tStr.c_str(), "%f", &fFrequency) == 1)
+        if (sscanf(str.c_str(), "%f", &fFrequency) == 1)
         {
             pGeneralSettings.sExternalTimebase.fNominalFrequency = fFrequency;
         }
@@ -466,16 +466,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         }
     }
 
-    if (!oXML.FindChildElem("Signal_Edge"))
+    if (!xmlDocument.FindChildElem("Signal_Edge"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "negative")
+    str = ToLower(xmlDocument.GetChildData());
+    if (str == "negative")
     {
         pGeneralSettings.sExternalTimebase.bNegativeEdge = true;
     }
-    else if (tStr == "positive")
+    else if (str == "positive")
     {
         pGeneralSettings.sExternalTimebase.bNegativeEdge = false;
     }
@@ -484,13 +484,13 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Signal_Shutter_Delay"))
+    if (!xmlDocument.FindChildElem("Signal_Shutter_Delay"))
     {
         return false;
     }
     unsigned int nDelay;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDelay) == 1)
+    str = xmlDocument.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nDelay) == 1)
     {
         pGeneralSettings.sExternalTimebase.nSignalShutterDelay = nDelay;
     }
@@ -499,13 +499,13 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    if (!oXML.FindChildElem("Non_Periodic_Timeout"))
+    if (!xmlDocument.FindChildElem("Non_Periodic_Timeout"))
     {
         return false;
     }
     float fTimeout;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%f", &fTimeout) == 1)
+    str = xmlDocument.GetChildData();
+    if (sscanf(str.c_str(), "%f", &fTimeout) == 1)
     {
         pGeneralSettings.sExternalTimebase.fNonPeriodicTimeout = fTimeout;
     }
@@ -514,27 +514,27 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
 
-    oXML.OutOfElem(); // External_Time_Base
+    xmlDocument.OutOfElem(); // External_Time_Base
 
 
     // External_Timestamp
-    if (oXML.FindChildElem("External_Timestamp"))
+    if (xmlDocument.FindChildElem("External_Timestamp"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (oXML.FindChildElem("Enabled"))
+        if (xmlDocument.FindChildElem("Enabled"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            pGeneralSettings.sTimestamp.bEnabled = (tStr == "true");
+            str = ToLower(xmlDocument.GetChildData());
+            pGeneralSettings.sTimestamp.bEnabled = (str == "true");
         }
-        if (oXML.FindChildElem("Type"))
+        if (xmlDocument.FindChildElem("Type"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "smpte")
+            str = ToLower(xmlDocument.GetChildData());
+            if (str == "smpte")
             {
                 pGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
             }
-            else if (tStr == "irig")
+            else if (str == "irig")
             {
                 pGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
             }
@@ -543,16 +543,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
                 pGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
             }
         }
-        if (oXML.FindChildElem("Frequency"))
+        if (xmlDocument.FindChildElem("Frequency"))
         {
             unsigned int timestampFrequency;
-            tStr = oXML.GetChildData();
-            if (sscanf(tStr.c_str(), "%u", &timestampFrequency) == 1)
+            str = xmlDocument.GetChildData();
+            if (sscanf(str.c_str(), "%u", &timestampFrequency) == 1)
             {
                 pGeneralSettings.sTimestamp.nFrequency = timestampFrequency;
             }
         }
-        oXML.OutOfElem();
+        xmlDocument.OutOfElem();
     }
     // External_Timestamp
 
@@ -568,95 +568,95 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     for (auto i = 0; i < actionsCount; i++)
     {
         // ==================== Processing actions ====================
-        if (!oXML.FindChildElem(processings[i]))
+        if (!xmlDocument.FindChildElem(processings[i]))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
         *processingActions[i] = ProcessingNone;
 
         if (mMajorVersion > 1 || mMinorVersion > 13)
         {
-            if (!oXML.FindChildElem("PreProcessing2D"))
+            if (!xmlDocument.FindChildElem("PreProcessing2D"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingPreProcess2D);
             }
         }
 
-        if (!oXML.FindChildElem("Tracking"))
+        if (!xmlDocument.FindChildElem("Tracking"))
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-        if (tStr == "3d")
+        str = ToLower(xmlDocument.GetChildData());
+        if (str == "3d")
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking3D);
         }
-        else if (tStr == "2d" && i != 1) // i != 1 => Not RtProcessingSettings
+        else if (str == "2d" && i != 1) // i != 1 => Not RtProcessingSettings
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking2D);
         }
 
         if (i != 1) //Not RtProcessingSettings
         {
-            if (!oXML.FindChildElem("TwinSystemMerge"))
+            if (!xmlDocument.FindChildElem("TwinSystemMerge"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTwinSystemMerge);
             }
 
-            if (!oXML.FindChildElem("SplineFill"))
+            if (!xmlDocument.FindChildElem("SplineFill"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingSplineFill);
             }
         }
 
-        if (!oXML.FindChildElem("AIM"))
+        if (!xmlDocument.FindChildElem("AIM"))
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(xmlDocument.GetChildData(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingAIM);
         }
 
-        if (!oXML.FindChildElem("Track6DOF"))
+        if (!xmlDocument.FindChildElem("Track6DOF"))
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(xmlDocument.GetChildData(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + Processing6DOFTracking);
         }
 
-        if (!oXML.FindChildElem("ForceData"))
+        if (!xmlDocument.FindChildElem("ForceData"))
         {
             return false;
         }
-        if (CompareNoCase(oXML.GetChildData(), "true"))
+        if (CompareNoCase(xmlDocument.GetChildData(), "true"))
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingForceData);
         }
 
         if (mMajorVersion > 1 || mMinorVersion > 11)
         {
-            if (!oXML.FindChildElem("GazeVector"))
+            if (!xmlDocument.FindChildElem("GazeVector"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingGazeVector);
             }
@@ -664,224 +664,224 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
         if (i != 1) //Not RtProcessingSettings
         {
-            if (!oXML.FindChildElem("ExportTSV"))
+            if (!xmlDocument.FindChildElem("ExportTSV"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportTSV);
             }
 
-            if (!oXML.FindChildElem("ExportC3D"))
+            if (!xmlDocument.FindChildElem("ExportC3D"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportC3D);
             }
 
-            if (!oXML.FindChildElem("ExportMatlabFile"))
+            if (!xmlDocument.FindChildElem("ExportMatlabFile"))
             {
                 return false;
             }
-            if (CompareNoCase(oXML.GetChildData(), "true"))
+            if (CompareNoCase(xmlDocument.GetChildData(), "true"))
             {
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportMatlabFile);
             }
 
             if (mMajorVersion > 1 || mMinorVersion > 11)
             {
-                if (!oXML.FindChildElem("ExportAviFile"))
+                if (!xmlDocument.FindChildElem("ExportAviFile"))
                 {
                     return false;
                 }
-                if (CompareNoCase(oXML.GetChildData(), "true"))
+                if (CompareNoCase(xmlDocument.GetChildData(), "true"))
                 {
                     *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportAviFile);
                 }
             }
         }
-        oXML.OutOfElem(); // Processing_Actions
+        xmlDocument.OutOfElem(); // Processing_Actions
     }
 
-    if (oXML.FindChildElem("EulerAngles"))
+    if (xmlDocument.FindChildElem("EulerAngles"))
     {
-        oXML.IntoElem();
-        pGeneralSettings.eulerRotations[0] = oXML.GetAttrib("First");
-        pGeneralSettings.eulerRotations[1] = oXML.GetAttrib("Second");
-        pGeneralSettings.eulerRotations[2] = oXML.GetAttrib("Third");
-        oXML.OutOfElem();
+        xmlDocument.IntoElem();
+        pGeneralSettings.eulerRotations[0] = xmlDocument.GetAttrib("First");
+        pGeneralSettings.eulerRotations[1] = xmlDocument.GetAttrib("Second");
+        pGeneralSettings.eulerRotations[2] = xmlDocument.GetAttrib("Third");
+        xmlDocument.OutOfElem();
     }
 
-    SSettingsGeneralCamera sCameraSettings;
+    SSettingsGeneralCamera cameraSettings;
 
-    while (oXML.FindChildElem("Camera"))
+    while (xmlDocument.FindChildElem("Camera"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("ID"))
+        if (!xmlDocument.FindChildElem("ID"))
         {
             return false;
         }
-        sCameraSettings.nID = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nID = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Model"))
+        if (!xmlDocument.FindChildElem("Model"))
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
+        str = ToLower(xmlDocument.GetChildData());
 
-        if (tStr == "macreflex")
+        if (str == "macreflex")
         {
-            sCameraSettings.eModel = ModelMacReflex;
+            cameraSettings.eModel = ModelMacReflex;
         }
-        else if (tStr == "proreflex 120")
+        else if (str == "proreflex 120")
         {
-            sCameraSettings.eModel = ModelProReflex120;
+            cameraSettings.eModel = ModelProReflex120;
         }
-        else if (tStr == "proreflex 240")
+        else if (str == "proreflex 240")
         {
-            sCameraSettings.eModel = ModelProReflex240;
+            cameraSettings.eModel = ModelProReflex240;
         }
-        else if (tStr == "proreflex 500")
+        else if (str == "proreflex 500")
         {
-            sCameraSettings.eModel = ModelProReflex500;
+            cameraSettings.eModel = ModelProReflex500;
         }
-        else if (tStr == "proreflex 1000")
+        else if (str == "proreflex 1000")
         {
-            sCameraSettings.eModel = ModelProReflex1000;
+            cameraSettings.eModel = ModelProReflex1000;
         }
-        else if (tStr == "oqus 100")
+        else if (str == "oqus 100")
         {
-            sCameraSettings.eModel = ModelOqus100;
+            cameraSettings.eModel = ModelOqus100;
         }
-        else if (tStr == "oqus 200" || tStr == "oqus 200 c")
+        else if (str == "oqus 200" || str == "oqus 200 c")
         {
-            sCameraSettings.eModel = ModelOqus200C;
+            cameraSettings.eModel = ModelOqus200C;
         }
-        else if (tStr == "oqus 300")
+        else if (str == "oqus 300")
         {
-            sCameraSettings.eModel = ModelOqus300;
+            cameraSettings.eModel = ModelOqus300;
         }
-        else if (tStr == "oqus 300 plus")
+        else if (str == "oqus 300 plus")
         {
-            sCameraSettings.eModel = ModelOqus300Plus;
+            cameraSettings.eModel = ModelOqus300Plus;
         }
-        else if (tStr == "oqus 400")
+        else if (str == "oqus 400")
         {
-            sCameraSettings.eModel = ModelOqus400;
+            cameraSettings.eModel = ModelOqus400;
         }
-        else if (tStr == "oqus 500")
+        else if (str == "oqus 500")
         {
-            sCameraSettings.eModel = ModelOqus500;
+            cameraSettings.eModel = ModelOqus500;
         }
-        else if (tStr == "oqus 500 plus")
+        else if (str == "oqus 500 plus")
         {
-            sCameraSettings.eModel = ModelOqus500Plus;
+            cameraSettings.eModel = ModelOqus500Plus;
         }
-        else if (tStr == "oqus 700")
+        else if (str == "oqus 700")
         {
-            sCameraSettings.eModel = ModelOqus700;
+            cameraSettings.eModel = ModelOqus700;
         }
-        else if (tStr == "oqus 700 plus")
+        else if (str == "oqus 700 plus")
         {
-            sCameraSettings.eModel = ModelOqus700Plus;
+            cameraSettings.eModel = ModelOqus700Plus;
         }
-        else if (tStr == "oqus 600 plus")
+        else if (str == "oqus 600 plus")
         {
-            sCameraSettings.eModel = ModelOqus600Plus;
+            cameraSettings.eModel = ModelOqus600Plus;
         }
-        else if (tStr == "miqus m1")
+        else if (str == "miqus m1")
         {
-            sCameraSettings.eModel = ModelMiqusM1;
+            cameraSettings.eModel = ModelMiqusM1;
         }
-        else if (tStr == "miqus m3")
+        else if (str == "miqus m3")
         {
-            sCameraSettings.eModel = ModelMiqusM3;
+            cameraSettings.eModel = ModelMiqusM3;
         }
-        else if (tStr == "miqus m5")
+        else if (str == "miqus m5")
         {
-            sCameraSettings.eModel = ModelMiqusM5;
+            cameraSettings.eModel = ModelMiqusM5;
         }
-        else if (tStr == "miqus sync unit")
+        else if (str == "miqus sync unit")
         {
-            sCameraSettings.eModel = ModelMiqusSyncUnit;
+            cameraSettings.eModel = ModelMiqusSyncUnit;
         }
-        else if (tStr == "miqus video")
+        else if (str == "miqus video")
         {
-            sCameraSettings.eModel = ModelMiqusVideo;
+            cameraSettings.eModel = ModelMiqusVideo;
         }
-        else if (tStr == "miqus video color")
+        else if (str == "miqus video color")
         {
-            sCameraSettings.eModel = ModelMiqusVideoColor;
+            cameraSettings.eModel = ModelMiqusVideoColor;
         }
-        else if (tStr == "miqus hybrid")
+        else if (str == "miqus hybrid")
         {
-            sCameraSettings.eModel = ModelMiqusHybrid;
+            cameraSettings.eModel = ModelMiqusHybrid;
         }
-        else if (tStr == "miqus video color plus")
+        else if (str == "miqus video color plus")
         {
-            sCameraSettings.eModel = ModelMiqusVideoColorPlus;
+            cameraSettings.eModel = ModelMiqusVideoColorPlus;
         }
-        else if (tStr == "arqus a5")
+        else if (str == "arqus a5")
         {
-            sCameraSettings.eModel = ModelArqusA5;
+            cameraSettings.eModel = ModelArqusA5;
         }
-        else if (tStr == "arqus a9")
+        else if (str == "arqus a9")
         {
-            sCameraSettings.eModel = ModelArqusA9;
+            cameraSettings.eModel = ModelArqusA9;
         }
-        else if (tStr == "arqus a12")
+        else if (str == "arqus a12")
         {
-            sCameraSettings.eModel = ModelArqusA12;
+            cameraSettings.eModel = ModelArqusA12;
         }
-        else if (tStr == "arqus a26")
+        else if (str == "arqus a26")
         {
-            sCameraSettings.eModel = ModelArqusA26;
+            cameraSettings.eModel = ModelArqusA26;
         }
         else
         {
-            sCameraSettings.eModel = ModelUnknown;
+            cameraSettings.eModel = ModelUnknown;
         }
 
         // Only available from protocol version 1.10 and later.
-        if (oXML.FindChildElem("Underwater"))
+        if (xmlDocument.FindChildElem("Underwater"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            sCameraSettings.bUnderwater = (tStr == "true");
+            str = ToLower(xmlDocument.GetChildData());
+            cameraSettings.bUnderwater = (str == "true");
         }
 
-        if (oXML.FindChildElem("Supports_HW_Sync"))
+        if (xmlDocument.FindChildElem("Supports_HW_Sync"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            sCameraSettings.bSupportsHwSync = (tStr == "true");
+            str = ToLower(xmlDocument.GetChildData());
+            cameraSettings.bSupportsHwSync = (str == "true");
         }
 
-        if (!oXML.FindChildElem("Serial"))
+        if (!xmlDocument.FindChildElem("Serial"))
         {
             return false;
         }
-        sCameraSettings.nSerial = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nSerial = atoi(xmlDocument.GetChildData().c_str());
 
         // ==================== Camera Mode ====================
-        if (!oXML.FindChildElem("Mode"))
+        if (!xmlDocument.FindChildElem("Mode"))
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-        if (tStr == "marker")
+        str = ToLower(xmlDocument.GetChildData());
+        if (str == "marker")
         {
-            sCameraSettings.eMode = ModeMarker;
+            cameraSettings.eMode = ModeMarker;
         }
-        else if (tStr == "marker intensity")
+        else if (str == "marker intensity")
         {
-            sCameraSettings.eMode = ModeMarkerIntensity;
+            cameraSettings.eMode = ModeMarkerIntensity;
         }
-        else if (tStr == "video")
+        else if (str == "video")
         {
-            sCameraSettings.eMode = ModeVideo;
+            cameraSettings.eMode = ModeVideo;
         }
         else
         {
@@ -891,36 +891,36 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             // ==================== Video frequency ====================
-            if (!oXML.FindChildElem("Video_Frequency"))
+            if (!xmlDocument.FindChildElem("Video_Frequency"))
             {
                 return false;
             }
-            sCameraSettings.nVideoFrequency = atoi(oXML.GetChildData().c_str());
+            cameraSettings.nVideoFrequency = atoi(xmlDocument.GetChildData().c_str());
         }
 
         // ==================== Video Resolution ====================
-        if (oXML.FindChildElem("Video_Resolution"))
+        if (xmlDocument.FindChildElem("Video_Resolution"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "1440p")
+            str = ToLower(xmlDocument.GetChildData());
+            if (str == "1440p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution1440p;
+                cameraSettings.eVideoResolution = VideoResolution1440p;
             }
-            else if (tStr == "1080p")
+            else if (str == "1080p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution1080p;
+                cameraSettings.eVideoResolution = VideoResolution1080p;
             }
-            else if (tStr == "720p")
+            else if (str == "720p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution720p;
+                cameraSettings.eVideoResolution = VideoResolution720p;
             }
-            else if (tStr == "540p")
+            else if (str == "540p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution540p;
+                cameraSettings.eVideoResolution = VideoResolution540p;
             }
-            else if (tStr == "480p")
+            else if (str == "480p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution480p;
+                cameraSettings.eVideoResolution = VideoResolution480p;
             }
             else
             {
@@ -929,332 +929,332 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         }
         else
         {
-            sCameraSettings.eVideoResolution = VideoResolutionNone;
+            cameraSettings.eVideoResolution = VideoResolutionNone;
         }
 
         // ==================== Video AspectRatio ====================
-        if (oXML.FindChildElem("Video_Aspect_Ratio"))
+        if (xmlDocument.FindChildElem("Video_Aspect_Ratio"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "16x9")
+            str = ToLower(xmlDocument.GetChildData());
+            if (str == "16x9")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio16x9;
+                cameraSettings.eVideoAspectRatio = VideoAspectRatio16x9;
             }
-            else if (tStr == "4x3")
+            else if (str == "4x3")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio4x3;
+                cameraSettings.eVideoAspectRatio = VideoAspectRatio4x3;
             }
-            else if (tStr == "1x1")
+            else if (str == "1x1")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio1x1;
+                cameraSettings.eVideoAspectRatio = VideoAspectRatio1x1;
             }
         }
         else
         {
-            sCameraSettings.eVideoAspectRatio = VideoAspectRatioNone;
+            cameraSettings.eVideoAspectRatio = VideoAspectRatioNone;
         }
 
         // ==================== Video exposure ====================
-        if (!oXML.FindChildElem("Video_Exposure"))
+        if (!xmlDocument.FindChildElem("Video_Exposure"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        if (!xmlDocument.FindChildElem("Current"))
         {
             return false;
         }
-        sCameraSettings.nVideoExposure = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoExposure = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Min"))
+        if (!xmlDocument.FindChildElem("Min"))
         {
             return false;
         }
-        sCameraSettings.nVideoExposureMin = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoExposureMin = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Max"))
+        if (!xmlDocument.FindChildElem("Max"))
         {
             return false;
         }
-        sCameraSettings.nVideoExposureMax = atoi(oXML.GetChildData().c_str());
-        oXML.OutOfElem(); // Video_Exposure
+        cameraSettings.nVideoExposureMax = atoi(xmlDocument.GetChildData().c_str());
+        xmlDocument.OutOfElem(); // Video_Exposure
 
         // ==================== Video flash time ====================
-        if (!oXML.FindChildElem("Video_Flash_Time"))
+        if (!xmlDocument.FindChildElem("Video_Flash_Time"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        if (!xmlDocument.FindChildElem("Current"))
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTime = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFlashTime = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Min"))
+        if (!xmlDocument.FindChildElem("Min"))
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTimeMin = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFlashTimeMin = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Max"))
+        if (!xmlDocument.FindChildElem("Max"))
         {
             return false;
         }
-        sCameraSettings.nVideoFlashTimeMax = atoi(oXML.GetChildData().c_str());
-        oXML.OutOfElem(); // Video_Flash_Time
+        cameraSettings.nVideoFlashTimeMax = atoi(xmlDocument.GetChildData().c_str());
+        xmlDocument.OutOfElem(); // Video_Flash_Time
 
         // ==================== Marker exposure ====================
-        if (!oXML.FindChildElem("Marker_Exposure"))
+        if (!xmlDocument.FindChildElem("Marker_Exposure"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        if (!xmlDocument.FindChildElem("Current"))
         {
             return false;
         }
-        sCameraSettings.nMarkerExposure = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerExposure = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Min"))
+        if (!xmlDocument.FindChildElem("Min"))
         {
             return false;
         }
-        sCameraSettings.nMarkerExposureMin = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerExposureMin = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Max"))
+        if (!xmlDocument.FindChildElem("Max"))
         {
             return false;
         }
-        sCameraSettings.nMarkerExposureMax = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerExposureMax = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Marker_Exposure
+        xmlDocument.OutOfElem(); // Marker_Exposure
 
         // ==================== Marker threshold ====================
-        if (!oXML.FindChildElem("Marker_Threshold"))
+        if (!xmlDocument.FindChildElem("Marker_Threshold"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Current"))
+        if (!xmlDocument.FindChildElem("Current"))
         {
             return false;
         }
-        sCameraSettings.nMarkerThreshold = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerThreshold = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Min"))
+        if (!xmlDocument.FindChildElem("Min"))
         {
             return false;
         }
-        sCameraSettings.nMarkerThresholdMin = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerThresholdMin = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Max"))
+        if (!xmlDocument.FindChildElem("Max"))
         {
             return false;
         }
-        sCameraSettings.nMarkerThresholdMax = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerThresholdMax = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Marker_Threshold
+        xmlDocument.OutOfElem(); // Marker_Threshold
 
         // ==================== Position ====================
-        if (!oXML.FindChildElem("Position"))
+        if (!xmlDocument.FindChildElem("Position"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("X"))
+        if (!xmlDocument.FindChildElem("X"))
         {
             return false;
         }
-        sCameraSettings.fPositionX = (float)atoi(oXML.GetChildData().c_str());
+        cameraSettings.fPositionX = (float)atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Y"))
+        if (!xmlDocument.FindChildElem("Y"))
         {
             return false;
         }
-        sCameraSettings.fPositionY = (float)atoi(oXML.GetChildData().c_str());
+        cameraSettings.fPositionY = (float)atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Z"))
+        if (!xmlDocument.FindChildElem("Z"))
         {
             return false;
         }
-        sCameraSettings.fPositionZ = (float)atoi(oXML.GetChildData().c_str());
+        cameraSettings.fPositionZ = (float)atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_1_1"))
+        if (!xmlDocument.FindChildElem("Rot_1_1"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[0][0] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[0][0] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_2_1"))
+        if (!xmlDocument.FindChildElem("Rot_2_1"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[1][0] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[1][0] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_3_1"))
+        if (!xmlDocument.FindChildElem("Rot_3_1"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[2][0] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[2][0] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_1_2"))
+        if (!xmlDocument.FindChildElem("Rot_1_2"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[0][1] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[0][1] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_2_2"))
+        if (!xmlDocument.FindChildElem("Rot_2_2"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[1][1] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[1][1] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_3_2"))
+        if (!xmlDocument.FindChildElem("Rot_3_2"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[2][1] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[2][1] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_1_3"))
+        if (!xmlDocument.FindChildElem("Rot_1_3"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[0][2] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[0][2] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_2_3"))
+        if (!xmlDocument.FindChildElem("Rot_2_3"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[1][2] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[1][2] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Rot_3_3"))
+        if (!xmlDocument.FindChildElem("Rot_3_3"))
         {
             return false;
         }
-        sCameraSettings.fPositionRotMatrix[2][2] = (float)atof(oXML.GetChildData().c_str());
+        cameraSettings.fPositionRotMatrix[2][2] = (float)atof(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Position
+        xmlDocument.OutOfElem(); // Position
 
 
-        if (!oXML.FindChildElem("Orientation"))
+        if (!xmlDocument.FindChildElem("Orientation"))
         {
             return false;
         }
-        sCameraSettings.nOrientation = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nOrientation = atoi(xmlDocument.GetChildData().c_str());
 
         // ==================== Marker resolution ====================
-        if (!oXML.FindChildElem("Marker_Res"))
+        if (!xmlDocument.FindChildElem("Marker_Res"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Width"))
+        if (!xmlDocument.FindChildElem("Width"))
         {
             return false;
         }
-        sCameraSettings.nMarkerResolutionWidth = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerResolutionWidth = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Height"))
+        if (!xmlDocument.FindChildElem("Height"))
         {
             return false;
         }
-        sCameraSettings.nMarkerResolutionHeight = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerResolutionHeight = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Marker_Res
+        xmlDocument.OutOfElem(); // Marker_Res
 
         // ==================== Video resolution ====================
-        if (!oXML.FindChildElem("Video_Res"))
+        if (!xmlDocument.FindChildElem("Video_Res"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Width"))
+        if (!xmlDocument.FindChildElem("Width"))
         {
             return false;
         }
-        sCameraSettings.nVideoResolutionWidth = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoResolutionWidth = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Height"))
+        if (!xmlDocument.FindChildElem("Height"))
         {
             return false;
         }
-        sCameraSettings.nVideoResolutionHeight = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoResolutionHeight = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Video_Res
+        xmlDocument.OutOfElem(); // Video_Res
 
         // ==================== Marker FOV ====================
-        if (!oXML.FindChildElem("Marker_FOV"))
+        if (!xmlDocument.FindChildElem("Marker_FOV"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Left"))
+        if (!xmlDocument.FindChildElem("Left"))
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVLeft = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerFOVLeft = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Top"))
+        if (!xmlDocument.FindChildElem("Top"))
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVTop = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerFOVTop = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Right"))
+        if (!xmlDocument.FindChildElem("Right"))
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVRight = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerFOVRight = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Bottom"))
+        if (!xmlDocument.FindChildElem("Bottom"))
         {
             return false;
         }
-        sCameraSettings.nMarkerFOVBottom = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nMarkerFOVBottom = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Marker_FOV
+        xmlDocument.OutOfElem(); // Marker_FOV
 
         // ==================== Video FOV ====================
-        if (!oXML.FindChildElem("Video_FOV"))
+        if (!xmlDocument.FindChildElem("Video_FOV"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Left"))
+        if (!xmlDocument.FindChildElem("Left"))
         {
             return false;
         }
-        sCameraSettings.nVideoFOVLeft = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFOVLeft = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Top"))
+        if (!xmlDocument.FindChildElem("Top"))
         {
             return false;
         }
-        sCameraSettings.nVideoFOVTop = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFOVTop = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Right"))
+        if (!xmlDocument.FindChildElem("Right"))
         {
             return false;
         }
-        sCameraSettings.nVideoFOVRight = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFOVRight = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Bottom"))
+        if (!xmlDocument.FindChildElem("Bottom"))
         {
             return false;
         }
-        sCameraSettings.nVideoFOVBottom = atoi(oXML.GetChildData().c_str());
+        cameraSettings.nVideoFOVBottom = atoi(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // Video_FOV
+        xmlDocument.OutOfElem(); // Video_FOV
 
         // ==================== Sync out ====================
         // Only available from protocol version 1.10 and later.
@@ -1262,157 +1262,157 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         {
             char syncOutStr[16];
             sprintf(syncOutStr, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
-            if (oXML.FindChildElem(syncOutStr))
+            if (xmlDocument.FindChildElem(syncOutStr))
             {
-                oXML.IntoElem();
+                xmlDocument.IntoElem();
 
                 if (port < 2)
                 {
-                    if (!oXML.FindChildElem("Mode"))
+                    if (!xmlDocument.FindChildElem("Mode"))
                     {
                         return false;
                     }
-                    tStr = ToLower(oXML.GetChildData());
-                    if (tStr == "shutter out")
+                    str = ToLower(xmlDocument.GetChildData());
+                    if (str == "shutter out")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeShutterOut;
+                        cameraSettings.eSyncOutMode[port] = ModeShutterOut;
                     }
-                    else if (tStr == "multiplier")
+                    else if (str == "multiplier")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeMultiplier;
+                        cameraSettings.eSyncOutMode[port] = ModeMultiplier;
                     }
-                    else if (tStr == "divisor")
+                    else if (str == "divisor")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeDivisor;
+                        cameraSettings.eSyncOutMode[port] = ModeDivisor;
                     }
-                    else if (tStr == "camera independent")
+                    else if (str == "camera independent")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
+                        cameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
                     }
-                    else if (tStr == "measurement time")
+                    else if (str == "measurement time")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
+                        cameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
                     }
-                    else if (tStr == "continuous 100hz")
+                    else if (str == "continuous 100hz")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
+                        cameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
                     }
-                    else if (tStr == "system live time")
+                    else if (str == "system live time")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
+                        cameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
                     }
                     else
                     {
                         return false;
                     }
 
-                    if (sCameraSettings.eSyncOutMode[port] == ModeMultiplier ||
-                        sCameraSettings.eSyncOutMode[port] == ModeDivisor ||
-                        sCameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
+                    if (cameraSettings.eSyncOutMode[port] == ModeMultiplier ||
+                        cameraSettings.eSyncOutMode[port] == ModeDivisor ||
+                        cameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
                     {
-                        if (!oXML.FindChildElem("Value"))
+                        if (!xmlDocument.FindChildElem("Value"))
                         {
                             return false;
                         }
-                        sCameraSettings.nSyncOutValue[port] = atoi(oXML.GetChildData().c_str());
+                        cameraSettings.nSyncOutValue[port] = atoi(xmlDocument.GetChildData().c_str());
 
-                        if (!oXML.FindChildElem("Duty_Cycle"))
+                        if (!xmlDocument.FindChildElem("Duty_Cycle"))
                         {
                             return false;
                         }
-                        sCameraSettings.fSyncOutDutyCycle[port] = (float)atof(oXML.GetChildData().c_str());
+                        cameraSettings.fSyncOutDutyCycle[port] = (float)atof(xmlDocument.GetChildData().c_str());
                     }
                 }
                 if (port == 2 ||
-                    (sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
+                    (cameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
                 {
-                    if (!oXML.FindChildElem("Signal_Polarity"))
+                    if (!xmlDocument.FindChildElem("Signal_Polarity"))
                     {
                         return false;
                     }
-                    if (CompareNoCase(oXML.GetChildData(), "negative"))
+                    if (CompareNoCase(xmlDocument.GetChildData(), "negative"))
                     {
-                        sCameraSettings.bSyncOutNegativePolarity[port] = true;
+                        cameraSettings.bSyncOutNegativePolarity[port] = true;
                     }
                     else
                     {
-                        sCameraSettings.bSyncOutNegativePolarity[port] = false;
+                        cameraSettings.bSyncOutNegativePolarity[port] = false;
                     }
                 }
-                oXML.OutOfElem(); // Sync_Out
+                xmlDocument.OutOfElem(); // Sync_Out
             }
             else
             {
-                sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
-                sCameraSettings.nSyncOutValue[port] = 0;
-                sCameraSettings.fSyncOutDutyCycle[port] = 0;
-                sCameraSettings.bSyncOutNegativePolarity[port] = false;
+                cameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
+                cameraSettings.nSyncOutValue[port] = 0;
+                cameraSettings.fSyncOutDutyCycle[port] = 0;
+                cameraSettings.bSyncOutNegativePolarity[port] = false;
             }
         }
 
-        if (oXML.FindChildElem("LensControl"))
+        if (xmlDocument.FindChildElem("LensControl"))
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Focus"))
+            xmlDocument.IntoElem();
+            if (xmlDocument.FindChildElem("Focus"))
             {
-                oXML.IntoElem();
+                xmlDocument.IntoElem();
                 float focus;
-                if (sscanf(oXML.GetAttrib("Value").c_str(), "%f", &focus) == 1)
+                if (sscanf(xmlDocument.GetAttrib("Value").c_str(), "%f", &focus) == 1)
                 {
-                    sCameraSettings.fFocus = focus;
+                    cameraSettings.fFocus = focus;
                 }
-                oXML.OutOfElem();
+                xmlDocument.OutOfElem();
             }
-            if (oXML.FindChildElem("Aperture"))
+            if (xmlDocument.FindChildElem("Aperture"))
             {
-                oXML.IntoElem();
+                xmlDocument.IntoElem();
                 float aperture;
-                if (sscanf(oXML.GetAttrib("Value").c_str(), "%f", &aperture) == 1)
+                if (sscanf(xmlDocument.GetAttrib("Value").c_str(), "%f", &aperture) == 1)
                 {
-                    sCameraSettings.fAperture = aperture;
+                    cameraSettings.fAperture = aperture;
                 }
-                oXML.OutOfElem();
+                xmlDocument.OutOfElem();
             }
-            oXML.OutOfElem();
+            xmlDocument.OutOfElem();
         }
         else
         {
-            sCameraSettings.fFocus = std::numeric_limits<float>::quiet_NaN();
-            sCameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
+            cameraSettings.fFocus = std::numeric_limits<float>::quiet_NaN();
+            cameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
         }
 
-        if (oXML.FindChildElem("AutoExposure"))
+        if (xmlDocument.FindChildElem("AutoExposure"))
         {
-            oXML.IntoElem();
-            if (CompareNoCase(oXML.GetAttrib("Enabled"), "true"))
+            xmlDocument.IntoElem();
+            if (CompareNoCase(xmlDocument.GetAttrib("Enabled"), "true"))
             {
-                sCameraSettings.autoExposureEnabled = true;
+                cameraSettings.autoExposureEnabled = true;
             }
             float autoExposureCompensation;
-            if (sscanf(oXML.GetAttrib("Compensation").c_str(), "%f", &autoExposureCompensation) == 1)
+            if (sscanf(xmlDocument.GetAttrib("Compensation").c_str(), "%f", &autoExposureCompensation) == 1)
             {
-                sCameraSettings.autoExposureCompensation = autoExposureCompensation;
+                cameraSettings.autoExposureCompensation = autoExposureCompensation;
             }
-            oXML.OutOfElem();
+            xmlDocument.OutOfElem();
         }
         else
         {
-            sCameraSettings.autoExposureEnabled = false;
-            sCameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
+            cameraSettings.autoExposureEnabled = false;
+            cameraSettings.autoExposureCompensation = std::numeric_limits<float>::quiet_NaN();
         }
 
-        if (oXML.FindChildElem("AutoWhiteBalance"))
+        if (xmlDocument.FindChildElem("AutoWhiteBalance"))
         {
-            sCameraSettings.autoWhiteBalance = CompareNoCase(oXML.GetChildData().c_str(), "true") ? 1 : 0;
+            cameraSettings.autoWhiteBalance = CompareNoCase(xmlDocument.GetChildData().c_str(), "true") ? 1 : 0;
         }
         else
         {
-            sCameraSettings.autoWhiteBalance = -1;
+            cameraSettings.autoWhiteBalance = -1;
         }
 
-        oXML.OutOfElem(); // Camera
+        xmlDocument.OutOfElem(); // Camera
 
-        pGeneralSettings.vsCameras.push_back(sCameraSettings);
+        pGeneralSettings.vsCameras.push_back(cameraSettings);
     }
 
     return true;
@@ -1421,47 +1421,47 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
 bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable)
 {
-    std::string tStr;
+    std::string str;
 
     pDataAvailable = false;
 
     p3dSettings.s3DLabels.clear();
     p3dSettings.pCalibrationTime[0] = 0;
 
-    if (!oXML.FindChildElem("The_3D"))
+    if (!xmlDocument.FindChildElem("The_3D"))
     {
         // No 3D data available.
         return true;
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
-    if (!oXML.FindChildElem("AxisUpwards"))
+    if (!xmlDocument.FindChildElem("AxisUpwards"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    str = ToLower(xmlDocument.GetChildData());
 
-    if (tStr == "+x")
+    if (str == "+x")
     {
         p3dSettings.eAxisUpwards = XPos;
     }
-    else if (tStr == "-x")
+    else if (str == "-x")
     {
         p3dSettings.eAxisUpwards = XNeg;
     }
-    else if (tStr == "+y")
+    else if (str == "+y")
     {
         p3dSettings.eAxisUpwards = YPos;
     }
-    else if (tStr == "-y")
+    else if (str == "-y")
     {
         p3dSettings.eAxisUpwards = YNeg;
     }
-    else if (tStr == "+z")
+    else if (str == "+z")
     {
         p3dSettings.eAxisUpwards = ZPos;
     }
-    else if (tStr == "-z")
+    else if (str == "-z")
     {
         p3dSettings.eAxisUpwards = ZNeg;
     }
@@ -1470,41 +1470,41 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
         return false;
     }
 
-    if (!oXML.FindChildElem("CalibrationTime"))
+    if (!xmlDocument.FindChildElem("CalibrationTime"))
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    strcpy(p3dSettings.pCalibrationTime, tStr.c_str());
+    str = xmlDocument.GetChildData();
+    strcpy(p3dSettings.pCalibrationTime, str.c_str());
 
-    if (!oXML.FindChildElem("Labels"))
+    if (!xmlDocument.FindChildElem("Labels"))
     {
         return false;
     }
-    unsigned int nNumberOfLabels = atoi(oXML.GetChildData().c_str());
+    unsigned int nNumberOfLabels = atoi(xmlDocument.GetChildData().c_str());
 
     p3dSettings.s3DLabels.resize(nNumberOfLabels);
     SSettings3DLabel sLabel;
 
     for (unsigned int iLabel = 0; iLabel < nNumberOfLabels; iLabel++)
     {
-        if (oXML.FindChildElem("Label"))
+        if (xmlDocument.FindChildElem("Label"))
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Name"))
+            xmlDocument.IntoElem();
+            if (xmlDocument.FindChildElem("Name"))
             {
-                sLabel.oName = oXML.GetChildData();
-                if (oXML.FindChildElem("RGBColor"))
+                sLabel.oName = xmlDocument.GetChildData();
+                if (xmlDocument.FindChildElem("RGBColor"))
                 {
-                    sLabel.nRGBColor = atoi(oXML.GetChildData().c_str());
+                    sLabel.nRGBColor = atoi(xmlDocument.GetChildData().c_str());
                 }
-                if (oXML.FindChildElem("Trajectory_Type"))
+                if (xmlDocument.FindChildElem("Trajectory_Type"))
                 {
-                    sLabel.type = oXML.GetChildData();
+                    sLabel.type = xmlDocument.GetChildData();
                 }
                 p3dSettings.s3DLabels[iLabel] = sLabel;
             }
-            oXML.OutOfElem();
+            xmlDocument.OutOfElem();
         }
         else
         {
@@ -1513,25 +1513,25 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
     }
 
     p3dSettings.sBones.clear();
-    if (oXML.FindChildElem("Bones"))
+    if (xmlDocument.FindChildElem("Bones"))
     {
-        oXML.IntoElem();
-        while (oXML.FindChildElem("Bone"))
+        xmlDocument.IntoElem();
+        while (xmlDocument.FindChildElem("Bone"))
         {
-            oXML.IntoElem();
+            xmlDocument.IntoElem();
             SSettingsBone bone = { };
-            bone.fromName = oXML.GetAttrib("From").c_str();
-            bone.toName = oXML.GetAttrib("To").c_str();
+            bone.fromName = xmlDocument.GetAttrib("From").c_str();
+            bone.toName = xmlDocument.GetAttrib("To").c_str();
 
-            auto colorString = oXML.GetAttrib("Color");
+            auto colorString = xmlDocument.GetAttrib("Color");
             if (!colorString.empty())
             {
                 bone.color = atoi(colorString.c_str());
             }
             p3dSettings.sBones.push_back(bone);
-            oXML.OutOfElem();
+            xmlDocument.OutOfElem();
         }
-        oXML.OutOfElem();
+        xmlDocument.OutOfElem();
     }
 
     pDataAvailable = true;
@@ -1540,159 +1540,159 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
 
 namespace
 {
-    bool TryReadSetEnabled(const int nMajorVer, const int nMinorVer, CMarkup& oXML, bool& bTarget)
+    bool TryReadSetEnabled(const int majorVer, const int minorVer, CMarkup& xmlDocument, bool& target)
     {
-        if (nMajorVer > 1 || nMinorVer > 23)
+        if (majorVer > 1 || minorVer > 23)
         {
-            if (!oXML.FindChildElem("Enabled"))
+            if (!xmlDocument.FindChildElem("Enabled"))
             {
-                bTarget = true;
+                target = true;
                 return true;
             }
 
-            bTarget = oXML.GetChildData() == "true" ? true : false;
+            target = xmlDocument.GetChildData() == "true" ? true : false;
             return false;
         }
 
         return false;
     }
 
-    bool TryReadSetName(CMarkup& oXML, std::string& sTarget)
+    bool TryReadSetName(CMarkup& xmlDocument, std::string& target)
     {
-        if (!oXML.FindChildElem("Name"))
+        if (!xmlDocument.FindChildElem("Name"))
         {
             return false;
         }
-        sTarget = oXML.GetChildData();
+        target = xmlDocument.GetChildData();
         return true;
     }
 
-    bool TryReadSetColor(CMarkup& oXML, std::uint32_t& nTarget)
+    bool TryReadSetColor(CMarkup& xmlDocument, std::uint32_t& target)
     {
-        if (!oXML.FindChildElem("Color"))
+        if (!xmlDocument.FindChildElem("Color"))
         {
             return false;
         }
-        std::uint32_t colorR = atoi(oXML.GetChildAttrib("R").c_str());
-        std::uint32_t colorG = atoi(oXML.GetChildAttrib("G").c_str());
-        std::uint32_t colorB = atoi(oXML.GetChildAttrib("B").c_str());
-        nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
-
-        return true;
-    }
-
-    bool TryReadSetMaxResidual(CMarkup& oXML, float& fTarget)
-    {
-        if (!oXML.FindChildElem("MaximumResidual"))
-        {
-            return false;
-        }
-        fTarget = (float)atof(oXML.GetChildData().c_str());
+        std::uint32_t colorR = atoi(xmlDocument.GetChildAttrib("R").c_str());
+        std::uint32_t colorG = atoi(xmlDocument.GetChildAttrib("G").c_str());
+        std::uint32_t colorB = atoi(xmlDocument.GetChildAttrib("B").c_str());
+        target = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
 
         return true;
     }
 
-    bool TryReadSetMinMarkersInBody(CMarkup& oXML, std::uint32_t& nTarget)
+    bool TryReadSetMaxResidual(CMarkup& xmlDocument, float& fTarget)
     {
-        if (!oXML.FindChildElem("MinimumMarkersInBody"))
+        if (!xmlDocument.FindChildElem("MaximumResidual"))
         {
             return false;
         }
-        nTarget = atoi(oXML.GetChildData().c_str());
+        fTarget = (float)atof(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetBoneLenTolerance(CMarkup& oXML, float& fTarget)
+    bool TryReadSetMinMarkersInBody(CMarkup& xmlDocument, std::uint32_t& target)
     {
-        if (!oXML.FindChildElem("BoneLengthTolerance"))
+        if (!xmlDocument.FindChildElem("MinimumMarkersInBody"))
         {
             return false;
         }
-        fTarget = (float)atof(oXML.GetChildData().c_str());
+        target = atoi(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetFilter(CMarkup& oXML, std::string& sTarget)
+    bool TryReadSetBoneLenTolerance(CMarkup& xmlDocument, float& fTarget)
     {
-        if (!oXML.FindChildElem("Filter"))
+        if (!xmlDocument.FindChildElem("BoneLengthTolerance"))
         {
             return false;
         }
-        sTarget = oXML.GetChildAttrib("Preset");
+        fTarget = (float)atof(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetPos(CMarkup& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetFilter(CMarkup& xmlDocument, std::string& target)
     {
-        if (!oXML.FindChildElem("Position"))
+        if (!xmlDocument.FindChildElem("Filter"))
         {
             return false;
         }
-        fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+        target = xmlDocument.GetChildAttrib("Preset");
 
         return true;
     }
 
-    bool TryReadSetRotation(CMarkup& oXML, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetPos(CMarkup& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
-        if (!oXML.FindChildElem("Rotation"))
+        if (!xmlDocument.FindChildElem("Position"))
         {
             return false;
         }
-        fTargetX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        fTargetY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        fTargetZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+        targetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        targetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        targetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
 
         return true;
     }
 
-    bool TryReadSetScale(CMarkup& oXML, float& fTarget)
+    bool TryReadSetRotation(CMarkup& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
-        if (!oXML.FindChildElem("Scale"))
+        if (!xmlDocument.FindChildElem("Rotation"))
         {
             return false;
         }
-        fTarget = (float)atof(oXML.GetChildData().c_str());
+        targetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        targetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        targetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
 
         return true;
     }
 
-    bool TryReadSetOpacity(CMarkup& oXML, float& fTarget)
+    bool TryReadSetScale(CMarkup& xmlDocument, float& fTarget)
     {
-        if (!oXML.FindChildElem("Opacity"))
+        if (!xmlDocument.FindChildElem("Scale"))
         {
             return false;
         }
-        fTarget = (float)atof(oXML.GetChildData().c_str());
+        fTarget = (float)atof(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetPoints(CMarkup& oXML, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetOpacity(CMarkup& xmlDocument, float& fTarget)
     {
-        if (oXML.FindChildElem("Points"))
+        if (!xmlDocument.FindChildElem("Opacity"))
         {
-            oXML.IntoElem();
+            return false;
+        }
+        fTarget = (float)atof(xmlDocument.GetChildData().c_str());
 
-            while (oXML.FindChildElem("Point"))
+        return true;
+    }
+
+    bool TryReadSetPoints(CMarkup& xmlDocument, std::vector<SBodyPoint>& target)
+    {
+        if (xmlDocument.FindChildElem("Points"))
+        {
+            xmlDocument.IntoElem();
+
+            while (xmlDocument.FindChildElem("Point"))
             {
-                SBodyPoint sBodyPoint;
+                SBodyPoint bodyPoint;
 
-                sBodyPoint.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-                sBodyPoint.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-                sBodyPoint.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
+                bodyPoint.fX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+                bodyPoint.fY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+                bodyPoint.fZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
 
-                sBodyPoint.virtual_ = (0 != atoi(oXML.GetChildAttrib("Virtual").c_str()));
-                sBodyPoint.physicalId = atoi(oXML.GetChildAttrib("PhysicalId").c_str());
-                sBodyPoint.name = oXML.GetChildAttrib("Name");
-                vTarget.push_back(sBodyPoint);
+                bodyPoint.virtual_ = (0 != atoi(xmlDocument.GetChildAttrib("Virtual").c_str()));
+                bodyPoint.physicalId = atoi(xmlDocument.GetChildAttrib("PhysicalId").c_str());
+                bodyPoint.name = xmlDocument.GetChildAttrib("Name");
+                target.push_back(bodyPoint);
             }
-            oXML.OutOfElem(); // Points
+            xmlDocument.OutOfElem(); // Points
 
             return true;
         }
@@ -1700,97 +1700,97 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(CMarkup& oXML, SOrigin& oTarget)
+    bool TryReadSetDataOrigin(CMarkup& xmlDocument, SOrigin& target)
     {
-        if (!oXML.FindChildElem("Data_origin"))
+        if (!xmlDocument.FindChildElem("Data_origin"))
         {
             return false;
         }
-        oTarget.type = (EOriginType)atoi(oXML.GetChildData().c_str());
-        oTarget.position.fX = (float)atof(oXML.GetChildAttrib("X").c_str());
-        oTarget.position.fY = (float)atof(oXML.GetChildAttrib("Y").c_str());
-        oTarget.position.fZ = (float)atof(oXML.GetChildAttrib("Z").c_str());
-        oTarget.relativeBody = atoi(oXML.GetChildAttrib("Relative_body").c_str());
+        target.type = (EOriginType)atoi(xmlDocument.GetChildData().c_str());
+        target.position.fX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        target.position.fY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        target.position.fZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
+        target.relativeBody = atoi(xmlDocument.GetChildAttrib("Relative_body").c_str());
 
         return true;
     }
 
-    void ReadSetRotations(CMarkup& oXML, SOrigin& oTarget)
+    void ReadSetRotations(CMarkup& xmlDocument, SOrigin& target)
     {
         char tmpStr[10];
         for (std::uint32_t i = 0; i < 9; i++)
         {
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-            oTarget.rotation[i] = (float)atof(oXML.GetChildAttrib(tmpStr).c_str());
+            target.rotation[i] = (float)atof(xmlDocument.GetChildAttrib(tmpStr).c_str());
         }
     }
 
-    bool TryReadSetRGBColor(CMarkup& oXML, std::uint32_t& oTarget)
+    bool TryReadSetRGBColor(CMarkup& xmlDocument, std::uint32_t& target)
     {
-        if (!oXML.FindChildElem("RGBColor"))
+        if (!xmlDocument.FindChildElem("RGBColor"))
         {
             return false;
         }
-        oTarget = atoi(oXML.GetChildData().c_str());
+        target = atoi(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetPointsOld(CMarkup& oXML, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetPointsOld(CMarkup& xmlDocument, std::vector<SBodyPoint>& target)
     {
-        vTarget.clear();
+        target.clear();
 
-        while (oXML.FindChildElem("Point"))
+        while (xmlDocument.FindChildElem("Point"))
         {
-            SBodyPoint sPoint;
+            SBodyPoint point;
 
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("X"))
+            xmlDocument.IntoElem();
+            if (!xmlDocument.FindChildElem("X"))
             {
                 return false;
             }
-            sPoint.fX = (float)atof(oXML.GetChildData().c_str());
+            point.fX = (float)atof(xmlDocument.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Y"))
+            if (!xmlDocument.FindChildElem("Y"))
             {
                 return false;
             }
-            sPoint.fY = (float)atof(oXML.GetChildData().c_str());
+            point.fY = (float)atof(xmlDocument.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Z"))
+            if (!xmlDocument.FindChildElem("Z"))
             {
                 return false;
             }
-            sPoint.fZ = (float)atof(oXML.GetChildData().c_str());
+            point.fZ = (float)atof(xmlDocument.GetChildData().c_str());
 
-            oXML.OutOfElem(); // Point
-            vTarget.push_back(sPoint);
+            xmlDocument.OutOfElem(); // Point
+            target.push_back(point);
         }
 
         return true;
     }
 
-    bool TryReadSetEuler(CMarkup& oXML, std::string& sTargetFirst, std::string& sTargetSecond, std::string& sTargetThird)
+    bool TryReadSetEuler(CMarkup& xmlDocument, std::string& targetFirst, std::string& targetSecond, std::string& targetThird)
     {
-        if (oXML.FindChildElem("Euler"))
+        if (xmlDocument.FindChildElem("Euler"))
         {
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("First"))
+            xmlDocument.IntoElem();
+            if (!xmlDocument.FindChildElem("First"))
             {
                 return false;
             }
-            sTargetFirst = oXML.GetChildData();
-            if (!oXML.FindChildElem("Second"))
+            targetFirst = xmlDocument.GetChildData();
+            if (!xmlDocument.FindChildElem("Second"))
             {
                 return false;
             }
-            sTargetSecond = oXML.GetChildData();
-            if (!oXML.FindChildElem("Third"))
+            targetSecond = xmlDocument.GetChildData();
+            if (!xmlDocument.FindChildElem("Third"))
             {
                 return false;
             }
-            sTargetThird = oXML.GetChildData();
-            oXML.OutOfElem(); // Euler
+            targetThird = xmlDocument.GetChildData();
+            xmlDocument.OutOfElem(); // Euler
         }
 
         return true;
@@ -1803,101 +1803,101 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
 
     p6DOFSettings.clear();
 
-    if (oXML.FindChildElem("The_6D"))
+    if (xmlDocument.FindChildElem("The_6D"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
         if (mMajorVersion > 1 || mMinorVersion > 20)
         {
-            while (oXML.FindChildElem("Body"))
+            while (xmlDocument.FindChildElem("Body"))
             {
-                SSettings6DOFBody s6DOFBodySettings;
-                SBodyPoint sBodyPoint;
+                SSettings6DOFBody bodySettings6Dof;
+                SBodyPoint bodyPoint;
 
-                oXML.IntoElem();
+                xmlDocument.IntoElem();
 
                 // NOTE: READ-ORDER MATTERS!!!
-                if (!TryReadSetName(oXML, s6DOFBodySettings.name))
+                if (!TryReadSetName(xmlDocument, bodySettings6Dof.name))
                 { // Name --- REQUIRED
                     return false;
                 }
                 // Enabled --- NOT(!) REQUIRED
-                TryReadSetEnabled(mMajorVersion, mMinorVersion, oXML, s6DOFBodySettings.enabled);
-                if (!TryReadSetColor(oXML, s6DOFBodySettings.color)
-                    || !TryReadSetMaxResidual(oXML, s6DOFBodySettings.maxResidual)
-                    || !TryReadSetMinMarkersInBody(oXML, s6DOFBodySettings.minMarkersInBody)
-                    || !TryReadSetBoneLenTolerance(oXML, s6DOFBodySettings.boneLengthTolerance)
-                    || !TryReadSetFilter(oXML, s6DOFBodySettings.filterPreset))
+                TryReadSetEnabled(mMajorVersion, mMinorVersion, xmlDocument, bodySettings6Dof.enabled);
+                if (!TryReadSetColor(xmlDocument, bodySettings6Dof.color)
+                    || !TryReadSetMaxResidual(xmlDocument, bodySettings6Dof.maxResidual)
+                    || !TryReadSetMinMarkersInBody(xmlDocument, bodySettings6Dof.minMarkersInBody)
+                    || !TryReadSetBoneLenTolerance(xmlDocument, bodySettings6Dof.boneLengthTolerance)
+                    || !TryReadSetFilter(xmlDocument, bodySettings6Dof.filterPreset))
                 { // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
                     return false;
                 }
 
-                if (oXML.FindChildElem("Mesh"))
+                if (xmlDocument.FindChildElem("Mesh"))
                 {
-                    oXML.IntoElem();
+                    xmlDocument.IntoElem();
 
-                    if (!TryReadSetName(oXML, s6DOFBodySettings.mesh.name)
-                        || !TryReadSetPos(oXML, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
-                        || !TryReadSetRotation(oXML, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
-                        || !TryReadSetScale(oXML, s6DOFBodySettings.mesh.scale)
-                        || !TryReadSetOpacity(oXML, s6DOFBodySettings.mesh.opacity))
+                    if (!TryReadSetName(xmlDocument, bodySettings6Dof.mesh.name)
+                        || !TryReadSetPos(xmlDocument, bodySettings6Dof.mesh.position.fX, bodySettings6Dof.mesh.position.fY, bodySettings6Dof.mesh.position.fZ)
+                        || !TryReadSetRotation(xmlDocument, bodySettings6Dof.mesh.rotation.fX, bodySettings6Dof.mesh.rotation.fY, bodySettings6Dof.mesh.rotation.fZ)
+                        || !TryReadSetScale(xmlDocument, bodySettings6Dof.mesh.scale)
+                        || !TryReadSetOpacity(xmlDocument, bodySettings6Dof.mesh.opacity))
                     { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
                         return false;
                     }
 
-                    oXML.OutOfElem(); // Mesh
+                    xmlDocument.OutOfElem(); // Mesh
                 }
 
                 // Points --- REQUIRED
-                TryReadSetPoints(oXML, s6DOFBodySettings.points);
-                if (!TryReadSetDataOrigin(oXML, s6DOFBodySettings.origin)
-                    || !oXML.FindChildElem("Data_orientation")
-                    || s6DOFBodySettings.origin.type != atoi(oXML.GetChildData().c_str())
-                    || s6DOFBodySettings.origin.relativeBody != static_cast<std::uint32_t>(atoi(oXML.GetChildAttrib("Relative_body").c_str()))
+                TryReadSetPoints(xmlDocument, bodySettings6Dof.points);
+                if (!TryReadSetDataOrigin(xmlDocument, bodySettings6Dof.origin)
+                    || !xmlDocument.FindChildElem("Data_orientation")
+                    || bodySettings6Dof.origin.type != atoi(xmlDocument.GetChildData().c_str())
+                    || bodySettings6Dof.origin.relativeBody != static_cast<std::uint32_t>(atoi(xmlDocument.GetChildAttrib("Relative_body").c_str()))
                     )
                 { // Data Orientation, Origin Type / Relative Body --- REQUIRED
                     return false;
                 }
 
                 // Rotation values --- NOTE : Does NOT(!) 'Try'; just reads and sets (no boolean return)
-                ReadSetRotations(oXML, s6DOFBodySettings.origin);
+                ReadSetRotations(xmlDocument, bodySettings6Dof.origin);
 
-                p6DOFSettings.push_back(s6DOFBodySettings);
-                oXML.OutOfElem(); // Body
+                p6DOFSettings.push_back(bodySettings6Dof);
+                xmlDocument.OutOfElem(); // Body
 
                 pDataAvailable = true;
             }
         }
         else
         {
-            if (!oXML.FindChildElem("Bodies"))
+            if (!xmlDocument.FindChildElem("Bodies"))
             {
                 return false;
             }
-            int nBodies = atoi(oXML.GetChildData().c_str());
-            SSettings6DOFBody s6DOFBodySettings;
+            int nBodies = atoi(xmlDocument.GetChildData().c_str());
+            SSettings6DOFBody bodySettings6Dof;
 
             for (int iBody = 0; iBody < nBodies; iBody++)
             {
-                if (!oXML.FindChildElem("Body"))
+                if (!xmlDocument.FindChildElem("Body"))
                 {
                     return false;
                 }
-                oXML.IntoElem();
+                xmlDocument.IntoElem();
 
-                if (!TryReadSetName(oXML, s6DOFBodySettings.name)
-                    || !TryReadSetRGBColor(oXML, s6DOFBodySettings.color)
-                    || !TryReadSetPointsOld(oXML, s6DOFBodySettings.points))
+                if (!TryReadSetName(xmlDocument, bodySettings6Dof.name)
+                    || !TryReadSetRGBColor(xmlDocument, bodySettings6Dof.color)
+                    || !TryReadSetPointsOld(xmlDocument, bodySettings6Dof.points))
                 { // Name, RGBColor, Points(OLD) --- REQUIRED
                     return false;
                 }
 
-                p6DOFSettings.push_back(s6DOFBodySettings);
-                oXML.OutOfElem(); // Body
+                p6DOFSettings.push_back(bodySettings6Dof);
+                xmlDocument.OutOfElem(); // Body
             }
             if (mMajorVersion > 1 || mMinorVersion > 15)
             {
-                if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
+                if (!TryReadSetEuler(xmlDocument, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 { // Euler --- REQUIRED
                     return false;
                 }
@@ -1918,40 +1918,40 @@ bool CMarkupDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>
     //
     // Read gaze vectors
     //
-    if (!oXML.FindChildElem("Gaze_Vector"))
+    if (!xmlDocument.FindChildElem("Gaze_Vector"))
     {
         return true; // NO gaze vector data available.
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
     std::string tGazeVectorName;
 
     int nGazeVectorCount = 0;
 
-    while (oXML.FindChildElem("Vector"))
+    while (xmlDocument.FindChildElem("Vector"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Name"))
+        if (!xmlDocument.FindChildElem("Name"))
         {
             return false;
         }
-        tGazeVectorName = oXML.GetChildData();
+        tGazeVectorName = xmlDocument.GetChildData();
 
         float frequency = 0;
-        if (oXML.FindChildElem("Frequency"))
+        if (xmlDocument.FindChildElem("Frequency"))
         {
-            frequency = (float)atof(oXML.GetChildData().c_str());
+            frequency = (float)atof(xmlDocument.GetChildData().c_str());
         }
 
         bool hwSync = false;
-        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+        ReadXmlBool(&xmlDocument, "Hardware_Sync", hwSync);
         bool filter = false;
-        ReadXmlBool(&oXML, "Filter", filter);
+        ReadXmlBool(&xmlDocument, "Filter", filter);
 
         pGazeVectorSettings.push_back({ tGazeVectorName, frequency, hwSync, filter });
         nGazeVectorCount++;
-        oXML.OutOfElem(); // Vector
+        xmlDocument.OutOfElem(); // Vector
     }
 
     pDataAvailable = true;
@@ -1964,38 +1964,38 @@ bool CMarkupDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>
 
     pEyeTrackerSettings.clear();
 
-    if (!oXML.FindChildElem("Eye_Tracker"))
+    if (!xmlDocument.FindChildElem("Eye_Tracker"))
     {
         return true; // NO eye tracker data available.
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
     std::string tEyeTrackerName;
 
     int nEyeTrackerCount = 0;
 
-    while (oXML.FindChildElem("Device"))
+    while (xmlDocument.FindChildElem("Device"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        if (!oXML.FindChildElem("Name"))
+        if (!xmlDocument.FindChildElem("Name"))
         {
             return false;
         }
-        tEyeTrackerName = oXML.GetChildData();
+        tEyeTrackerName = xmlDocument.GetChildData();
 
         float frequency = 0;
-        if (oXML.FindChildElem("Frequency"))
+        if (xmlDocument.FindChildElem("Frequency"))
         {
-            frequency = (float)atof(oXML.GetChildData().c_str());
+            frequency = (float)atof(xmlDocument.GetChildData().c_str());
         }
 
         bool hwSync = false;
-        ReadXmlBool(&oXML, "Hardware_Sync", hwSync);
+        ReadXmlBool(&xmlDocument, "Hardware_Sync", hwSync);
 
         pEyeTrackerSettings.push_back({ tEyeTrackerName, frequency, hwSync });
         nEyeTrackerCount++;
-        oXML.OutOfElem(); // Vector
+        xmlDocument.OutOfElem(); // Vector
     }
 
     pDataAvailable = true;
@@ -2008,7 +2008,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
 
     pAnalogDeviceSettings.clear();
 
-    if (!oXML.FindChildElem("Analog"))
+    if (!xmlDocument.FindChildElem("Analog"))
     {
         // No analog data available.
         return true;
@@ -2016,152 +2016,152 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
 
     SAnalogDevice sAnalogDevice;
 
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
     if (mMajorVersion == 1 && mMinorVersion == 0)
     {
         sAnalogDevice.nDeviceID = 1;   // Always channel 1
         sAnalogDevice.oName = "AnalogDevice";
-        if (!oXML.FindChildElem("Channels"))
+        if (!xmlDocument.FindChildElem("Channels"))
         {
             return false;
         }
-        sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Frequency"))
+        sAnalogDevice.nChannels = atoi(xmlDocument.GetChildData().c_str());
+        if (!xmlDocument.FindChildElem("Frequency"))
         {
             return false;
         }
-        sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Unit"))
+        sAnalogDevice.nFrequency = atoi(xmlDocument.GetChildData().c_str());
+        if (!xmlDocument.FindChildElem("Unit"))
         {
             return false;
         }
-        sAnalogDevice.oUnit = oXML.GetChildData();
-        if (!oXML.FindChildElem("Range"))
+        sAnalogDevice.oUnit = xmlDocument.GetChildData();
+        if (!xmlDocument.FindChildElem("Range"))
         {
             return false;
         }
-        oXML.IntoElem();
-        if (!oXML.FindChildElem("Min"))
+        xmlDocument.IntoElem();
+        if (!xmlDocument.FindChildElem("Min"))
         {
             return false;
         }
-        sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
-        if (!oXML.FindChildElem("Max"))
+        sAnalogDevice.fMinRange = (float)atof(xmlDocument.GetChildData().c_str());
+        if (!xmlDocument.FindChildElem("Max"))
         {
             return false;
         }
-        sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
+        sAnalogDevice.fMaxRange = (float)atof(xmlDocument.GetChildData().c_str());
         pAnalogDeviceSettings.push_back(sAnalogDevice);
         pDataAvailable = true;
         return true;
     }
     else
     {
-        while (oXML.FindChildElem("Device"))
+        while (xmlDocument.FindChildElem("Device"))
         {
             sAnalogDevice.voLabels.clear();
             sAnalogDevice.voUnits.clear();
-            oXML.IntoElem();
-            if (!oXML.FindChildElem("Device_ID"))
+            xmlDocument.IntoElem();
+            if (!xmlDocument.FindChildElem("Device_ID"))
             {
-                oXML.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Device
                 continue;
             }
-            sAnalogDevice.nDeviceID = atoi(oXML.GetChildData().c_str());
+            sAnalogDevice.nDeviceID = atoi(xmlDocument.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Device_Name"))
+            if (!xmlDocument.FindChildElem("Device_Name"))
             {
-                oXML.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Device
                 continue;
             }
-            sAnalogDevice.oName = oXML.GetChildData();
+            sAnalogDevice.oName = xmlDocument.GetChildData();
 
-            if (!oXML.FindChildElem("Channels"))
+            if (!xmlDocument.FindChildElem("Channels"))
             {
-                oXML.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Device
                 continue;
             }
-            sAnalogDevice.nChannels = atoi(oXML.GetChildData().c_str());
+            sAnalogDevice.nChannels = atoi(xmlDocument.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Frequency"))
+            if (!xmlDocument.FindChildElem("Frequency"))
             {
-                oXML.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Device
                 continue;
             }
-            sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
+            sAnalogDevice.nFrequency = atoi(xmlDocument.GetChildData().c_str());
 
             if (mMajorVersion == 1 && mMinorVersion < 11)
             {
-                if (!oXML.FindChildElem("Unit"))
+                if (!xmlDocument.FindChildElem("Unit"))
                 {
-                    oXML.OutOfElem(); // Device
+                    xmlDocument.OutOfElem(); // Device
                     continue;
                 }
-                sAnalogDevice.oUnit = oXML.GetChildData();
+                sAnalogDevice.oUnit = xmlDocument.GetChildData();
             }
-            if (!oXML.FindChildElem("Range"))
+            if (!xmlDocument.FindChildElem("Range"))
             {
-                oXML.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Device
                 continue;
             }
-            oXML.IntoElem();
+            xmlDocument.IntoElem();
 
-            if (!oXML.FindChildElem("Min"))
+            if (!xmlDocument.FindChildElem("Min"))
             {
-                oXML.OutOfElem(); // Device
-                oXML.OutOfElem(); // Range
+                xmlDocument.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Range
                 continue;
             }
-            sAnalogDevice.fMinRange = (float)atof(oXML.GetChildData().c_str());
+            sAnalogDevice.fMinRange = (float)atof(xmlDocument.GetChildData().c_str());
 
-            if (!oXML.FindChildElem("Max"))
+            if (!xmlDocument.FindChildElem("Max"))
             {
-                oXML.OutOfElem(); // Device
-                oXML.OutOfElem(); // Range
+                xmlDocument.OutOfElem(); // Device
+                xmlDocument.OutOfElem(); // Range
                 continue;
             }
-            sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
-            oXML.OutOfElem(); // Range
+            sAnalogDevice.fMaxRange = (float)atof(xmlDocument.GetChildData().c_str());
+            xmlDocument.OutOfElem(); // Range
 
             if (mMajorVersion == 1 && mMinorVersion < 11)
             {
                 for (unsigned int i = 0; i < sAnalogDevice.nChannels; i++)
                 {
-                    if (oXML.FindChildElem("Label"))
+                    if (xmlDocument.FindChildElem("Label"))
                     {
-                        sAnalogDevice.voLabels.push_back(oXML.GetChildData());
+                        sAnalogDevice.voLabels.push_back(xmlDocument.GetChildData());
                     }
                 }
                 if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels)
                 {
-                    oXML.OutOfElem(); // Device
+                    xmlDocument.OutOfElem(); // Device
                     continue;
                 }
             }
             else
             {
-                while (oXML.FindChildElem("Channel"))
+                while (xmlDocument.FindChildElem("Channel"))
                 {
-                    oXML.IntoElem();
-                    if (oXML.FindChildElem("Label"))
+                    xmlDocument.IntoElem();
+                    if (xmlDocument.FindChildElem("Label"))
                     {
-                        sAnalogDevice.voLabels.push_back(oXML.GetChildData());
+                        sAnalogDevice.voLabels.push_back(xmlDocument.GetChildData());
                     }
-                    if (oXML.FindChildElem("Unit"))
+                    if (xmlDocument.FindChildElem("Unit"))
                     {
-                        sAnalogDevice.voUnits.push_back(oXML.GetChildData());
+                        sAnalogDevice.voUnits.push_back(xmlDocument.GetChildData());
                     }
-                    oXML.OutOfElem(); // Channel
+                    xmlDocument.OutOfElem(); // Channel
                 }
                 if (sAnalogDevice.voLabels.size() != sAnalogDevice.nChannels ||
                     sAnalogDevice.voUnits.size() != sAnalogDevice.nChannels)
                 {
-                    oXML.OutOfElem(); // Device
+                    xmlDocument.OutOfElem(); // Device
                     continue;
                 }
             }
-            oXML.OutOfElem(); // Device
+            xmlDocument.OutOfElem(); // Device
             pAnalogDeviceSettings.push_back(sAnalogDevice);
             pDataAvailable = true;
         }
@@ -2179,216 +2179,216 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& pForceSetting
     //
     // Read some force plate parameters
     //
-    if (!oXML.FindChildElem("Force"))
+    if (!xmlDocument.FindChildElem("Force"))
     {
         return true;
     }
 
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
-    SForcePlate sForcePlate;
-    sForcePlate.bValidCalibrationMatrix = false;
+    SForcePlate forcePlate;
+    forcePlate.bValidCalibrationMatrix = false;
     for (int i = 0; i < 12; i++)
     {
         for (int j = 0; j < 12; j++)
         {
-            sForcePlate.afCalibrationMatrix[i][j] = 0.0f;
+            forcePlate.afCalibrationMatrix[i][j] = 0.0f;
         }
     }
-    sForcePlate.nCalibrationMatrixRows = 6;
-    sForcePlate.nCalibrationMatrixColumns = 6;
+    forcePlate.nCalibrationMatrixRows = 6;
+    forcePlate.nCalibrationMatrixColumns = 6;
 
-    if (!oXML.FindChildElem("Unit_Length"))
+    if (!xmlDocument.FindChildElem("Unit_Length"))
     {
         return false;
     }
-    pForceSettings.oUnitLength = oXML.GetChildData();
+    pForceSettings.oUnitLength = xmlDocument.GetChildData();
 
-    if (!oXML.FindChildElem("Unit_Force"))
+    if (!xmlDocument.FindChildElem("Unit_Force"))
     {
         return false;
     }
-    pForceSettings.oUnitForce = oXML.GetChildData();
+    pForceSettings.oUnitForce = xmlDocument.GetChildData();
 
     int  iPlate = 1;
-    while (oXML.FindChildElem("Plate"))
+    while (xmlDocument.FindChildElem("Plate"))
     {
         //
         // Get name and type of the plates
         //
-        oXML.IntoElem(); // "Plate"
-        if (oXML.FindChildElem("Force_Plate_Index")) // Version 1.7 and earlier.
+        xmlDocument.IntoElem(); // "Plate"
+        if (xmlDocument.FindChildElem("Force_Plate_Index")) // Version 1.7 and earlier.
         {
-            sForcePlate.nID = atoi(oXML.GetChildData().c_str());
+            forcePlate.nID = atoi(xmlDocument.GetChildData().c_str());
         }
-        else if (oXML.FindChildElem("Plate_ID")) // Version 1.8 and later.
+        else if (xmlDocument.FindChildElem("Plate_ID")) // Version 1.8 and later.
         {
-            sForcePlate.nID = atoi(oXML.GetChildData().c_str());
+            forcePlate.nID = atoi(xmlDocument.GetChildData().c_str());
         }
         else
         {
             return false;
         }
 
-        if (oXML.FindChildElem("Analog_Device_ID"))
+        if (xmlDocument.FindChildElem("Analog_Device_ID"))
         {
-            sForcePlate.nAnalogDeviceID = atoi(oXML.GetChildData().c_str());
+            forcePlate.nAnalogDeviceID = atoi(xmlDocument.GetChildData().c_str());
         }
         else
         {
-            sForcePlate.nAnalogDeviceID = 0;
+            forcePlate.nAnalogDeviceID = 0;
         }
 
-        if (!oXML.FindChildElem("Frequency"))
+        if (!xmlDocument.FindChildElem("Frequency"))
         {
             return false;
         }
-        sForcePlate.nFrequency = atoi(oXML.GetChildData().c_str());
+        forcePlate.nFrequency = atoi(xmlDocument.GetChildData().c_str());
 
-        if (oXML.FindChildElem("Type"))
+        if (xmlDocument.FindChildElem("Type"))
         {
-            sForcePlate.oType = oXML.GetChildData();
+            forcePlate.oType = xmlDocument.GetChildData();
         }
         else
         {
-            sForcePlate.oType = "unknown";
+            forcePlate.oType = "unknown";
         }
 
-        if (oXML.FindChildElem("Name"))
+        if (xmlDocument.FindChildElem("Name"))
         {
-            sForcePlate.oName = oXML.GetChildData();
+            forcePlate.oName = xmlDocument.GetChildData();
         }
         else
         {
-            sForcePlate.oName = CMarkup::Format("#%d", iPlate);
+            forcePlate.oName = CMarkup::Format("#%d", iPlate);
         }
 
-        if (oXML.FindChildElem("Length"))
+        if (xmlDocument.FindChildElem("Length"))
         {
-            sForcePlate.fLength = (float)atof(oXML.GetChildData().c_str());
+            forcePlate.fLength = (float)atof(xmlDocument.GetChildData().c_str());
         }
-        if (oXML.FindChildElem("Width"))
+        if (xmlDocument.FindChildElem("Width"))
         {
-            sForcePlate.fWidth = (float)atof(oXML.GetChildData().c_str());
-        }
-
-        if (oXML.FindChildElem("Location"))
-        {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("Corner1"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[0].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[0].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[0].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner2"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[1].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[1].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[1].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner3"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[2].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[2].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[2].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            if (oXML.FindChildElem("Corner4"))
-            {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("X"))
-                {
-                    sForcePlate.asCorner[3].fX = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Y"))
-                {
-                    sForcePlate.asCorner[3].fY = (float)atof(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("Z"))
-                {
-                    sForcePlate.asCorner[3].fZ = (float)atof(oXML.GetChildData().c_str());
-                }
-                oXML.OutOfElem();
-            }
-            oXML.OutOfElem();
+            forcePlate.fWidth = (float)atof(xmlDocument.GetChildData().c_str());
         }
 
-        if (oXML.FindChildElem("Origin"))
+        if (xmlDocument.FindChildElem("Location"))
         {
-            oXML.IntoElem();
-            if (oXML.FindChildElem("X"))
+            xmlDocument.IntoElem();
+            if (xmlDocument.FindChildElem("Corner1"))
             {
-                sForcePlate.sOrigin.fX = (float)atof(oXML.GetChildData().c_str());
+                xmlDocument.IntoElem();
+                if (xmlDocument.FindChildElem("X"))
+                {
+                    forcePlate.asCorner[0].fX = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Y"))
+                {
+                    forcePlate.asCorner[0].fY = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Z"))
+                {
+                    forcePlate.asCorner[0].fZ = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                xmlDocument.OutOfElem();
             }
-            if (oXML.FindChildElem("Y"))
+            if (xmlDocument.FindChildElem("Corner2"))
             {
-                sForcePlate.sOrigin.fY = (float)atof(oXML.GetChildData().c_str());
+                xmlDocument.IntoElem();
+                if (xmlDocument.FindChildElem("X"))
+                {
+                    forcePlate.asCorner[1].fX = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Y"))
+                {
+                    forcePlate.asCorner[1].fY = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Z"))
+                {
+                    forcePlate.asCorner[1].fZ = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                xmlDocument.OutOfElem();
             }
-            if (oXML.FindChildElem("Z"))
+            if (xmlDocument.FindChildElem("Corner3"))
             {
-                sForcePlate.sOrigin.fZ = (float)atof(oXML.GetChildData().c_str());
+                xmlDocument.IntoElem();
+                if (xmlDocument.FindChildElem("X"))
+                {
+                    forcePlate.asCorner[2].fX = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Y"))
+                {
+                    forcePlate.asCorner[2].fY = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Z"))
+                {
+                    forcePlate.asCorner[2].fZ = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                xmlDocument.OutOfElem();
             }
-            oXML.OutOfElem();
+            if (xmlDocument.FindChildElem("Corner4"))
+            {
+                xmlDocument.IntoElem();
+                if (xmlDocument.FindChildElem("X"))
+                {
+                    forcePlate.asCorner[3].fX = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Y"))
+                {
+                    forcePlate.asCorner[3].fY = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("Z"))
+                {
+                    forcePlate.asCorner[3].fZ = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                xmlDocument.OutOfElem();
+            }
+            xmlDocument.OutOfElem();
         }
 
-        sForcePlate.vChannels.clear();
-        if (oXML.FindChildElem("Channels"))
+        if (xmlDocument.FindChildElem("Origin"))
         {
-            oXML.IntoElem();
-            SForceChannel sForceChannel;
-            while (oXML.FindChildElem("Channel"))
+            xmlDocument.IntoElem();
+            if (xmlDocument.FindChildElem("X"))
             {
-                oXML.IntoElem();
-                if (oXML.FindChildElem("Channel_No"))
-                {
-                    sForceChannel.nChannelNumber = atoi(oXML.GetChildData().c_str());
-                }
-                if (oXML.FindChildElem("ConversionFactor"))
-                {
-                    sForceChannel.fConversionFactor = (float)atof(oXML.GetChildData().c_str());
-                }
-                sForcePlate.vChannels.push_back(sForceChannel);
-                oXML.OutOfElem();
+                forcePlate.sOrigin.fX = (float)atof(xmlDocument.GetChildData().c_str());
             }
-            oXML.OutOfElem();
+            if (xmlDocument.FindChildElem("Y"))
+            {
+                forcePlate.sOrigin.fY = (float)atof(xmlDocument.GetChildData().c_str());
+            }
+            if (xmlDocument.FindChildElem("Z"))
+            {
+                forcePlate.sOrigin.fZ = (float)atof(xmlDocument.GetChildData().c_str());
+            }
+            xmlDocument.OutOfElem();
         }
 
-        if (oXML.FindChildElem("Calibration_Matrix"))
+        forcePlate.vChannels.clear();
+        if (xmlDocument.FindChildElem("Channels"))
         {
-            oXML.IntoElem();
+            xmlDocument.IntoElem();
+            SForceChannel forceChannel;
+            while (xmlDocument.FindChildElem("Channel"))
+            {
+                xmlDocument.IntoElem();
+                if (xmlDocument.FindChildElem("Channel_No"))
+                {
+                    forceChannel.nChannelNumber = atoi(xmlDocument.GetChildData().c_str());
+                }
+                if (xmlDocument.FindChildElem("ConversionFactor"))
+                {
+                    forceChannel.fConversionFactor = (float)atof(xmlDocument.GetChildData().c_str());
+                }
+                forcePlate.vChannels.push_back(forceChannel);
+                xmlDocument.OutOfElem();
+            }
+            xmlDocument.OutOfElem();
+        }
+
+        if (xmlDocument.FindChildElem("Calibration_Matrix"))
+        {
+            xmlDocument.IntoElem();
             int nRow = 0;
 
             if (mMajorVersion == 1 && mMinorVersion < 12)
@@ -2396,65 +2396,65 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& pForceSetting
                 char strRow[16];
                 char strCol[16];
                 sprintf(strRow, "Row%d", nRow + 1);
-                while (oXML.FindChildElem(strRow))
+                while (xmlDocument.FindChildElem(strRow))
                 {
-                    oXML.IntoElem();
+                    xmlDocument.IntoElem();
                     int nCol = 0;
                     sprintf(strCol, "Col%d", nCol + 1);
-                    while (oXML.FindChildElem(strCol))
+                    while (xmlDocument.FindChildElem(strCol))
                     {
-                        sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
+                        forcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(xmlDocument.GetChildData().c_str());
                         nCol++;
                         sprintf(strCol, "Col%d", nCol + 1);
                     }
-                    sForcePlate.nCalibrationMatrixColumns = nCol;
+                    forcePlate.nCalibrationMatrixColumns = nCol;
 
                     nRow++;
                     sprintf(strRow, "Row%d", nRow + 1);
-                    oXML.OutOfElem(); // RowX
+                    xmlDocument.OutOfElem(); // RowX
                 }
             }
             else
             {
                 //<Rows>
-                if (oXML.FindChildElem("Rows"))
+                if (xmlDocument.FindChildElem("Rows"))
                 {
-                    oXML.IntoElem();
+                    xmlDocument.IntoElem();
 
-                    while (oXML.FindChildElem("Row"))
+                    while (xmlDocument.FindChildElem("Row"))
                     {
-                        oXML.IntoElem();
+                        xmlDocument.IntoElem();
 
                         //<Columns>
-                        if (oXML.FindChildElem("Columns"))
+                        if (xmlDocument.FindChildElem("Columns"))
                         {
-                            oXML.IntoElem();
+                            xmlDocument.IntoElem();
 
                             int nCol = 0;
-                            while (oXML.FindChildElem("Column"))
+                            while (xmlDocument.FindChildElem("Column"))
                             {
-                                sForcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(oXML.GetChildData().c_str());
+                                forcePlate.afCalibrationMatrix[nRow][nCol] = (float)atof(xmlDocument.GetChildData().c_str());
                                 nCol++;
                             }
-                            sForcePlate.nCalibrationMatrixColumns = nCol;
+                            forcePlate.nCalibrationMatrixColumns = nCol;
 
                             nRow++;
-                            oXML.OutOfElem(); // Columns
+                            xmlDocument.OutOfElem(); // Columns
                         }
-                        oXML.OutOfElem(); // Row
+                        xmlDocument.OutOfElem(); // Row
                     }
-                    oXML.OutOfElem(); // Rows
+                    xmlDocument.OutOfElem(); // Rows
                 }
             }
-            sForcePlate.nCalibrationMatrixRows = nRow;
-            sForcePlate.bValidCalibrationMatrix = true;
+            forcePlate.nCalibrationMatrixRows = nRow;
+            forcePlate.bValidCalibrationMatrix = true;
 
-            oXML.OutOfElem(); // "Calibration_Matrix"
+            xmlDocument.OutOfElem(); // "Calibration_Matrix"
         }
-        oXML.OutOfElem(); // "Plate"
+        xmlDocument.OutOfElem(); // "Plate"
 
         pDataAvailable = true;
-        pForceSettings.vsForcePlates.push_back(sForcePlate);
+        pForceSettings.vsForcePlates.push_back(forcePlate);
     }
 
     return true;
@@ -2469,106 +2469,106 @@ bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& pI
     //
     // Read some Image parameters
     //
-    if (!oXML.FindChildElem("Image"))
+    if (!xmlDocument.FindChildElem("Image"))
     {
         return true;
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
-    while (oXML.FindChildElem("Camera"))
+    while (xmlDocument.FindChildElem("Camera"))
     {
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        SImageCamera sImageCamera;
+        SImageCamera imageCamera;
 
-        if (!oXML.FindChildElem("ID"))
+        if (!xmlDocument.FindChildElem("ID"))
         {
             return false;
         }
-        sImageCamera.nID = atoi(oXML.GetChildData().c_str());
+        imageCamera.nID = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Enabled"))
+        if (!xmlDocument.FindChildElem("Enabled"))
         {
             return false;
         }
-        std::string tStr;
-        tStr = ToLower(oXML.GetChildData());
+        std::string str;
+        str = ToLower(xmlDocument.GetChildData());
 
-        if (tStr == "true")
+        if (str == "true")
         {
-            sImageCamera.bEnabled = true;
+            imageCamera.bEnabled = true;
         }
         else
         {
-            sImageCamera.bEnabled = false;
+            imageCamera.bEnabled = false;
         }
 
-        if (!oXML.FindChildElem("Format"))
+        if (!xmlDocument.FindChildElem("Format"))
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
+        str = ToLower(xmlDocument.GetChildData());
 
-        if (tStr == "rawgrayscale")
+        if (str == "rawgrayscale")
         {
-            sImageCamera.eFormat = CRTPacket::FormatRawGrayscale;
+            imageCamera.eFormat = CRTPacket::FormatRawGrayscale;
         }
-        else if (tStr == "rawbgr")
+        else if (str == "rawbgr")
         {
-            sImageCamera.eFormat = CRTPacket::FormatRawBGR;
+            imageCamera.eFormat = CRTPacket::FormatRawBGR;
         }
-        else if (tStr == "jpg")
+        else if (str == "jpg")
         {
-            sImageCamera.eFormat = CRTPacket::FormatJPG;
+            imageCamera.eFormat = CRTPacket::FormatJPG;
         }
-        else if (tStr == "png")
+        else if (str == "png")
         {
-            sImageCamera.eFormat = CRTPacket::FormatPNG;
+            imageCamera.eFormat = CRTPacket::FormatPNG;
         }
         else
         {
             return false;
         }
 
-        if (!oXML.FindChildElem("Width"))
+        if (!xmlDocument.FindChildElem("Width"))
         {
             return false;
         }
-        sImageCamera.nWidth = atoi(oXML.GetChildData().c_str());
+        imageCamera.nWidth = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Height"))
+        if (!xmlDocument.FindChildElem("Height"))
         {
             return false;
         }
-        sImageCamera.nHeight = atoi(oXML.GetChildData().c_str());
+        imageCamera.nHeight = atoi(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Left_Crop"))
+        if (!xmlDocument.FindChildElem("Left_Crop"))
         {
             return false;
         }
-        sImageCamera.fCropLeft = (float)atof(oXML.GetChildData().c_str());
+        imageCamera.fCropLeft = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Top_Crop"))
+        if (!xmlDocument.FindChildElem("Top_Crop"))
         {
             return false;
         }
-        sImageCamera.fCropTop = (float)atof(oXML.GetChildData().c_str());
+        imageCamera.fCropTop = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Right_Crop"))
+        if (!xmlDocument.FindChildElem("Right_Crop"))
         {
             return false;
         }
-        sImageCamera.fCropRight = (float)atof(oXML.GetChildData().c_str());
+        imageCamera.fCropRight = (float)atof(xmlDocument.GetChildData().c_str());
 
-        if (!oXML.FindChildElem("Bottom_Crop"))
+        if (!xmlDocument.FindChildElem("Bottom_Crop"))
         {
             return false;
         }
-        sImageCamera.fCropBottom = (float)atof(oXML.GetChildData().c_str());
+        imageCamera.fCropBottom = (float)atof(xmlDocument.GetChildData().c_str());
 
-        oXML.OutOfElem(); // "Camera"
+        xmlDocument.OutOfElem(); // "Camera"
 
-        pImageSettings.push_back(sImageCamera);
+        pImageSettings.push_back(imageCamera);
         pDataAvailable = true;
     }
 
@@ -2578,7 +2578,7 @@ bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& pI
 
 bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& mSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& mSkeletonSettings, bool& pDataAvailable)
 {
-    CMarkup xml = oXML;
+    CMarkup xml = xmlDocument;
 
     pDataAvailable = false;
 
@@ -2835,41 +2835,41 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
 
 namespace 
 {
-    bool ReadXmlFov(std::string name, CMarkup& oXML, SCalibrationFov& fov)
+    bool ReadXmlFov(std::string name, CMarkup& xmlDocument, SCalibrationFov& fov)
     {
-        if (!oXML.FindChildElem(name.c_str()))
+        if (!xmlDocument.FindChildElem(name.c_str()))
         {
             return false;
         }
-        fov.left = std::stoul(oXML.GetChildAttrib("left"));
-        fov.top = std::stoul(oXML.GetChildAttrib("top"));
-        fov.right = std::stoul(oXML.GetChildAttrib("right"));
-        fov.bottom = std::stoul(oXML.GetChildAttrib("bottom"));
+        fov.left = std::stoul(xmlDocument.GetChildAttrib("left"));
+        fov.top = std::stoul(xmlDocument.GetChildAttrib("top"));
+        fov.right = std::stoul(xmlDocument.GetChildAttrib("right"));
+        fov.bottom = std::stoul(xmlDocument.GetChildAttrib("bottom"));
 
         return true;
     }
 }
 
-bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrationSettings)
+bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& calibrationSettings)
 {
     SCalibration settings;
 
-    if (!oXML.FindChildElem("calibration"))
+    if (!xmlDocument.FindChildElem("calibration"))
     {
         sprintf(mErrorStr, "Missing calibration element");
         return false;
     }
-    oXML.IntoElem();
+    xmlDocument.IntoElem();
 
     try
     {
-        std::string resultStr = ToLower(oXML.GetAttrib("calibrated"));
+        std::string resultStr = ToLower(xmlDocument.GetAttrib("calibrated"));
 
         settings.calibrated = (resultStr == "true");
-        settings.source = oXML.GetAttrib("source");
-        settings.created = oXML.GetAttrib("created");
-        settings.qtm_version = oXML.GetAttrib("qtm-version");
-        std::string typeStr = oXML.GetAttrib("type");
+        settings.source = xmlDocument.GetAttrib("source");
+        settings.created = xmlDocument.GetAttrib("created");
+        settings.qtm_version = xmlDocument.GetAttrib("qtm-version");
+        std::string typeStr = xmlDocument.GetAttrib("type");
         if (typeStr == "regular")
         {
             settings.type = ECalibrationType::regular;
@@ -2885,91 +2885,91 @@ bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrat
 
         if (settings.type == ECalibrationType::refine)
         {
-            settings.refit_residual = std::stod(oXML.GetAttrib("refit-residual"));
+            settings.refit_residual = std::stod(xmlDocument.GetAttrib("refit-residual"));
         }
         if (settings.type != ECalibrationType::fixed)
         {
-            settings.wand_length = std::stod(oXML.GetAttrib("wandLength"));
-            settings.max_frames = std::stoul(oXML.GetAttrib("maximumFrames"));
-            settings.short_arm_end = std::stod(oXML.GetAttrib("shortArmEnd"));
-            settings.long_arm_end = std::stod(oXML.GetAttrib("longArmEnd"));
-            settings.long_arm_middle = std::stod(oXML.GetAttrib("longArmMiddle"));
+            settings.wand_length = std::stod(xmlDocument.GetAttrib("wandLength"));
+            settings.max_frames = std::stoul(xmlDocument.GetAttrib("maximumFrames"));
+            settings.short_arm_end = std::stod(xmlDocument.GetAttrib("shortArmEnd"));
+            settings.long_arm_end = std::stod(xmlDocument.GetAttrib("longArmEnd"));
+            settings.long_arm_middle = std::stod(xmlDocument.GetAttrib("longArmMiddle"));
 
-            if (!oXML.FindChildElem("results"))
+            if (!xmlDocument.FindChildElem("results"))
             {
                 return false;
             }
 
-            settings.result_std_dev = std::stod(oXML.GetChildAttrib("std-dev"));
-            settings.result_min_max_diff = std::stod(oXML.GetChildAttrib("min-max-diff"));
+            settings.result_std_dev = std::stod(xmlDocument.GetChildAttrib("std-dev"));
+            settings.result_min_max_diff = std::stod(xmlDocument.GetChildAttrib("min-max-diff"));
             if (settings.type == ECalibrationType::refine)
             {
-                settings.result_refit_residual = std::stod(oXML.GetChildAttrib("refit-residual"));
-                settings.result_consecutive = std::stoul(oXML.GetChildAttrib("consecutive"));
+                settings.result_refit_residual = std::stod(xmlDocument.GetChildAttrib("refit-residual"));
+                settings.result_consecutive = std::stoul(xmlDocument.GetChildAttrib("consecutive"));
             }
         }
 
-        if (!oXML.FindChildElem("cameras"))
+        if (!xmlDocument.FindChildElem("cameras"))
         {
             return false;
         }
-        oXML.IntoElem();
+        xmlDocument.IntoElem();
 
-        while (oXML.FindChildElem("camera"))
+        while (xmlDocument.FindChildElem("camera"))
         {
-            oXML.IntoElem();
+            xmlDocument.IntoElem();
             SCalibrationCamera camera;
-            camera.active = std::stod(oXML.GetAttrib("active")) != 0;
+            camera.active = std::stod(xmlDocument.GetAttrib("active")) != 0;
 
-            std::string calibratedStr = ToLower(oXML.GetAttrib("calibrated"));
+            std::string calibratedStr = ToLower(xmlDocument.GetAttrib("calibrated"));
 
             camera.calibrated = (calibratedStr == "true");
-            camera.message = oXML.GetAttrib("message");
+            camera.message = xmlDocument.GetAttrib("message");
 
-            camera.point_count = std::stoul(oXML.GetAttrib("point-count"));
-            camera.avg_residual = std::stod(oXML.GetAttrib("avg-residual"));
-            camera.serial = std::stoul(oXML.GetAttrib("serial"));
-            camera.model = oXML.GetAttrib("model");
-            camera.view_rotation = std::stoul(oXML.GetAttrib("viewrotation"));
-            if (!ReadXmlFov("fov_marker", oXML, camera.fov_marker))
+            camera.point_count = std::stoul(xmlDocument.GetAttrib("point-count"));
+            camera.avg_residual = std::stod(xmlDocument.GetAttrib("avg-residual"));
+            camera.serial = std::stoul(xmlDocument.GetAttrib("serial"));
+            camera.model = xmlDocument.GetAttrib("model");
+            camera.view_rotation = std::stoul(xmlDocument.GetAttrib("viewrotation"));
+            if (!ReadXmlFov("fov_marker", xmlDocument, camera.fov_marker))
             {
                 return false;
             }
-            if (!ReadXmlFov("fov_marker_max", oXML, camera.fov_marker_max))
+            if (!ReadXmlFov("fov_marker_max", xmlDocument, camera.fov_marker_max))
             {
                 return false;
             }
-            if (!ReadXmlFov("fov_video", oXML, camera.fov_video))
+            if (!ReadXmlFov("fov_video", xmlDocument, camera.fov_video))
             {
                 return false;
             }
-            if (!ReadXmlFov("fov_video_max", oXML, camera.fov_video_max))
+            if (!ReadXmlFov("fov_video_max", xmlDocument, camera.fov_video_max))
             {
                 return false;
             }
-            if (!oXML.FindChildElem("transform"))
+            if (!xmlDocument.FindChildElem("transform"))
             {
                 return false;
             }
-            camera.transform.x = std::stod(oXML.GetChildAttrib("x"));
-            camera.transform.y = std::stod(oXML.GetChildAttrib("y"));
-            camera.transform.z = std::stod(oXML.GetChildAttrib("z"));
-            camera.transform.r11 = std::stod(oXML.GetChildAttrib("r11"));
-            camera.transform.r12 = std::stod(oXML.GetChildAttrib("r12"));
-            camera.transform.r13 = std::stod(oXML.GetChildAttrib("r13"));
-            camera.transform.r21 = std::stod(oXML.GetChildAttrib("r21"));
-            camera.transform.r22 = std::stod(oXML.GetChildAttrib("r22"));
-            camera.transform.r23 = std::stod(oXML.GetChildAttrib("r23"));
-            camera.transform.r31 = std::stod(oXML.GetChildAttrib("r31"));
-            camera.transform.r32 = std::stod(oXML.GetChildAttrib("r32"));
-            camera.transform.r33 = std::stod(oXML.GetChildAttrib("r33"));
+            camera.transform.x = std::stod(xmlDocument.GetChildAttrib("x"));
+            camera.transform.y = std::stod(xmlDocument.GetChildAttrib("y"));
+            camera.transform.z = std::stod(xmlDocument.GetChildAttrib("z"));
+            camera.transform.r11 = std::stod(xmlDocument.GetChildAttrib("r11"));
+            camera.transform.r12 = std::stod(xmlDocument.GetChildAttrib("r12"));
+            camera.transform.r13 = std::stod(xmlDocument.GetChildAttrib("r13"));
+            camera.transform.r21 = std::stod(xmlDocument.GetChildAttrib("r21"));
+            camera.transform.r22 = std::stod(xmlDocument.GetChildAttrib("r22"));
+            camera.transform.r23 = std::stod(xmlDocument.GetChildAttrib("r23"));
+            camera.transform.r31 = std::stod(xmlDocument.GetChildAttrib("r31"));
+            camera.transform.r32 = std::stod(xmlDocument.GetChildAttrib("r32"));
+            camera.transform.r33 = std::stod(xmlDocument.GetChildAttrib("r33"));
 
-            if (!oXML.FindChildElem("intrinsic"))
+            if (!xmlDocument.FindChildElem("intrinsic"))
             {
                 return false;
             }
 
-            auto focalLength = oXML.GetChildAttrib("focallength");
+            auto focalLength = xmlDocument.GetChildAttrib("focallength");
             try
             {
                 camera.intrinsic.focal_length = std::stod(focalLength);
@@ -2979,33 +2979,33 @@ bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrat
                 camera.intrinsic.focal_length = 0;
             }
 
-            camera.intrinsic.sensor_min_u = std::stod(oXML.GetChildAttrib("sensorMinU"));
-            camera.intrinsic.sensor_max_u = std::stod(oXML.GetChildAttrib("sensorMaxU"));
-            camera.intrinsic.sensor_min_v = std::stod(oXML.GetChildAttrib("sensorMinV"));
-            camera.intrinsic.sensor_max_v = std::stod(oXML.GetChildAttrib("sensorMaxV"));
-            camera.intrinsic.focal_length_u = std::stod(oXML.GetChildAttrib("focalLengthU"));
-            camera.intrinsic.focal_length_v = std::stod(oXML.GetChildAttrib("focalLengthV"));
-            camera.intrinsic.center_point_u = std::stod(oXML.GetChildAttrib("centerPointU"));
-            camera.intrinsic.center_point_v = std::stod(oXML.GetChildAttrib("centerPointV"));
-            camera.intrinsic.skew = std::stod(oXML.GetChildAttrib("skew"));
-            camera.intrinsic.radial_distortion_1 = std::stod(oXML.GetChildAttrib("radialDistortion1"));
-            camera.intrinsic.radial_distortion_2 = std::stod(oXML.GetChildAttrib("radialDistortion2"));
-            camera.intrinsic.radial_distortion_3 = std::stod(oXML.GetChildAttrib("radialDistortion3"));
-            camera.intrinsic.tangental_distortion_1 = std::stod(oXML.GetChildAttrib("tangentalDistortion1"));
-            camera.intrinsic.tangental_distortion_2 = std::stod(oXML.GetChildAttrib("tangentalDistortion2"));
-            oXML.OutOfElem(); // camera
+            camera.intrinsic.sensor_min_u = std::stod(xmlDocument.GetChildAttrib("sensorMinU"));
+            camera.intrinsic.sensor_max_u = std::stod(xmlDocument.GetChildAttrib("sensorMaxU"));
+            camera.intrinsic.sensor_min_v = std::stod(xmlDocument.GetChildAttrib("sensorMinV"));
+            camera.intrinsic.sensor_max_v = std::stod(xmlDocument.GetChildAttrib("sensorMaxV"));
+            camera.intrinsic.focal_length_u = std::stod(xmlDocument.GetChildAttrib("focalLengthU"));
+            camera.intrinsic.focal_length_v = std::stod(xmlDocument.GetChildAttrib("focalLengthV"));
+            camera.intrinsic.center_point_u = std::stod(xmlDocument.GetChildAttrib("centerPointU"));
+            camera.intrinsic.center_point_v = std::stod(xmlDocument.GetChildAttrib("centerPointV"));
+            camera.intrinsic.skew = std::stod(xmlDocument.GetChildAttrib("skew"));
+            camera.intrinsic.radial_distortion_1 = std::stod(xmlDocument.GetChildAttrib("radialDistortion1"));
+            camera.intrinsic.radial_distortion_2 = std::stod(xmlDocument.GetChildAttrib("radialDistortion2"));
+            camera.intrinsic.radial_distortion_3 = std::stod(xmlDocument.GetChildAttrib("radialDistortion3"));
+            camera.intrinsic.tangental_distortion_1 = std::stod(xmlDocument.GetChildAttrib("tangentalDistortion1"));
+            camera.intrinsic.tangental_distortion_2 = std::stod(xmlDocument.GetChildAttrib("tangentalDistortion2"));
+            xmlDocument.OutOfElem(); // camera
             settings.cameras.push_back(camera);
         }
-        oXML.OutOfElem(); // cameras
+        xmlDocument.OutOfElem(); // cameras
     }
     catch (...)
     {
         return false;
     }
 
-    oXML.OutOfElem(); // calibration
+    xmlDocument.OutOfElem(); // calibration
 
-    pCalibrationSettings = settings;
+    calibrationSettings = settings;
     return true;
 }
 
@@ -3050,29 +3050,29 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
                                                   const bool* pStartOnTrigSoftware, const EProcessingActions* peProcessingActions,
                                                   const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
     if (pnCaptureFrequency)
     {
-        AddXMLElementUnsignedInt(&oXML, "Frequency", pnCaptureFrequency);
+        AddXMLElementUnsignedInt(&xmlDocument, "Frequency", pnCaptureFrequency);
     }
     if (pfCaptureTime)
     {
-        AddXMLElementFloat(&oXML, "Capture_Time", pfCaptureTime, 3);
+        AddXMLElementFloat(&xmlDocument, "Capture_Time", pfCaptureTime, 3);
     }
     if (pbStartOnExtTrig)
     {
-        AddXMLElementBool(&oXML, "Start_On_External_Trigger", pbStartOnExtTrig);
+        AddXMLElementBool(&xmlDocument, "Start_On_External_Trigger", pbStartOnExtTrig);
         if (mMajorVersion > 1 || mMinorVersion > 14)
         {
-            AddXMLElementBool(&oXML, "Start_On_Trigger_NO", pStartOnTrigNO);
-            AddXMLElementBool(&oXML, "Start_On_Trigger_NC", pStartOnTrigNC);
-            AddXMLElementBool(&oXML, "Start_On_Trigger_Software", pStartOnTrigSoftware);
+            AddXMLElementBool(&xmlDocument, "Start_On_Trigger_NO", pStartOnTrigNO);
+            AddXMLElementBool(&xmlDocument, "Start_On_Trigger_NC", pStartOnTrigNC);
+            AddXMLElementBool(&xmlDocument, "Start_On_Trigger_Software", pStartOnTrigSoftware);
         }
     }
 
@@ -3085,48 +3085,48 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
     {
         if (processingActions[i])
         {
-            oXML.AddElem(processings[i]);
-            oXML.IntoElem();
+            xmlDocument.AddElem(processings[i]);
+            xmlDocument.IntoElem();
 
             if (mMajorVersion > 1 || mMinorVersion > 13)
             {
-                AddXMLElementBool(&oXML, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0);
+                AddXMLElementBool(&xmlDocument, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0);
             }
             if (*processingActions[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
             {
-                oXML.AddElem("Tracking", "2D");
+                xmlDocument.AddElem("Tracking", "2D");
             }
             else if (*processingActions[i] & ProcessingTracking3D)
             {
-                oXML.AddElem("Tracking", "3D");
+                xmlDocument.AddElem("Tracking", "3D");
             }
             else
             {
-                oXML.AddElem("Tracking", "False");
+                xmlDocument.AddElem("Tracking", "False");
             }
             if (i != 1) //Not RtProcessingSettings
             {
-                AddXMLElementBool(&oXML, "TwinSystemMerge", (*processingActions[i] & ProcessingTwinSystemMerge) != 0);
-                AddXMLElementBool(&oXML, "SplineFill", (*processingActions[i] & ProcessingSplineFill) != 0);
+                AddXMLElementBool(&xmlDocument, "TwinSystemMerge", (*processingActions[i] & ProcessingTwinSystemMerge) != 0);
+                AddXMLElementBool(&xmlDocument, "SplineFill", (*processingActions[i] & ProcessingSplineFill) != 0);
             }
-            AddXMLElementBool(&oXML, "AIM", (*processingActions[i] & ProcessingAIM) != 0);
-            AddXMLElementBool(&oXML, "Track6DOF", (*processingActions[i] & Processing6DOFTracking) != 0);
-            AddXMLElementBool(&oXML, "ForceData", (*processingActions[i] & ProcessingForceData) != 0);
-            AddXMLElementBool(&oXML, "GazeVector", (*processingActions[i] & ProcessingGazeVector) != 0);
+            AddXMLElementBool(&xmlDocument, "AIM", (*processingActions[i] & ProcessingAIM) != 0);
+            AddXMLElementBool(&xmlDocument, "Track6DOF", (*processingActions[i] & Processing6DOFTracking) != 0);
+            AddXMLElementBool(&xmlDocument, "ForceData", (*processingActions[i] & ProcessingForceData) != 0);
+            AddXMLElementBool(&xmlDocument, "GazeVector", (*processingActions[i] & ProcessingGazeVector) != 0);
             if (i != 1) //Not RtProcessingSettings
             {
-                AddXMLElementBool(&oXML, "ExportTSV", (*processingActions[i] & ProcessingExportTSV) != 0);
-                AddXMLElementBool(&oXML, "ExportC3D", (*processingActions[i] & ProcessingExportC3D) != 0);
-                AddXMLElementBool(&oXML, "ExportMatlabFile", (*processingActions[i] & ProcessingExportMatlabFile) != 0);
-                AddXMLElementBool(&oXML, "ExportAviFile", (*processingActions[i] & ProcessingExportAviFile) != 0);
+                AddXMLElementBool(&xmlDocument, "ExportTSV", (*processingActions[i] & ProcessingExportTSV) != 0);
+                AddXMLElementBool(&xmlDocument, "ExportC3D", (*processingActions[i] & ProcessingExportC3D) != 0);
+                AddXMLElementBool(&xmlDocument, "ExportMatlabFile", (*processingActions[i] & ProcessingExportMatlabFile) != 0);
+                AddXMLElementBool(&xmlDocument, "ExportAviFile", (*processingActions[i] & ProcessingExportAviFile) != 0);
             }
-            oXML.OutOfElem(); // Processing_Actions
+            xmlDocument.OutOfElem(); // Processing_Actions
         }
     }
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, const ESignalSource* peSignalSource,
@@ -3134,175 +3134,175 @@ std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, con
     const unsigned int* pnFreqTolerance, const float* pfNominalFrequency, const bool* pbNegativeEdge,
     const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
-    oXML.AddElem("External_Time_Base");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("External_Time_Base");
+    xmlDocument.IntoElem();
 
-    AddXMLElementBool(&oXML, "Enabled", pbEnabled);
+    AddXMLElementBool(&xmlDocument, "Enabled", pbEnabled);
 
     if (peSignalSource)
     {
         switch (*peSignalSource)
         {
         case SourceControlPort:
-            oXML.AddElem("Signal_Source", "Control port");
+            xmlDocument.AddElem("Signal_Source", "Control port");
             break;
         case SourceIRReceiver:
-            oXML.AddElem("Signal_Source", "IR receiver");
+            xmlDocument.AddElem("Signal_Source", "IR receiver");
             break;
         case SourceSMPTE:
-            oXML.AddElem("Signal_Source", "SMPTE");
+            xmlDocument.AddElem("Signal_Source", "SMPTE");
             break;
         case SourceVideoSync:
-            oXML.AddElem("Signal_Source", "Video sync");
+            xmlDocument.AddElem("Signal_Source", "Video sync");
             break;
         case SourceIRIG:
-            oXML.AddElem("Signal_Source", "IRIG");
+            xmlDocument.AddElem("Signal_Source", "IRIG");
             break;
         }
     }
 
-    AddXMLElementBool(&oXML, "Signal_Mode", pbSignalModePeriodic, "Periodic", "Non-periodic");
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Multiplier", pnFreqMultiplier);
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Divisor", pnFreqDivisor);
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Tolerance", pnFreqTolerance);
+    AddXMLElementBool(&xmlDocument, "Signal_Mode", pbSignalModePeriodic, "Periodic", "Non-periodic");
+    AddXMLElementUnsignedInt(&xmlDocument, "Frequency_Multiplier", pnFreqMultiplier);
+    AddXMLElementUnsignedInt(&xmlDocument, "Frequency_Divisor", pnFreqDivisor);
+    AddXMLElementUnsignedInt(&xmlDocument, "Frequency_Tolerance", pnFreqTolerance);
 
     if (pfNominalFrequency)
     {
         if (*pfNominalFrequency < 0)
         {
-            oXML.AddElem("Nominal_Frequency", "None");
+            xmlDocument.AddElem("Nominal_Frequency", "None");
         }
         else
         {
-            AddXMLElementFloat(&oXML, "Nominal_Frequency", pfNominalFrequency, 3);
+            AddXMLElementFloat(&xmlDocument, "Nominal_Frequency", pfNominalFrequency, 3);
         }
     }
 
-    AddXMLElementBool(&oXML, "Signal_Edge", pbNegativeEdge, "Negative", "Positive");
-    AddXMLElementUnsignedInt(&oXML, "Signal_Shutter_Delay", pnSignalShutterDelay);
-    AddXMLElementFloat(&oXML, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3);
+    AddXMLElementBool(&xmlDocument, "Signal_Edge", pbNegativeEdge, "Negative", "Positive");
+    AddXMLElementUnsignedInt(&xmlDocument, "Signal_Shutter_Delay", pnSignalShutterDelay);
+    AddXMLElementFloat(&xmlDocument, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3);
 
-    oXML.OutOfElem(); // External_Time_Base            
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // External_Time_Base            
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
-    oXML.AddElem("External_Timestamp");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("External_Timestamp");
+    xmlDocument.IntoElem();
 
-    AddXMLElementBool(&oXML, "Enabled", timestampSettings.bEnabled);
+    AddXMLElementBool(&xmlDocument, "Enabled", timestampSettings.bEnabled);
 
     switch (timestampSettings.nType)
     {
     default:
     case ETimestampType::Timestamp_SMPTE:
-        oXML.AddElem("Type", "SMPTE");
+        xmlDocument.AddElem("Type", "SMPTE");
         break;
     case ETimestampType::Timestamp_IRIG:
-        oXML.AddElem("Type", "IRIG");
+        xmlDocument.AddElem("Type", "IRIG");
         break;
     case ETimestampType::Timestamp_CameraTime:
-        oXML.AddElem("Type", "CameraTime");
+        xmlDocument.AddElem("Type", "CameraTime");
         break;
     }
-    AddXMLElementUnsignedInt(&oXML, "Frequency", timestampSettings.nFrequency);
+    AddXMLElementUnsignedInt(&xmlDocument, "Frequency", timestampSettings.nFrequency);
 
-    oXML.OutOfElem(); // Timestamp
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Timestamp
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* peMode,
     const float* pfMarkerExposure, const float* pfMarkerThreshold, const int* pnOrientation)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
     if (peMode)
     {
         switch (*peMode)
         {
         case ModeMarker:
-            oXML.AddElem("Mode", "Marker");
+            xmlDocument.AddElem("Mode", "Marker");
             break;
         case ModeMarkerIntensity:
-            oXML.AddElem("Mode", "Marker Intensity");
+            xmlDocument.AddElem("Mode", "Marker Intensity");
             break;
         case ModeVideo:
-            oXML.AddElem("Mode", "Video");
+            xmlDocument.AddElem("Mode", "Video");
             break;
         }
     }
-    AddXMLElementFloat(&oXML, "Marker_Exposure", pfMarkerExposure);
-    AddXMLElementFloat(&oXML, "Marker_Threshold", pfMarkerThreshold);
-    AddXMLElementInt(&oXML, "Orientation", pnOrientation);
+    AddXMLElementFloat(&xmlDocument, "Marker_Exposure", pfMarkerExposure);
+    AddXMLElementFloat(&xmlDocument, "Marker_Threshold", pfMarkerThreshold);
+    AddXMLElementInt(&xmlDocument, "Orientation", pnOrientation);
 
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraVideoSettings(const unsigned int pCameraId,
     const EVideoResolution* eVideoResolution, const EVideoAspectRatio* eVideoAspectRatio,
     const unsigned int* pnVideoFrequency, const float* pfVideoExposure, const float* pfVideoFlashTime)
 {
-    CMarkup oXML;
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    CMarkup xmlDocument;
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
     if (eVideoResolution)
     {
         switch (*eVideoResolution)
         {
         case VideoResolution1440p:
-            oXML.AddElem("Video_Resolution", "1440p");
+            xmlDocument.AddElem("Video_Resolution", "1440p");
             break;
         case VideoResolution1080p:
-            oXML.AddElem("Video_Resolution", "1080p");
+            xmlDocument.AddElem("Video_Resolution", "1080p");
             break;
         case VideoResolution720p:
-            oXML.AddElem("Video_Resolution", "720p");
+            xmlDocument.AddElem("Video_Resolution", "720p");
             break;
         case VideoResolution540p:
-            oXML.AddElem("Video_Resolution", "540p");
+            xmlDocument.AddElem("Video_Resolution", "540p");
             break;
         case VideoResolution480p:
-            oXML.AddElem("Video_Resolution", "480p");
+            xmlDocument.AddElem("Video_Resolution", "480p");
             break;
         case VideoResolutionNone:
             break;
@@ -3313,74 +3313,74 @@ std::string CMarkupSerializer::SetCameraVideoSettings(const unsigned int pCamera
         switch (*eVideoAspectRatio)
         {
         case VideoAspectRatio16x9:
-            oXML.AddElem("Video_Aspect_Ratio", "16x9");
+            xmlDocument.AddElem("Video_Aspect_Ratio", "16x9");
             break;
         case VideoAspectRatio4x3:
-            oXML.AddElem("Video_Aspect_Ratio", "4x3");
+            xmlDocument.AddElem("Video_Aspect_Ratio", "4x3");
             break;
         case VideoAspectRatio1x1:
-            oXML.AddElem("Video_Aspect_Ratio", "1x1");
+            xmlDocument.AddElem("Video_Aspect_Ratio", "1x1");
             break;
         case VideoAspectRatioNone:
             break;
         }
     }
-    AddXMLElementUnsignedInt(&oXML, "Video_Frequency", pnVideoFrequency);
-    AddXMLElementFloat(&oXML, "Video_Exposure", pfVideoExposure);
-    AddXMLElementFloat(&oXML, "Video_Flash_Time", pfVideoFlashTime);
+    AddXMLElementUnsignedInt(&xmlDocument, "Video_Frequency", pnVideoFrequency);
+    AddXMLElementFloat(&xmlDocument, "Video_Exposure", pfVideoExposure);
+    AddXMLElementFloat(&xmlDocument, "Video_Flash_Time", pfVideoFlashTime);
 
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* peSyncOutMode, const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
     const bool* pbSyncOutNegativePolarity)
 {
-    CMarkup oXML;
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    CMarkup xmlDocument;
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
     int port = portNumber - 1;
     if (((port == 0 || port == 1) && peSyncOutMode) || (port == 2))
     {
-        oXML.AddElem(port == 0 ? "Sync_Out" : (port == 1 ? "Sync_Out2" : "Sync_Out_MT"));
-        oXML.IntoElem();
+        xmlDocument.AddElem(port == 0 ? "Sync_Out" : (port == 1 ? "Sync_Out2" : "Sync_Out_MT"));
+        xmlDocument.IntoElem();
 
         if (port == 0 || port == 1)
         {
             switch (*peSyncOutMode)
             {
             case ModeShutterOut:
-                oXML.AddElem("Mode", "Shutter out");
+                xmlDocument.AddElem("Mode", "Shutter out");
                 break;
             case ModeMultiplier:
-                oXML.AddElem("Mode", "Multiplier");
+                xmlDocument.AddElem("Mode", "Multiplier");
                 break;
             case ModeDivisor:
-                oXML.AddElem("Mode", "Divisor");
+                xmlDocument.AddElem("Mode", "Divisor");
                 break;
             case ModeIndependentFreq:
-                oXML.AddElem("Mode", "Camera independent");
+                xmlDocument.AddElem("Mode", "Camera independent");
                 break;
             case ModeMeasurementTime:
-                oXML.AddElem("Mode", "Measurement time");
+                xmlDocument.AddElem("Mode", "Measurement time");
                 break;
             case ModeFixed100Hz:
-                oXML.AddElem("Mode", "Continuous 100Hz");
+                xmlDocument.AddElem("Mode", "Continuous 100Hz");
                 break;
             case ModeSystemLiveTime:
-                oXML.AddElem("Mode", "System live time");
+                xmlDocument.AddElem("Mode", "System live time");
                 break;
             default:
                 return false; // Should never happen
@@ -3392,305 +3392,305 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
             {
                 if (pnSyncOutValue)
                 {
-                    AddXMLElementUnsignedInt(&oXML, "Value", pnSyncOutValue);
+                    AddXMLElementUnsignedInt(&xmlDocument, "Value", pnSyncOutValue);
                 }
                 if (pfSyncOutDutyCycle)
                 {
-                    AddXMLElementFloat(&oXML, "Duty_Cycle", pfSyncOutDutyCycle, 3);
+                    AddXMLElementFloat(&xmlDocument, "Duty_Cycle", pfSyncOutDutyCycle, 3);
                 }
             }
         }
         if (pbSyncOutNegativePolarity && (port == 2 ||
             (peSyncOutMode && *peSyncOutMode != ModeFixed100Hz)))
         {
-            AddXMLElementBool(&oXML, "Signal_Polarity", pbSyncOutNegativePolarity, "Negative", "Positive");
+            AddXMLElementBool(&xmlDocument, "Signal_Polarity", pbSyncOutNegativePolarity, "Negative", "Positive");
         }
-        oXML.OutOfElem(); // Sync_Out
+        xmlDocument.OutOfElem(); // Sync_Out
     }
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
     const float pAperture)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
-    oXML.AddElem("LensControl");
-    oXML.IntoElem();
+    xmlDocument.AddElem("LensControl");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Focus");
-    oXML.AddAttrib("Value", CMarkup::Format("%f", pFocus).c_str());
-    oXML.AddElem("Aperture");
-    oXML.AddAttrib("Value", CMarkup::Format("%f", pAperture).c_str());
+    xmlDocument.AddElem("Focus");
+    xmlDocument.AddAttrib("Value", CMarkup::Format("%f", pFocus).c_str());
+    xmlDocument.AddElem("Aperture");
+    xmlDocument.AddAttrib("Value", CMarkup::Format("%f", pAperture).c_str());
 
-    oXML.OutOfElem(); // LensControl
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // LensControl
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
     const float pCompensation)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
-    oXML.AddElem("LensControl");
-    oXML.IntoElem();
+    xmlDocument.AddElem("LensControl");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("AutoExposure");
-    oXML.AddAttrib("Enabled", pAutoExposure ? "true" : "false");
-    oXML.AddAttrib("Compensation", CMarkup::Format("%f", pCompensation).c_str());
+    xmlDocument.AddElem("AutoExposure");
+    xmlDocument.AddAttrib("Enabled", pAutoExposure ? "true" : "false");
+    xmlDocument.AddAttrib("Compensation", CMarkup::Format("%f", pCompensation).c_str());
 
-    oXML.OutOfElem(); // AutoExposure
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // AutoExposure
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("General");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("General");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
-    oXML.AddElem("AutoWhiteBalance", pEnable ? "true" : "false");
+    xmlDocument.AddElem("AutoWhiteBalance", pEnable ? "true" : "false");
 
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // General
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // General
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetImageSettings(const unsigned int pCameraId, const bool* pbEnable,
     const CRTPacket::EImageFormat* peFormat, const unsigned int* pnWidth, const unsigned int* pnHeight,
     const float* pfLeftCrop, const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("Image");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("Image");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Camera");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Camera");
+    xmlDocument.IntoElem();
 
-    AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
+    AddXMLElementUnsignedInt(&xmlDocument, "ID", &pCameraId);
 
-    AddXMLElementBool(&oXML, "Enabled", pbEnable);
+    AddXMLElementBool(&xmlDocument, "Enabled", pbEnable);
 
     if (peFormat)
     {
         switch (*peFormat)
         {
         case CRTPacket::FormatRawGrayscale:
-            oXML.AddElem("Format", "RAWGrayscale");
+            xmlDocument.AddElem("Format", "RAWGrayscale");
             break;
         case CRTPacket::FormatRawBGR:
-            oXML.AddElem("Format", "RAWBGR");
+            xmlDocument.AddElem("Format", "RAWBGR");
             break;
         case CRTPacket::FormatJPG:
-            oXML.AddElem("Format", "JPG");
+            xmlDocument.AddElem("Format", "JPG");
             break;
         case CRTPacket::FormatPNG:
-            oXML.AddElem("Format", "PNG");
+            xmlDocument.AddElem("Format", "PNG");
             break;
         }
     }
-    AddXMLElementUnsignedInt(&oXML, "Width", pnWidth);
-    AddXMLElementUnsignedInt(&oXML, "Height", pnHeight);
-    AddXMLElementFloat(&oXML, "Left_Crop", pfLeftCrop);
-    AddXMLElementFloat(&oXML, "Top_Crop", pfTopCrop);
-    AddXMLElementFloat(&oXML, "Right_Crop", pfRightCrop);
-    AddXMLElementFloat(&oXML, "Bottom_Crop", pfBottomCrop);
+    AddXMLElementUnsignedInt(&xmlDocument, "Width", pnWidth);
+    AddXMLElementUnsignedInt(&xmlDocument, "Height", pnHeight);
+    AddXMLElementFloat(&xmlDocument, "Left_Crop", pfLeftCrop);
+    AddXMLElementFloat(&xmlDocument, "Top_Crop", pfTopCrop);
+    AddXMLElementFloat(&xmlDocument, "Right_Crop", pfRightCrop);
+    AddXMLElementFloat(&xmlDocument, "Bottom_Crop", pfBottomCrop);
 
-    oXML.OutOfElem(); // Camera
-    oXML.OutOfElem(); // Image
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Camera
+    xmlDocument.OutOfElem(); // Image
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetForceSettings(const unsigned int pPlateId, const SPoint* pCorner1,
     const SPoint* pCorner2, const SPoint* pCorner3, const SPoint* pCorner4)
 {
-    CMarkup oXML;
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("Force");
-    oXML.IntoElem();
+    CMarkup xmlDocument;
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("Force");
+    xmlDocument.IntoElem();
 
-    oXML.AddElem("Plate");
-    oXML.IntoElem();
+    xmlDocument.AddElem("Plate");
+    xmlDocument.IntoElem();
 
     if (mMajorVersion > 1 || mMinorVersion > 7)
     {
-        AddXMLElementUnsignedInt(&oXML, "Plate_ID", &pPlateId);
+        AddXMLElementUnsignedInt(&xmlDocument, "Plate_ID", &pPlateId);
     }
     else
     {
-        AddXMLElementUnsignedInt(&oXML, "Force_Plate_Index", &pPlateId);
+        AddXMLElementUnsignedInt(&xmlDocument, "Force_Plate_Index", &pPlateId);
     }
     if (pCorner1)
     {
-        oXML.AddElem("Corner1");
-        oXML.IntoElem();
-        AddXMLElementFloat(&oXML, "X", &(pCorner1->fX));
-        AddXMLElementFloat(&oXML, "Y", &(pCorner1->fY));
-        AddXMLElementFloat(&oXML, "Z", &(pCorner1->fZ));
-        oXML.OutOfElem(); // Corner1
+        xmlDocument.AddElem("Corner1");
+        xmlDocument.IntoElem();
+        AddXMLElementFloat(&xmlDocument, "X", &(pCorner1->fX));
+        AddXMLElementFloat(&xmlDocument, "Y", &(pCorner1->fY));
+        AddXMLElementFloat(&xmlDocument, "Z", &(pCorner1->fZ));
+        xmlDocument.OutOfElem(); // Corner1
     }
     if (pCorner2)
     {
-        oXML.AddElem("Corner2");
-        oXML.IntoElem();
-        AddXMLElementFloat(&oXML, "X", &(pCorner2->fX));
-        AddXMLElementFloat(&oXML, "Y", &(pCorner2->fY));
-        AddXMLElementFloat(&oXML, "Z", &(pCorner2->fZ));
-        oXML.OutOfElem(); // Corner2
+        xmlDocument.AddElem("Corner2");
+        xmlDocument.IntoElem();
+        AddXMLElementFloat(&xmlDocument, "X", &(pCorner2->fX));
+        AddXMLElementFloat(&xmlDocument, "Y", &(pCorner2->fY));
+        AddXMLElementFloat(&xmlDocument, "Z", &(pCorner2->fZ));
+        xmlDocument.OutOfElem(); // Corner2
     }
     if (pCorner3)
     {
-        oXML.AddElem("Corner3");
-        oXML.IntoElem();
-        AddXMLElementFloat(&oXML, "X", &(pCorner3->fX));
-        AddXMLElementFloat(&oXML, "Y", &(pCorner3->fY));
-        AddXMLElementFloat(&oXML, "Z", &(pCorner3->fZ));
-        oXML.OutOfElem(); // Corner3
+        xmlDocument.AddElem("Corner3");
+        xmlDocument.IntoElem();
+        AddXMLElementFloat(&xmlDocument, "X", &(pCorner3->fX));
+        AddXMLElementFloat(&xmlDocument, "Y", &(pCorner3->fY));
+        AddXMLElementFloat(&xmlDocument, "Z", &(pCorner3->fZ));
+        xmlDocument.OutOfElem(); // Corner3
     }
     if (pCorner4)
     {
-        oXML.AddElem("Corner4");
-        oXML.IntoElem();
-        AddXMLElementFloat(&oXML, "X", &(pCorner4->fX));
-        AddXMLElementFloat(&oXML, "Y", &(pCorner4->fY));
-        AddXMLElementFloat(&oXML, "Z", &(pCorner4->fZ));
-        oXML.OutOfElem(); // Corner4
+        xmlDocument.AddElem("Corner4");
+        xmlDocument.IntoElem();
+        AddXMLElementFloat(&xmlDocument, "X", &(pCorner4->fX));
+        AddXMLElementFloat(&xmlDocument, "Y", &(pCorner4->fY));
+        AddXMLElementFloat(&xmlDocument, "Z", &(pCorner4->fZ));
+        xmlDocument.OutOfElem(); // Corner4
     }
-    oXML.OutOfElem(); // Plate
+    xmlDocument.OutOfElem(); // Plate
 
-    oXML.OutOfElem(); // Force
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // Force
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs)
 {
-    CMarkup oXML;
+    CMarkup xmlDocument;
 
-    oXML.AddElem("QTM_Settings");
-    oXML.IntoElem();
-    oXML.AddElem("The_6D");
-    oXML.IntoElem();
+    xmlDocument.AddElem("QTM_Settings");
+    xmlDocument.IntoElem();
+    xmlDocument.AddElem("The_6D");
+    xmlDocument.IntoElem();
 
     for (auto& body : pSettings6Dofs)
     {
-        oXML.AddElem("Body");
-        oXML.IntoElem();
-        oXML.AddElem("Name", body.name.c_str());
-        oXML.AddElem("Enabled", body.enabled ? "true" : "false");
-        oXML.AddElem("Color");
-        oXML.AddAttrib("R", std::to_string(body.color & 0xff).c_str());
-        oXML.AddAttrib("G", std::to_string((body.color >> 8) & 0xff).c_str());
-        oXML.AddAttrib("B", std::to_string((body.color >> 16) & 0xff).c_str());
-        oXML.AddElem("MaximumResidual", std::to_string(body.maxResidual).c_str());
-        oXML.AddElem("MinimumMarkersInBody", std::to_string(body.minMarkersInBody).c_str());
-        oXML.AddElem("BoneLengthTolerance", std::to_string(body.boneLengthTolerance).c_str());
-        oXML.AddElem("Filter");
-        oXML.AddAttrib("Preset", body.filterPreset.c_str());
+        xmlDocument.AddElem("Body");
+        xmlDocument.IntoElem();
+        xmlDocument.AddElem("Name", body.name.c_str());
+        xmlDocument.AddElem("Enabled", body.enabled ? "true" : "false");
+        xmlDocument.AddElem("Color");
+        xmlDocument.AddAttrib("R", std::to_string(body.color & 0xff).c_str());
+        xmlDocument.AddAttrib("G", std::to_string((body.color >> 8) & 0xff).c_str());
+        xmlDocument.AddAttrib("B", std::to_string((body.color >> 16) & 0xff).c_str());
+        xmlDocument.AddElem("MaximumResidual", std::to_string(body.maxResidual).c_str());
+        xmlDocument.AddElem("MinimumMarkersInBody", std::to_string(body.minMarkersInBody).c_str());
+        xmlDocument.AddElem("BoneLengthTolerance", std::to_string(body.boneLengthTolerance).c_str());
+        xmlDocument.AddElem("Filter");
+        xmlDocument.AddAttrib("Preset", body.filterPreset.c_str());
 
         if (!body.mesh.name.empty())
         {
-            oXML.AddElem("Mesh");
-            oXML.IntoElem();
-            oXML.AddElem("Name", body.mesh.name.c_str());
-            oXML.AddElem("Position");
-            oXML.AddAttrib("X", std::to_string(body.mesh.position.fX).c_str());
-            oXML.AddAttrib("Y", std::to_string(body.mesh.position.fY).c_str());
-            oXML.AddAttrib("Z", std::to_string(body.mesh.position.fZ).c_str());
-            oXML.AddElem("Rotation");
-            oXML.AddAttrib("X", std::to_string(body.mesh.rotation.fX).c_str());
-            oXML.AddAttrib("Y", std::to_string(body.mesh.rotation.fY).c_str());
-            oXML.AddAttrib("Z", std::to_string(body.mesh.rotation.fZ).c_str());
-            oXML.AddElem("Scale", std::to_string(body.mesh.scale).c_str());
-            oXML.AddElem("Opacity", std::to_string(body.mesh.opacity).c_str());
-            oXML.OutOfElem(); // Mesh
+            xmlDocument.AddElem("Mesh");
+            xmlDocument.IntoElem();
+            xmlDocument.AddElem("Name", body.mesh.name.c_str());
+            xmlDocument.AddElem("Position");
+            xmlDocument.AddAttrib("X", std::to_string(body.mesh.position.fX).c_str());
+            xmlDocument.AddAttrib("Y", std::to_string(body.mesh.position.fY).c_str());
+            xmlDocument.AddAttrib("Z", std::to_string(body.mesh.position.fZ).c_str());
+            xmlDocument.AddElem("Rotation");
+            xmlDocument.AddAttrib("X", std::to_string(body.mesh.rotation.fX).c_str());
+            xmlDocument.AddAttrib("Y", std::to_string(body.mesh.rotation.fY).c_str());
+            xmlDocument.AddAttrib("Z", std::to_string(body.mesh.rotation.fZ).c_str());
+            xmlDocument.AddElem("Scale", std::to_string(body.mesh.scale).c_str());
+            xmlDocument.AddElem("Opacity", std::to_string(body.mesh.opacity).c_str());
+            xmlDocument.OutOfElem(); // Mesh
         }
 
         if (!body.points.empty())
         {
-            oXML.AddElem("Points");
-            oXML.IntoElem();
+            xmlDocument.AddElem("Points");
+            xmlDocument.IntoElem();
             for (auto& point : body.points)
             {
-                oXML.AddElem("Point");
-                oXML.AddAttrib("X", std::to_string(point.fX).c_str());
-                oXML.AddAttrib("Y", std::to_string(point.fY).c_str());
-                oXML.AddAttrib("Z", std::to_string(point.fZ).c_str());
-                oXML.AddAttrib("Virtual", point.virtual_ ? "1" : "0");
-                oXML.AddAttrib("PhysicalId", std::to_string(point.physicalId).c_str());
-                oXML.AddAttrib("Name", point.name.c_str());
+                xmlDocument.AddElem("Point");
+                xmlDocument.AddAttrib("X", std::to_string(point.fX).c_str());
+                xmlDocument.AddAttrib("Y", std::to_string(point.fY).c_str());
+                xmlDocument.AddAttrib("Z", std::to_string(point.fZ).c_str());
+                xmlDocument.AddAttrib("Virtual", point.virtual_ ? "1" : "0");
+                xmlDocument.AddAttrib("PhysicalId", std::to_string(point.physicalId).c_str());
+                xmlDocument.AddAttrib("Name", point.name.c_str());
             }
-            oXML.OutOfElem(); // Points
+            xmlDocument.OutOfElem(); // Points
         }
-        oXML.AddElem("Data_origin", std::to_string(body.origin.type).c_str());
-        oXML.AddAttrib("X", std::to_string(body.origin.position.fX).c_str());
-        oXML.AddAttrib("Y", std::to_string(body.origin.position.fY).c_str());
-        oXML.AddAttrib("Z", std::to_string(body.origin.position.fZ).c_str());
-        oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
-        oXML.AddElem("Data_orientation", std::to_string(body.origin.type).c_str());
+        xmlDocument.AddElem("Data_origin", std::to_string(body.origin.type).c_str());
+        xmlDocument.AddAttrib("X", std::to_string(body.origin.position.fX).c_str());
+        xmlDocument.AddAttrib("Y", std::to_string(body.origin.position.fY).c_str());
+        xmlDocument.AddAttrib("Z", std::to_string(body.origin.position.fZ).c_str());
+        xmlDocument.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
+        xmlDocument.AddElem("Data_orientation", std::to_string(body.origin.type).c_str());
         for (std::uint32_t i = 0; i < 9; i++)
         {
             char tmpStr[16];
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-            oXML.AddAttrib(tmpStr, std::to_string(body.origin.rotation[i]).c_str());
+            xmlDocument.AddAttrib(tmpStr, std::to_string(body.origin.rotation[i]).c_str());
         }
-        oXML.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
+        xmlDocument.AddAttrib("Relative_body", std::to_string(body.origin.relativeBody).c_str());
 
-        oXML.OutOfElem(); // Body
+        xmlDocument.OutOfElem(); // Body
     }
-    oXML.OutOfElem(); // The_6D
-    oXML.OutOfElem(); // QTM_Settings
+    xmlDocument.OutOfElem(); // The_6D
+    xmlDocument.OutOfElem(); // QTM_Settings
 
-    return oXML.GetDoc();
+    return xmlDocument.GetDoc();
 }
 
 std::string CMarkupSerializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons)
