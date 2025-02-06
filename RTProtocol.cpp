@@ -1,13 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
-#include "RTProtocol.h"
-#include "Tinyxml2Serializer.h"
 
-#include <float.h>
+
 #include <cctype>
 #include <thread>
-#include <string.h>
+#include <string>
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -17,8 +15,10 @@
 #include <functional>
 
 #include "Network.h"
-#include "MarkupSerializer.h"
-#include <stdexcept>
+#include "Tinyxml2Deserializer.h"
+#include "Tinyxml2Serializer.h"
+#include "RTProtocol.h"
+
 
 #ifdef _WIN32
 #include <iphlpapi.h>
@@ -1757,7 +1757,7 @@ bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
         return false;
     }
 
-    auto deserializer = CMarkupDeserializer(data, mnMajorVersion, mnMinorVersion);
+    CTinyxml2Deserializer deserializer(data, mnMajorVersion, mnMinorVersion);
     return deserializer.DeserializeGazeVectorSettings(mvsGazeVectorSettings, bDataAvailable);
 }
 

@@ -636,7 +636,6 @@ namespace qualisys_cpp_sdk
 
     DLL_EXPORT EDegreeOfFreedom SkeletonStringToDofSettings(const std::string& str);
 
-
     struct DLL_EXPORT ISettingsDeserializer {
         virtual ~ISettingsDeserializer() = default;
         virtual bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) = 0;
