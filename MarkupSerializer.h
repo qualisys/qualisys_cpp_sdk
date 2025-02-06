@@ -60,8 +60,8 @@ namespace qualisys_cpp_sdk {
             const int* pnOrientation) override;
 
         std::string SetCameraVideoSettings(
-            const unsigned int pCameraId, const EVideoResolution* eVideoResolution,
-            const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
+            const unsigned int pCameraId, const EVideoResolution* videoResolution,
+            const EVideoAspectRatio* videoAspectRatio, const unsigned int* pnVideoFrequency,
             const float* pfVideoExposure, const float* pfVideoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(

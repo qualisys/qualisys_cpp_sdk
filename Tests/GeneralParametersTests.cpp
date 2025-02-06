@@ -91,9 +91,9 @@ TEST_CASE("SetExtTimestampSettingsTest")
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
     CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
-    timestampSettings.bEnabled = true;
-    timestampSettings.nFrequency = 999;
-    timestampSettings.nType = CRTProtocol::ETimestampType::Timestamp_IRIG;
+    timestampSettings.enabled = true;
+    timestampSettings.frequency = 999;
+    timestampSettings.type = CRTProtocol::ETimestampType::Timestamp_IRIG;
 
     if (!protocol->SetExtTimestampSettings(timestampSettings))
     {
@@ -110,14 +110,14 @@ TEST_CASE("GetExtTimestampSettingsTest")
     network->PrepareResponse("GetParameters General", qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest, CRTPacket::PacketXML);
 
     CRTProtocol::SSettingsGeneralExternalTimestamp timestampSettings;
-    timestampSettings.bEnabled = true;
-    timestampSettings.nFrequency = 999;
-    timestampSettings.nType = CRTProtocol::ETimestampType::Timestamp_IRIG;
+    timestampSettings.enabled = true;
+    timestampSettings.frequency = 999;
+    timestampSettings.type = CRTProtocol::ETimestampType::Timestamp_IRIG;
     protocol->GetExtTimestampSettings(timestampSettings);
 
-    CHECK_EQ(false, timestampSettings.bEnabled);
-    CHECK_EQ(0, timestampSettings.nFrequency);
-    CHECK_EQ(CRTProtocol::ETimestampType::Timestamp_SMPTE, timestampSettings.nType);
+    CHECK_EQ(false, timestampSettings.enabled);
+    CHECK_EQ(0, timestampSettings.frequency);
+    CHECK_EQ(CRTProtocol::ETimestampType::Timestamp_SMPTE, timestampSettings.type);
 }
 
 TEST_CASE("SetCameraSettingsTest")
@@ -324,21 +324,21 @@ TEST_CASE("GetCameraSyncOutSettingsTest")
 
     unsigned int nCameraIndex = 7u;
     unsigned int portNumber = 1u;
-    CRTProtocol::ESyncOutFreqMode eSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
-    unsigned int nSyncOutValue = 99u;
-    float fSyncOutDutyCycle = 99.0f;
-    bool bSyncOutNegativePolarity = false;
+    CRTProtocol::ESyncOutFreqMode syncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
+    unsigned int syncOutValue = 99u;
+    float syncOutDutyCycle = 99.0f;
+    bool syncOutNegativePolarity = false;
 
     protocol->GetCameraSyncOutSettings(
-        nCameraIndex, portNumber, eSyncOutMode,
-        nSyncOutValue, fSyncOutDutyCycle,
-        bSyncOutNegativePolarity
+        nCameraIndex, portNumber, syncOutMode,
+        syncOutValue, syncOutDutyCycle,
+        syncOutNegativePolarity
     );
 
-    CHECK_EQ(CRTProtocol::ESyncOutFreqMode::ModeMultiplier, eSyncOutMode);
-    CHECK_EQ(1, nSyncOutValue);
-    CHECK_EQ(50.0f, fSyncOutDutyCycle);
-    CHECK_EQ(true, bSyncOutNegativePolarity);
+    CHECK_EQ(CRTProtocol::ESyncOutFreqMode::ModeMultiplier, syncOutMode);
+    CHECK_EQ(1, syncOutValue);
+    CHECK_EQ(50.0f, syncOutDutyCycle);
+    CHECK_EQ(true, syncOutNegativePolarity);
 }
 
 TEST_CASE("SetCameraLensControlSettingsTest")
