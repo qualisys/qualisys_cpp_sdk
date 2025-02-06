@@ -1,0 +1,2 @@
+C:\msys64\mingw64\bin\ar.exe qc libqualisys_cpp_sdk.a CMakeFiles/qualisys_cpp_sdk.dir/Markup.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/Network.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/RTPacket.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/RTProtocol.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/Settings.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/MarkupSerializer.cpp.obj CMakeFiles/qualisys_cpp_sdk.dir/Tinyxml2Serializer.cpp.obj
+C:\msys64\mingw64\bin\ranlib.exe libqualisys_cpp_sdk.a
