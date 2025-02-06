@@ -167,7 +167,7 @@ namespace
 }
 
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion), maErrorStr{ 0 }
+    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
 {
     oXML.Parse(pData);
 }
@@ -975,7 +975,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         for (std::size_t port = 0; port < 3; port++)
         {
             char syncOutStr[16];
-            sprintf(syncOutStr, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
+            (void)sprintf_s(syncOutStr,16, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
+
             auto syncOutElem = cameraElem->FirstChildElement(syncOutStr);
             if (syncOutElem)
             {
@@ -1447,7 +1448,7 @@ namespace
             char tmpStr[10];
             for (std::uint32_t i = 0; i < 9; i++)
             {
-                sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+                (void)sprintf_s(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
                 oTarget.rotation[i] = static_cast<float>(atof(elem->Attribute(tmpStr)));
             }
 
@@ -1866,22 +1867,23 @@ namespace
 {
     struct ChildElementRange
     {
-    private:
         static constexpr std::size_t buffSize = 128;
+        using TElementNameGenerator = std::function<const char* (char(&buff)[buffSize], std::size_t bufferSize, std::size_t index)>;
 
+    private:
         tinyxml2::XMLElement& parent;
-        std::function<const char* (char(&buff)[buffSize], std::size_t index)> elementNameGenerator;
+        TElementNameGenerator elementNameGenerator;
 
     public:
         ChildElementRange() = delete;
 
         ChildElementRange(tinyxml2::XMLElement& parent, const char* elementName)
-            : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t) { return elementName; })
+            : parent(parent), elementNameGenerator([elementName](auto& buff, std::size_t, std::size_t) { return elementName; })
         {
         }
 
         ChildElementRange(tinyxml2::XMLElement& parent,
-            std::function<const char* (char(&buff)[buffSize], std::size_t index)> generator)
+            TElementNameGenerator generator)
             : parent(parent), elementNameGenerator(std::move(generator))
         {
         }
@@ -1901,7 +1903,7 @@ namespace
             Iterator(const ChildElementRange& range, std::size_t index)
                 : buffer{}, current(nullptr), range(range), index(index)
             {
-                current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, index++));
+                current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, buffSize, index++));
             }
 
             tinyxml2::XMLElement* operator*() const
@@ -1911,7 +1913,7 @@ namespace
 
             Iterator& operator++()
             {
-                current = current->NextSiblingElement(range.elementNameGenerator(buffer, index++));
+                current = current->NextSiblingElement(range.elementNameGenerator(buffer, buffSize, index++));
                 return *this;
             }
 
@@ -2055,14 +2057,14 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         {
             if (mnMajorVersion == 1 && mnMinorVersion < 12)
             {
-                auto getRowStr = [](auto& buff, std::size_t index)-> const char* {
-                    sprintf(buff, "Row%zd", index + 1);
-                    return buff;
+                auto getRowStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
+                        sprintf_s(buff, buffSize, "Row%zd", index + 1);
+                        return buff;
                     };
 
-                auto getColStr = [](auto& buff, std::size_t index)-> const char* {
-                    sprintf(buff, "Col%zd", index + 1);
-                    return buff;
+                auto getColStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
+                        sprintf_s(buff, buffSize, "Col%zd", index + 1);
+                        return buff;
                     };
 
                 unsigned int nRow = 0;
@@ -2508,7 +2510,6 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& pCalibr
     auto calibrationElem = rootElem->FirstChildElement("calibration");
     if (!calibrationElem)
     {
-        sprintf(maErrorStr, "Missing calibration element");
         return false;
     }
 

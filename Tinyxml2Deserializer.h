@@ -23,7 +23,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mnMajorVersion;
         std::uint32_t mnMinorVersion;
-        char maErrorStr[1024];
         tinyxml2::XMLDocument oXML;
         static std::string ToLower(std::string str);
         static bool ParseString(const std::string& str, std::uint32_t& value);
