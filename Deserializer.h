@@ -63,15 +63,10 @@ namespace qualisys_cpp_sdk
             Deserializer current;
             const ChildElementRange& range;
             std::size_t index;
-
             explicit Iterator(const ChildElementRange& range);
-
             Iterator(const ChildElementRange& range, std::size_t index);
-
             Deserializer operator*() const;
-
             Iterator& operator++();
-
             bool operator!=(const Iterator& other) const;
         };
 
