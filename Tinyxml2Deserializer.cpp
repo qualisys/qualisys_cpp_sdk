@@ -96,7 +96,7 @@ namespace
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
     : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
-    mXmlDocument.Parse(pData);
+    mDocument.Parse(data);
 }
 
 namespace
@@ -161,7 +161,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
 {
     generalSettings.cameras.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1038,7 +1038,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
     settings3D.calibrationTime[0] = 0;
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1473,7 +1473,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
     settings6Dof.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1539,12 +1539,12 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     }
     else
     {
-        if (!mXmlDocument.FirstChildElement("Bodies"))
+        if (!mDocument.FirstChildElement("Bodies"))
         {
             return false;
         }
 
-        for (auto bodyElem = mXmlDocument.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
+        for (auto bodyElem = mDocument.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
         {
             SSettings6DOFBody s6DOFBodySettings{};
 
@@ -1559,7 +1559,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
             if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 // Euler --- REQUIRED
-                if (!TryReadSetEuler(mXmlDocument, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
+                if (!TryReadSetEuler(mDocument, generalSettings.eulerRotations[0], generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
                 {
                     return false;
                 }
@@ -1579,7 +1579,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
 
     gazeVectorSettings.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1631,7 +1631,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
 
     eyeTrackerSettings.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1677,7 +1677,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     dataAvailable = false;
     analogDeviceSettings.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1868,7 +1868,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettin
 
     forceSettings.forcePlates.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2047,7 +2047,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
 
     imageSettings.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2182,7 +2182,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
     skeletonSettings.clear();
     skeletonSettingsHierarchical.clear();
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2428,7 +2428,7 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& calibra
 {
     SCalibration settings{};
 
-    auto rootElem = mXmlDocument.RootElement();
+    auto rootElem = mDocument.RootElement();
     if (!rootElem)
     {
         return true;

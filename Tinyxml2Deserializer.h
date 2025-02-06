@@ -23,6 +23,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        tinyxml2::XMLDocument mXmlDocument;
+        tinyxml2::XMLDocument mDocument;
     };
 }
