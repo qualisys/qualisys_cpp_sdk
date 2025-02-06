@@ -94,9 +94,9 @@ namespace
 }
 
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
+    : mMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
 {
-    oXML.Parse(pData);
+    mXmlDocument.Parse(pData);
 }
 
 namespace
@@ -161,7 +161,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 {
     pGeneralSettings.vsCameras.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -195,7 +195,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
     {
         return false;
     }
-    if (mnMajorVersion > 1 || mnMinorVersion > 14)
+    if (mMajorVersion > 1 || mnMinorVersion > 14)
     {
         if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
         {
@@ -408,7 +408,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
         };
 
-    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
         // ==================== Processing actions ====================
@@ -421,7 +421,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
         *processingActions[i] = ProcessingNone;
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 13)
+        if (mMajorVersion > 1 || mnMinorVersion > 13)
         {
             if (!AddFlagFromBoolElement(*processingElem, "PreProcessing2D", ProcessingPreProcess2D, *processingActions[i]))
             {
@@ -473,7 +473,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mnMinorVersion > 11)
         {
             if (!AddFlagFromBoolElement(*processingElem, "GazeVector", ProcessingGazeVector, *processingActions[i]))
             {
@@ -498,7 +498,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                 return false;
             }
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 11)
+            if (mMajorVersion > 1 || mnMinorVersion > 11)
             {
                 if (!AddFlagFromBoolElement(*processingElem, "ExportAviFile", ProcessingExportAviFile, *processingActions[i]))
                 {
@@ -676,7 +676,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mnMinorVersion > 11)
         {
             if (!ReadElementUnsignedInt32(*cameraElem, "Video_Frequency", sCameraSettings.nVideoFrequency))
             {
@@ -1038,7 +1038,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 
     p3dSettings.pCalibrationTime[0] = 0;
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1473,7 +1473,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
     p6DOFSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1488,7 +1488,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
         return true; // NO eye tracker data available.
     }
 
-    if (mnMajorVersion > 1 || mnMinorVersion > 20)
+    if (mMajorVersion > 1 || mnMinorVersion > 20)
     {
         for (auto bodyElem = sixdofElem->FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
         {
@@ -1499,7 +1499,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
                 return false;
             }
 
-            TryReadSetEnabled(mnMajorVersion, mnMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
+            TryReadSetEnabled(mMajorVersion, mnMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
             if (!TryReadSetColor(*bodyElem, s6DOFBodySettings.color)
                 || !TryReadSetMaxResidual(*bodyElem, s6DOFBodySettings.maxResidual)
                 || !TryReadSetMinMarkersInBody(*bodyElem, s6DOFBodySettings.minMarkersInBody)
@@ -1539,12 +1539,12 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     }
     else
     {
-        if (!oXML.FirstChildElement("Bodies"))
+        if (!mXmlDocument.FirstChildElement("Bodies"))
         {
             return false;
         }
 
-        for (auto bodyElem = oXML.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
+        for (auto bodyElem = mXmlDocument.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
         {
             SSettings6DOFBody s6DOFBodySettings{};
 
@@ -1556,10 +1556,10 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
                 return false;
             }
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 15)
+            if (mMajorVersion > 1 || mnMinorVersion > 15)
             {
                 // Euler --- REQUIRED
-                if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
+                if (!TryReadSetEuler(mXmlDocument, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 {
                     return false;
                 }
@@ -1579,7 +1579,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
 
     pGazeVectorSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1631,7 +1631,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
 
     pEyeTrackerSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1677,7 +1677,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     pDataAvailable = false;
     pAnalogDeviceSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1690,7 +1690,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
         return true;
     }
 
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if (mMajorVersion == 1 && mnMinorVersion == 0)
     {
         SAnalogDevice analogDevice{};
         analogDevice.nDeviceID = 1;   // Always channel 1
@@ -1727,7 +1727,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             continue;
         }
 
-        if (mnMajorVersion == 1 && mnMinorVersion < 11)
+        if (mMajorVersion == 1 && mnMinorVersion < 11)
         {
             if (!ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
             {
@@ -1743,7 +1743,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             continue;
         }
 
-        if (mnMajorVersion == 1 && mnMinorVersion < 11)
+        if (mMajorVersion == 1 && mnMinorVersion < 11)
         {
             for (std::size_t i = 0; i < analogDevice.nChannels; i++)
             {
@@ -1868,7 +1868,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
 
     pForceSettings.vsForcePlates.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1982,7 +1982,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         auto calibrationMatrix = plateElem->FirstChildElement("Calibration_Matrix");
         if (calibrationMatrix)
         {
-            if (mnMajorVersion == 1 && mnMinorVersion < 12)
+            if (mMajorVersion == 1 && mnMinorVersion < 12)
             {
                 auto getRowStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
                         sprintf_s(buff, buffSize, "Row%zd", index + 1);
@@ -2047,7 +2047,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
 
     pImageSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2182,7 +2182,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
     pSkeletonSettings.clear();
     pSkeletonSettingsHierarchical.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2197,7 +2197,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
     int segmentIndex;
     std::map<int, int> segmentIdIndexMap;
 
-    if (mnMajorVersion > 1 || mnMinorVersion > 20)
+    if (mMajorVersion > 1 || mnMinorVersion > 20)
     {
         for (auto skeletonElem : ChildElementRange{ *skeletonsElem, "Skeleton" })
         {
@@ -2428,7 +2428,7 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& pCalibr
 {
     SCalibration settings{};
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
