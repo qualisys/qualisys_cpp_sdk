@@ -21,7 +21,7 @@ namespace qualisys_cpp_sdk {
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
         char mErrorStr[1024];
-        CMarkup oXML;
+        CMarkup xmlDocument;
         bool CompareNoCase(std::string tStr1, const char* tStr2) const;
         static std::string ToLower(std::string str);
         static bool ParseString(const std::string& str, std::uint32_t& value);
@@ -40,7 +40,7 @@ namespace qualisys_cpp_sdk {
 
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
         CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
-        CMarkup oXML;
+        CMarkup xmlDocument;
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
             const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
             const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
@@ -87,12 +87,12 @@ namespace qualisys_cpp_sdk {
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
-        void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
-        void AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue);
-        void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int value);
-        void AddXMLElementUnsignedInt(CMarkup* oXML, const char* tTag, const unsigned int* pnValue);
-        void AddXMLElementFloat(CMarkup* oXML, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
+        void AddXMLElementBool(CMarkup* xmlDocument, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
+        void AddXMLElementBool(CMarkup* xmlDocument, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
+        void AddXMLElementInt(CMarkup* xmlDocument, const char* tTag, const int* pnValue);
+        void AddXMLElementUnsignedInt(CMarkup* xmlDocument, const char* tTag, const unsigned int value);
+        void AddXMLElementUnsignedInt(CMarkup* xmlDocument, const char* tTag, const unsigned int* pnValue);
+        void AddXMLElementFloat(CMarkup* xmlDocument, const char* tTag, const float* pfValue, unsigned int pnDecimals = 6);
         void AddXMLElementTransform(CMarkup& xml, const std::string& name, const SPosition& position, const SRotation& rotation);
         void AddXMLElementDOF(CMarkup& xml, const std::string& name, SDegreeOfFreedom degreeOfFreedom);
     };
