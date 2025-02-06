@@ -117,15 +117,15 @@ TEST_CASE("SetSettingsForceTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    unsigned int nPlateID = 999;
-    CRTProtocol::SPoint psCorner1 = { 1.0f, 2.0f, 3.0f };
-    CRTProtocol::SPoint psCorner2 = { 4.0f, 5.0f, 6.0f };
-    CRTProtocol::SPoint psCorner3 = { 7.0f, 8.0f, 9.0f };
-    CRTProtocol::SPoint psCorner4 = { 10.0f, 11.0f, 12.0f };
+    unsigned int plateID = 999;
+    CRTProtocol::SPoint corner1 = { 1.0f, 2.0f, 3.0f };
+    CRTProtocol::SPoint corner2 = { 4.0f, 5.0f, 6.0f };
+    CRTProtocol::SPoint corner3 = { 7.0f, 8.0f, 9.0f };
+    CRTProtocol::SPoint corner4 = { 10.0f, 11.0f, 12.0f };
 
     if (!protocol->SetForceSettings(
-        nPlateID, &psCorner1, &psCorner2,
-        &psCorner3, &psCorner4))
+        plateID, &corner1, &corner2,
+        &corner3, &corner4))
     {
         FAIL(protocol->GetErrorString());
     }

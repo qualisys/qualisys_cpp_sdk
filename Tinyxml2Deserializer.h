@@ -21,8 +21,8 @@ namespace qualisys_cpp_sdk
         bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) override;
 
     private:
-        std::uint32_t mnMajorVersion;
-        std::uint32_t mnMinorVersion;
+        std::uint32_t mMajorVersion;
+        std::uint32_t mMinorVersion;
         tinyxml2::XMLDocument oXML;
         static std::string ToLower(std::string str);
         static bool ParseString(const std::string& str, std::uint32_t& value);

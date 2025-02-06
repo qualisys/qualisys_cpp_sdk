@@ -167,8 +167,8 @@ public:
     static bool GetComponent(std::string& componentStr, unsigned int& component, std::string& option);
 
     [[deprecated("Replaced by Receive.")]]
-    int         ReceiveRTPacket(CRTPacket::EPacketType &type, bool bSkipEvents = true, int timeout = cWaitForDataTimeout); // timeout < 0 : Blocking receive
-    CNetwork::ResponseType Receive(CRTPacket::EPacketType &type, bool bSkipEvents = true, int timeout = cWaitForDataTimeout); // timeout < 0 : Blocking receive
+    int         ReceiveRTPacket(CRTPacket::EPacketType &type, bool skipEvents = true, int timeout = cWaitForDataTimeout); // timeout < 0 : Blocking receive
+    CNetwork::ResponseType Receive(CRTPacket::EPacketType &type, bool skipEvents = true, int timeout = cWaitForDataTimeout); // timeout < 0 : Blocking receive
     
 
     CRTPacket* GetRTPacket();
@@ -295,25 +295,25 @@ public:
     unsigned int GetAnalogDeviceCount() const;
     bool         GetAnalogDevice(unsigned int deviceIndex, unsigned int &deviceID, unsigned int &channels,
                                  char* &name, unsigned int &frequency, char* &unit,
-                                 float &fMinRange, float &fMaxRange) const;
-    const char*  GetAnalogLabel(unsigned int deviceIndex, unsigned int nChannelIndex) const;
-    const char*  GetAnalogUnit(unsigned int deviceIndex, unsigned int nChannelIndex) const;
+                                 float &minRange, float &maxRange) const;
+    const char*  GetAnalogLabel(unsigned int deviceIndex, unsigned int channelIndex) const;
+    const char*  GetAnalogUnit(unsigned int deviceIndex, unsigned int channelIndex) const;
 
-    void         GetForceUnits(char* &pLength, char* &pForce) const;
+    void         GetForceUnits(char* &length, char* &force) const;
     unsigned int GetForcePlateCount() const;
-    bool         GetForcePlate(unsigned int nPlateIndex, unsigned int &id, unsigned int &nAnalogDeviceID,
-                               unsigned int &frequency, char* &pType, char* &name, float &fLength, float &fWidth) const;
-    bool         GetForcePlateLocation(unsigned int nPlateIndex, SPoint sCorner[4]) const;
-    bool         GetForcePlateOrigin(unsigned int nPlateIndex, SPoint &sOrigin) const;
-    unsigned int GetForcePlateChannelCount(unsigned int nPlateIndex) const;
-    bool         GetForcePlateChannel(unsigned int nPlateIndex, unsigned int nChannelIndex,
-                                      unsigned int &nChannelNumber, float &fConversionFactor) const;
-    bool         GetForcePlateCalibrationMatrix(unsigned int nPlateIndex, float fvCalMatrix[12][12], unsigned int* rows, unsigned int* columns) const;
+    bool         GetForcePlate(unsigned int plateIndex, unsigned int &id, unsigned int &analogDeviceID,
+                               unsigned int &frequency, char* &type, char* &name, float &length, float &width) const;
+    bool         GetForcePlateLocation(unsigned int plateIndex, SPoint corner[4]) const;
+    bool         GetForcePlateOrigin(unsigned int plateIndex, SPoint &origin) const;
+    unsigned int GetForcePlateChannelCount(unsigned int plateIndex) const;
+    bool         GetForcePlateChannel(unsigned int plateIndex, unsigned int channelIndex,
+                                      unsigned int &channelNumber, float &conversionFactor) const;
+    bool         GetForcePlateCalibrationMatrix(unsigned int plateIndex, float calMatrix[12][12], unsigned int* rows, unsigned int* columns) const;
 
     unsigned int GetImageCameraCount() const;
-    bool         GetImageCamera(unsigned int cameraIndex, unsigned int &nCameraID, bool &enabled,
-                                CRTPacket::EImageFormat &eFormat, unsigned int &nWidth, unsigned int &nHeight,
-                                float &fCropLeft, float &fCropTop, float &fCropRight, float &fCropBottom) const;
+    bool         GetImageCamera(unsigned int cameraIndex, unsigned int &cameraID, bool &enabled,
+                                CRTPacket::EImageFormat &format, unsigned int &width, unsigned int &height,
+                                float &cropLeft, float &cropTop, float &cropRight, float &cropBottom) const;
 
     unsigned int GetSkeletonCount() const;
     const char*  GetSkeletonName(unsigned int skeletonIndex);
@@ -324,54 +324,53 @@ public:
     void         GetSkeletons(std::vector<SSettingsSkeletonHierarchical>& skeletons);
 
     bool SetGeneralSettings(
-        const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-        const bool* pbStartOnExtTrig, const bool* trigNO, const bool* trigNC, const bool* trigSoftware,
-        const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions);
+        const unsigned int* captureFrequency, const float* captureTime,
+        const bool* startOnExtTrig, const bool* trigNO, const bool* trigNC, const bool* trigSoftware,
+        const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions);
     [[deprecated("Replaced by SetGeneralSettings.")]]
     bool SetSystemSettings(
-        const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-        const bool* pbStartOnExtTrig, const bool* trigNO, const bool* trigNC, const bool* trigSoftware,
-        const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions);
+        const unsigned int* captureFrequency, const float* captureTime,
+        const bool* startOnExtTrig, const bool* trigNO, const bool* trigNC, const bool* trigSoftware,
+        const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions);
 
     bool SetExtTimeBaseSettings(
-        const bool*         pbEnabled,            const ESignalSource* peSignalSource,
-        const bool*         pbSignalModePeriodic, const unsigned int*  pnFreqMultiplier,
-        const unsigned int* pnFreqDivisor,        const unsigned int*  pnFreqTolerance,
-        const float*        pfNominalFrequency,   const bool*          pbNegativeEdge,
-        const unsigned int* pnSignalShutterDelay, const float*         pfNonPeriodicTimeout);
+        const bool*         enabled,            const ESignalSource* signalSource,
+        const bool*         signalModePeriodic, const unsigned int*  freqMultiplier,
+        const unsigned int* freqDivisor,        const unsigned int*  freqTolerance,
+        const float*        nominalFrequency,   const bool*          negativeEdge,
+        const unsigned int* signalShutterDelay, const float*         nonPeriodicTimeout);
 
     bool SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings);
 
     bool SetCameraSettings(
-        const unsigned int nCameraID,        const ECameraMode* peMode,
-        const float*       pfMarkerExposure, const float*       pfMarkerThreshold,
-        const int*         pnOrientation);
+        const unsigned int cameraID,        const ECameraMode* mode,
+        const float*       markerExposure,  const float*       markerThreshold,
+        const int*         orientation);
 
     bool SetCameraVideoSettings(
-        const unsigned int nCameraID,               const EVideoResolution* videoResolution,
-        const EVideoAspectRatio* videoAspectRatio, const unsigned int* pnVideoFrequency,
-        const float* pfVideoExposure,               const float* pfVideoFlashTime);
+        const unsigned int       cameraID,         const EVideoResolution* videoResolution,
+        const EVideoAspectRatio* videoAspectRatio, const unsigned int*     videoFrequency,
+        const float*             videoExposure,    const float*            videoFlashTime);
 
     bool SetCameraSyncOutSettings(
-        const unsigned int  nCameraID,      const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
-        const unsigned int* pnSyncOutValue, const float*       pfSyncOutDutyCycle,
-        const bool*         pbSyncOutNegativePolarity);
+        const unsigned int  cameraID,     const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+        const unsigned int* syncOutValue, const float*       syncOutDutyCycle,
+        const bool*         syncOutNegativePolarity);
 
-    bool SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture);
-    bool SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation);
-    bool SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable);
+    bool SetCameraLensControlSettings(const unsigned int cameraID, const float focus, const float aperture);
+    bool SetCameraAutoExposureSettings(const unsigned int cameraID, const bool autoExposure, const float compensation);
+    bool SetCameraAutoWhiteBalance(const unsigned int cameraID, const bool enable);
 
     bool SetImageSettings(
-        const unsigned int  nCameraID, const bool*         pbEnable,    const CRTPacket::EImageFormat* peFormat,
-        const unsigned int* pnWidth,   const unsigned int* pnHeight,    const float* pfLeftCrop,
-        const float*        pfTopCrop, const float*        pfRightCrop, const float* pfBottomCrop);
+        const unsigned int  cameraID, const bool*         enable,    const CRTPacket::EImageFormat* format,
+        const unsigned int* width,    const unsigned int* height,    const float* leftCrop,
+        const float*        topCrop,  const float*        rightCrop, const float* bottomCrop);
 
     bool SetForceSettings(
-        const unsigned int nPlateID,  const SPoint* psCorner1, const SPoint* psCorner2,
-        const SPoint*      psCorner3, const SPoint* psCorner4);
+        const unsigned int plateID,  const SPoint* corner1, const SPoint* corner2,
+        const SPoint*      corner3,  const SPoint* corner4);
 
-    bool Set6DOFBodySettings(std::vector<SSettings6DOFBody>);
-
+    bool Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings);
 
     bool SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons);
     
@@ -381,39 +380,39 @@ public:
     char* GetErrorString();
 
 private:
-    bool SendString(const char* pCmdStr, int nType);
-    bool SendCommand(const char* pCmdStr);
+    bool SendString(const char* cmdStr, int type);
+    bool SendCommand(const char* cmdStr);
     bool SendCommand(const std::string& cmdStr, std::string& commandResponseStr, unsigned int timeout = cWaitForDataTimeout);
-    bool SendXML(const char* pCmdStr);
+    bool SendXML(const char* cmdStr);
     const char * ReadSettings(const std::string& settingsType);
     bool ReceiveCalibrationSettings(int timeout = cWaitForDataTimeout);
 
 private:
-    INetwork*                      mpoNetwork;
-    CRTPacket*                     mpoRTPacket;
+    INetwork*                      mNetwork;
+    CRTPacket*                     mRTPacket;
     std::vector<char>              mDataBuff;
     std::vector<char>              mSendBuffer;
-    CRTPacket::EEvent              meLastEvent;
-    CRTPacket::EEvent              meState;  // Same as meLastEvent but without EventCameraSettingsChanged
-    int                            mnMinorVersion;
-    int                            mnMajorVersion;
-    bool                           mbBigEndian;
-    bool                           mbIsMaster;
-    SSettingsGeneral               msGeneralSettings;
-    SSettings3D                    ms3DSettings;
+    CRTPacket::EEvent              mLastEvent;
+    CRTPacket::EEvent              mState;  // Same as mLastEvent but without EventCameraSettingsChanged
+    int                            mMinorVersion;
+    int                            mMajorVersion;
+    bool                           mBigEndian;
+    bool                           mIsMaster;
+    SSettingsGeneral               mGeneralSettings;
+    SSettings3D                    m3DSettings;
     std::vector<SSettings6DOFBody> m6DOFSettings;
-    std::vector<SGazeVector>       mvsGazeVectorSettings;
-    std::vector<SEyeTracker>       mvsEyeTrackerSettings;
-    std::vector<SAnalogDevice>     mvsAnalogDeviceSettings;
-    SSettingsForce                 msForceSettings;
-    std::vector<SImageCamera>      mvsImageSettings;
+    std::vector<SGazeVector>       mGazeVectorSettings;
+    std::vector<SEyeTracker>       mEyeTrackerSettings;
+    std::vector<SAnalogDevice>     mAnalogDeviceSettings;
+    SSettingsForce                 mForceSettings;
+    std::vector<SImageCamera>      mImageSettings;
     std::vector<SSettingsSkeleton> mSkeletonSettings;
     std::vector<SSettingsSkeletonHierarchical> mSkeletonSettingsHierarchical;
     SCalibration                   mCalibrationSettings;
-    char                           maErrorStr[1024];
-    unsigned short                 mnBroadcastPort;
-    FILE*                          mpFileBuffer;
-    std::vector<SDiscoverResponse> mvsDiscoverResponseList;
+    char                           mErrorStr[1024];
+    unsigned short                 mBroadcastPort;
+    FILE*                          mFileBuffer;
+    std::vector<SDiscoverResponse> mDiscoverResponseList;
 };
 
 

@@ -9,28 +9,28 @@ TEST_CASE("SetExtTimeBaseSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    bool pbEnabled = true;
-    CRTProtocol::ESignalSource peSignalSource = CRTProtocol::ESignalSource::SourceVideoSync;
-    bool pbSignalModePeriodic = true;
-    unsigned int pnFreqMultiplier = 999u;
-    unsigned int pnFreqDivisor = 998u;
-    unsigned int pnFreqTolerance = 997u;
-    float pfNominalFrequency = 996.0f;
-    bool pbNegativeEdge = true;
-    unsigned int pnSignalShutterDelay = 995u;
-    float pfNonPeriodicTimeout = 994.0f;
+    bool enabled = true;
+    CRTProtocol::ESignalSource signalSource = CRTProtocol::ESignalSource::SourceVideoSync;
+    bool signalModePeriodic = true;
+    unsigned int freqMultiplier = 999u;
+    unsigned int freqDivisor = 998u;
+    unsigned int freqTolerance = 997u;
+    float nominalFrequency = 996.0f;
+    bool negativeEdge = true;
+    unsigned int signalShutterDelay = 995u;
+    float nonPeriodicTimeout = 994.0f;
 
     if (!protocol->SetExtTimeBaseSettings(
-        &pbEnabled,
-        &peSignalSource,
-        &pbSignalModePeriodic,
-        &pnFreqMultiplier,
-        &pnFreqDivisor,
-        &pnFreqTolerance,
-        &pfNominalFrequency,
-        &pbNegativeEdge,
-        &pnSignalShutterDelay,
-        &pfNonPeriodicTimeout))
+        &enabled,
+        &signalSource,
+        &signalModePeriodic,
+        &freqMultiplier,
+        &freqDivisor,
+        &freqTolerance,
+        &nominalFrequency,
+        &negativeEdge,
+        &signalShutterDelay,
+        &nonPeriodicTimeout))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -126,18 +126,18 @@ TEST_CASE("SetCameraSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    unsigned int nCameraID = 1u;
-    CRTProtocol::ECameraMode peMode = CRTProtocol::ECameraMode::ModeMarkerIntensity;
-    float pfMarkerExposure = 999.0f;
-    float pfMarkerThreshold = 998.0f;
-    int pnOrientation = 1;
+    unsigned int cameraID = 1u;
+    CRTProtocol::ECameraMode mode = CRTProtocol::ECameraMode::ModeMarkerIntensity;
+    float markerExposure = 999.0f;
+    float markerThreshold = 998.0f;
+    int orientation = 1;
 
     if (!protocol->SetCameraSettings(
-        nCameraID,
-        &peMode,
-        &pfMarkerExposure,
-        &pfMarkerThreshold,
-        &pnOrientation))
+        cameraID,
+        &mode,
+        &markerExposure,
+        &markerThreshold,
+        &orientation))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -186,11 +186,11 @@ TEST_CASE("SetCameraAutoExposureSettings")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    int nCameraID = 1;
+    int cameraID = 1;
     bool autoExposure = true;
     float compensation = 1.2345f;
 
-    if (!protocol->SetCameraAutoExposureSettings(nCameraID, autoExposure, compensation))
+    if (!protocol->SetCameraAutoExposureSettings(cameraID, autoExposure, compensation))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -209,11 +209,11 @@ TEST_CASE("GetCameraAutoExposureSettings")
         FAIL(protocol->GetErrorString());
     }
 
-    int nCameraID = 6;
+    int cameraID = 6;
     bool bAutoExposure = true;
     float fCompensation = 1.0f;
 
-    if (!protocol->GetCameraAutoExposureSettings(nCameraID, &bAutoExposure, &fCompensation))
+    if (!protocol->GetCameraAutoExposureSettings(cameraID, &bAutoExposure, &fCompensation))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -228,17 +228,17 @@ TEST_CASE("SetCameraVideoSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    const unsigned int nCameraID = 1u;
+    const unsigned int cameraID = 1u;
     const CRTProtocol::EVideoResolution eVideoResolution = CRTProtocol::EVideoResolution::VideoResolution1080p;
     const CRTProtocol::EVideoAspectRatio eVideoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatio4x3;
-    const unsigned int pnVideoFrequency = 23u;
-    const float pfVideoExposure = 0.123f;
-    const float pfVideoFlashTime = 0.456f;
+    const unsigned int videoFrequency = 23u;
+    const float videoExposure = 0.123f;
+    const float videoFlashTime = 0.456f;
 
     if (!protocol->SetCameraVideoSettings(
-        nCameraID, &eVideoResolution,
-        &eVideoAspectRatio, &pnVideoFrequency,
-        &pfVideoExposure, &pfVideoFlashTime))
+        cameraID, &eVideoResolution,
+        &eVideoAspectRatio, &videoFrequency,
+        &videoExposure, &videoFlashTime))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -293,17 +293,17 @@ TEST_CASE("SetCameraSyncOutSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    const unsigned int nCameraID = 7u;
+    const unsigned int cameraID = 7u;
     const unsigned int portNumber = 1u;
-    const CRTProtocol::ESyncOutFreqMode peSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime;
-    const unsigned int pnSyncOutValue = 15u;
-    const float pfSyncOutDutyCycle = 22.0f;
-    const bool pbSyncOutNegativePolarity = true;
+    const CRTProtocol::ESyncOutFreqMode syncOutMode = CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime;
+    const unsigned int syncOutValue = 15u;
+    const float syncOutDutyCycle = 22.0f;
+    const bool syncOutNegativePolarity = true;
 
     if (!protocol->SetCameraSyncOutSettings(
-        nCameraID, portNumber, &peSyncOutMode,
-        &pnSyncOutValue, &pfSyncOutDutyCycle,
-        &pbSyncOutNegativePolarity))
+        cameraID, portNumber, &syncOutMode,
+        &syncOutValue, &syncOutDutyCycle,
+        &syncOutNegativePolarity))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -347,11 +347,11 @@ TEST_CASE("SetCameraLensControlSettingsTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    const unsigned int nCameraID = 1u;
+    const unsigned int cameraID = 1u;
     const float focus = 99.0f;
     const float aperture = 98.0f;
 
-    if (!protocol->SetCameraLensControlSettings(nCameraID, focus, aperture))
+    if (!protocol->SetCameraLensControlSettings(cameraID, focus, aperture))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -386,11 +386,11 @@ TEST_CASE("SetCameraAutoWhiteBalanceTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    const unsigned int nCameraID = 1u;
+    const unsigned int cameraID = 1u;
     const bool enable = true;
 
     if (!protocol->SetCameraAutoWhiteBalance(
-        nCameraID, enable))
+        cameraID, enable))
     {
         FAIL(protocol->GetErrorString());
     }
@@ -430,14 +430,14 @@ TEST_CASE("SetGeneralSettingsTest")
     bool startOnTrigNO = true;
     bool startOnTrigNC = true;
     bool startOnTrigSoftware = true;
-    CRTProtocol::EProcessingActions peProcessingActions = CRTProtocol::EProcessingActions::ProcessingGazeVector;
-    CRTProtocol::EProcessingActions peRtProcessingActions = CRTProtocol::EProcessingActions::ProcessingExportMatlabFile;
-    CRTProtocol::EProcessingActions peReprocessingActions = CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge;
+    CRTProtocol::EProcessingActions processingActions = CRTProtocol::EProcessingActions::ProcessingGazeVector;
+    CRTProtocol::EProcessingActions rtProcessingActions = CRTProtocol::EProcessingActions::ProcessingExportMatlabFile;
+    CRTProtocol::EProcessingActions reprocessingActions = CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge;
 
     if (!protocol->SetGeneralSettings(
         &captureFrequency, &captureTime,
         &startOnExtTrig, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware,
-        &peProcessingActions, &peRtProcessingActions, &peReprocessingActions))
+        &processingActions, &rtProcessingActions, &reprocessingActions))
     {
         FAIL(protocol->GetErrorString());
     }

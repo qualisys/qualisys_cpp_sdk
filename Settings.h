@@ -653,36 +653,36 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT ISettingsSerializer {
         virtual ~ISettingsSerializer() = default;
 
-        virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-                                               const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO,
+        virtual std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
+                                               const bool* startOnExtTrig, const bool* pStartOnTrigNO,
                                                const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
-                                               const EProcessingActions* peProcessingActions,
-                                               const EProcessingActions* peRtProcessingActions,
-                                               const EProcessingActions* peReprocessingActions) = 0;
+                                               const EProcessingActions* processingActions,
+                                               const EProcessingActions* rtProcessingActions,
+                                               const EProcessingActions* reprocessingActions) = 0;
 
         virtual std::string SetExtTimeBaseSettings(
-            const bool* pbEnabled, const ESignalSource* peSignalSource,
-            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
-            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
-            const float* pfNominalFrequency, const bool* pbNegativeEdge,
-            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) = 0;
+            const bool* enabled, const ESignalSource* signalSource,
+            const bool* signalModePeriodic, const unsigned int* freqMultiplier,
+            const unsigned int* freqDivisor, const unsigned int* freqTolerance,
+            const float* nominalFrequency, const bool* negativeEdge,
+            const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout) = 0;
 
         virtual std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) = 0;
 
         virtual std::string SetCameraSettings(
-            const unsigned int pCameraId, const ECameraMode* peMode,
-            const float* pfMarkerExposure, const float* pfMarkerThreshold,
-            const int* pnOrientation) = 0;
+            const unsigned int pCameraId, const ECameraMode* mode,
+            const float* markerExposure, const float* markerThreshold,
+            const int* orientation) = 0;
 
         virtual std::string SetCameraVideoSettings(
             const unsigned int pCameraId, const EVideoResolution* videoResolution,
-            const EVideoAspectRatio* videoAspectRatio, const unsigned int* pnVideoFrequency,
-            const float* pfVideoExposure, const float* pfVideoFlashTime) = 0;
+            const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
+            const float* videoExposure, const float* videoFlashTime) = 0;
 
         virtual std::string SetCameraSyncOutSettings(
-            const unsigned int pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
-            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
-            const bool* pbSyncOutNegativePolarity) = 0;
+            const unsigned int pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+            const unsigned int* syncOutValue, const float* syncOutDutyCycle,
+            const bool* syncOutNegativePolarity) = 0;
 
         virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
                                                          const float pAperture) = 0;
@@ -693,9 +693,9 @@ namespace qualisys_cpp_sdk
         virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) = 0;
 
         virtual std::string SetImageSettings(
-            const unsigned int pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
-            const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
-            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) = 0;
+            const unsigned int pCameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+            const unsigned int* width, const unsigned int* height, const float* leftCrop,
+            const float* topCrop, const float* rightCrop, const float* bottomCrop) = 0;
 
         virtual std::string SetForceSettings(
             const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,

@@ -18,9 +18,9 @@ namespace qualisys_cpp_sdk {
         bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) override;
         bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) override;
     private:
-        std::uint32_t mnMajorVersion;
-        std::uint32_t mnMinorVersion;
-        char maErrorStr[1024];
+        std::uint32_t mMajorVersion;
+        std::uint32_t mMinorVersion;
+        char mErrorStr[1024];
         CMarkup oXML;
         bool CompareNoCase(std::string tStr1, const char* tStr2) const;
         static std::string ToLower(std::string str);
@@ -41,41 +41,41 @@ namespace qualisys_cpp_sdk {
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
         CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
         CMarkup oXML;
-        std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-            const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
-            const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) override;
+        std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
+            const bool* startOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
+            const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
-            const bool* pbEnabled, const ESignalSource* peSignalSource,
-            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
-            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
-            const float* pfNominalFrequency, const bool* pbNegativeEdge,
-            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) override;
+            const bool* enabled, const ESignalSource* signalSource,
+            const bool* signalModePeriodic, const unsigned int* freqMultiplier,
+            const unsigned int* freqDivisor, const unsigned int* freqTolerance,
+            const float* nominalFrequency, const bool* negativeEdge,
+            const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout) override;
 
         std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
         std::string SetCameraSettings(
-            const unsigned int pCameraId, const ECameraMode* peMode,
-            const float* pfMarkerExposure, const float* pfMarkerThreshold,
-            const int* pnOrientation) override;
+            const unsigned int pCameraId, const ECameraMode* mode,
+            const float* markerExposure, const float* markerThreshold,
+            const int* orientation) override;
 
         std::string SetCameraVideoSettings(
             const unsigned int pCameraId, const EVideoResolution* videoResolution,
-            const EVideoAspectRatio* videoAspectRatio, const unsigned int* pnVideoFrequency,
-            const float* pfVideoExposure, const float* pfVideoFlashTime) override;
+            const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
+            const float* videoExposure, const float* videoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(
-            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
-            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
-            const bool* pbSyncOutNegativePolarity) override;
+            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+            const unsigned int* syncOutValue, const float* syncOutDutyCycle,
+            const bool* syncOutNegativePolarity) override;
 
         std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) override;
         std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure, const float pCompensation) override;
         std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) override;
         std::string SetImageSettings(
-            const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
-            const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
-            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) override;
+            const unsigned int  pCameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+            const unsigned int* width, const unsigned int* height, const float* leftCrop,
+            const float* topCrop, const float* rightCrop, const float* bottomCrop) override;
 
         std::string SetForceSettings(
             const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
@@ -85,8 +85,8 @@ namespace qualisys_cpp_sdk {
         std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) override;
 
     private:
-        std::uint32_t mnMajorVersion;
-        std::uint32_t mnMinorVersion;
+        std::uint32_t mMajorVersion;
+        std::uint32_t mMinorVersion;
         void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool* pbValue, const char* tTrue = "True", const char* tFalse = "False");
         void AddXMLElementBool(CMarkup* oXML, const char* tTag, const bool bValue, const char* tTrue = "True", const char* tFalse = "False");
         void AddXMLElementInt(CMarkup* oXML, const char* tTag, const int* pnValue);

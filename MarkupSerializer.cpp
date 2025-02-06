@@ -90,7 +90,7 @@ void CMarkupSerializer::AddXMLElementDOF(CMarkup& xml, const std::string& name, 
     xml.AddElem(name.c_str());
     if (!std::isnan(degreeOfFreedoms.lowerBound) && !std::isnan(degreeOfFreedoms.upperBound))
     {
-        if (mnMajorVersion > 1 || mnMinorVersion > 21)
+        if (mMajorVersion > 1 || mMinorVersion > 21)
         {
             xml.IntoElem();
             xml.AddElem("Constraint");
@@ -99,7 +99,7 @@ void CMarkupSerializer::AddXMLElementDOF(CMarkup& xml, const std::string& name, 
         xml.AddAttrib("UpperBound", std::to_string(degreeOfFreedoms.upperBound).c_str());
     }
 
-    if (std::isnan(degreeOfFreedoms.lowerBound) || std::isnan(degreeOfFreedoms.upperBound) || (mnMajorVersion == 1 && mnMinorVersion < 22))
+    if (std::isnan(degreeOfFreedoms.lowerBound) || std::isnan(degreeOfFreedoms.upperBound) || (mMajorVersion == 1 && mMinorVersion < 22))
     {
         xml.IntoElem();
     }
@@ -286,7 +286,7 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 
 
 CMarkupDeserializer::CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion), maErrorStr{0}, oXML(pData)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(pData)
 {
 }
 
@@ -320,7 +320,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    if (mnMajorVersion > 1 || mnMinorVersion > 14)
+    if (mMajorVersion > 1 || mMinorVersion > 14)
     {
         if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", pGeneralSettings.startOnTrigNO))
         {
@@ -564,7 +564,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         &pGeneralSettings.rtProcessingActions,
         &pGeneralSettings.reprocessingActions
     };
-    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
         // ==================== Processing actions ====================
@@ -576,7 +576,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
         *processingActions[i] = ProcessingNone;
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 13)
+        if (mMajorVersion > 1 || mMinorVersion > 13)
         {
             if (!oXML.FindChildElem("PreProcessing2D"))
             {
@@ -650,7 +650,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingForceData);
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             if (!oXML.FindChildElem("GazeVector"))
             {
@@ -691,7 +691,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportMatlabFile);
             }
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 11)
+            if (mMajorVersion > 1 || mMinorVersion > 11)
             {
                 if (!oXML.FindChildElem("ExportAviFile"))
                 {
@@ -888,7 +888,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
             return false;
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             // ==================== Video frequency ====================
             if (!oXML.FindChildElem("Video_Frequency"))
@@ -1807,7 +1807,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
     {
         oXML.IntoElem();
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 20)
+        if (mMajorVersion > 1 || mMinorVersion > 20)
         {
             while (oXML.FindChildElem("Body"))
             {
@@ -1822,7 +1822,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                     return false;
                 }
                 // Enabled --- NOT(!) REQUIRED
-                TryReadSetEnabled(mnMajorVersion, mnMinorVersion, oXML, s6DOFBodySettings.enabled);
+                TryReadSetEnabled(mMajorVersion, mMinorVersion, oXML, s6DOFBodySettings.enabled);
                 if (!TryReadSetColor(oXML, s6DOFBodySettings.color)
                     || !TryReadSetMaxResidual(oXML, s6DOFBodySettings.maxResidual)
                     || !TryReadSetMinMarkersInBody(oXML, s6DOFBodySettings.minMarkersInBody)
@@ -1895,7 +1895,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                 p6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
             }
-            if (mnMajorVersion > 1 || mnMinorVersion > 15)
+            if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 { // Euler --- REQUIRED
@@ -2018,7 +2018,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
 
     oXML.IntoElem();
 
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if (mMajorVersion == 1 && mMinorVersion == 0)
     {
         sAnalogDevice.deviceID = 1;   // Always channel 1
         sAnalogDevice.name = "AnalogDevice";
@@ -2091,7 +2091,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
             }
             sAnalogDevice.frequency = atoi(oXML.GetChildData().c_str());
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 11)
+            if (mMajorVersion == 1 && mMinorVersion < 11)
             {
                 if (!oXML.FindChildElem("Unit"))
                 {
@@ -2124,7 +2124,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
             sAnalogDevice.maxRange = (float)atof(oXML.GetChildData().c_str());
             oXML.OutOfElem(); // Range
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 11)
+            if (mMajorVersion == 1 && mMinorVersion < 11)
             {
                 for (unsigned int i = 0; i < sAnalogDevice.channels; i++)
                 {
@@ -2391,7 +2391,7 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& pForceSetting
             oXML.IntoElem();
             int nRow = 0;
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 12)
+            if (mMajorVersion == 1 && mMinorVersion < 12)
             {
                 char strRow[16];
                 char strCol[16];
@@ -2596,7 +2596,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
     {
         xml.IntoElem();
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 20)
+        if (mMajorVersion > 1 || mMinorVersion > 20)
         {
             while (xml.FindElem("Skeleton"))
             {
@@ -2618,7 +2618,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
                 {
                     if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
                     {
-                        sprintf(maErrorStr, "Scale element parse error");
+                        sprintf(mErrorStr, "Scale element parse error");
                         return false;
                     }
                 }
@@ -2856,7 +2856,7 @@ bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrat
 
     if (!oXML.FindChildElem("calibration"))
     {
-        sprintf(maErrorStr, "Missing calibration element");
+        sprintf(mErrorStr, "Missing calibration element");
         return false;
     }
     oXML.IntoElem();
@@ -3041,14 +3041,14 @@ SRotation CMarkupDeserializer::DeserializeXMLRotation(CMarkup& xml, const std::s
 }
 
 CMarkupSerializer::CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
 }
 
-std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureFrequency,
-                                                  const float* pfCaptureTime, const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC,
-                                                  const bool* pStartOnTrigSoftware, const EProcessingActions* peProcessingActions,
-                                                  const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
+std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* captureFrequency,
+                                                  const float* captureTime, const bool* startOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC,
+                                                  const bool* pStartOnTrigSoftware, const EProcessingActions* processingActions,
+                                                  const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions)
 {
     CMarkup oXML;
 
@@ -3057,18 +3057,18 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
     oXML.AddElem("General");
     oXML.IntoElem();
 
-    if (pnCaptureFrequency)
+    if (captureFrequency)
     {
-        AddXMLElementUnsignedInt(&oXML, "Frequency", pnCaptureFrequency);
+        AddXMLElementUnsignedInt(&oXML, "Frequency", captureFrequency);
     }
-    if (pfCaptureTime)
+    if (captureTime)
     {
-        AddXMLElementFloat(&oXML, "Capture_Time", pfCaptureTime, 3);
+        AddXMLElementFloat(&oXML, "Capture_Time", captureTime, 3);
     }
-    if (pbStartOnExtTrig)
+    if (startOnExtTrig)
     {
-        AddXMLElementBool(&oXML, "Start_On_External_Trigger", pbStartOnExtTrig);
-        if (mnMajorVersion > 1 || mnMinorVersion > 14)
+        AddXMLElementBool(&oXML, "Start_On_External_Trigger", startOnExtTrig);
+        if (mMajorVersion > 1 || mMinorVersion > 14)
         {
             AddXMLElementBool(&oXML, "Start_On_Trigger_NO", pStartOnTrigNO);
             AddXMLElementBool(&oXML, "Start_On_Trigger_NC", pStartOnTrigNC);
@@ -3076,27 +3076,27 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
         }
     }
 
-    const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
-    const EProcessingActions* processingActions[3] = { peProcessingActions, peRtProcessingActions, peReprocessingActions };
+    const char* processingActionTags[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
+    const EProcessingActions* processingActionSets[3] = { processingActions, rtProcessingActions, reprocessingActions };
 
-    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
 
     for (auto i = 0; i < actionsCount; i++)
     {
-        if (processingActions[i])
+        if (processingActionSets[i])
         {
-            oXML.AddElem(processings[i]);
+            oXML.AddElem(processingActionTags[i]);
             oXML.IntoElem();
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 13)
+            if (mMajorVersion > 1 || mMinorVersion > 13)
             {
-                AddXMLElementBool(&oXML, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0);
+                AddXMLElementBool(&oXML, "PreProcessing2D", (*processingActionSets[i] & ProcessingPreProcess2D) != 0);
             }
-            if (*processingActions[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
+            if (*processingActionSets[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
             {
                 oXML.AddElem("Tracking", "2D");
             }
-            else if (*processingActions[i] & ProcessingTracking3D)
+            else if (*processingActionSets[i] & ProcessingTracking3D)
             {
                 oXML.AddElem("Tracking", "3D");
             }
@@ -3106,19 +3106,19 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
             }
             if (i != 1) //Not RtProcessingSettings
             {
-                AddXMLElementBool(&oXML, "TwinSystemMerge", (*processingActions[i] & ProcessingTwinSystemMerge) != 0);
-                AddXMLElementBool(&oXML, "SplineFill", (*processingActions[i] & ProcessingSplineFill) != 0);
+                AddXMLElementBool(&oXML, "TwinSystemMerge", (*processingActionSets[i] & ProcessingTwinSystemMerge) != 0);
+                AddXMLElementBool(&oXML, "SplineFill", (*processingActionSets[i] & ProcessingSplineFill) != 0);
             }
-            AddXMLElementBool(&oXML, "AIM", (*processingActions[i] & ProcessingAIM) != 0);
-            AddXMLElementBool(&oXML, "Track6DOF", (*processingActions[i] & Processing6DOFTracking) != 0);
-            AddXMLElementBool(&oXML, "ForceData", (*processingActions[i] & ProcessingForceData) != 0);
-            AddXMLElementBool(&oXML, "GazeVector", (*processingActions[i] & ProcessingGazeVector) != 0);
+            AddXMLElementBool(&oXML, "AIM", (*processingActionSets[i] & ProcessingAIM) != 0);
+            AddXMLElementBool(&oXML, "Track6DOF", (*processingActionSets[i] & Processing6DOFTracking) != 0);
+            AddXMLElementBool(&oXML, "ForceData", (*processingActionSets[i] & ProcessingForceData) != 0);
+            AddXMLElementBool(&oXML, "GazeVector", (*processingActionSets[i] & ProcessingGazeVector) != 0);
             if (i != 1) //Not RtProcessingSettings
             {
-                AddXMLElementBool(&oXML, "ExportTSV", (*processingActions[i] & ProcessingExportTSV) != 0);
-                AddXMLElementBool(&oXML, "ExportC3D", (*processingActions[i] & ProcessingExportC3D) != 0);
-                AddXMLElementBool(&oXML, "ExportMatlabFile", (*processingActions[i] & ProcessingExportMatlabFile) != 0);
-                AddXMLElementBool(&oXML, "ExportAviFile", (*processingActions[i] & ProcessingExportAviFile) != 0);
+                AddXMLElementBool(&oXML, "ExportTSV", (*processingActionSets[i] & ProcessingExportTSV) != 0);
+                AddXMLElementBool(&oXML, "ExportC3D", (*processingActionSets[i] & ProcessingExportC3D) != 0);
+                AddXMLElementBool(&oXML, "ExportMatlabFile", (*processingActionSets[i] & ProcessingExportMatlabFile) != 0);
+                AddXMLElementBool(&oXML, "ExportAviFile", (*processingActionSets[i] & ProcessingExportAviFile) != 0);
             }
             oXML.OutOfElem(); // Processing_Actions
         }
@@ -3129,10 +3129,10 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, const ESignalSource* peSignalSource,
-    const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier, const unsigned int* pnFreqDivisor,
-    const unsigned int* pnFreqTolerance, const float* pfNominalFrequency, const bool* pbNegativeEdge,
-    const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout)
+std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource,
+    const bool* signalModePeriodic, const unsigned int* freqMultiplier, const unsigned int* freqDivisor,
+    const unsigned int* freqTolerance, const float* nominalFrequency, const bool* negativeEdge,
+    const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
 {
     CMarkup oXML;
 
@@ -3143,11 +3143,11 @@ std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, con
     oXML.AddElem("External_Time_Base");
     oXML.IntoElem();
 
-    AddXMLElementBool(&oXML, "Enabled", pbEnabled);
+    AddXMLElementBool(&oXML, "Enabled", enabled);
 
-    if (peSignalSource)
+    if (signalSource)
     {
-        switch (*peSignalSource)
+        switch (*signalSource)
         {
         case SourceControlPort:
             oXML.AddElem("Signal_Source", "Control port");
@@ -3167,26 +3167,26 @@ std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, con
         }
     }
 
-    AddXMLElementBool(&oXML, "Signal_Mode", pbSignalModePeriodic, "Periodic", "Non-periodic");
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Multiplier", pnFreqMultiplier);
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Divisor", pnFreqDivisor);
-    AddXMLElementUnsignedInt(&oXML, "Frequency_Tolerance", pnFreqTolerance);
+    AddXMLElementBool(&oXML, "Signal_Mode", signalModePeriodic, "Periodic", "Non-periodic");
+    AddXMLElementUnsignedInt(&oXML, "Frequency_Multiplier", freqMultiplier);
+    AddXMLElementUnsignedInt(&oXML, "Frequency_Divisor", freqDivisor);
+    AddXMLElementUnsignedInt(&oXML, "Frequency_Tolerance", freqTolerance);
 
-    if (pfNominalFrequency)
+    if (nominalFrequency)
     {
-        if (*pfNominalFrequency < 0)
+        if (*nominalFrequency < 0)
         {
             oXML.AddElem("Nominal_Frequency", "None");
         }
         else
         {
-            AddXMLElementFloat(&oXML, "Nominal_Frequency", pfNominalFrequency, 3);
+            AddXMLElementFloat(&oXML, "Nominal_Frequency", nominalFrequency, 3);
         }
     }
 
-    AddXMLElementBool(&oXML, "Signal_Edge", pbNegativeEdge, "Negative", "Positive");
-    AddXMLElementUnsignedInt(&oXML, "Signal_Shutter_Delay", pnSignalShutterDelay);
-    AddXMLElementFloat(&oXML, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3);
+    AddXMLElementBool(&oXML, "Signal_Edge", negativeEdge, "Negative", "Positive");
+    AddXMLElementUnsignedInt(&oXML, "Signal_Shutter_Delay", signalShutterDelay);
+    AddXMLElementFloat(&oXML, "Non_Periodic_Timeout", nonPeriodicTimeout, 3);
 
     oXML.OutOfElem(); // External_Time_Base            
     oXML.OutOfElem(); // General
@@ -3230,8 +3230,8 @@ std::string CMarkupSerializer::SetExtTimestampSettings(const SSettingsGeneralExt
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* peMode,
-    const float* pfMarkerExposure, const float* pfMarkerThreshold, const int* pnOrientation)
+std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, const ECameraMode* mode,
+    const float* markerExposure, const float* markerThreshold, const int* orientation)
 {
     CMarkup oXML;
 
@@ -3245,9 +3245,9 @@ std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, c
 
     AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
 
-    if (peMode)
+    if (mode)
     {
-        switch (*peMode)
+        switch (*mode)
         {
         case ModeMarker:
             oXML.AddElem("Mode", "Marker");
@@ -3260,9 +3260,9 @@ std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, c
             break;
         }
     }
-    AddXMLElementFloat(&oXML, "Marker_Exposure", pfMarkerExposure);
-    AddXMLElementFloat(&oXML, "Marker_Threshold", pfMarkerThreshold);
-    AddXMLElementInt(&oXML, "Orientation", pnOrientation);
+    AddXMLElementFloat(&oXML, "Marker_Exposure", markerExposure);
+    AddXMLElementFloat(&oXML, "Marker_Threshold", markerThreshold);
+    AddXMLElementInt(&oXML, "Orientation", orientation);
 
     oXML.OutOfElem(); // Camera
     oXML.OutOfElem(); // General
@@ -3273,7 +3273,7 @@ std::string CMarkupSerializer::SetCameraSettings(const unsigned int pCameraId, c
 
 std::string CMarkupSerializer::SetCameraVideoSettings(const unsigned int pCameraId,
     const EVideoResolution* videoResolution, const EVideoAspectRatio* videoAspectRatio,
-    const unsigned int* pnVideoFrequency, const float* pfVideoExposure, const float* pfVideoFlashTime)
+    const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
 {
     CMarkup oXML;
     oXML.AddElem("QTM_Settings");
@@ -3325,9 +3325,9 @@ std::string CMarkupSerializer::SetCameraVideoSettings(const unsigned int pCamera
             break;
         }
     }
-    AddXMLElementUnsignedInt(&oXML, "Video_Frequency", pnVideoFrequency);
-    AddXMLElementFloat(&oXML, "Video_Exposure", pfVideoExposure);
-    AddXMLElementFloat(&oXML, "Video_Flash_Time", pfVideoFlashTime);
+    AddXMLElementUnsignedInt(&oXML, "Video_Frequency", videoFrequency);
+    AddXMLElementFloat(&oXML, "Video_Exposure", videoExposure);
+    AddXMLElementFloat(&oXML, "Video_Flash_Time", videoFlashTime);
 
     oXML.OutOfElem(); // Camera
     oXML.OutOfElem(); // General
@@ -3337,8 +3337,8 @@ std::string CMarkupSerializer::SetCameraVideoSettings(const unsigned int pCamera
 }
 
 std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCameraId, const unsigned int portNumber,
-    const ESyncOutFreqMode* peSyncOutMode, const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
-    const bool* pbSyncOutNegativePolarity)
+    const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle,
+    const bool* syncOutNegativePolarity)
 {
     CMarkup oXML;
     oXML.AddElem("QTM_Settings");
@@ -3352,14 +3352,14 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
     AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
 
     int port = portNumber - 1;
-    if (((port == 0 || port == 1) && peSyncOutMode) || (port == 2))
+    if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
     {
         oXML.AddElem(port == 0 ? "Sync_Out" : (port == 1 ? "Sync_Out2" : "Sync_Out_MT"));
         oXML.IntoElem();
 
         if (port == 0 || port == 1)
         {
-            switch (*peSyncOutMode)
+            switch (*syncOutMode)
             {
             case ModeShutterOut:
                 oXML.AddElem("Mode", "Shutter out");
@@ -3386,24 +3386,24 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
                 return false; // Should never happen
             }
 
-            if (*peSyncOutMode == ModeMultiplier ||
-                *peSyncOutMode == ModeDivisor ||
-                *peSyncOutMode == ModeIndependentFreq)
+            if (*syncOutMode == ModeMultiplier ||
+                *syncOutMode == ModeDivisor ||
+                *syncOutMode == ModeIndependentFreq)
             {
-                if (pnSyncOutValue)
+                if (syncOutValue)
                 {
-                    AddXMLElementUnsignedInt(&oXML, "Value", pnSyncOutValue);
+                    AddXMLElementUnsignedInt(&oXML, "Value", syncOutValue);
                 }
-                if (pfSyncOutDutyCycle)
+                if (syncOutDutyCycle)
                 {
-                    AddXMLElementFloat(&oXML, "Duty_Cycle", pfSyncOutDutyCycle, 3);
+                    AddXMLElementFloat(&oXML, "Duty_Cycle", syncOutDutyCycle, 3);
                 }
             }
         }
-        if (pbSyncOutNegativePolarity && (port == 2 ||
-            (peSyncOutMode && *peSyncOutMode != ModeFixed100Hz)))
+        if (syncOutNegativePolarity && (port == 2 ||
+            (syncOutMode && *syncOutMode != ModeFixed100Hz)))
         {
-            AddXMLElementBool(&oXML, "Signal_Polarity", pbSyncOutNegativePolarity, "Negative", "Positive");
+            AddXMLElementBool(&oXML, "Signal_Polarity", syncOutNegativePolarity, "Negative", "Positive");
         }
         oXML.OutOfElem(); // Sync_Out
     }
@@ -3498,9 +3498,9 @@ std::string CMarkupSerializer::SetCameraAutoWhiteBalance(const unsigned int pCam
     return oXML.GetDoc();
 }
 
-std::string CMarkupSerializer::SetImageSettings(const unsigned int pCameraId, const bool* pbEnable,
-    const CRTPacket::EImageFormat* peFormat, const unsigned int* pnWidth, const unsigned int* pnHeight,
-    const float* pfLeftCrop, const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop)
+std::string CMarkupSerializer::SetImageSettings(const unsigned int pCameraId, const bool* enable,
+    const CRTPacket::EImageFormat* format, const unsigned int* width, const unsigned int* height,
+    const float* leftCrop, const float* topCrop, const float* rightCrop, const float* bottomCrop)
 {
     CMarkup oXML;
 
@@ -3514,11 +3514,11 @@ std::string CMarkupSerializer::SetImageSettings(const unsigned int pCameraId, co
 
     AddXMLElementUnsignedInt(&oXML, "ID", &pCameraId);
 
-    AddXMLElementBool(&oXML, "Enabled", pbEnable);
+    AddXMLElementBool(&oXML, "Enabled", enable);
 
-    if (peFormat)
+    if (format)
     {
-        switch (*peFormat)
+        switch (*format)
         {
         case CRTPacket::FormatRawGrayscale:
             oXML.AddElem("Format", "RAWGrayscale");
@@ -3534,12 +3534,12 @@ std::string CMarkupSerializer::SetImageSettings(const unsigned int pCameraId, co
             break;
         }
     }
-    AddXMLElementUnsignedInt(&oXML, "Width", pnWidth);
-    AddXMLElementUnsignedInt(&oXML, "Height", pnHeight);
-    AddXMLElementFloat(&oXML, "Left_Crop", pfLeftCrop);
-    AddXMLElementFloat(&oXML, "Top_Crop", pfTopCrop);
-    AddXMLElementFloat(&oXML, "Right_Crop", pfRightCrop);
-    AddXMLElementFloat(&oXML, "Bottom_Crop", pfBottomCrop);
+    AddXMLElementUnsignedInt(&oXML, "Width", width);
+    AddXMLElementUnsignedInt(&oXML, "Height", height);
+    AddXMLElementFloat(&oXML, "Left_Crop", leftCrop);
+    AddXMLElementFloat(&oXML, "Top_Crop", topCrop);
+    AddXMLElementFloat(&oXML, "Right_Crop", rightCrop);
+    AddXMLElementFloat(&oXML, "Bottom_Crop", bottomCrop);
 
     oXML.OutOfElem(); // Camera
     oXML.OutOfElem(); // Image
@@ -3560,7 +3560,7 @@ std::string CMarkupSerializer::SetForceSettings(const unsigned int pPlateId, con
     oXML.AddElem("Plate");
     oXML.IntoElem();
 
-    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+    if (mMajorVersion > 1 || mMinorVersion > 7)
     {
         AddXMLElementUnsignedInt(&oXML, "Plate_ID", &pPlateId);
     }
@@ -3707,7 +3707,7 @@ std::string CMarkupSerializer::SetSkeletonSettings(const std::vector<SSettingsSk
         xml.AddElem("Skeleton");
         xml.SetAttrib("Name", skeleton.name.c_str());
         xml.IntoElem();
-        if (mnMajorVersion == 1 && mnMinorVersion < 22)
+        if (mMajorVersion == 1 && mMinorVersion < 22)
         {
             xml.AddElem("Solver", skeleton.rootSegment.solver.c_str());
         }
@@ -3721,7 +3721,7 @@ std::string CMarkupSerializer::SetSkeletonSettings(const std::vector<SSettingsSk
                 xml.SetAttrib("Name", segment.name.c_str());
                 xml.IntoElem();
                 {
-                    if (mnMajorVersion > 1 || mnMinorVersion > 21)
+                    if (mMajorVersion > 1 || mMinorVersion > 21)
                     {
                         xml.AddElem("Solver", segment.solver.c_str());
                     }
