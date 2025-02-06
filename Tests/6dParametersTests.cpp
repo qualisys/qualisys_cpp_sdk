@@ -9,12 +9,12 @@ namespace
     {
         if (lhs.name != rhs.name ||
             lhs.opacity != rhs.opacity ||
-            lhs.position.x != rhs.position.x ||
-            lhs.position.y != rhs.position.y ||
-            lhs.position.z != rhs.position.z ||
-            lhs.rotation.x != rhs.rotation.x ||
-            lhs.rotation.y != rhs.rotation.y ||
-            lhs.rotation.z != rhs.rotation.z ||
+            lhs.position.fX != rhs.position.fX ||
+            lhs.position.fY != rhs.position.fY ||
+            lhs.position.fZ != rhs.position.fZ ||
+            lhs.rotation.fX != rhs.rotation.fX ||
+            lhs.rotation.fY != rhs.rotation.fY ||
+            lhs.rotation.fZ != rhs.rotation.fZ ||
             lhs.scale != rhs.scale)
         {
             return false;
@@ -24,9 +24,9 @@ namespace
 
     bool OriginEqualityOperator(const CRTProtocol::SOrigin& lhs, const CRTProtocol::SOrigin& rhs)
     {
-        if (lhs.position.x != rhs.position.x ||
-            lhs.position.y != rhs.position.y ||
-            lhs.position.z != rhs.position.z ||
+        if (lhs.position.fX != rhs.position.fX ||
+            lhs.position.fY != rhs.position.fY ||
+            lhs.position.fZ != rhs.position.fZ ||
             lhs.relativeBody != rhs.relativeBody ||
             lhs.rotation[0] != rhs.rotation[0] ||
             lhs.rotation[1] != rhs.rotation[1] ||
@@ -55,9 +55,9 @@ namespace
         for (std::size_t i = 0; i < lhs.size(); i++)
         {
             if (lhs[i].name != rhs[i].name ||
-                lhs[i].x != rhs[i].x ||
-                lhs[i].y != rhs[i].y ||
-                lhs[i].z != rhs[i].z ||
+                lhs[i].fX != rhs[i].fX ||
+                lhs[i].fX != rhs[i].fX ||
+                lhs[i].fX != rhs[i].fX ||
                 lhs[i].virtual_ != rhs[i].virtual_ ||
                 lhs[i].physicalId != rhs[i].physicalId)
             {

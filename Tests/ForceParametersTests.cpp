@@ -68,43 +68,43 @@ namespace
             }
         };
 
-        CHECK_EQ("N", forceSettings.unitForce);
-        CHECK_EQ("mm", forceSettings.unitLength);
-        CHECK_EQ(2, forceSettings.forcePlates.size());
+        CHECK_EQ("N", forceSettings.oUnitForce);
+        CHECK_EQ("mm", forceSettings.oUnitLength);
+        CHECK_EQ(2, forceSettings.vsForcePlates.size());
 
-        for (std::size_t i = 0; i < forceSettings.forcePlates.size(); i++)
+        for (std::size_t i = 0; i < forceSettings.vsForcePlates.size(); i++)
         {
-            CHECK_EQ(expectedPlates[i].id, forceSettings.forcePlates[i].id);
-            CHECK_EQ(expectedPlates[i].analogDeviceID, forceSettings.forcePlates[i].analogDeviceID);
-            CHECK_EQ(expectedPlates[i].type, forceSettings.forcePlates[i].type);
-            CHECK_EQ(expectedPlates[i].name, forceSettings.forcePlates[i].name);
-            CHECK_EQ(expectedPlates[i].frequency, forceSettings.forcePlates[i].frequency);
-            CHECK_EQ(expectedPlates[i].length, forceSettings.forcePlates[i].length);
-            CHECK_EQ(expectedPlates[i].width, forceSettings.forcePlates[i].width);
+            CHECK_EQ(expectedPlates[i].nID, forceSettings.vsForcePlates[i].nID);
+            CHECK_EQ(expectedPlates[i].nAnalogDeviceID, forceSettings.vsForcePlates[i].nAnalogDeviceID);
+            CHECK_EQ(expectedPlates[i].oType, forceSettings.vsForcePlates[i].oType);
+            CHECK_EQ(expectedPlates[i].oName, forceSettings.vsForcePlates[i].oName);
+            CHECK_EQ(expectedPlates[i].nFrequency, forceSettings.vsForcePlates[i].nFrequency);
+            CHECK_EQ(expectedPlates[i].fLength, forceSettings.vsForcePlates[i].fLength);
+            CHECK_EQ(expectedPlates[i].fWidth, forceSettings.vsForcePlates[i].fWidth);
             for (std::size_t j = 0; j < 4; j++)
             {
-                CHECK_EQ(expectedPlates[i].corner[j].x, forceSettings.forcePlates[i].corner[j].x);
-                CHECK_EQ(expectedPlates[i].corner[j].y, forceSettings.forcePlates[i].corner[j].y);
-                CHECK_EQ(expectedPlates[i].corner[j].z, forceSettings.forcePlates[i].corner[j].z);
+                CHECK_EQ(expectedPlates[i].asCorner[j].fX, forceSettings.vsForcePlates[i].asCorner[j].fX);
+                CHECK_EQ(expectedPlates[i].asCorner[j].fY, forceSettings.vsForcePlates[i].asCorner[j].fY);
+                CHECK_EQ(expectedPlates[i].asCorner[j].fZ, forceSettings.vsForcePlates[i].asCorner[j].fZ);
             }
-            CHECK_EQ(expectedPlates[i].origin.x, forceSettings.forcePlates[i].origin.x);
-            CHECK_EQ(expectedPlates[i].origin.y, forceSettings.forcePlates[i].origin.y);
-            CHECK_EQ(expectedPlates[i].origin.z, forceSettings.forcePlates[i].origin.z);
+            CHECK_EQ(expectedPlates[i].sOrigin.fX, forceSettings.vsForcePlates[i].sOrigin.fX);
+            CHECK_EQ(expectedPlates[i].sOrigin.fY, forceSettings.vsForcePlates[i].sOrigin.fY);
+            CHECK_EQ(expectedPlates[i].sOrigin.fZ, forceSettings.vsForcePlates[i].sOrigin.fZ);
             for (std::size_t j = 0; j < 8; j++)
             {
-                CHECK_EQ(((8 * i) + (j + 1)), forceSettings.forcePlates[i].channels[j].channelNumber);
-                CHECK_EQ(expectedPlates[i].channels[j].conversionFactor, forceSettings.forcePlates[i].channels[j].conversionFactor);
+                CHECK_EQ(((8 * i) + (j + 1)), forceSettings.vsForcePlates[i].vChannels[j].nChannelNumber);
+                CHECK_EQ(expectedPlates[i].vChannels[j].fConversionFactor, forceSettings.vsForcePlates[i].vChannels[j].fConversionFactor);
             }
-            CHECK_EQ(expectedPlates[i].validCalibrationMatrix, forceSettings.forcePlates[i].validCalibrationMatrix);
-            for (std::size_t j = 0; j < expectedPlates[i].calibrationMatrixRows; j++)
+            CHECK_EQ(expectedPlates[i].bValidCalibrationMatrix, forceSettings.vsForcePlates[i].bValidCalibrationMatrix);
+            for (std::size_t j = 0; j < expectedPlates[i].nCalibrationMatrixRows; j++)
             {
-                for (std::size_t k = 0; k < expectedPlates[i].calibrationMatrixColumns; k++)
+                for (std::size_t k = 0; k < expectedPlates[i].nCalibrationMatrixColumns; k++)
                 {
-                    CHECK_EQ(expectedPlates[i].calibrationMatrix[j][k], forceSettings.forcePlates[i].calibrationMatrix[j][k]);
+                    CHECK_EQ(expectedPlates[i].afCalibrationMatrix[j][k], forceSettings.vsForcePlates[i].afCalibrationMatrix[j][k]);
                 }
             }
-            CHECK_EQ(expectedPlates[i].calibrationMatrixRows, forceSettings.forcePlates[i].calibrationMatrixRows);
-            CHECK_EQ(expectedPlates[i].calibrationMatrixColumns, forceSettings.forcePlates[i].calibrationMatrixColumns);
+            CHECK_EQ(expectedPlates[i].nCalibrationMatrixRows, forceSettings.vsForcePlates[i].nCalibrationMatrixRows);
+            CHECK_EQ(expectedPlates[i].nCalibrationMatrixColumns, forceSettings.vsForcePlates[i].nCalibrationMatrixColumns);
         }
 
         return true;
@@ -117,15 +117,15 @@ TEST_CASE("SetSettingsForceTest")
 
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
-    unsigned int plateID = 999;
-    CRTProtocol::SPoint corner1 = { 1.0f, 2.0f, 3.0f };
-    CRTProtocol::SPoint corner2 = { 4.0f, 5.0f, 6.0f };
-    CRTProtocol::SPoint corner3 = { 7.0f, 8.0f, 9.0f };
-    CRTProtocol::SPoint corner4 = { 10.0f, 11.0f, 12.0f };
+    unsigned int nPlateID = 999;
+    CRTProtocol::SPoint psCorner1 = { 1.0f, 2.0f, 3.0f };
+    CRTProtocol::SPoint psCorner2 = { 4.0f, 5.0f, 6.0f };
+    CRTProtocol::SPoint psCorner3 = { 7.0f, 8.0f, 9.0f };
+    CRTProtocol::SPoint psCorner4 = { 10.0f, 11.0f, 12.0f };
 
     if (!protocol->SetForceSettings(
-        plateID, &corner1, &corner2,
-        &corner3, &corner4))
+        nPlateID, &psCorner1, &psCorner2,
+        &psCorner3, &psCorner4))
     {
         FAIL(protocol->GetErrorString());
     }

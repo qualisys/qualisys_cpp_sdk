@@ -25,7 +25,7 @@ namespace
 
         for (std::size_t i = 0; i < labels3D.size(); i++)
         {
-            CHECK_EQ(labels3D[i].name, expectedLabels[i]);
+            CHECK_EQ(labels3D[i].oName, expectedLabels[i]);
         }
     }
 

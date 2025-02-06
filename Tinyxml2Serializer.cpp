@@ -328,10 +328,10 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
     tinyxml2::XMLElement* timeStampElem = document.NewElement("External_Timestamp");
     generalElem->InsertEndChild(timeStampElem);
 
-    AddXMLElementBool(*timeStampElem, "Enabled", timestampSettings.enabled, document);
+    AddXMLElementBool(*timeStampElem, "Enabled", timestampSettings.bEnabled, document);
 
     tinyxml2::XMLElement* typeElem = document.NewElement("Type");
-    switch (timestampSettings.type)
+    switch (timestampSettings.nType)
     {
     case ETimestampType::Timestamp_SMPTE:
         typeElem->SetText("SMPTE");
@@ -347,7 +347,7 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
     }
     timeStampElem->InsertEndChild(typeElem);
 
-    AddXMLElementUnsignedInt(*timeStampElem, "Frequency", timestampSettings.frequency, document);
+    AddXMLElementUnsignedInt(*timeStampElem, "Frequency", timestampSettings.nFrequency, document);
 
     tinyxml2::XMLPrinter printer;
     document.Print(&printer);
@@ -730,9 +730,9 @@ std::string CTinyxml2Serializer::SetForceSettings(const unsigned int plateId, co
                 tinyxml2::XMLElement* cornerElem = document.NewElement(name);
                 plateElem->InsertEndChild(cornerElem);
 
-                AddXMLElementFloat(*cornerElem, "X", &(pCorner->x), 6, document);
-                AddXMLElementFloat(*cornerElem, "Y", &(pCorner->y), 6, document);
-                AddXMLElementFloat(*cornerElem, "Z", &(pCorner->z), 6, document);
+                AddXMLElementFloat(*cornerElem, "X", &(pCorner->fX), 6, document);
+                AddXMLElementFloat(*cornerElem, "Y", &(pCorner->fY), 6, document);
+                AddXMLElementFloat(*cornerElem, "Z", &(pCorner->fZ), 6, document);
             }
         };
 
@@ -800,15 +800,15 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
             meshElem->InsertEndChild(meshNameElem);
 
             auto* positionElem = document.NewElement("Position");
-            positionElem->SetAttribute("X", std::to_string(body.mesh.position.x).c_str());
-            positionElem->SetAttribute("Y", std::to_string(body.mesh.position.y).c_str());
-            positionElem->SetAttribute("Z", std::to_string(body.mesh.position.z).c_str());
+            positionElem->SetAttribute("X", std::to_string(body.mesh.position.fX).c_str());
+            positionElem->SetAttribute("Y", std::to_string(body.mesh.position.fY).c_str());
+            positionElem->SetAttribute("Z", std::to_string(body.mesh.position.fZ).c_str());
             meshElem->InsertEndChild(positionElem);
 
             auto* rotationElem = document.NewElement("Rotation");
-            rotationElem->SetAttribute("X", std::to_string(body.mesh.rotation.x).c_str());
-            rotationElem->SetAttribute("Y", std::to_string(body.mesh.rotation.y).c_str());
-            rotationElem->SetAttribute("Z", std::to_string(body.mesh.rotation.z).c_str());
+            rotationElem->SetAttribute("X", std::to_string(body.mesh.rotation.fX).c_str());
+            rotationElem->SetAttribute("Y", std::to_string(body.mesh.rotation.fY).c_str());
+            rotationElem->SetAttribute("Z", std::to_string(body.mesh.rotation.fZ).c_str());
             meshElem->InsertEndChild(rotationElem);
 
             auto* scaleElem = document.NewElement("Scale");
@@ -828,9 +828,9 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
             for (const auto& point : body.points)
             {
                 auto* pointElem = document.NewElement("Point");
-                pointElem->SetAttribute("X", std::to_string(point.x).c_str());
-                pointElem->SetAttribute("Y", std::to_string(point.y).c_str());
-                pointElem->SetAttribute("Z", std::to_string(point.z).c_str());
+                pointElem->SetAttribute("X", std::to_string(point.fX).c_str());
+                pointElem->SetAttribute("Y", std::to_string(point.fY).c_str());
+                pointElem->SetAttribute("Z", std::to_string(point.fZ).c_str());
                 pointElem->SetAttribute("Virtual", point.virtual_ ? "1" : "0");
                 pointElem->SetAttribute("PhysicalId", point.physicalId);
                 pointElem->SetAttribute("Name", point.name.c_str());
@@ -840,9 +840,9 @@ std::string CTinyxml2Serializer::Set6DOFBodySettings(const std::vector<SSettings
 
         auto* dataOriginElem = document.NewElement("Data_origin");
         dataOriginElem->SetText(std::to_string(body.origin.type).c_str());
-        dataOriginElem->SetAttribute("X", std::to_string(body.origin.position.x).c_str());
-        dataOriginElem->SetAttribute("Y", std::to_string(body.origin.position.y).c_str());
-        dataOriginElem->SetAttribute("Z", std::to_string(body.origin.position.z).c_str());
+        dataOriginElem->SetAttribute("X", std::to_string(body.origin.position.fX).c_str());
+        dataOriginElem->SetAttribute("Y", std::to_string(body.origin.position.fY).c_str());
+        dataOriginElem->SetAttribute("Z", std::to_string(body.origin.position.fZ).c_str());
         dataOriginElem->SetAttribute("Relative_body", body.origin.relativeBody);
         bodyElem->InsertEndChild(dataOriginElem);
 

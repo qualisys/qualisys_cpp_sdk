@@ -11,20 +11,20 @@ namespace
         std::vector<std::string> expectedUnits = { "newtons", "newtons", "newtons", "newtonmetre", "newtonmetre", "newtonmetre", "", "", "", "" };
 
         CHECK_EQ(1, analogSettings.size());
-        CHECK_EQ(1u, analogSettings[0].deviceID);
-        CHECK_EQ(10u, analogSettings[0].channels);
-        CHECK_EQ("Force plate 1", analogSettings[0].name);
+        CHECK_EQ(1u, analogSettings[0].nDeviceID);
+        CHECK_EQ(10u, analogSettings[0].nChannels);
+        CHECK_EQ("Force plate 1", analogSettings[0].oName);
 
-        for (std::size_t i = 0; i < analogSettings[0].labels.size(); i++)
+        for (std::size_t i = 0; i < analogSettings[0].voLabels.size(); i++)
         {
-            CHECK_EQ(expectedLabels[i], analogSettings[0].labels[i]);
-            CHECK_EQ(expectedUnits[i], analogSettings[0].units[i]);
+            CHECK_EQ(expectedLabels[i], analogSettings[0].voLabels[i]);
+            CHECK_EQ(expectedUnits[i], analogSettings[0].voUnits[i]);
         }
 
-        CHECK_EQ(100u, analogSettings[0].frequency);
-        CHECK_EQ("", analogSettings[0].unit);
-        CHECK_EQ(0.0f, analogSettings[0].minRange);
-        CHECK_EQ(0.0f, analogSettings[0].maxRange);
+        CHECK_EQ(100u, analogSettings[0].nFrequency);
+        CHECK_EQ("", analogSettings[0].oUnit);
+        CHECK_EQ(0.0f, analogSettings[0].fMinRange);
+        CHECK_EQ(0.0f, analogSettings[0].fMaxRange);
 
         return true;
     }

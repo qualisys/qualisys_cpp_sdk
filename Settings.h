@@ -141,17 +141,17 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT SPoint
     {
-        float x;
-        float y;
-        float z;
+        float fX;
+        float fY;
+        float fZ;
     };
 
     struct DLL_EXPORT SBodyPoint
     {
         std::string name;
-        float x;
-        float y;
-        float z;
+        float fX;
+        float fY;
+        float fZ;
         bool  virtual_;
         uint32_t physicalId;
     };
@@ -160,56 +160,56 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT SDiscoverResponse
     {
         char           message[128];
-        unsigned int   addr;
-        unsigned short basePort;
+        unsigned int   nAddr;
+        unsigned short nBasePort;
     };
 
     struct DLL_EXPORT SSettingsGeneralCamera
     {
-        unsigned int id;
-        ECameraModel model;
-        bool         underwater;
-        bool         supportsHwSync;
-        unsigned int serial;
-        ECameraMode  mode;
-        EVideoResolution videoResolution;
-        EVideoAspectRatio videoAspectRatio;
-        unsigned int videoFrequency;
-        unsigned int videoExposure;      // Micro seconds
-        unsigned int videoExposureMin;   // Micro seconds
-        unsigned int videoExposureMax;   // Micro seconds
-        unsigned int videoFlashTime;     // Micro seconds
-        unsigned int videoFlashTimeMin;  // Micro seconds
-        unsigned int videoFlashTimeMax;  // Micro seconds
-        unsigned int markerExposure;     // Micro seconds
-        unsigned int markerExposureMin;  // Micro seconds
-        unsigned int markerExposureMax;  // Micro seconds
-        unsigned int markerThreshold;
-        unsigned int markerThresholdMin;
-        unsigned int markerThresholdMax;
-        float        positionX;
-        float        positionY;
-        float        positionZ;
-        float        positionRotMatrix[3][3];
-        unsigned int orientation;             // Degrees
-        unsigned int markerResolutionWidth;   // Sub pixels
-        unsigned int markerResolutionHeight;  // Sub pixels
-        unsigned int videoResolutionWidth;    // Pixels
-        unsigned int videoResolutionHeight;   // Pixels
-        unsigned int markerFOVLeft;           // Pixels
-        unsigned int markerFOVTop;            // Pixels
-        unsigned int markerFOVRight;          // Pixels
-        unsigned int markerFOVBottom;         // Pixels
-        unsigned int videoFOVLeft;            // Pixels
-        unsigned int videoFOVTop;             // Pixels
-        unsigned int videoFOVRight;           // Pixels
-        unsigned int videoFOVBottom;          // Pixels
-        ESyncOutFreqMode syncOutMode[2];
-        unsigned int syncOutValue[2];
-        float        syncOutDutyCycle[2];     // Percent
-        bool         syncOutNegativePolarity[3];
-        float        focus;
-        float        aperture;
+        unsigned int nID;
+        ECameraModel eModel;
+        bool         bUnderwater;
+        bool         bSupportsHwSync;
+        unsigned int nSerial;
+        ECameraMode  eMode;
+        EVideoResolution eVideoResolution;
+        EVideoAspectRatio eVideoAspectRatio;
+        unsigned int nVideoFrequency;
+        unsigned int nVideoExposure;      // Micro seconds
+        unsigned int nVideoExposureMin;   // Micro seconds
+        unsigned int nVideoExposureMax;   // Micro seconds
+        unsigned int nVideoFlashTime;     // Micro seconds
+        unsigned int nVideoFlashTimeMin;  // Micro seconds
+        unsigned int nVideoFlashTimeMax;  // Micro seconds
+        unsigned int nMarkerExposure;     // Micro seconds
+        unsigned int nMarkerExposureMin;  // Micro seconds
+        unsigned int nMarkerExposureMax;  // Micro seconds
+        unsigned int nMarkerThreshold;
+        unsigned int nMarkerThresholdMin;
+        unsigned int nMarkerThresholdMax;
+        float        fPositionX;
+        float        fPositionY;
+        float        fPositionZ;
+        float        fPositionRotMatrix[3][3];
+        unsigned int nOrientation;             // Degrees
+        unsigned int nMarkerResolutionWidth;   // Sub pixels
+        unsigned int nMarkerResolutionHeight;  // Sub pixels
+        unsigned int nVideoResolutionWidth;    // Pixels
+        unsigned int nVideoResolutionHeight;   // Pixels
+        unsigned int nMarkerFOVLeft;           // Pixels
+        unsigned int nMarkerFOVTop;            // Pixels
+        unsigned int nMarkerFOVRight;          // Pixels
+        unsigned int nMarkerFOVBottom;         // Pixels
+        unsigned int nVideoFOVLeft;            // Pixels
+        unsigned int nVideoFOVTop;             // Pixels
+        unsigned int nVideoFOVRight;           // Pixels
+        unsigned int nVideoFOVBottom;          // Pixels
+        ESyncOutFreqMode eSyncOutMode[2];
+        unsigned int nSyncOutValue[2];
+        float        fSyncOutDutyCycle[2];     // Percent
+        bool         bSyncOutNegativePolarity[3];
+        float        fFocus;
+        float        fAperture;
         bool         autoExposureEnabled;
         float        autoExposureCompensation;
         int          autoWhiteBalance;
@@ -218,29 +218,29 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT SSettingsGeneralExternalTimebase
     {
         SSettingsGeneralExternalTimebase() :
-            enabled(false),
-            signalSource(SourceControlPort),
-            signalModePeriodic(false),
-            freqMultiplier(0),
-            freqDivisor(0),
-            freqTolerance(0),
-            nominalFrequency(0.0f),
-            negativeEdge(false),
-            signalShutterDelay(0),
-            nonPeriodicTimeout(0.0f)
+            bEnabled(false),
+            eSignalSource(SourceControlPort),
+            bSignalModePeriodic(false),
+            nFreqMultiplier(0),
+            nFreqDivisor(0),
+            nFreqTolerance(0),
+            fNominalFrequency(0.0f),
+            bNegativeEdge(false),
+            nSignalShutterDelay(0),
+            fNonPeriodicTimeout(0.0f)
         {
         }
 
-        bool          enabled;
-        ESignalSource signalSource;
-        bool          signalModePeriodic;
-        unsigned int  freqMultiplier;
-        unsigned int  freqDivisor;
-        unsigned int  freqTolerance;
-        float         nominalFrequency;
-        bool          negativeEdge;
-        unsigned int  signalShutterDelay;
-        float         nonPeriodicTimeout;
+        bool          bEnabled;
+        ESignalSource eSignalSource;
+        bool          bSignalModePeriodic;
+        unsigned int  nFreqMultiplier;
+        unsigned int  nFreqDivisor;
+        unsigned int  nFreqTolerance;
+        float         fNominalFrequency;
+        bool          bNegativeEdge;
+        unsigned int  nSignalShutterDelay;
+        float         fNonPeriodicTimeout;
     };
 
     enum ETimestampType
@@ -253,56 +253,56 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT SSettingsGeneralExternalTimestamp
     {
         SSettingsGeneralExternalTimestamp() :
-            enabled(false),
-            frequency(0),
-            type(Timestamp_SMPTE)
+            bEnabled(false),
+            nFrequency(0),
+            nType(Timestamp_SMPTE)
         {
         }
-        bool enabled;
-        uint32_t frequency;
-        ETimestampType type;
+        bool bEnabled;
+        uint32_t nFrequency;
+        ETimestampType nType;
     };
 
     struct DLL_EXPORT SSettingsGeneral
     {
         SSettingsGeneral() :
-            captureFrequency(0),
-            captureTime(0.0f),
-            startOnExternalTrigger(false),
-            startOnTrigNO(false),
-            startOnTrigNC(false),
-            startOnTrigSoftware(false),
-            processingActions(EProcessingActions::ProcessingNone),
-            rtProcessingActions(EProcessingActions::ProcessingNone),
-            reprocessingActions(EProcessingActions::ProcessingNone)
+            nCaptureFrequency(0),
+            fCaptureTime(0.0f),
+            bStartOnExternalTrigger(false),
+            bStartOnTrigNO(false),
+            bStartOnTrigNC(false),
+            bStartOnTrigSoftware(false),
+            eProcessingActions(EProcessingActions::ProcessingNone),
+            eRtProcessingActions(EProcessingActions::ProcessingNone),
+            eReprocessingActions(EProcessingActions::ProcessingNone)
         {
-            externalTimebase = { };
-            timestamp = { };
+            sExternalTimebase = { };
+            sTimestamp = { };
             eulerRotations[0] = "";
             eulerRotations[1] = "";
             eulerRotations[2] = "";
-            cameras.clear();
+            vsCameras.clear();
         }
 
-        unsigned int captureFrequency;
-        float captureTime;
-        bool startOnExternalTrigger;
-        bool startOnTrigNO;
-        bool startOnTrigNC;
-        bool startOnTrigSoftware;
-        SSettingsGeneralExternalTimebase externalTimebase;
-        SSettingsGeneralExternalTimestamp timestamp;
-        EProcessingActions processingActions;   // Binary flags.
-        EProcessingActions rtProcessingActions; // Binary flags.
-        EProcessingActions reprocessingActions; // Binary flags.
+        unsigned int nCaptureFrequency;
+        float fCaptureTime;
+        bool bStartOnExternalTrigger;
+        bool bStartOnTrigNO;
+        bool bStartOnTrigNC;
+        bool bStartOnTrigSoftware;
+        SSettingsGeneralExternalTimebase sExternalTimebase;
+        SSettingsGeneralExternalTimestamp sTimestamp;
+        EProcessingActions eProcessingActions;   // Binary flags.
+        EProcessingActions eRtProcessingActions; // Binary flags.
+        EProcessingActions eReprocessingActions; // Binary flags.
         std::string eulerRotations[3]; // R G B
-        std::vector< SSettingsGeneralCamera > cameras;
+        std::vector< SSettingsGeneralCamera > vsCameras;
     };
 
     struct DLL_EXPORT SSettings3DLabel
     {
-        std::string  name;
-        unsigned int rgbColor;
+        std::string  oName;
+        unsigned int nRGBColor;
         std::string type;
     };
 
@@ -315,10 +315,10 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT SSettings3D
     {
-        EAxis                           axisUpwards;
-        char                            calibrationTime[32];
-        std::vector< SSettings3DLabel > labels3D;
-        std::vector< SSettingsBone >    bones;
+        EAxis                           eAxisUpwards;
+        char                            pCalibrationTime[32];
+        std::vector< SSettings3DLabel > s3DLabels;
+        std::vector< SSettingsBone >    sBones;
     };
 
     struct DLL_EXPORT SSettings6DMesh
@@ -347,15 +347,15 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT SSettings6DOFBody
     {
-        std::string             name;
-        bool                    enabled;
-        uint32_t                color;
-        std::string             filterPreset;
-        float                   maxResidual;
-        uint32_t                minMarkersInBody;
-        float                   boneLengthTolerance;
-        SSettings6DMesh         mesh;
-        SOrigin                 origin;
+        std::string           name;
+        bool                  enabled;
+        uint32_t              color;
+        std::string           filterPreset;
+        float                 maxResidual;
+        uint32_t              minMarkersInBody;
+        float                 boneLengthTolerance;
+        SSettings6DMesh       mesh;
+        SOrigin               origin;
         std::vector<SBodyPoint> points;
     };
 
@@ -376,59 +376,59 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT SAnalogDevice
     {
-        unsigned int               deviceID;
-        unsigned int               channels;
-        std::string                name;
-        std::vector< std::string > labels;
-        unsigned int               frequency;
-        std::string                unit;
-        float                      minRange;
-        float                      maxRange;
-        std::vector< std::string > units;
+        unsigned int               nDeviceID;
+        unsigned int               nChannels;
+        std::string                oName;
+        std::vector< std::string > voLabels;
+        unsigned int               nFrequency;
+        std::string                oUnit;
+        float                      fMinRange;
+        float                      fMaxRange;
+        std::vector< std::string > voUnits;
     };
 
     struct DLL_EXPORT SForceChannel
     {
-        unsigned int channelNumber;
-        float        conversionFactor;
+        unsigned int nChannelNumber;
+        float        fConversionFactor;
     };
 
     struct DLL_EXPORT SForcePlate
     {
-        unsigned int                 id;
-        unsigned int                 analogDeviceID;
-        std::string                  type;
-        std::string                  name;
-        unsigned int                 frequency;
-        float                        length;
-        float                        width;
-        SPoint                       corner[4];
-        SPoint                       origin;
-        std::vector< SForceChannel > channels;
-        bool                         validCalibrationMatrix;
-        float                        calibrationMatrix[12][12];
-        unsigned int                 calibrationMatrixRows;
-        unsigned int                 calibrationMatrixColumns;
+        unsigned int                 nID;
+        unsigned int                 nAnalogDeviceID;
+        std::string                  oType;
+        std::string                  oName;
+        unsigned int                 nFrequency;
+        float                        fLength;
+        float                        fWidth;
+        SPoint                       asCorner[4];
+        SPoint                       sOrigin;
+        std::vector< SForceChannel > vChannels;
+        bool                         bValidCalibrationMatrix;
+        float                        afCalibrationMatrix[12][12];
+        unsigned int                 nCalibrationMatrixRows;
+        unsigned int                 nCalibrationMatrixColumns;
     };
 
     struct DLL_EXPORT SSettingsForce
     {
-        std::string                 unitLength;
-        std::string                 unitForce;
-        std::vector< SForcePlate >  forcePlates;
+        std::string                 oUnitLength;
+        std::string                 oUnitForce;
+        std::vector< SForcePlate >  vsForcePlates;
     };
 
     struct DLL_EXPORT SImageCamera
     {
-        unsigned int            id;
-        bool                    enabled;
-        CRTPacket::EImageFormat format;
-        unsigned int            width;
-        unsigned int            height;
-        float                   cropLeft;
-        float                   cropTop;
-        float                   cropRight;
-        float                   cropBottom;
+        unsigned int            nID;
+        bool                    bEnabled;
+        CRTPacket::EImageFormat eFormat;
+        unsigned int            nWidth;
+        unsigned int            nHeight;
+        float                   fCropLeft;
+        float                   fCropTop;
+        float                   fCropRight;
+        float                   fCropBottom;
     };
 
     struct DLL_EXPORT SCalibrationFov
@@ -638,71 +638,71 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT ISettingsDeserializer {
         virtual ~ISettingsDeserializer() = default;
-        virtual bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) = 0;
-        virtual bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) = 0;
-        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable) = 0;
-        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof, SSettingsGeneral& generalSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& skeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& skeletonSettings, bool& dataAvailable) = 0;
-        virtual bool DeserializeCalibrationSettings(SCalibration& calibrationSettings) = 0;
+        virtual bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) = 0;
+        virtual bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable) = 0;
+        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral& pGeneralSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable) = 0;
+        virtual bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) = 0;
+        virtual bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) = 0;
     };
 
     struct DLL_EXPORT ISettingsSerializer {
         virtual ~ISettingsSerializer() = default;
 
-        virtual std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
-                                               const bool* startOnExtTrig, const bool* startOnTrigNO,
-                                               const bool* startOnTrigNC, const bool* startOnTrigSoftware,
-                                               const EProcessingActions* processingActions,
-                                               const EProcessingActions* rtProcessingActions,
-                                               const EProcessingActions* reprocessingActions) = 0;
+        virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
+                                               const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO,
+                                               const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
+                                               const EProcessingActions* peProcessingActions,
+                                               const EProcessingActions* peRtProcessingActions,
+                                               const EProcessingActions* peReprocessingActions) = 0;
 
         virtual std::string SetExtTimeBaseSettings(
-            const bool* enabled, const ESignalSource* signalSource,
-            const bool* signalModePeriodic, const unsigned int* freqMultiplier,
-            const unsigned int* freqDivisor, const unsigned int* freqTolerance,
-            const float* nominalFrequency, const bool* negativeEdge,
-            const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout) = 0;
+            const bool* pbEnabled, const ESignalSource* peSignalSource,
+            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
+            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
+            const float* pfNominalFrequency, const bool* pbNegativeEdge,
+            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) = 0;
 
         virtual std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) = 0;
 
         virtual std::string SetCameraSettings(
-            const unsigned int cameraId, const ECameraMode* mode,
-            const float* markerExposure, const float* markerThreshold,
-            const int* orientation) = 0;
+            const unsigned int pCameraId, const ECameraMode* peMode,
+            const float* pfMarkerExposure, const float* pfMarkerThreshold,
+            const int* pnOrientation) = 0;
 
         virtual std::string SetCameraVideoSettings(
-            const unsigned int cameraId, const EVideoResolution* videoResolution,
-            const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
-            const float* videoExposure, const float* videoFlashTime) = 0;
+            const unsigned int pCameraId, const EVideoResolution* eVideoResolution,
+            const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
+            const float* pfVideoExposure, const float* pfVideoFlashTime) = 0;
 
         virtual std::string SetCameraSyncOutSettings(
-            const unsigned int cameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
-            const unsigned int* syncOutValue, const float* syncOutDutyCycle,
-            const bool* syncOutNegativePolarity) = 0;
+            const unsigned int pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
+            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
+            const bool* pbSyncOutNegativePolarity) = 0;
 
-        virtual std::string SetCameraLensControlSettings(const unsigned int cameraId, const float focus,
-                                                         const float aperture) = 0;
+        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
+                                                         const float pAperture) = 0;
 
-        virtual std::string SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure,
-                                                          const float compensation) = 0;
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
+                                                          const float pCompensation) = 0;
 
-        virtual std::string SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable) = 0;
+        virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) = 0;
 
         virtual std::string SetImageSettings(
-            const unsigned int cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
-            const unsigned int* width, const unsigned int* height, const float* leftCrop,
-            const float* topCrop, const float* rightCrop, const float* bottomCrop) = 0;
+            const unsigned int pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
+            const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
+            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) = 0;
 
         virtual std::string SetForceSettings(
-            const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
-            const SPoint* corner3, const SPoint* corner4) = 0;
+            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
+            const SPoint* pCorner3, const SPoint* pCorner4) = 0;
 
-        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs) = 0;
+        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) = 0;
 
-        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons) = 0;
+        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) = 0;
     };
 }
