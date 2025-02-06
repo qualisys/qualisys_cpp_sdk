@@ -244,7 +244,6 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
         }
     }
 
-    // Convert to string
     tinyxml2::XMLPrinter printer;
     document.Print(&printer);
     return printer.CStr();
@@ -760,10 +759,8 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int cameraId, c
     AddXMLElementFloat(*cameraElem, "Right_Crop", rightCrop, 6, document);
     AddXMLElementFloat(*cameraElem, "Bottom_Crop", bottomCrop, 6, document);
 
-    // Convert to string
     tinyxml2::XMLPrinter printer;
     document.Print(&printer);
-
     return printer.CStr();
 }
 
