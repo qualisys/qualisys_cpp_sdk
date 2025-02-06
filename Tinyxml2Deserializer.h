@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Settings.h"
-
-#include <tinyxml2.h>
+#include "Deserializer.h"
 
 namespace qualisys_cpp_sdk
 {
@@ -23,6 +22,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        tinyxml2::XMLDocument mXmlDocument;
+        Deserializer mDeserializer;
     };
 }
