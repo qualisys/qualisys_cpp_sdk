@@ -1,0 +1,3 @@
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/tinyxml2-populate.dir
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/edit_cache.dir
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/rebuild_cache.dir

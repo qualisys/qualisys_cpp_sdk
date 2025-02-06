@@ -1,0 +1,14 @@
+# Target labels
+ tinyxml2-populate
+# Source files and their labels
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/tinyxml2-populate
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/tinyxml2-populate.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/CMakeFiles/tinyxml2-populate-complete.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-build.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-configure.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-download.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-install.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-mkdir.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-patch.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-test.rule
+C:/qualisys_cpp_sdk/mingw_build/build/_deps/tinyxml2-subbuild/tinyxml2-populate-prefix/src/tinyxml2-populate-stamp/tinyxml2-populate-update.rule
