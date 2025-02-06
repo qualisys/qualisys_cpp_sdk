@@ -2,7 +2,6 @@
 #define NOMINMAX
 
 
-
 #include <cctype>
 #include <thread>
 #include <string>
@@ -82,8 +81,8 @@ unsigned int CRTProtocol::GetSystemFrequency() const
 
 CRTProtocol::CRTProtocol()
 {
-    mNetwork      = new CNetwork();
-    mRTPacket     = nullptr;
+    mNetwork       = new CNetwork();
+    mRTPacket      = nullptr;
     mLastEvent     = CRTPacket::EventCaptureStopped;
     mState         = CRTPacket::EventCaptureStopped;
     mMajorVersion  = 1;
@@ -92,7 +91,7 @@ CRTProtocol::CRTProtocol()
     mErrorStr[0]   = 0;
     mBroadcastPort = 0;
     mFileBuffer    = nullptr;
-    mIsMaster = false;
+    mIsMaster      = false;
     mDataBuff.resize(65535);
     mSendBuffer.resize(5000);
 } // CRTProtocol
@@ -373,8 +372,8 @@ bool CRTProtocol::CheckLicense(const std::string& licenseCode)
 
 bool CRTProtocol::DiscoverRTServer(unsigned short serverPort, bool noLocalResponses, unsigned short discoverPort)
 {
-    char pData[10];
-    SDiscoverResponse sResponse;        
+    char data[10];
+    SDiscoverResponse discoverResponse;        
 
     if (mBroadcastPort == 0)
     {
@@ -390,11 +389,11 @@ bool CRTProtocol::DiscoverRTServer(unsigned short serverPort, bool noLocalRespon
         serverPort = mBroadcastPort;
     }
 
-    *((unsigned int*)pData)         = (unsigned int)10;
-    *((unsigned int*)(pData + 4))   = (unsigned int)CRTPacket::PacketDiscover;
-    *((unsigned short*)(pData + 8)) = htons(serverPort);
+    *((unsigned int*)data)         = (unsigned int)10;
+    *((unsigned int*)(data + 4))   = (unsigned int)CRTPacket::PacketDiscover;
+    *((unsigned short*)(data + 8)) = htons(serverPort);
 
-    if (mNetwork->SendUDPBroadcast(pData, 10, discoverPort))
+    if (mNetwork->SendUDPBroadcast(data, 10, discoverPort))
     {
         mDiscoverResponseList.clear();
 
@@ -409,14 +408,14 @@ bool CRTProtocol::DiscoverRTServer(unsigned short serverPort, bool noLocalRespon
             {
                 if (CRTPacket::GetType(mDataBuff.data()) == CRTPacket::PacketCommand)
                 {
-                    char* discoverResponse  = CRTPacket::GetCommandString(mDataBuff.data());
-                    sResponse.addr = addr;
-                    sResponse.basePort = CRTPacket::GetDiscoverResponseBasePort(mDataBuff.data());
+                    char* discoverResponseText  = CRTPacket::GetCommandString(mDataBuff.data());
+                    discoverResponse.addr = addr;
+                    discoverResponse.basePort = CRTPacket::GetDiscoverResponseBasePort(mDataBuff.data());
 
-                    if (discoverResponse && (!noLocalResponses || !mNetwork->IsLocalAddress(addr)))
+                    if (discoverResponseText && (!noLocalResponses || !mNetwork->IsLocalAddress(addr)))
                     {
-                        strcpy(sResponse.message, discoverResponse);
-                        mDiscoverResponseList.push_back(sResponse);
+                        strcpy(discoverResponse.message, discoverResponseText);
+                        mDiscoverResponseList.push_back(discoverResponse);
                     }
                 }
             }
@@ -1474,14 +1473,14 @@ int CRTProtocol::ReceiveRTPacket(CRTPacket::EPacketType &type, bool skipEvents, 
 CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool skipEvents, int timeout)
 {
     CNetwork::Response response(CNetwork::ResponseType::error, 0);
-    unsigned int nRecvedTotal = 0;
-    unsigned int nFrameSize;
+    unsigned int receivedTotal = 0;
+    unsigned int frameSize;
 
     type = CRTPacket::PacketNone;
 
     do 
     {
-        nRecvedTotal = 0;
+        receivedTotal = 0;
 
         response = mNetwork->Receive(mDataBuff.data(), (int)mDataBuff.size(), true, timeout);
 
@@ -1507,21 +1506,21 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
             strcpy(mErrorStr, "Couldn't read header bytes.");
             return CNetwork::ResponseType::error;
         }
-        nRecvedTotal += response.received;
+        receivedTotal += response.received;
 
         bool bigEndian = (mBigEndian || (mMajorVersion == 1 && mMinorVersion == 0));
-        nFrameSize = mRTPacket->GetSize(mDataBuff.data(), bigEndian);
+        frameSize = mRTPacket->GetSize(mDataBuff.data(), bigEndian);
         type      = mRTPacket->GetType(mDataBuff.data(), bigEndian);
         
-        unsigned int nReadSize;
+        unsigned int readSize;
 
         if (type == CRTPacket::PacketC3DFile || type == CRTPacket::PacketQTMFile)
         {
             if (mFileBuffer != nullptr)
             {
                 rewind(mFileBuffer); // Start from the beginning
-                if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, nRecvedTotal - sizeof(int) * 2, mFileBuffer) !=
-                    nRecvedTotal - sizeof(int) * 2)
+                if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, receivedTotal - sizeof(int) * 2, mFileBuffer) !=
+                    receivedTotal - sizeof(int) * 2)
                 {
                     strcpy(mErrorStr, "Failed to write file to disk.");
                     fclose(mFileBuffer);
@@ -1529,15 +1528,15 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
                     return CNetwork::ResponseType::error;
                 }
                 // Receive more data until we have read the whole packet
-                while (nRecvedTotal < nFrameSize) 
+                while (receivedTotal < frameSize) 
                 {
-                    nReadSize = nFrameSize - nRecvedTotal;
-                    if (nFrameSize > mDataBuff.size())                                                                                                                                                                                                                                                                                             
+                    readSize = frameSize - receivedTotal;
+                    if (frameSize > mDataBuff.size())                                                                                                                                                                                                                                                                                             
                     {
-                        nReadSize = (int)mDataBuff.size();
+                        readSize = (int)mDataBuff.size();
                     }
                     // As long as we haven't received enough data, wait for more
-                    response = mNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), nReadSize, false, cWaitForDataTimeout);
+                    response = mNetwork->Receive(&(mDataBuff.data()[sizeof(int) * 2]), readSize, false, cWaitForDataTimeout);
                     if (response.type == CNetwork::ResponseType::timeout)
                     {
                         strcpy(mErrorStr, "Packet truncated.");
@@ -1563,7 +1562,7 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
                         mFileBuffer = nullptr;
                         return CNetwork::ResponseType::error;
                     }
-                    nRecvedTotal += response.received;
+                    receivedTotal += response.received;
                 }
             }
             else
@@ -1579,16 +1578,16 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
         }
         else
         {
-            if (nFrameSize > mDataBuff.size())
+            if (frameSize > mDataBuff.size())
             {
-                mDataBuff.resize(nFrameSize);
+                mDataBuff.resize(frameSize);
             }
 
             // Receive more data until we have read the whole packet
-            while (nRecvedTotal < nFrameSize) 
+            while (receivedTotal < frameSize) 
             {
                 // As long as we haven't received enough data, wait for more
-                response = mNetwork->Receive(&(mDataBuff.data()[nRecvedTotal]), nFrameSize - nRecvedTotal, false, -1);
+                response = mNetwork->Receive(&(mDataBuff.data()[receivedTotal]), frameSize - receivedTotal, false, -1);
                 if (response.type == CNetwork::ResponseType::timeout)
                 {
                     strcpy(mErrorStr, "Packet truncated.");
@@ -1604,7 +1603,7 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
                     strcpy(mErrorStr, "Disconnected from server.");
                     return CNetwork::ResponseType::disconnect;
                 }
-                nRecvedTotal += response.received;
+                receivedTotal += response.received;
             }
         }
 
@@ -1619,7 +1618,7 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &type, bool s
         }
     } while (skipEvents && type == CRTPacket::PacketEvent);
     
-    if (nRecvedTotal == nFrameSize)
+    if (receivedTotal == frameSize)
     {
         return CNetwork::ResponseType::success;
     }
@@ -1687,7 +1686,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
 bool CRTProtocol::ReadGeneralSettings()
 {
-    std::string             tStr;
+    std::string             str;
 
     mGeneralSettings.cameras.clear();
 
@@ -1844,7 +1843,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& dataAvailable, bool skeletonGlobalD
 bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
 {
     CRTPacket::EPacketType  type;
-    std::string             tStr;
+    std::string             str;
     SCalibration            settings;
     CNetwork::ResponseType  response;
     CRTPacket::EEvent       event = CRTPacket::EventNone;
@@ -2850,28 +2849,28 @@ char* CRTProtocol::GetErrorString()
 
 bool CRTProtocol::SendString(const char* cmdStr, int type)
 {
-    std::uint32_t nCmdStrLen = (int)strlen(cmdStr);
-    std::uint32_t nSize = 8 + nCmdStrLen + 1; // Header size + length of the string + terminating null char
+    std::uint32_t cmdStrLen = (int)strlen(cmdStr);
+    std::uint32_t size = 8 + cmdStrLen + 1; // Header size + length of the string + terminating null char
 
-    if (nSize > mSendBuffer.size())
+    if (size > mSendBuffer.size())
     {
-        mSendBuffer.resize(nSize);
+        mSendBuffer.resize(size);
     }
     
-    memcpy(mSendBuffer.data() + 8, cmdStr, nCmdStrLen + 1);
+    memcpy(mSendBuffer.data() + 8, cmdStr, cmdStrLen + 1);
 
     if ((mMajorVersion == 1 && mMinorVersion == 0) || mBigEndian)
     {
-        *((unsigned int*)mSendBuffer.data())       = htonl(nSize);
+        *((unsigned int*)mSendBuffer.data())       = htonl(size);
         *((unsigned int*)(mSendBuffer.data() + 4)) = htonl(type);
     }
     else
     {
-        *((unsigned int*)mSendBuffer.data())       = nSize;
+        *((unsigned int*)mSendBuffer.data())       = size;
         *((unsigned int*)(mSendBuffer.data() + 4)) = type;
     }
 
-    if (mNetwork->Send(mSendBuffer.data(), nSize) == false)
+    if (mNetwork->Send(mSendBuffer.data(), size) == false)
     {
         strcpy(mErrorStr, mNetwork->GetErrorString());
         return false;
@@ -2958,9 +2957,9 @@ bool CRTProtocol::SendXML(const char* cmdStr)
     }
     else
     {
-        char pTmpStr[256];
-        strcpy(pTmpStr, mErrorStr);
-        sprintf(mErrorStr, "Failed to send XML string. %s", pTmpStr);
+        char tmpStr[256];
+        strcpy(tmpStr, mErrorStr);
+        sprintf(mErrorStr, "Failed to send XML string. %s", tmpStr);
     }
     return false;
 } // SendXML

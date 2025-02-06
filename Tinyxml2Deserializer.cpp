@@ -166,10 +166,10 @@ namespace
     }
 }
 
-CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
+CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
     : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
-    oXML.Parse(pData);
+    oXML.Parse(data);
 }
 
 namespace
@@ -1127,28 +1127,28 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
     {
         if (const char* charptr = axisUpwards->GetText())
         {
-            auto tStr = ToLower(charptr);
-            if (tStr == "+x")
+            auto str = ToLower(charptr);
+            if (str == "+x")
             {
                 p3dSettings.axisUpwards = XPos;
             }
-            else if (tStr == "-x")
+            else if (str == "-x")
             {
                 p3dSettings.axisUpwards = XNeg;
             }
-            else if (tStr == "+y")
+            else if (str == "+y")
             {
                 p3dSettings.axisUpwards = YPos;
             }
-            else if (tStr == "-y")
+            else if (str == "-y")
             {
                 p3dSettings.axisUpwards = YNeg;
             }
-            else if (tStr == "+z")
+            else if (str == "+z")
             {
                 p3dSettings.axisUpwards = ZPos;
             }
-            else if (tStr == "-z")
+            else if (str == "-z")
             {
                 p3dSettings.axisUpwards = ZNeg;
             }

@@ -285,14 +285,14 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 }
 
 
-CMarkupDeserializer::CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(pData)
+CMarkupDeserializer::CMarkupDeserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(data)
 {
 }
 
 bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings)
 {
-    std::string             tStr;
+    std::string             str;
 
     pGeneralSettings.cameras.clear();
 
@@ -347,31 +347,31 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    pGeneralSettings.externalTimebase.enabled = (tStr == "true");
+    str = ToLower(oXML.GetChildData());
+    pGeneralSettings.externalTimebase.enabled = (str == "true");
 
     if (!oXML.FindChildElem("Signal_Source"))
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "control port")
+    str = ToLower(oXML.GetChildData());
+    if (str == "control port")
     {
         pGeneralSettings.externalTimebase.signalSource = SourceControlPort;
     }
-    else if (tStr == "ir receiver")
+    else if (str == "ir receiver")
     {
         pGeneralSettings.externalTimebase.signalSource = SourceIRReceiver;
     }
-    else if (tStr == "smpte")
+    else if (str == "smpte")
     {
         pGeneralSettings.externalTimebase.signalSource = SourceSMPTE;
     }
-    else if (tStr == "irig")
+    else if (str == "irig")
     {
         pGeneralSettings.externalTimebase.signalSource = SourceIRIG;
     }
-    else if (tStr == "video sync")
+    else if (str == "video sync")
     {
         pGeneralSettings.externalTimebase.signalSource = SourceVideoSync;
     }
@@ -384,12 +384,12 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "periodic")
+    str = ToLower(oXML.GetChildData());
+    if (str == "periodic")
     {
         pGeneralSettings.externalTimebase.signalModePeriodic = true;
     }
-    else if (tStr == "non-periodic")
+    else if (str == "non-periodic")
     {
         pGeneralSettings.externalTimebase.signalModePeriodic = false;
     }
@@ -403,8 +403,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
     unsigned int nMultiplier;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nMultiplier) == 1)
+    str = oXML.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nMultiplier) == 1)
     {
         pGeneralSettings.externalTimebase.freqMultiplier = nMultiplier;
     }
@@ -418,8 +418,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
     unsigned int nDivisor;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDivisor) == 1)
+    str = oXML.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nDivisor) == 1)
     {
         pGeneralSettings.externalTimebase.freqDivisor = nDivisor;
     }
@@ -433,8 +433,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
     unsigned int nTolerance;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nTolerance) == 1)
+    str = oXML.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nTolerance) == 1)
     {
         pGeneralSettings.externalTimebase.freqTolerance = nTolerance;
     }
@@ -447,16 +447,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    str = ToLower(oXML.GetChildData());
 
-    if (tStr == "none")
+    if (str == "none")
     {
         pGeneralSettings.externalTimebase.nominalFrequency = -1; // -1 = disabled
     }
     else
     {
         float fFrequency;
-        if (sscanf(tStr.c_str(), "%f", &fFrequency) == 1)
+        if (sscanf(str.c_str(), "%f", &fFrequency) == 1)
         {
             pGeneralSettings.externalTimebase.nominalFrequency = fFrequency;
         }
@@ -470,12 +470,12 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
-    if (tStr == "negative")
+    str = ToLower(oXML.GetChildData());
+    if (str == "negative")
     {
         pGeneralSettings.externalTimebase.negativeEdge = true;
     }
-    else if (tStr == "positive")
+    else if (str == "positive")
     {
         pGeneralSettings.externalTimebase.negativeEdge = false;
     }
@@ -489,8 +489,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
     unsigned int nDelay;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%u", &nDelay) == 1)
+    str = oXML.GetChildData();
+    if (sscanf(str.c_str(), "%u", &nDelay) == 1)
     {
         pGeneralSettings.externalTimebase.signalShutterDelay = nDelay;
     }
@@ -504,8 +504,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         return false;
     }
     float fTimeout;
-    tStr = oXML.GetChildData();
-    if (sscanf(tStr.c_str(), "%f", &fTimeout) == 1)
+    str = oXML.GetChildData();
+    if (sscanf(str.c_str(), "%f", &fTimeout) == 1)
     {
         pGeneralSettings.externalTimebase.nonPeriodicTimeout = fTimeout;
     }
@@ -524,17 +524,17 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
         if (oXML.FindChildElem("Enabled"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            pGeneralSettings.timestamp.enabled = (tStr == "true");
+            str = ToLower(oXML.GetChildData());
+            pGeneralSettings.timestamp.enabled = (str == "true");
         }
         if (oXML.FindChildElem("Type"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "smpte")
+            str = ToLower(oXML.GetChildData());
+            if (str == "smpte")
             {
                 pGeneralSettings.timestamp.type = Timestamp_SMPTE;
             }
-            else if (tStr == "irig")
+            else if (str == "irig")
             {
                 pGeneralSettings.timestamp.type = Timestamp_IRIG;
             }
@@ -546,8 +546,8 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         if (oXML.FindChildElem("Frequency"))
         {
             unsigned int timestampFrequency;
-            tStr = oXML.GetChildData();
-            if (sscanf(tStr.c_str(), "%u", &timestampFrequency) == 1)
+            str = oXML.GetChildData();
+            if (sscanf(str.c_str(), "%u", &timestampFrequency) == 1)
             {
                 pGeneralSettings.timestamp.frequency = timestampFrequency;
             }
@@ -592,12 +592,12 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-        if (tStr == "3d")
+        str = ToLower(oXML.GetChildData());
+        if (str == "3d")
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking3D);
         }
-        else if (tStr == "2d" && i != 1) // i != 1 => Not RtProcessingSettings
+        else if (str == "2d" && i != 1) // i != 1 => Not RtProcessingSettings
         {
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingTracking2D);
         }
@@ -731,113 +731,113 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
+        str = ToLower(oXML.GetChildData());
 
-        if (tStr == "macreflex")
+        if (str == "macreflex")
         {
             sCameraSettings.model = ModelMacReflex;
         }
-        else if (tStr == "proreflex 120")
+        else if (str == "proreflex 120")
         {
             sCameraSettings.model = ModelProReflex120;
         }
-        else if (tStr == "proreflex 240")
+        else if (str == "proreflex 240")
         {
             sCameraSettings.model = ModelProReflex240;
         }
-        else if (tStr == "proreflex 500")
+        else if (str == "proreflex 500")
         {
             sCameraSettings.model = ModelProReflex500;
         }
-        else if (tStr == "proreflex 1000")
+        else if (str == "proreflex 1000")
         {
             sCameraSettings.model = ModelProReflex1000;
         }
-        else if (tStr == "oqus 100")
+        else if (str == "oqus 100")
         {
             sCameraSettings.model = ModelOqus100;
         }
-        else if (tStr == "oqus 200" || tStr == "oqus 200 c")
+        else if (str == "oqus 200" || str == "oqus 200 c")
         {
             sCameraSettings.model = ModelOqus200C;
         }
-        else if (tStr == "oqus 300")
+        else if (str == "oqus 300")
         {
             sCameraSettings.model = ModelOqus300;
         }
-        else if (tStr == "oqus 300 plus")
+        else if (str == "oqus 300 plus")
         {
             sCameraSettings.model = ModelOqus300Plus;
         }
-        else if (tStr == "oqus 400")
+        else if (str == "oqus 400")
         {
             sCameraSettings.model = ModelOqus400;
         }
-        else if (tStr == "oqus 500")
+        else if (str == "oqus 500")
         {
             sCameraSettings.model = ModelOqus500;
         }
-        else if (tStr == "oqus 500 plus")
+        else if (str == "oqus 500 plus")
         {
             sCameraSettings.model = ModelOqus500Plus;
         }
-        else if (tStr == "oqus 700")
+        else if (str == "oqus 700")
         {
             sCameraSettings.model = ModelOqus700;
         }
-        else if (tStr == "oqus 700 plus")
+        else if (str == "oqus 700 plus")
         {
             sCameraSettings.model = ModelOqus700Plus;
         }
-        else if (tStr == "oqus 600 plus")
+        else if (str == "oqus 600 plus")
         {
             sCameraSettings.model = ModelOqus600Plus;
         }
-        else if (tStr == "miqus m1")
+        else if (str == "miqus m1")
         {
             sCameraSettings.model = ModelMiqusM1;
         }
-        else if (tStr == "miqus m3")
+        else if (str == "miqus m3")
         {
             sCameraSettings.model = ModelMiqusM3;
         }
-        else if (tStr == "miqus m5")
+        else if (str == "miqus m5")
         {
             sCameraSettings.model = ModelMiqusM5;
         }
-        else if (tStr == "miqus sync unit")
+        else if (str == "miqus sync unit")
         {
             sCameraSettings.model = ModelMiqusSyncUnit;
         }
-        else if (tStr == "miqus video")
+        else if (str == "miqus video")
         {
             sCameraSettings.model = ModelMiqusVideo;
         }
-        else if (tStr == "miqus video color")
+        else if (str == "miqus video color")
         {
             sCameraSettings.model = ModelMiqusVideoColor;
         }
-        else if (tStr == "miqus hybrid")
+        else if (str == "miqus hybrid")
         {
             sCameraSettings.model = ModelMiqusHybrid;
         }
-        else if (tStr == "miqus video color plus")
+        else if (str == "miqus video color plus")
         {
             sCameraSettings.model = ModelMiqusVideoColorPlus;
         }
-        else if (tStr == "arqus a5")
+        else if (str == "arqus a5")
         {
             sCameraSettings.model = ModelArqusA5;
         }
-        else if (tStr == "arqus a9")
+        else if (str == "arqus a9")
         {
             sCameraSettings.model = ModelArqusA9;
         }
-        else if (tStr == "arqus a12")
+        else if (str == "arqus a12")
         {
             sCameraSettings.model = ModelArqusA12;
         }
-        else if (tStr == "arqus a26")
+        else if (str == "arqus a26")
         {
             sCameraSettings.model = ModelArqusA26;
         }
@@ -849,14 +849,14 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         // Only available from protocol version 1.10 and later.
         if (oXML.FindChildElem("Underwater"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            sCameraSettings.underwater = (tStr == "true");
+            str = ToLower(oXML.GetChildData());
+            sCameraSettings.underwater = (str == "true");
         }
 
         if (oXML.FindChildElem("Supports_HW_Sync"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            sCameraSettings.supportsHwSync = (tStr == "true");
+            str = ToLower(oXML.GetChildData());
+            sCameraSettings.supportsHwSync = (str == "true");
         }
 
         if (!oXML.FindChildElem("Serial"))
@@ -870,16 +870,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
-        if (tStr == "marker")
+        str = ToLower(oXML.GetChildData());
+        if (str == "marker")
         {
             sCameraSettings.mode = ModeMarker;
         }
-        else if (tStr == "marker intensity")
+        else if (str == "marker intensity")
         {
             sCameraSettings.mode = ModeMarkerIntensity;
         }
-        else if (tStr == "video")
+        else if (str == "video")
         {
             sCameraSettings.mode = ModeVideo;
         }
@@ -901,24 +901,24 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         // ==================== Video Resolution ====================
         if (oXML.FindChildElem("Video_Resolution"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "1440p")
+            str = ToLower(oXML.GetChildData());
+            if (str == "1440p")
             {
                 sCameraSettings.videoResolution = VideoResolution1440p;
             }
-            else if (tStr == "1080p")
+            else if (str == "1080p")
             {
                 sCameraSettings.videoResolution = VideoResolution1080p;
             }
-            else if (tStr == "720p")
+            else if (str == "720p")
             {
                 sCameraSettings.videoResolution = VideoResolution720p;
             }
-            else if (tStr == "540p")
+            else if (str == "540p")
             {
                 sCameraSettings.videoResolution = VideoResolution540p;
             }
-            else if (tStr == "480p")
+            else if (str == "480p")
             {
                 sCameraSettings.videoResolution = VideoResolution480p;
             }
@@ -935,16 +935,16 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         // ==================== Video AspectRatio ====================
         if (oXML.FindChildElem("Video_Aspect_Ratio"))
         {
-            tStr = ToLower(oXML.GetChildData());
-            if (tStr == "16x9")
+            str = ToLower(oXML.GetChildData());
+            if (str == "16x9")
             {
                 sCameraSettings.videoAspectRatio = VideoAspectRatio16x9;
             }
-            else if (tStr == "4x3")
+            else if (str == "4x3")
             {
                 sCameraSettings.videoAspectRatio = VideoAspectRatio4x3;
             }
-            else if (tStr == "1x1")
+            else if (str == "1x1")
             {
                 sCameraSettings.videoAspectRatio = VideoAspectRatio1x1;
             }
@@ -1272,32 +1272,32 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
                     {
                         return false;
                     }
-                    tStr = ToLower(oXML.GetChildData());
-                    if (tStr == "shutter out")
+                    str = ToLower(oXML.GetChildData());
+                    if (str == "shutter out")
                     {
                         sCameraSettings.syncOutMode[port] = ModeShutterOut;
                     }
-                    else if (tStr == "multiplier")
+                    else if (str == "multiplier")
                     {
                         sCameraSettings.syncOutMode[port] = ModeMultiplier;
                     }
-                    else if (tStr == "divisor")
+                    else if (str == "divisor")
                     {
                         sCameraSettings.syncOutMode[port] = ModeDivisor;
                     }
-                    else if (tStr == "camera independent")
+                    else if (str == "camera independent")
                     {
                         sCameraSettings.syncOutMode[port] = ModeIndependentFreq;
                     }
-                    else if (tStr == "measurement time")
+                    else if (str == "measurement time")
                     {
                         sCameraSettings.syncOutMode[port] = ModeMeasurementTime;
                     }
-                    else if (tStr == "continuous 100hz")
+                    else if (str == "continuous 100hz")
                     {
                         sCameraSettings.syncOutMode[port] = ModeFixed100Hz;
                     }
-                    else if (tStr == "system live time")
+                    else if (str == "system live time")
                     {
                         sCameraSettings.syncOutMode[port] = ModeSystemLiveTime;
                     }
@@ -1421,7 +1421,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
 bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable)
 {
-    std::string tStr;
+    std::string str;
 
     pDataAvailable = false;
 
@@ -1439,29 +1439,29 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
     {
         return false;
     }
-    tStr = ToLower(oXML.GetChildData());
+    str = ToLower(oXML.GetChildData());
 
-    if (tStr == "+x")
+    if (str == "+x")
     {
         p3dSettings.axisUpwards = XPos;
     }
-    else if (tStr == "-x")
+    else if (str == "-x")
     {
         p3dSettings.axisUpwards = XNeg;
     }
-    else if (tStr == "+y")
+    else if (str == "+y")
     {
         p3dSettings.axisUpwards = YPos;
     }
-    else if (tStr == "-y")
+    else if (str == "-y")
     {
         p3dSettings.axisUpwards = YNeg;
     }
-    else if (tStr == "+z")
+    else if (str == "+z")
     {
         p3dSettings.axisUpwards = ZPos;
     }
-    else if (tStr == "-z")
+    else if (str == "-z")
     {
         p3dSettings.axisUpwards = ZNeg;
     }
@@ -1474,8 +1474,8 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
     {
         return false;
     }
-    tStr = oXML.GetChildData();
-    strcpy(p3dSettings.calibrationTime, tStr.c_str());
+    str = oXML.GetChildData();
+    strcpy(p3dSettings.calibrationTime, str.c_str());
 
     if (!oXML.FindChildElem("Labels"))
     {
@@ -2491,10 +2491,10 @@ bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& pI
         {
             return false;
         }
-        std::string tStr;
-        tStr = ToLower(oXML.GetChildData());
+        std::string str;
+        str = ToLower(oXML.GetChildData());
 
-        if (tStr == "true")
+        if (str == "true")
         {
             sImageCamera.enabled = true;
         }
@@ -2507,21 +2507,21 @@ bool CMarkupDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& pI
         {
             return false;
         }
-        tStr = ToLower(oXML.GetChildData());
+        str = ToLower(oXML.GetChildData());
 
-        if (tStr == "rawgrayscale")
+        if (str == "rawgrayscale")
         {
             sImageCamera.format = CRTPacket::FormatRawGrayscale;
         }
-        else if (tStr == "rawbgr")
+        else if (str == "rawbgr")
         {
             sImageCamera.format = CRTPacket::FormatRawBGR;
         }
-        else if (tStr == "jpg")
+        else if (str == "jpg")
         {
             sImageCamera.format = CRTPacket::FormatJPG;
         }
-        else if (tStr == "png")
+        else if (str == "png")
         {
             sImageCamera.format = CRTPacket::FormatPNG;
         }
