@@ -229,15 +229,15 @@ TEST_CASE("SetCameraVideoSettingsTest")
     network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
 
     const unsigned int cameraID = 1u;
-    const CRTProtocol::EVideoResolution eVideoResolution = CRTProtocol::EVideoResolution::VideoResolution1080p;
-    const CRTProtocol::EVideoAspectRatio eVideoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatio4x3;
+    const CRTProtocol::EVideoResolution videoResolution = CRTProtocol::EVideoResolution::VideoResolution1080p;
+    const CRTProtocol::EVideoAspectRatio videoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatio4x3;
     const unsigned int videoFrequency = 23u;
     const float videoExposure = 0.123f;
     const float videoFlashTime = 0.456f;
 
     if (!protocol->SetCameraVideoSettings(
-        cameraID, &eVideoResolution,
-        &eVideoAspectRatio, &videoFrequency,
+        cameraID, &videoResolution,
+        &videoAspectRatio, &videoFrequency,
         &videoExposure, &videoFlashTime))
     {
         FAIL(protocol->GetErrorString());
