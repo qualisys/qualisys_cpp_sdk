@@ -94,7 +94,7 @@ namespace
 }
 
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
     mXmlDocument.Parse(pData);
 }
@@ -195,7 +195,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
     {
         return false;
     }
-    if (mMajorVersion > 1 || mnMinorVersion > 14)
+    if (mMajorVersion > 1 || mMinorVersion > 14)
     {
         if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
         {
@@ -408,7 +408,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
         };
 
-    auto actionsCount = (mMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
         // ==================== Processing actions ====================
@@ -421,7 +421,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
         *processingActions[i] = ProcessingNone;
 
-        if (mMajorVersion > 1 || mnMinorVersion > 13)
+        if (mMajorVersion > 1 || mMinorVersion > 13)
         {
             if (!AddFlagFromBoolElement(*processingElem, "PreProcessing2D", ProcessingPreProcess2D, *processingActions[i]))
             {
@@ -473,7 +473,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (mMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             if (!AddFlagFromBoolElement(*processingElem, "GazeVector", ProcessingGazeVector, *processingActions[i]))
             {
@@ -498,7 +498,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                 return false;
             }
 
-            if (mMajorVersion > 1 || mnMinorVersion > 11)
+            if (mMajorVersion > 1 || mMinorVersion > 11)
             {
                 if (!AddFlagFromBoolElement(*processingElem, "ExportAviFile", ProcessingExportAviFile, *processingActions[i]))
                 {
@@ -676,7 +676,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (mMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             if (!ReadElementUnsignedInt32(*cameraElem, "Video_Frequency", sCameraSettings.nVideoFrequency))
             {
@@ -1488,7 +1488,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
         return true; // NO eye tracker data available.
     }
 
-    if (mMajorVersion > 1 || mnMinorVersion > 20)
+    if (mMajorVersion > 1 || mMinorVersion > 20)
     {
         for (auto bodyElem = sixdofElem->FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
         {
@@ -1499,7 +1499,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
                 return false;
             }
 
-            TryReadSetEnabled(mMajorVersion, mnMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
+            TryReadSetEnabled(mMajorVersion, mMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
             if (!TryReadSetColor(*bodyElem, s6DOFBodySettings.color)
                 || !TryReadSetMaxResidual(*bodyElem, s6DOFBodySettings.maxResidual)
                 || !TryReadSetMinMarkersInBody(*bodyElem, s6DOFBodySettings.minMarkersInBody)
@@ -1556,7 +1556,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
                 return false;
             }
 
-            if (mMajorVersion > 1 || mnMinorVersion > 15)
+            if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 // Euler --- REQUIRED
                 if (!TryReadSetEuler(mXmlDocument, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
@@ -1690,7 +1690,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
         return true;
     }
 
-    if (mMajorVersion == 1 && mnMinorVersion == 0)
+    if (mMajorVersion == 1 && mMinorVersion == 0)
     {
         SAnalogDevice analogDevice{};
         analogDevice.nDeviceID = 1;   // Always channel 1
@@ -1727,7 +1727,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             continue;
         }
 
-        if (mMajorVersion == 1 && mnMinorVersion < 11)
+        if (mMajorVersion == 1 && mMinorVersion < 11)
         {
             if (!ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
             {
@@ -1743,7 +1743,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             continue;
         }
 
-        if (mMajorVersion == 1 && mnMinorVersion < 11)
+        if (mMajorVersion == 1 && mMinorVersion < 11)
         {
             for (std::size_t i = 0; i < analogDevice.nChannels; i++)
             {
@@ -1982,7 +1982,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
         auto calibrationMatrix = plateElem->FirstChildElement("Calibration_Matrix");
         if (calibrationMatrix)
         {
-            if (mMajorVersion == 1 && mnMinorVersion < 12)
+            if (mMajorVersion == 1 && mMinorVersion < 12)
             {
                 auto getRowStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
                         sprintf_s(buff, buffSize, "Row%zd", index + 1);
@@ -2197,7 +2197,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
     int segmentIndex;
     std::map<int, int> segmentIdIndexMap;
 
-    if (mMajorVersion > 1 || mnMinorVersion > 20)
+    if (mMajorVersion > 1 || mMinorVersion > 20)
     {
         for (auto skeletonElem : ChildElementRange{ *skeletonsElem, "Skeleton" })
         {
