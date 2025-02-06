@@ -25,7 +25,7 @@ namespace
 
 bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings)
 {
-    pGeneralSettings.vsCameras.clear();
+    pGeneralSettings.cameras.clear();
 
     auto rootElem = mDeserializer;
     if (!rootElem)
@@ -41,7 +41,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
     if (auto frequencyElem = generalElem.FirstChildElement("Frequency"))
     {
-        pGeneralSettings.nCaptureFrequency = frequencyElem.UnsignedText(0);
+        pGeneralSettings.captureFrequency = frequencyElem.UnsignedText(0);
     }
     else
     {
@@ -50,28 +50,28 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
     if (auto captureTimeElem = generalElem.FirstChildElement("Capture_Time"))
     {
-        pGeneralSettings.fCaptureTime = captureTimeElem.FloatText(.0f);
+        pGeneralSettings.captureTime = captureTimeElem.FloatText(.0f);
     }
     else
     {
         return false;
     }
 
-    if (!ReadXmlBool(generalElem, "Start_On_External_Trigger", pGeneralSettings.bStartOnExternalTrigger))
+    if (!ReadXmlBool(generalElem, "Start_On_External_Trigger", pGeneralSettings.startOnExternalTrigger))
     {
         return false;
     }
     if (mMajorVersion > 1 || mMinorVersion > 14)
     {
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
+        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", pGeneralSettings.startOnTrigNO))
         {
             return false;
         }
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NC", pGeneralSettings.bStartOnTrigNC))
+        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NC", pGeneralSettings.startOnTrigNC))
         {
             return false;
         }
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_Software", pGeneralSettings.bStartOnTrigSoftware))
+        if (!ReadXmlBool(generalElem, "Start_On_Trigger_Software", pGeneralSettings.startOnTrigSoftware))
         {
             return false;
         }
@@ -80,7 +80,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
     if (auto extTimeBaseElem = generalElem.FirstChildElement("External_Time_Base"))
     {
-        if (!ReadXmlBool(extTimeBaseElem, "Enabled", pGeneralSettings.sExternalTimebase.bEnabled))
+        if (!ReadXmlBool(extTimeBaseElem, "Enabled", pGeneralSettings.externalTimebase.enabled))
         {
             return false;
         }
@@ -94,23 +94,23 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         signalSource = ToLowerXmlString(signalSource);
         if (signalSource == "control port")
         {
-            pGeneralSettings.sExternalTimebase.eSignalSource = SourceControlPort;
+            pGeneralSettings.externalTimebase.signalSource = SourceControlPort;
         }
         else if (signalSource == "ir receiver")
         {
-            pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRReceiver;
+            pGeneralSettings.externalTimebase.signalSource = SourceIRReceiver;
         }
         else if (signalSource == "smpte")
         {
-            pGeneralSettings.sExternalTimebase.eSignalSource = SourceSMPTE;
+            pGeneralSettings.externalTimebase.signalSource = SourceSMPTE;
         }
         else if (signalSource == "irig")
         {
-            pGeneralSettings.sExternalTimebase.eSignalSource = SourceIRIG;
+            pGeneralSettings.externalTimebase.signalSource = SourceIRIG;
         }
         else if (signalSource == "video sync")
         {
-            pGeneralSettings.sExternalTimebase.eSignalSource = SourceVideoSync;
+            pGeneralSettings.externalTimebase.signalSource = SourceVideoSync;
         }
         else
         {
@@ -126,39 +126,39 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         signalMode = ToLowerXmlString(signalMode);
         if (signalMode == "periodic")
         {
-            pGeneralSettings.sExternalTimebase.bSignalModePeriodic = true;
+            pGeneralSettings.externalTimebase.signalModePeriodic = true;
         }
         else if (signalMode == "non-periodic")
         {
-            pGeneralSettings.sExternalTimebase.bSignalModePeriodic = false;
+            pGeneralSettings.externalTimebase.signalModePeriodic = false;
         }
         else
         {
             return false;
         }
-        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Multiplier", pGeneralSettings.sExternalTimebase.nFreqMultiplier))
+        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Multiplier", pGeneralSettings.externalTimebase.freqMultiplier))
         {
             return false;
         }
 
-        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Divisor", pGeneralSettings.sExternalTimebase.nFreqDivisor))
+        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Divisor", pGeneralSettings.externalTimebase.freqDivisor))
         {
             return false;
         }
 
-        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Tolerance", pGeneralSettings.sExternalTimebase.nFreqTolerance))
+        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Tolerance", pGeneralSettings.externalTimebase.freqTolerance))
         {
             return false;
         }
 
-        if (!TryReadElementFloat(extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
+        if (!TryReadElementFloat(extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.externalTimebase.nominalFrequency))
         {
             std::string nominalFrequency;
             if (TryReadElementString(extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
             {
                 if (ToLowerXmlString(nominalFrequency) == "none")
                 {
-                    pGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
+                    pGeneralSettings.externalTimebase.nominalFrequency = -1; // -1 = disabled
                 }
             }
             else
@@ -173,11 +173,11 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             signalEdge = ToLowerXmlString(signalEdge);
             if (signalEdge == "negative")
             {
-                pGeneralSettings.sExternalTimebase.bNegativeEdge = true;
+                pGeneralSettings.externalTimebase.negativeEdge = true;
             }
             else if (signalEdge == "positive")
             {
-                pGeneralSettings.sExternalTimebase.bNegativeEdge = false;
+                pGeneralSettings.externalTimebase.negativeEdge = false;
             }
             else
             {
@@ -189,14 +189,14 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (!TryReadElementFloat(extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
+        if (!TryReadElementFloat(extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.externalTimebase.nominalFrequency))
         {
             std::string nominalFrequency;
             if (TryReadElementString(extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
             {
                 if (ToLowerXmlString(nominalFrequency) == "none")
                 {
-                    pGeneralSettings.sExternalTimebase.fNominalFrequency = -1; // -1 = disabled
+                    pGeneralSettings.externalTimebase.nominalFrequency = -1; // -1 = disabled
                 }
             }
             else
@@ -205,12 +205,12 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
         }
 
-        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Signal_Shutter_Delay", pGeneralSettings.sExternalTimebase.nSignalShutterDelay))
+        if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Signal_Shutter_Delay", pGeneralSettings.externalTimebase.signalShutterDelay))
         {
             return false;
         }
 
-        if (!TryReadElementFloat(extTimeBaseElem, "Non_Periodic_Timeout", pGeneralSettings.sExternalTimebase.fNonPeriodicTimeout))
+        if (!TryReadElementFloat(extTimeBaseElem, "Non_Periodic_Timeout", pGeneralSettings.externalTimebase.nonPeriodicTimeout))
         {
             return false;
         }
@@ -223,7 +223,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
     if (auto externalTimestampElem = generalElem.FirstChildElement("External_Timestamp"))
     {
-        if (!ReadXmlBool(externalTimestampElem, "Enabled", pGeneralSettings.sTimestamp.bEnabled))
+        if (!ReadXmlBool(externalTimestampElem, "Enabled", pGeneralSettings.timestamp.enabled))
         {
             return false;
         }
@@ -234,27 +234,27 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             type = ToLowerXmlString(type);
             if (type == "smpte")
             {
-                pGeneralSettings.sTimestamp.nType = Timestamp_SMPTE;
+                pGeneralSettings.timestamp.type = Timestamp_SMPTE;
             }
             else if (type == "irig")
             {
-                pGeneralSettings.sTimestamp.nType = Timestamp_IRIG;
+                pGeneralSettings.timestamp.type = Timestamp_IRIG;
             }
             else
             {
-                pGeneralSettings.sTimestamp.nType = Timestamp_CameraTime;
+                pGeneralSettings.timestamp.type = Timestamp_CameraTime;
             }
         }
 
-        TryReadElementUnsignedInt32(externalTimestampElem, "Frequency", pGeneralSettings.sTimestamp.nFrequency);
+        TryReadElementUnsignedInt32(externalTimestampElem, "Frequency", pGeneralSettings.timestamp.frequency);
     }
 
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     EProcessingActions* processingActions[3] =
     {
-        &pGeneralSettings.eProcessingActions,
-        &pGeneralSettings.eRtProcessingActions,
-        &pGeneralSettings.eReprocessingActions
+        &pGeneralSettings.processingActions,
+        &pGeneralSettings.rtProcessingActions,
+        &pGeneralSettings.reprocessingActions
     };
 
     auto AddFlagFromBoolElement = [this](Deserializer& parent, const char* elementName, EProcessingActions flag, EProcessingActions& target) -> bool
@@ -385,7 +385,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
     for (auto cameraElem = generalElem.FirstChildElement("Camera"); cameraElem != nullptr; cameraElem = cameraElem.NextSiblingElement("Camera"))
     {
         SSettingsGeneralCamera sCameraSettings{};
-        if (!TryReadElementUnsignedInt32(cameraElem, "ID", sCameraSettings.nID))
+        if (!TryReadElementUnsignedInt32(cameraElem, "ID", sCameraSettings.id))
         {
             return false;
         }
@@ -399,121 +399,121 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
         if (model == "macreflex")
         {
-            sCameraSettings.eModel = ModelMacReflex;
+            sCameraSettings.model = ModelMacReflex;
         }
         else if (model == "proreflex 120")
         {
-            sCameraSettings.eModel = ModelProReflex120;
+            sCameraSettings.model = ModelProReflex120;
         }
         else if (model == "proreflex 240")
         {
-            sCameraSettings.eModel = ModelProReflex240;
+            sCameraSettings.model = ModelProReflex240;
         }
         else if (model == "proreflex 500")
         {
-            sCameraSettings.eModel = ModelProReflex500;
+            sCameraSettings.model = ModelProReflex500;
         }
         else if (model == "proreflex 1000")
         {
-            sCameraSettings.eModel = ModelProReflex1000;
+            sCameraSettings.model = ModelProReflex1000;
         }
         else if (model == "oqus 100")
         {
-            sCameraSettings.eModel = ModelOqus100;
+            sCameraSettings.model = ModelOqus100;
         }
         else if (model == "oqus 200" || model == "oqus 200 c")
         {
-            sCameraSettings.eModel = ModelOqus200C;
+            sCameraSettings.model = ModelOqus200C;
         }
         else if (model == "oqus 300")
         {
-            sCameraSettings.eModel = ModelOqus300;
+            sCameraSettings.model = ModelOqus300;
         }
         else if (model == "oqus 300 plus")
         {
-            sCameraSettings.eModel = ModelOqus300Plus;
+            sCameraSettings.model = ModelOqus300Plus;
         }
         else if (model == "oqus 400")
         {
-            sCameraSettings.eModel = ModelOqus400;
+            sCameraSettings.model = ModelOqus400;
         }
         else if (model == "oqus 500")
         {
-            sCameraSettings.eModel = ModelOqus500;
+            sCameraSettings.model = ModelOqus500;
         }
         else if (model == "oqus 500 plus")
         {
-            sCameraSettings.eModel = ModelOqus500Plus;
+            sCameraSettings.model = ModelOqus500Plus;
         }
         else if (model == "oqus 700")
         {
-            sCameraSettings.eModel = ModelOqus700;
+            sCameraSettings.model = ModelOqus700;
         }
         else if (model == "oqus 700 plus")
         {
-            sCameraSettings.eModel = ModelOqus700Plus;
+            sCameraSettings.model = ModelOqus700Plus;
         }
         else if (model == "oqus 600 plus")
         {
-            sCameraSettings.eModel = ModelOqus600Plus;
+            sCameraSettings.model = ModelOqus600Plus;
         }
         else if (model == "miqus m1")
         {
-            sCameraSettings.eModel = ModelMiqusM1;
+            sCameraSettings.model = ModelMiqusM1;
         }
         else if (model == "miqus m3")
         {
-            sCameraSettings.eModel = ModelMiqusM3;
+            sCameraSettings.model = ModelMiqusM3;
         }
         else if (model == "miqus m5")
         {
-            sCameraSettings.eModel = ModelMiqusM5;
+            sCameraSettings.model = ModelMiqusM5;
         }
         else if (model == "miqus sync unit")
         {
-            sCameraSettings.eModel = ModelMiqusSyncUnit;
+            sCameraSettings.model = ModelMiqusSyncUnit;
         }
         else if (model == "miqus video")
         {
-            sCameraSettings.eModel = ModelMiqusVideo;
+            sCameraSettings.model = ModelMiqusVideo;
         }
         else if (model == "miqus video color")
         {
-            sCameraSettings.eModel = ModelMiqusVideoColor;
+            sCameraSettings.model = ModelMiqusVideoColor;
         }
         else if (model == "miqus hybrid")
         {
-            sCameraSettings.eModel = ModelMiqusHybrid;
+            sCameraSettings.model = ModelMiqusHybrid;
         }
         else if (model == "miqus video color plus")
         {
-            sCameraSettings.eModel = ModelMiqusVideoColorPlus;
+            sCameraSettings.model = ModelMiqusVideoColorPlus;
         }
         else if (model == "arqus a5")
         {
-            sCameraSettings.eModel = ModelArqusA5;
+            sCameraSettings.model = ModelArqusA5;
         }
         else if (model == "arqus a9")
         {
-            sCameraSettings.eModel = ModelArqusA9;
+            sCameraSettings.model = ModelArqusA9;
         }
         else if (model == "arqus a12")
         {
-            sCameraSettings.eModel = ModelArqusA12;
+            sCameraSettings.model = ModelArqusA12;
         }
         else if (model == "arqus a26")
         {
-            sCameraSettings.eModel = ModelArqusA26;
+            sCameraSettings.model = ModelArqusA26;
         }
         else
         {
-            sCameraSettings.eModel = ModelUnknown;
+            sCameraSettings.model = ModelUnknown;
         }
 
-        ReadXmlBool(cameraElem, "Underwater", sCameraSettings.bUnderwater);
-        ReadXmlBool(cameraElem, "Supports_HW_Sync", sCameraSettings.bSupportsHwSync);
+        ReadXmlBool(cameraElem, "Underwater", sCameraSettings.underwater);
+        ReadXmlBool(cameraElem, "Supports_HW_Sync", sCameraSettings.supportsHwSync);
 
-        if (!TryReadElementUnsignedInt32(cameraElem, "Serial", sCameraSettings.nSerial))
+        if (!TryReadElementUnsignedInt32(cameraElem, "Serial", sCameraSettings.serial))
         {
             return false;
         }
@@ -527,15 +527,15 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         mode = ToLowerXmlString(mode);
         if (mode == "marker")
         {
-            sCameraSettings.eMode = ModeMarker;
+            sCameraSettings.mode = ModeMarker;
         }
         else if (mode == "marker intensity")
         {
-            sCameraSettings.eMode = ModeMarkerIntensity;
+            sCameraSettings.mode = ModeMarkerIntensity;
         }
         else if (mode == "video")
         {
-            sCameraSettings.eMode = ModeVideo;
+            sCameraSettings.mode = ModeVideo;
         }
         else
         {
@@ -544,7 +544,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
         if (mMajorVersion > 1 || mMinorVersion > 11)
         {
-            if (!TryReadElementUnsignedInt32(cameraElem, "Video_Frequency", sCameraSettings.nVideoFrequency))
+            if (!TryReadElementUnsignedInt32(cameraElem, "Video_Frequency", sCameraSettings.videoFrequency))
             {
                 return false;
             }
@@ -556,32 +556,32 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             videoResolution = ToLowerXmlString(videoResolution);
             if (videoResolution == "1440p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution1440p;
+                sCameraSettings.videoResolution = VideoResolution1440p;
             }
             else if (videoResolution == "1080p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution1080p;
+                sCameraSettings.videoResolution = VideoResolution1080p;
             }
             else if (videoResolution == "720p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution720p;
+                sCameraSettings.videoResolution = VideoResolution720p;
             }
             else if (videoResolution == "540p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution540p;
+                sCameraSettings.videoResolution = VideoResolution540p;
             }
             else if (videoResolution == "480p")
             {
-                sCameraSettings.eVideoResolution = VideoResolution480p;
+                sCameraSettings.videoResolution = VideoResolution480p;
             }
             else
             {
-                sCameraSettings.eVideoResolution = VideoResolutionNone;
+                sCameraSettings.videoResolution = VideoResolutionNone;
             }
         }
         else
         {
-            sCameraSettings.eVideoResolution = VideoResolutionNone;
+            sCameraSettings.videoResolution = VideoResolutionNone;
         }
 
         std::string videoAspectRatio;
@@ -590,32 +590,32 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             videoAspectRatio = ToLowerXmlString(videoAspectRatio);
             if (videoAspectRatio == "16x9")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio16x9;
+                sCameraSettings.videoAspectRatio = VideoAspectRatio16x9;
             }
             else if (videoAspectRatio == "4x3")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio4x3;
+                sCameraSettings.videoAspectRatio = VideoAspectRatio4x3;
             }
             else if (videoAspectRatio == "1x1")
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatio1x1;
+                sCameraSettings.videoAspectRatio = VideoAspectRatio1x1;
             }
             else
             {
-                sCameraSettings.eVideoAspectRatio = VideoAspectRatioNone;
+                sCameraSettings.videoAspectRatio = VideoAspectRatioNone;
             }
         }
         else
         {
-            sCameraSettings.eVideoAspectRatio = VideoAspectRatioNone;
+            sCameraSettings.videoAspectRatio = VideoAspectRatioNone;
         }
 
         auto videoExposureElem = cameraElem.FirstChildElement("Video_Exposure");
         if (videoExposureElem)
         {
-            if (!TryReadElementUnsignedInt32(videoExposureElem, "Current", sCameraSettings.nVideoExposure)
-                || !TryReadElementUnsignedInt32(videoExposureElem, "Min", sCameraSettings.nVideoExposureMin)
-                || !TryReadElementUnsignedInt32(videoExposureElem, "Max", sCameraSettings.nVideoExposureMax))
+            if (!TryReadElementUnsignedInt32(videoExposureElem, "Current", sCameraSettings.videoExposure)
+                || !TryReadElementUnsignedInt32(videoExposureElem, "Min", sCameraSettings.videoExposureMin)
+                || !TryReadElementUnsignedInt32(videoExposureElem, "Max", sCameraSettings.videoExposureMax))
             {
                 return false;
             }
@@ -628,9 +628,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoFlashTime = cameraElem.FirstChildElement("Video_Flash_Time");
         if (videoFlashTime)
         {
-            if (!TryReadElementUnsignedInt32(videoFlashTime, "Current", sCameraSettings.nVideoFlashTime)
-                || !TryReadElementUnsignedInt32(videoFlashTime, "Min", sCameraSettings.nVideoFlashTimeMin)
-                || !TryReadElementUnsignedInt32(videoFlashTime, "Max", sCameraSettings.nVideoFlashTimeMax))
+            if (!TryReadElementUnsignedInt32(videoFlashTime, "Current", sCameraSettings.videoFlashTime)
+                || !TryReadElementUnsignedInt32(videoFlashTime, "Min", sCameraSettings.videoFlashTimeMin)
+                || !TryReadElementUnsignedInt32(videoFlashTime, "Max", sCameraSettings.videoFlashTimeMax))
             {
                 return false;
             }
@@ -643,9 +643,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerExposureElem = cameraElem.FirstChildElement("Marker_Exposure");
         if (markerExposureElem)
         {
-            if (!TryReadElementUnsignedInt32(markerExposureElem, "Current", sCameraSettings.nMarkerExposure)
-                || !TryReadElementUnsignedInt32(markerExposureElem, "Min", sCameraSettings.nMarkerExposureMin)
-                || !TryReadElementUnsignedInt32(markerExposureElem, "Max", sCameraSettings.nMarkerExposureMax))
+            if (!TryReadElementUnsignedInt32(markerExposureElem, "Current", sCameraSettings.markerExposure)
+                || !TryReadElementUnsignedInt32(markerExposureElem, "Min", sCameraSettings.markerExposureMin)
+                || !TryReadElementUnsignedInt32(markerExposureElem, "Max", sCameraSettings.markerExposureMax))
             {
                 return false;
             }
@@ -658,9 +658,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerThresholdElem = cameraElem.FirstChildElement("Marker_Threshold");
         if (markerThresholdElem)
         {
-            if (!TryReadElementUnsignedInt32(markerThresholdElem, "Current", sCameraSettings.nMarkerThreshold)
-                || !TryReadElementUnsignedInt32(markerThresholdElem, "Min", sCameraSettings.nMarkerThresholdMin)
-                || !TryReadElementUnsignedInt32(markerThresholdElem, "Max", sCameraSettings.nMarkerThresholdMax))
+            if (!TryReadElementUnsignedInt32(markerThresholdElem, "Current", sCameraSettings.markerThreshold)
+                || !TryReadElementUnsignedInt32(markerThresholdElem, "Min", sCameraSettings.markerThresholdMin)
+                || !TryReadElementUnsignedInt32(markerThresholdElem, "Max", sCameraSettings.markerThresholdMax))
             {
                 return false;
             }
@@ -673,18 +673,18 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto positionElem = cameraElem.FirstChildElement("Position");
         if (positionElem)
         {
-            if (!TryReadElementFloat(positionElem, "X", sCameraSettings.fPositionX)
-                || !TryReadElementFloat(positionElem, "Y", sCameraSettings.fPositionY)
-                || !TryReadElementFloat(positionElem, "Z", sCameraSettings.fPositionZ)
-                || !TryReadElementFloat(positionElem, "Rot_1_1", sCameraSettings.fPositionRotMatrix[0][0])
-                || !TryReadElementFloat(positionElem, "Rot_2_1", sCameraSettings.fPositionRotMatrix[1][0])
-                || !TryReadElementFloat(positionElem, "Rot_3_1", sCameraSettings.fPositionRotMatrix[2][0])
-                || !TryReadElementFloat(positionElem, "Rot_1_2", sCameraSettings.fPositionRotMatrix[0][1])
-                || !TryReadElementFloat(positionElem, "Rot_2_2", sCameraSettings.fPositionRotMatrix[1][1])
-                || !TryReadElementFloat(positionElem, "Rot_3_2", sCameraSettings.fPositionRotMatrix[2][1])
-                || !TryReadElementFloat(positionElem, "Rot_1_3", sCameraSettings.fPositionRotMatrix[0][2])
-                || !TryReadElementFloat(positionElem, "Rot_2_3", sCameraSettings.fPositionRotMatrix[1][2])
-                || !TryReadElementFloat(positionElem, "Rot_3_3", sCameraSettings.fPositionRotMatrix[2][2])
+            if (!TryReadElementFloat(positionElem, "X", sCameraSettings.positionX)
+                || !TryReadElementFloat(positionElem, "Y", sCameraSettings.positionY)
+                || !TryReadElementFloat(positionElem, "Z", sCameraSettings.positionZ)
+                || !TryReadElementFloat(positionElem, "Rot_1_1", sCameraSettings.positionRotMatrix[0][0])
+                || !TryReadElementFloat(positionElem, "Rot_2_1", sCameraSettings.positionRotMatrix[1][0])
+                || !TryReadElementFloat(positionElem, "Rot_3_1", sCameraSettings.positionRotMatrix[2][0])
+                || !TryReadElementFloat(positionElem, "Rot_1_2", sCameraSettings.positionRotMatrix[0][1])
+                || !TryReadElementFloat(positionElem, "Rot_2_2", sCameraSettings.positionRotMatrix[1][1])
+                || !TryReadElementFloat(positionElem, "Rot_3_2", sCameraSettings.positionRotMatrix[2][1])
+                || !TryReadElementFloat(positionElem, "Rot_1_3", sCameraSettings.positionRotMatrix[0][2])
+                || !TryReadElementFloat(positionElem, "Rot_2_3", sCameraSettings.positionRotMatrix[1][2])
+                || !TryReadElementFloat(positionElem, "Rot_3_3", sCameraSettings.positionRotMatrix[2][2])
                 )
             {
                 return false;
@@ -695,7 +695,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (!TryReadElementUnsignedInt32(cameraElem, "Orientation", sCameraSettings.nOrientation))
+        if (!TryReadElementUnsignedInt32(cameraElem, "Orientation", sCameraSettings.orientation))
         {
             return false;
         }
@@ -703,8 +703,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerResElem = cameraElem.FirstChildElement("Marker_Res");
         if (markerResElem)
         {
-            if (!TryReadElementUnsignedInt32(markerResElem, "Width", sCameraSettings.nMarkerResolutionWidth)
-                || !TryReadElementUnsignedInt32(markerResElem, "Height", sCameraSettings.nMarkerResolutionHeight)
+            if (!TryReadElementUnsignedInt32(markerResElem, "Width", sCameraSettings.markerResolutionWidth)
+                || !TryReadElementUnsignedInt32(markerResElem, "Height", sCameraSettings.markerResolutionHeight)
                 )
             {
                 return false;
@@ -718,8 +718,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoResElem = cameraElem.FirstChildElement("Video_Res");
         if (videoResElem)
         {
-            if (!TryReadElementUnsignedInt32(videoResElem, "Width", sCameraSettings.nVideoResolutionWidth)
-                || !TryReadElementUnsignedInt32(videoResElem, "Height", sCameraSettings.nVideoResolutionHeight)
+            if (!TryReadElementUnsignedInt32(videoResElem, "Width", sCameraSettings.videoResolutionWidth)
+                || !TryReadElementUnsignedInt32(videoResElem, "Height", sCameraSettings.videoResolutionHeight)
                 )
             {
                 return false;
@@ -733,10 +733,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerFovElem = cameraElem.FirstChildElement("Marker_FOV");
         if (markerFovElem)
         {
-            if (!TryReadElementUnsignedInt32(markerFovElem, "Left", sCameraSettings.nMarkerFOVLeft)
-                || !TryReadElementUnsignedInt32(markerFovElem, "Top", sCameraSettings.nMarkerFOVTop)
-                || !TryReadElementUnsignedInt32(markerFovElem, "Right", sCameraSettings.nMarkerFOVRight)
-                || !TryReadElementUnsignedInt32(markerFovElem, "Bottom", sCameraSettings.nMarkerFOVBottom)
+            if (!TryReadElementUnsignedInt32(markerFovElem, "Left", sCameraSettings.markerFOVLeft)
+                || !TryReadElementUnsignedInt32(markerFovElem, "Top", sCameraSettings.markerFOVTop)
+                || !TryReadElementUnsignedInt32(markerFovElem, "Right", sCameraSettings.markerFOVRight)
+                || !TryReadElementUnsignedInt32(markerFovElem, "Bottom", sCameraSettings.markerFOVBottom)
                 )
             {
                 return false;
@@ -750,10 +750,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoFovElem = cameraElem.FirstChildElement("Marker_FOV");
         if (videoFovElem)
         {
-            if (!TryReadElementUnsignedInt32(videoFovElem, "Left", sCameraSettings.nVideoFOVLeft)
-                || !TryReadElementUnsignedInt32(videoFovElem, "Top", sCameraSettings.nVideoFOVTop)
-                || !TryReadElementUnsignedInt32(videoFovElem, "Right", sCameraSettings.nVideoFOVRight)
-                || !TryReadElementUnsignedInt32(videoFovElem, "Bottom", sCameraSettings.nVideoFOVBottom)
+            if (!TryReadElementUnsignedInt32(videoFovElem, "Left", sCameraSettings.videoFOVLeft)
+                || !TryReadElementUnsignedInt32(videoFovElem, "Top", sCameraSettings.videoFOVTop)
+                || !TryReadElementUnsignedInt32(videoFovElem, "Right", sCameraSettings.videoFOVRight)
+                || !TryReadElementUnsignedInt32(videoFovElem, "Bottom", sCameraSettings.videoFOVBottom)
                 )
             {
                 return false;
@@ -784,55 +784,55 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                     mode = ToLowerXmlString(mode);
                     if (mode == "shutter out")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeShutterOut;
+                        sCameraSettings.syncOutMode[port] = ModeShutterOut;
                     }
                     else if (mode == "multiplier")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeMultiplier;
+                        sCameraSettings.syncOutMode[port] = ModeMultiplier;
                     }
                     else if (mode == "divisor")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeDivisor;
+                        sCameraSettings.syncOutMode[port] = ModeDivisor;
                     }
                     else if (mode == "camera independent")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
+                        sCameraSettings.syncOutMode[port] = ModeIndependentFreq;
                     }
                     else if (mode == "measurement time")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
+                        sCameraSettings.syncOutMode[port] = ModeMeasurementTime;
                     }
                     else if (mode == "continuous 100hz")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
+                        sCameraSettings.syncOutMode[port] = ModeFixed100Hz;
                     }
                     else if (mode == "system live time")
                     {
-                        sCameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
+                        sCameraSettings.syncOutMode[port] = ModeSystemLiveTime;
                     }
                     else
                     {
                         return false;
                     }
 
-                    if (sCameraSettings.eSyncOutMode[port] == ModeMultiplier ||
-                        sCameraSettings.eSyncOutMode[port] == ModeDivisor ||
-                        sCameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
+                    if (sCameraSettings.syncOutMode[port] == ModeMultiplier ||
+                        sCameraSettings.syncOutMode[port] == ModeDivisor ||
+                        sCameraSettings.syncOutMode[port] == ModeIndependentFreq)
                     {
-                        if (!TryReadElementUnsignedInt32(syncOutElem, "Value", sCameraSettings.nSyncOutValue[port])
-                            || !TryReadElementFloat(syncOutElem, "Duty_Cycle", sCameraSettings.fSyncOutDutyCycle[port]))
+                        if (!TryReadElementUnsignedInt32(syncOutElem, "Value", sCameraSettings.syncOutValue[port])
+                            || !TryReadElementFloat(syncOutElem, "Duty_Cycle", sCameraSettings.syncOutDutyCycle[port]))
                         {
                             return false;
                         }
                     }
                 }
 
-                if (port == 2 || (sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
+                if (port == 2 || (sCameraSettings.syncOutMode[port] != ModeFixed100Hz))
                 {
                     std::string signalPolarity;
                     if (TryReadElementString(syncOutElem, "Signal_Polarity", signalPolarity))
                     {
-                        sCameraSettings.bSyncOutNegativePolarity[port] = ToLowerXmlString(signalPolarity) == "negative";
+                        sCameraSettings.syncOutNegativePolarity[port] = ToLowerXmlString(signalPolarity) == "negative";
                     }
                     else
                     {
@@ -842,10 +842,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
             else
             {
-                sCameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
-                sCameraSettings.nSyncOutValue[port] = 0;
-                sCameraSettings.fSyncOutDutyCycle[port] = 0;
-                sCameraSettings.bSyncOutNegativePolarity[port] = false;
+                sCameraSettings.syncOutMode[port] = ModeIndependentFreq;
+                sCameraSettings.syncOutValue[port] = 0;
+                sCameraSettings.syncOutDutyCycle[port] = 0;
+                sCameraSettings.syncOutNegativePolarity[port] = false;
             }
         }
 
@@ -855,19 +855,19 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             auto focusElem = lensControlElem.FirstChildElement("Focus");
             if (focusElem)
             {
-                sCameraSettings.fFocus = focusElem.FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
+                sCameraSettings.focus = focusElem.FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
             }
 
             auto apertureElem = lensControlElem.FirstChildElement("Aperture");
             if (apertureElem)
             {
-                sCameraSettings.fAperture = apertureElem.FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
+                sCameraSettings.aperture = apertureElem.FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
             }
         }
         else
         {
-            sCameraSettings.fFocus = std::numeric_limits<float>::quiet_NaN();
-            sCameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
+            sCameraSettings.focus = std::numeric_limits<float>::quiet_NaN();
+            sCameraSettings.aperture = std::numeric_limits<float>::quiet_NaN();
         }
 
         auto autoExposureElem = cameraElem.FirstChildElement("AutoExposure");
@@ -892,7 +892,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             sCameraSettings.autoWhiteBalance = -1;
         }
 
-        pGeneralSettings.vsCameras.push_back(sCameraSettings);
+        pGeneralSettings.cameras.push_back(sCameraSettings);
     }
 
     return true;
@@ -902,7 +902,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 {
     pDataAvailable = false;
 
-    p3dSettings.pCalibrationTime[0] = 0;
+    p3dSettings.calibrationTime[0] = 0;
 
     auto rootElem = mDeserializer;
     if (!rootElem)
@@ -921,27 +921,27 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
         auto tStr = ToLowerXmlString(axisUpwards.GetText());
         if (tStr == "+x")
         {
-            p3dSettings.eAxisUpwards = XPos;
+            p3dSettings.axisUpwards = XPos;
         }
         else if (tStr == "-x")
         {
-            p3dSettings.eAxisUpwards = XNeg;
+            p3dSettings.axisUpwards = XNeg;
         }
         else if (tStr == "+y")
         {
-            p3dSettings.eAxisUpwards = YPos;
+            p3dSettings.axisUpwards = YPos;
         }
         else if (tStr == "-y")
         {
-            p3dSettings.eAxisUpwards = YNeg;
+            p3dSettings.axisUpwards = YNeg;
         }
         else if (tStr == "+z")
         {
-            p3dSettings.eAxisUpwards = ZPos;
+            p3dSettings.axisUpwards = ZPos;
         }
         else if (tStr == "-z")
         {
-            p3dSettings.eAxisUpwards = ZNeg;
+            p3dSettings.axisUpwards = ZNeg;
         }
         else
         {
@@ -956,7 +956,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
     if (auto calibrationTimeElem = t3dElem.FirstChildElement("CalibrationTime"))
     {
         auto str = calibrationTimeElem.GetText();
-        strcpy_s(p3dSettings.pCalibrationTime, 32, str.data());
+        strcpy_s(p3dSettings.calibrationTime, 32, str.data());
     }
     else
     {
@@ -973,19 +973,19 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
         return false;
     }
 
-    p3dSettings.s3DLabels.clear();
-    p3dSettings.s3DLabels.reserve(labelCount);
+    p3dSettings.labels3D.clear();
+    p3dSettings.labels3D.reserve(labelCount);
     for (auto labelElem = t3dElem.FirstChildElement("Label"); labelElem != nullptr; labelElem = labelElem.NextSiblingElement("Label"))
     {
         SSettings3DLabel label{};
         if (auto nameElem = labelElem.FirstChildElement("Name"))
         {
-            label.oName = nameElem.GetText();
+            label.name = nameElem.GetText();
         }
 
         if (auto colorElem = labelElem.FirstChildElement("RGBColor"))
         {
-            label.nRGBColor = colorElem.IntText(0);
+            label.rgbColor = colorElem.IntText(0);
         }
 
         if (auto typeElem = labelElem.FirstChildElement("Trajectory_Type"))
@@ -993,10 +993,10 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
             label.type = typeElem.GetText();
         }
 
-        p3dSettings.s3DLabels.push_back(label);
+        p3dSettings.labels3D.push_back(label);
     }
 
-    if (p3dSettings.s3DLabels.size() != labelCount)
+    if (p3dSettings.labels3D.size() != labelCount)
     {
         return false;
     }
@@ -1009,7 +1009,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
             bone.fromName = boneElem.Attribute("From");
             bone.toName = boneElem.Attribute("To");
             bone.color = boneElem.UnsignedAttribute("Color", bone.color);
-            p3dSettings.sBones.push_back(bone);
+            p3dSettings.bones.push_back(bone);
         }
     }
 
@@ -1099,9 +1099,9 @@ namespace
             {
                 SBodyPoint sBodyPoint;
 
-                sBodyPoint.fX = pointElem.FloatAttribute("X");
-                sBodyPoint.fY = pointElem.FloatAttribute("Y");
-                sBodyPoint.fZ = pointElem.FloatAttribute("Z");
+                sBodyPoint.x = pointElem.FloatAttribute("X");
+                sBodyPoint.y = pointElem.FloatAttribute("Y");
+                sBodyPoint.z = pointElem.FloatAttribute("Z");
 
                 sBodyPoint.virtual_ = 0 != pointElem.UnsignedAttribute("Virtual");
                 sBodyPoint.physicalId = pointElem.UnsignedAttribute("PhysicalId");
@@ -1120,9 +1120,9 @@ namespace
         if (auto elem = oXML.FirstChildElement("Data_origin"))
         {
             oTarget.type = static_cast<EOriginType>(elem.UnsignedText());
-            oTarget.position.fX = elem.FloatAttribute("X");
-            oTarget.position.fY = elem.FloatAttribute("Y");
-            oTarget.position.fZ = elem.FloatAttribute("Z");
+            oTarget.position.x = elem.FloatAttribute("X");
+            oTarget.position.y = elem.FloatAttribute("Y");
+            oTarget.position.z = elem.FloatAttribute("Z");
             oTarget.relativeBody = elem.UnsignedAttribute("Relative_body");
         }
         else
@@ -1171,17 +1171,17 @@ namespace
         {
             SBodyPoint sPoint;
 
-            if (!TryReadElementFloat(pointElem, "X", sPoint.fX))
+            if (!TryReadElementFloat(pointElem, "X", sPoint.x))
             {
                 return false;
             }
 
-            if (!TryReadElementFloat(pointElem, "Y", sPoint.fY))
+            if (!TryReadElementFloat(pointElem, "Y", sPoint.y))
             {
                 return false;
             }
 
-            if (!TryReadElementFloat(pointElem, "Z", sPoint.fZ))
+            if (!TryReadElementFloat(pointElem, "Z", sPoint.z))
             {
                 return false;
             }
@@ -1250,8 +1250,8 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
             if (auto meshElem = bodyElem.FirstChildElement("Mesh"))
             {
                 if (!TryReadElementString(meshElem, "Name",s6DOFBodySettings.mesh.name)
-                    || !TryReadSetPos(meshElem, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
-                    || !TryReadSetRotation(meshElem, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
+                    || !TryReadSetPos(meshElem, s6DOFBodySettings.mesh.position.x, s6DOFBodySettings.mesh.position.y, s6DOFBodySettings.mesh.position.z)
+                    || !TryReadSetRotation(meshElem, s6DOFBodySettings.mesh.rotation.x, s6DOFBodySettings.mesh.rotation.y, s6DOFBodySettings.mesh.rotation.z)
                     || !TryReadElementFloat(meshElem, "Scale", s6DOFBodySettings.mesh.scale)
                     || !TryReadElementFloat(meshElem, "Opacity", s6DOFBodySettings.mesh.opacity))
                 { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
@@ -1430,19 +1430,19 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     if (mMajorVersion == 1 && mMinorVersion == 0)
     {
         SAnalogDevice analogDevice{};
-        analogDevice.nDeviceID = 1;   // Always channel 1
-        analogDevice.oName = "AnalogDevice";
-        if (!TryReadElementUnsignedInt32(analogElem, "Channels", analogDevice.nChannels)
-            || !TryReadElementUnsignedInt32(analogElem, "Frequency", analogDevice.nFrequency)
-            || !TryReadElementString(analogElem, "Unit", analogDevice.oUnit))
+        analogDevice.deviceID = 1;   // Always channel 1
+        analogDevice.name = "AnalogDevice";
+        if (!TryReadElementUnsignedInt32(analogElem, "Channels", analogDevice.channels)
+            || !TryReadElementUnsignedInt32(analogElem, "Frequency", analogDevice.frequency)
+            || !TryReadElementString(analogElem, "Unit", analogDevice.unit))
         {
             return false;
         }
 
         auto rangeElem = analogElem.FirstChildElement("Range");
         if (!rangeElem
-            || !TryReadElementFloat(rangeElem, "Min", analogDevice.fMinRange)
-            || !TryReadElementFloat(rangeElem, "Max", analogDevice.fMaxRange))
+            || !TryReadElementFloat(rangeElem, "Min", analogDevice.minRange)
+            || !TryReadElementFloat(rangeElem, "Max", analogDevice.maxRange))
         {
             return false;
         }
@@ -1455,10 +1455,10 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     for (auto deviceElem = analogElem.FirstChildElement("Device"); deviceElem != nullptr; deviceElem = deviceElem.NextSiblingElement("Device"))
     {
         SAnalogDevice analogDevice{};
-        if (!TryReadElementUnsignedInt32(deviceElem, "Device_ID", analogDevice.nDeviceID)
-            || !TryReadElementString(deviceElem, "Device_Name", analogDevice.oName)
-            || !TryReadElementUnsignedInt32(deviceElem, "Channels", analogDevice.nChannels)
-            || !TryReadElementUnsignedInt32(deviceElem, "Frequency", analogDevice.nFrequency)
+        if (!TryReadElementUnsignedInt32(deviceElem, "Device_ID", analogDevice.deviceID)
+            || !TryReadElementString(deviceElem, "Device_Name", analogDevice.name)
+            || !TryReadElementUnsignedInt32(deviceElem, "Channels", analogDevice.channels)
+            || !TryReadElementUnsignedInt32(deviceElem, "Frequency", analogDevice.frequency)
             )
         {
             continue;
@@ -1466,7 +1466,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
         if (mMajorVersion == 1 && mMinorVersion < 11)
         {
-            if (!TryReadElementString(analogElem, "Unit", analogDevice.oUnit))
+            if (!TryReadElementString(analogElem, "Unit", analogDevice.unit))
             {
                 continue;
             }
@@ -1474,24 +1474,24 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
         auto rangeElem = deviceElem.FirstChildElement("Range");
         if (!rangeElem
-            || !TryReadElementFloat(rangeElem, "Min", analogDevice.fMinRange)
-            || !TryReadElementFloat(rangeElem, "Max", analogDevice.fMaxRange))
+            || !TryReadElementFloat(rangeElem, "Min", analogDevice.minRange)
+            || !TryReadElementFloat(rangeElem, "Max", analogDevice.maxRange))
         {
             continue;
         }
 
         if (mMajorVersion == 1 && mMinorVersion < 11)
         {
-            for (std::size_t i = 0; i < analogDevice.nChannels; i++)
+            for (std::size_t i = 0; i < analogDevice.channels; i++)
             {
                 std::string label;
                 if (TryReadElementString(deviceElem, "Label", label))
                 {
-                    analogDevice.voLabels.push_back(label);
+                    analogDevice.labels.push_back(label);
                 }
             }
 
-            if (analogDevice.voLabels.size() != analogDevice.nChannels)
+            if (analogDevice.labels.size() != analogDevice.channels)
             {
                 continue;
             }
@@ -1503,18 +1503,18 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
                 std::string label;
                 if (TryReadElementString(channelElem, "Label", label))
                 {
-                    analogDevice.voLabels.push_back(label);
+                    analogDevice.labels.push_back(label);
                 }
 
                 std::string unit;
                 if (TryReadElementString(channelElem, "Unit", unit))
                 {
-                    analogDevice.voUnits.push_back(unit);
+                    analogDevice.units.push_back(unit);
                 }
             }
 
-            if (analogDevice.voLabels.size() != analogDevice.nChannels ||
-                analogDevice.voUnits.size() != analogDevice.nChannels)
+            if (analogDevice.labels.size() != analogDevice.channels ||
+                analogDevice.units.size() != analogDevice.channels)
             {
                 continue;
             }
@@ -1536,7 +1536,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
 {
     pDataAvailable = false;
 
-    pForceSettings.vsForcePlates.clear();
+    pForceSettings.forcePlates.clear();
 
     auto rootElem = mDeserializer;
     if (!rootElem)
@@ -1552,16 +1552,16 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     }
 
     SForcePlate sForcePlate{};
-    sForcePlate.bValidCalibrationMatrix = false;
-    sForcePlate.nCalibrationMatrixRows = 6;
-    sForcePlate.nCalibrationMatrixColumns = 6;
+    sForcePlate.validCalibrationMatrix = false;
+    sForcePlate.calibrationMatrixRows = 6;
+    sForcePlate.calibrationMatrixColumns = 6;
 
-    if (!TryReadElementString(forceElem, "Unit_Length", pForceSettings.oUnitLength))
+    if (!TryReadElementString(forceElem, "Unit_Length", pForceSettings.unitLength))
     {
         return false;
     }
 
-    if (!TryReadElementString(forceElem, "Unit_Force", pForceSettings.oUnitForce))
+    if (!TryReadElementString(forceElem, "Unit_Force", pForceSettings.unitForce))
     {
         return false;
     }
@@ -1571,36 +1571,36 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     {
         iPlate++;
 
-        if (!TryReadElementUnsignedInt32(plateElem, "Plate_ID", sForcePlate.nID))
+        if (!TryReadElementUnsignedInt32(plateElem, "Plate_ID", sForcePlate.id))
         {
-            if (!TryReadElementUnsignedInt32(plateElem, "Force_Plate_Index", sForcePlate.nID)) // Version 1.7 and earlier.
+            if (!TryReadElementUnsignedInt32(plateElem, "Force_Plate_Index", sForcePlate.id)) // Version 1.7 and earlier.
             {
                 return false;
             }
         }
 
-        if (!TryReadElementUnsignedInt32(plateElem, "Analog_Device_ID", sForcePlate.nAnalogDeviceID))
+        if (!TryReadElementUnsignedInt32(plateElem, "Analog_Device_ID", sForcePlate.analogDeviceID))
         {
-            sForcePlate.nAnalogDeviceID = 0;
+            sForcePlate.analogDeviceID = 0;
         }
 
-        if (!TryReadElementUnsignedInt32(plateElem, "Frequency", sForcePlate.nFrequency))
+        if (!TryReadElementUnsignedInt32(plateElem, "Frequency", sForcePlate.frequency))
         {
             return false;
         }
 
-        if (!TryReadElementString(plateElem, "Type", sForcePlate.oType))
+        if (!TryReadElementString(plateElem, "Type", sForcePlate.type))
         {
-            sForcePlate.oType = "unknown";
+            sForcePlate.type = "unknown";
         }
 
-        if (!TryReadElementString(plateElem, "Name", sForcePlate.oName))
+        if (!TryReadElementString(plateElem, "Name", sForcePlate.name))
         {
-            sForcePlate.oName = "#" + std::to_string(iPlate);
+            sForcePlate.name = "#" + std::to_string(iPlate);
         }
 
-        TryReadElementFloat(plateElem, "Length", sForcePlate.fLength);
-        TryReadElementFloat(plateElem, "Width", sForcePlate.fWidth);
+        TryReadElementFloat(plateElem, "Length", sForcePlate.length);
+        TryReadElementFloat(plateElem, "Width", sForcePlate.width);
 
         auto locationElem = plateElem.FirstChildElement("Location");
         if (locationElem)
@@ -1622,30 +1622,30 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
             for (const auto& c : corners)
             {
                 auto cornerElem = locationElem.FirstChildElement(c.name);
-                TryReadElementFloat(cornerElem, "X", sForcePlate.asCorner[c.index].fX);
-                TryReadElementFloat(cornerElem, "Y", sForcePlate.asCorner[c.index].fY);
-                TryReadElementFloat(cornerElem, "Z", sForcePlate.asCorner[c.index].fZ);
+                TryReadElementFloat(cornerElem, "X", sForcePlate.corner[c.index].x);
+                TryReadElementFloat(cornerElem, "Y", sForcePlate.corner[c.index].y);
+                TryReadElementFloat(cornerElem, "Z", sForcePlate.corner[c.index].z);
             }
         }
 
         auto originElem = plateElem.FirstChildElement("Origin");
         if (originElem)
         {
-            TryReadElementFloat(originElem, "X", sForcePlate.sOrigin.fX);
-            TryReadElementFloat(originElem, "Y", sForcePlate.sOrigin.fY);
-            TryReadElementFloat(originElem, "Z", sForcePlate.sOrigin.fZ);
+            TryReadElementFloat(originElem, "X", sForcePlate.origin.x);
+            TryReadElementFloat(originElem, "Y", sForcePlate.origin.y);
+            TryReadElementFloat(originElem, "Z", sForcePlate.origin.z);
         }
 
-        sForcePlate.vChannels.clear();
+        sForcePlate.channels.clear();
         auto channelsElem = plateElem.FirstChildElement("Channels");
         if (channelsElem)
         {
             SForceChannel sForceChannel{};
             for (auto channelElem : ChildElementRange{ channelsElem, "Channel" })
             {
-                TryReadElementUnsignedInt32(channelElem, "Channel_No", sForceChannel.nChannelNumber);
-                TryReadElementFloat(channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
-                sForcePlate.vChannels.push_back(sForceChannel);
+                TryReadElementUnsignedInt32(channelElem, "Channel_No", sForceChannel.channelNumber);
+                TryReadElementFloat(channelElem, "ConversionFactor", sForceChannel.conversionFactor);
+                sForcePlate.channels.push_back(sForceChannel);
             }
         }
 
@@ -1670,13 +1670,13 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                     unsigned int nCol = 0;
                     for (auto col : ChildElementRange{ row, getColStr })
                     {
-                        sForcePlate.afCalibrationMatrix[nRow][nCol++] = col.FloatText();
+                        sForcePlate.calibrationMatrix[nRow][nCol++] = col.FloatText();
                     }
                     nRow++;
-                    sForcePlate.nCalibrationMatrixColumns = nCol;
+                    sForcePlate.calibrationMatrixColumns = nCol;
                 }
-                sForcePlate.nCalibrationMatrixRows = nRow;
-                sForcePlate.bValidCalibrationMatrix = true;
+                sForcePlate.calibrationMatrixRows = nRow;
+                sForcePlate.validCalibrationMatrix = true;
             }
             else
             {
@@ -1692,20 +1692,20 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
                             unsigned int nCol = 0;
                             for (const auto col : ChildElementRange{ columns, "Column" })
                             {
-                                sForcePlate.afCalibrationMatrix[nRow][nCol++] = col.FloatText();
+                                sForcePlate.calibrationMatrix[nRow][nCol++] = col.FloatText();
                             }
-                            sForcePlate.nCalibrationMatrixColumns = nCol;
+                            sForcePlate.calibrationMatrixColumns = nCol;
                         }
                         nRow++;
                     }
-                    sForcePlate.nCalibrationMatrixRows = nRow;
-                    sForcePlate.bValidCalibrationMatrix = true;
+                    sForcePlate.calibrationMatrixRows = nRow;
+                    sForcePlate.validCalibrationMatrix = true;
                 }
             }
         }
 
         pDataAvailable = true;
-        pForceSettings.vsForcePlates.push_back(sForcePlate);
+        pForceSettings.forcePlates.push_back(sForcePlate);
     }
 
     return true;
@@ -1733,12 +1733,12 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
     {
         SImageCamera sImageCamera{};
 
-        if (!TryReadElementUnsignedInt32(camera, "ID", sImageCamera.nID))
+        if (!TryReadElementUnsignedInt32(camera, "ID", sImageCamera.id))
         {
             return false;
         }
 
-        if (!ReadXmlBool(camera, "Enabled", sImageCamera.bEnabled))
+        if (!ReadXmlBool(camera, "Enabled", sImageCamera.enabled))
         {
             return false;
         }
@@ -1752,35 +1752,35 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
         format = ToLowerXmlString(format);
         if (format == "rawgrayscale")
         {
-            sImageCamera.eFormat = CRTPacket::FormatRawGrayscale;
+            sImageCamera.format = CRTPacket::FormatRawGrayscale;
         }
         else if (format == "rawbgr")
         {
-            sImageCamera.eFormat = CRTPacket::FormatRawBGR;
+            sImageCamera.format = CRTPacket::FormatRawBGR;
         }
         else if (format == "jpg")
         {
-            sImageCamera.eFormat = CRTPacket::FormatJPG;
+            sImageCamera.format = CRTPacket::FormatJPG;
         }
         else if (format == "png")
         {
-            sImageCamera.eFormat = CRTPacket::FormatPNG;
+            sImageCamera.format = CRTPacket::FormatPNG;
         }
         else
         {
             return false;
         }
 
-        if (!TryReadElementUnsignedInt32(camera, "Width", sImageCamera.nWidth)
-            || !TryReadElementUnsignedInt32(camera, "Height", sImageCamera.nHeight))
+        if (!TryReadElementUnsignedInt32(camera, "Width", sImageCamera.width)
+            || !TryReadElementUnsignedInt32(camera, "Height", sImageCamera.height))
         {
             return false;
         }
 
-        if (!TryReadElementFloat(camera, "Left_Crop", sImageCamera.fCropLeft)
-            || !TryReadElementFloat(camera, "Top_Crop", sImageCamera.fCropTop)
-            || !TryReadElementFloat(camera, "Right_Crop", sImageCamera.fCropRight)
-            || !TryReadElementFloat(camera, "Bottom_Crop", sImageCamera.fCropBottom))
+        if (!TryReadElementFloat(camera, "Left_Crop", sImageCamera.cropLeft)
+            || !TryReadElementFloat(camera, "Top_Crop", sImageCamera.cropTop)
+            || !TryReadElementFloat(camera, "Right_Crop", sImageCamera.cropRight)
+            || !TryReadElementFloat(camera, "Bottom_Crop", sImageCamera.cropBottom))
         {
             return false;
         }
