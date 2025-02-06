@@ -56,8 +56,8 @@ namespace
         {
             if (lhs[i].name != rhs[i].name ||
                 lhs[i].x != rhs[i].x ||
-                lhs[i].x != rhs[i].x ||
-                lhs[i].x != rhs[i].x ||
+                lhs[i].y != rhs[i].y ||
+                lhs[i].z != rhs[i].z ||
                 lhs[i].virtual_ != rhs[i].virtual_ ||
                 lhs[i].physicalId != rhs[i].physicalId)
             {
