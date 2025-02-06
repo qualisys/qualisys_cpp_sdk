@@ -638,24 +638,24 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT ISettingsDeserializer {
         virtual ~ISettingsDeserializer() = default;
-        virtual bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) = 0;
-        virtual bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable) = 0;
-        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral& pGeneralSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable) = 0;
-        virtual bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) = 0;
-        virtual bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) = 0;
+        virtual bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) = 0;
+        virtual bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) = 0;
+        virtual bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable) = 0;
+        virtual bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof, SSettingsGeneral& generalSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& skeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& skeletonSettings, bool& dataAvailable) = 0;
+        virtual bool DeserializeCalibrationSettings(SCalibration& calibrationSettings) = 0;
     };
 
     struct DLL_EXPORT ISettingsSerializer {
         virtual ~ISettingsSerializer() = default;
 
         virtual std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
-                                               const bool* startOnExtTrig, const bool* pStartOnTrigNO,
-                                               const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
+                                               const bool* startOnExtTrig, const bool* startOnTrigNO,
+                                               const bool* startOnTrigNC, const bool* startOnTrigSoftware,
                                                const EProcessingActions* processingActions,
                                                const EProcessingActions* rtProcessingActions,
                                                const EProcessingActions* reprocessingActions) = 0;
@@ -670,39 +670,39 @@ namespace qualisys_cpp_sdk
         virtual std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) = 0;
 
         virtual std::string SetCameraSettings(
-            const unsigned int pCameraId, const ECameraMode* mode,
+            const unsigned int cameraId, const ECameraMode* mode,
             const float* markerExposure, const float* markerThreshold,
             const int* orientation) = 0;
 
         virtual std::string SetCameraVideoSettings(
-            const unsigned int pCameraId, const EVideoResolution* videoResolution,
+            const unsigned int cameraId, const EVideoResolution* videoResolution,
             const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
             const float* videoExposure, const float* videoFlashTime) = 0;
 
         virtual std::string SetCameraSyncOutSettings(
-            const unsigned int pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+            const unsigned int cameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
             const unsigned int* syncOutValue, const float* syncOutDutyCycle,
             const bool* syncOutNegativePolarity) = 0;
 
-        virtual std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus,
-                                                         const float pAperture) = 0;
+        virtual std::string SetCameraLensControlSettings(const unsigned int cameraId, const float focus,
+                                                         const float aperture) = 0;
 
-        virtual std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure,
-                                                          const float pCompensation) = 0;
+        virtual std::string SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure,
+                                                          const float compensation) = 0;
 
-        virtual std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) = 0;
+        virtual std::string SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable) = 0;
 
         virtual std::string SetImageSettings(
-            const unsigned int pCameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+            const unsigned int cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
             const unsigned int* width, const unsigned int* height, const float* leftCrop,
             const float* topCrop, const float* rightCrop, const float* bottomCrop) = 0;
 
         virtual std::string SetForceSettings(
-            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
-            const SPoint* pCorner3, const SPoint* pCorner4) = 0;
+            const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
+            const SPoint* corner3, const SPoint* corner4) = 0;
 
-        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) = 0;
+        virtual std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs) = 0;
 
-        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) = 0;
+        virtual std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons) = 0;
     };
 }

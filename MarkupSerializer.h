@@ -7,16 +7,16 @@ namespace qualisys_cpp_sdk {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
         CMarkupDeserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion );
-        bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) override;
-        bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) override;
-        bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& pAnalogDeviceSettings, bool& pDataAvailable) override;
-        bool DeserializeForceSettings(SSettingsForce& pForceSettings, bool& pDataAvailable) override;
-        bool DeserializeImageSettings(std::vector<SImageCamera>& pImageSettings, bool& pDataAvailable) override;
-        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& p6DOFSettings, SSettingsGeneral&, bool& pDataAvailable)  override;
-        bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& pGazeVectorSettings, bool& pDataAvailable) override;
-        bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& pEyeTrackerSettings, bool& pDataAvailable)  override;
-        bool DeserializeSkeletonSettings(bool pSkeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& pDataAvailable) override;
-        bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) override;
+        bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) override;
+        bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) override;
+        bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) override;
+        bool DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable) override;
+        bool DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable) override;
+        bool Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof, SSettingsGeneral&, bool& dataAvailable)  override;
+        bool DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings, bool& dataAvailable) override;
+        bool DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings, bool& dataAvailable)  override;
+        bool DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>&, std::vector<SSettingsSkeleton>&, bool& dataAvailable) override;
+        bool DeserializeCalibrationSettings(SCalibration& calibrationSettings) override;
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
@@ -42,7 +42,7 @@ namespace qualisys_cpp_sdk {
         CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
         CMarkup oXML;
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
-            const bool* startOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
+            const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
             const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
@@ -55,34 +55,34 @@ namespace qualisys_cpp_sdk {
         std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
         std::string SetCameraSettings(
-            const unsigned int pCameraId, const ECameraMode* mode,
+            const unsigned int cameraId, const ECameraMode* mode,
             const float* markerExposure, const float* markerThreshold,
             const int* orientation) override;
 
         std::string SetCameraVideoSettings(
-            const unsigned int pCameraId, const EVideoResolution* videoResolution,
+            const unsigned int cameraId, const EVideoResolution* videoResolution,
             const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
             const float* videoExposure, const float* videoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(
-            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+            const unsigned int  cameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
             const unsigned int* syncOutValue, const float* syncOutDutyCycle,
             const bool* syncOutNegativePolarity) override;
 
-        std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) override;
-        std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure, const float pCompensation) override;
-        std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) override;
+        std::string SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture) override;
+        std::string SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation) override;
+        std::string SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable) override;
         std::string SetImageSettings(
-            const unsigned int  pCameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+            const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
             const unsigned int* width, const unsigned int* height, const float* leftCrop,
             const float* topCrop, const float* rightCrop, const float* bottomCrop) override;
 
         std::string SetForceSettings(
-            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
-            const SPoint* pCorner3, const SPoint* pCorner4) override;
+            const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
+            const SPoint* corner3, const SPoint* corner4) override;
 
-        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) override;
-        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) override;
+        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs) override;
+        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons) override;
 
     private:
         std::uint32_t mMajorVersion;
