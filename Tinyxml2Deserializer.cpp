@@ -11,86 +11,16 @@
 
 using namespace qualisys_cpp_sdk;
 
-std::string CTinyxml2Deserializer::ToLower(std::string str)
-{
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
-    return str;
-}
-
-bool CTinyxml2Deserializer::ParseString(const std::string& str, std::uint32_t& value)
-{
-    try
-    {
-        value = std::stoul(str);
-    }
-    catch (...)
-    {
-        return false;
-    }
-    return true;
-}
-
-bool CTinyxml2Deserializer::ParseString(const std::string& str, std::int32_t& value)
-{
-    try
-    {
-        value = std::stol(str);
-    }
-    catch (...)
-    {
-        return false;
-    }
-    return true;
-}
-
-bool CTinyxml2Deserializer::ParseString(const std::string& str, float& value)
-{
-    try
-    {
-        value = std::stof(str);
-    }
-    catch (...)
-    {
-        value = std::numeric_limits<float>::quiet_NaN();
-        return false;
-    }
-    return true;
-}
-
-bool CTinyxml2Deserializer::ParseString(const std::string& str, double& value)
-{
-    try
-    {
-        value = std::stod(str);
-    }
-    catch (...)
-    {
-        value = std::numeric_limits<double>::quiet_NaN();
-        return false;
-    }
-    return true;
-}
-
-bool CTinyxml2Deserializer::ParseString(const std::string& str, bool& value)
-{
-    std::string strLower = ToLower(str);
-
-    if (strLower == "true" || strLower == "1")
-    {
-        value = true;
-        return true;
-    }
-    else if (strLower == "false" || strLower == "0")
-    {
-        value = false;
-        return true;
-    }
-    return false;
-}
 
 namespace
 {
-    inline void RemoveInvalidChars(std::string& str)
+    std::string ToLower(std::string str)
+    {
+        std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<unsigned char>(std::tolower(c)); });
+        return str;
+    }
+
+    void RemoveInvalidChars(std::string& str)
     {
         auto isInvalidChar = [](int c) -> int
             {
@@ -101,39 +31,36 @@ namespace
             };
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
-}
 
-bool CTinyxml2Deserializer::ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const
-{
-    auto xmlElem = xml->FirstChildElement(element.c_str());
-    if (!xmlElem)
+    bool ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value)
     {
-        return false;
+        auto xmlElem = xml->FirstChildElement(element.c_str());
+        if (!xmlElem)
+        {
+            return false;
+        }
+
+        auto str = std::string(xmlElem->GetText());
+        RemoveInvalidChars(str);
+        str = ToLower(str);
+
+        if (str == "true")
+        {
+            value = true;
+        }
+        else if (str == "false")
+        {
+            value = false;
+        }
+        else
+        {
+            // Don't change value, just report error.
+            return false;
+        }
+
+        return true;
     }
 
-    auto str = std::string(xmlElem->GetText());
-    RemoveInvalidChars(str);
-    str = ToLower(str);
-
-    if (str == "true")
-    {
-        value = true;
-    }
-    else if (str == "false")
-    {
-        value = false;
-    }
-    else
-    {
-        // Don't change value, just report error.
-        return false;
-    }
-
-    return true;
-}
-
-namespace
-{
     SPosition ReadSPosition(tinyxml2::XMLElement& parentElem, const std::string& element)
     {
         auto positionElem = parentElem.FirstChildElement(element.data());
@@ -169,7 +96,7 @@ namespace
 CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
     : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
-    oXML.Parse(data);
+    mXmlDocument.Parse(pData);
 }
 
 namespace
@@ -234,7 +161,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
 {
     generalSettings.cameras.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1111,7 +1038,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
     settings3D.calibrationTime[0] = 0;
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1546,7 +1473,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
     settings6Dof.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1612,12 +1539,12 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     }
     else
     {
-        if (!oXML.FirstChildElement("Bodies"))
+        if (!mXmlDocument.FirstChildElement("Bodies"))
         {
             return false;
         }
 
-        for (auto bodyElem = oXML.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
+        for (auto bodyElem = mXmlDocument.FirstChildElement("Body"); bodyElem != nullptr; bodyElem = bodyElem->NextSiblingElement("Body"))
         {
             SSettings6DOFBody s6DOFBodySettings{};
 
@@ -1632,7 +1559,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
             if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 // Euler --- REQUIRED
-                if (!TryReadSetEuler(oXML, generalSettings.eulerRotations[0], generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
+                if (!TryReadSetEuler(mXmlDocument, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 {
                     return false;
                 }
@@ -1652,7 +1579,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
 
     gazeVectorSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1704,7 +1631,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
 
     eyeTrackerSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1750,7 +1677,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     dataAvailable = false;
     analogDeviceSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -1941,7 +1868,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettin
 
     forceSettings.forcePlates.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2120,7 +2047,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
 
     imageSettings.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2255,7 +2182,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
     skeletonSettings.clear();
     skeletonSettingsHierarchical.clear();
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
@@ -2501,7 +2428,7 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& calibra
 {
     SCalibration settings{};
 
-    auto rootElem = oXML.RootElement();
+    auto rootElem = mXmlDocument.RootElement();
     if (!rootElem)
     {
         return true;
