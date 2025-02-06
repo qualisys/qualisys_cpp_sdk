@@ -153,21 +153,17 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Capture Frequency
     if (captureFrequency)
     {
         AddXMLElementUnsignedInt(*generalElem, "Frequency", captureFrequency, document);
     }
 
-    // Capture Time
     if (captureTime)
     {
         AddXMLElementFloat(*generalElem, "Capture_Time", captureTime, 3, document);
@@ -186,7 +182,6 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
         }
     }
 
-    // Processing Actions
     const char* processingActionTags[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     const EProcessingActions* processingActionSets[3] = { processingActions, rtProcessingActions, reprocessingActions };
 
@@ -204,7 +199,7 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
                 AddXMLElementBool(*processing, "PreProcessing2D", (*processingActionSets[i] & ProcessingPreProcess2D) != 0, document);
             }
 
-            if (*processingActionSets[i] & ProcessingTracking2D && i != 1) // i != 1 => Not Not RtProcessingSettings
+            if (*processingActionSets[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
             {
                 tinyxml2::XMLElement* trackingElem = document.NewElement("Tracking");
                 trackingElem->SetText("2D");
@@ -223,7 +218,7 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
                 processing->InsertEndChild(trackingElem);
             }
 
-            if (i != 1) // Not RtprocessingActionTagsettings
+            if (i != 1) // Not RtProcessingSettings
             {
                 AddXMLElementBool(*processing, "TwinSystemMerge", (*processingActionSets[i] & ProcessingTwinSystemMerge) != 0, document);
                 AddXMLElementBool(*processing, "SplineFill", (*processingActionSets[i] & ProcessingSplineFill) != 0, document);
@@ -234,7 +229,7 @@ std::string CTinyxml2Serializer::SetGeneralSettings(const unsigned int* captureF
             AddXMLElementBool(*processing, "ForceData", (*processingActionSets[i] & ProcessingForceData) != 0, document);
             AddXMLElementBool(*processing, "GazeVector", (*processingActionSets[i] & ProcessingGazeVector) != 0, document);
 
-            if (i != 1) // Not RtprocessingActionTagsettings
+            if (i != 1) // Not RtProcessingSettings
             {
                 AddXMLElementBool(*processing, "ExportTSV", (*processingActionSets[i] & ProcessingExportTSV) != 0, document);
                 AddXMLElementBool(*processing, "ExportC3D", (*processingActionSets[i] & ProcessingExportC3D) != 0, document);
@@ -256,22 +251,17 @@ std::string CTinyxml2Serializer::SetExtTimeBaseSettings(const bool* enabled, con
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // External Time Base element
     tinyxml2::XMLElement* timeBaseElem = document.NewElement("External_Time_Base");
     generalElem->InsertEndChild(timeBaseElem);
 
-    // Add Enabled element
     AddXMLElementBool(*timeBaseElem, "Enabled", enabled, document);
 
-    // Add Signal Source if available
     if (signalSource)
     {
         tinyxml2::XMLElement* signalSourceElem = document.NewElement("Signal_Source");
@@ -296,13 +286,11 @@ std::string CTinyxml2Serializer::SetExtTimeBaseSettings(const bool* enabled, con
         timeBaseElem->InsertEndChild(signalSourceElem);
     }
 
-    // Add remaining elements
     AddXMLElementBool(*timeBaseElem, "Signal_Mode", signalModePeriodic, document, "Periodic", "Non-periodic");
     AddXMLElementUnsignedInt(*timeBaseElem, "Frequency_Multiplier", freqMultiplier, document);
     AddXMLElementUnsignedInt(*timeBaseElem, "Frequency_Divisor", freqDivisor, document);
     AddXMLElementUnsignedInt(*timeBaseElem, "Frequency_Tolerance", freqTolerance, document);
 
-    // Add Nominal Frequency element
     if (nominalFrequency)
     {
         if (*nominalFrequency < 0)
@@ -331,22 +319,17 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // External Timestamp element
     tinyxml2::XMLElement* timeStampElem = document.NewElement("External_Timestamp");
     generalElem->InsertEndChild(timeStampElem);
 
-    // Add Enabled element
     AddXMLElementBool(*timeStampElem, "Enabled", timestampSettings.bEnabled, document);
 
-    // Add Type element
     tinyxml2::XMLElement* typeElem = document.NewElement("Type");
     switch (timestampSettings.nType)
     {
@@ -364,7 +347,6 @@ std::string CTinyxml2Serializer::SetExtTimestampSettings(const SSettingsGeneralE
     }
     timeStampElem->InsertEndChild(typeElem);
 
-    // Add Frequency element
     AddXMLElementUnsignedInt(*timeStampElem, "Frequency", timestampSettings.nFrequency, document);
 
     tinyxml2::XMLPrinter printer;
@@ -379,22 +361,17 @@ std::string CTinyxml2Serializer::SetCameraSettings(
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // Add Mode
     if (mode)
     {
         tinyxml2::XMLElement* modeElem = document.NewElement("Mode");
@@ -413,7 +390,6 @@ std::string CTinyxml2Serializer::SetCameraSettings(
         cameraElem->InsertEndChild(modeElem);
     }
 
-    // Add remaining elements
     AddXMLElementFloat(*cameraElem, "Marker_Exposure", markerExposure, 6, document);
     AddXMLElementFloat(*cameraElem, "Marker_Threshold", markerThreshold, 6, document);
     AddXMLElementInt(*cameraElem, "Orientation", orientation, document);
@@ -430,22 +406,17 @@ std::string CTinyxml2Serializer::SetCameraVideoSettings(const unsigned int camer
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // Add Video Resolution
     if (videoResolution)
     {
         tinyxml2::XMLElement* resolutionElem = document.NewElement("Video_Resolution");
@@ -472,7 +443,6 @@ std::string CTinyxml2Serializer::SetCameraVideoSettings(const unsigned int camer
         cameraElem->InsertEndChild(resolutionElem);
     }
 
-    // Add Video Aspect Ratio
     if (videoAspectRatio)
     {
         tinyxml2::XMLElement* videoAspectRatioElem = document.NewElement("Video_Aspect_Ratio");
@@ -493,7 +463,6 @@ std::string CTinyxml2Serializer::SetCameraVideoSettings(const unsigned int camer
         cameraElem->InsertEndChild(videoAspectRatioElem);
     }
 
-    // Add remaining elements
     AddXMLElementUnsignedInt(*cameraElem, "Video_Frequency", videoFrequency, document);
     AddXMLElementFloat(*cameraElem, "Video_Exposure", videoExposure, 6, document);
     AddXMLElementFloat(*cameraElem, "Video_Flash_Time", videoFlashTime, 6, document);
@@ -510,22 +479,17 @@ std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int cam
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // Determine port name
     int port = portNumber - 1;
     if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
     {
@@ -567,11 +531,10 @@ std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int cam
                 modeElem->SetText("System live time");
                 break;
             default:
-                return ""; // Should never happen
+                return "";
             }
             syncOutElem->InsertEndChild(modeElem);
 
-            // Add Value and Duty Cycle if applicable
             if (*syncOutMode == ModeMultiplier ||
                 *syncOutMode == ModeDivisor ||
                 *syncOutMode == ModeIndependentFreq)
@@ -581,7 +544,6 @@ std::string CTinyxml2Serializer::SetCameraSyncOutSettings(const unsigned int cam
             }
         }
 
-        // Add Signal Polarity
         if (syncOutNegativePolarity && (port == 2 ||
             (syncOutMode && *syncOutMode != ModeFixed100Hz)))
         {
@@ -600,26 +562,20 @@ std::string CTinyxml2Serializer::SetCameraLensControlSettings(const unsigned int
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // LensControl element
     tinyxml2::XMLElement* lensControlElem = document.NewElement("LensControl");
     cameraElem->InsertEndChild(lensControlElem);
 
-    // Add Focus and Aperture as float attributes
     AddXMLElementFloatWithTextAttribute(document, *lensControlElem, "Focus", "Value", focus, 6);
     AddXMLElementFloatWithTextAttribute(document, *lensControlElem, "Aperture", "Value", aperture, 6);
 
@@ -633,30 +589,23 @@ std::string CTinyxml2Serializer::SetCameraAutoExposureSettings(const unsigned in
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // LensControl element
     tinyxml2::XMLElement* lensControlElem = document.NewElement("LensControl");
     cameraElem->InsertEndChild(lensControlElem);
 
-    // AutoExposure element with attributes
     tinyxml2::XMLElement* autoExposureElem = document.NewElement("AutoExposure");
     autoExposureElem->SetAttribute("Enabled", autoExposure ? "true" : "false");
 
-    // Format Compensation float value
     char compensationStr[32];
     snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
     autoExposureElem->SetAttribute("Compensation", compensationStr);
@@ -673,22 +622,17 @@ std::string CTinyxml2Serializer::SetCameraAutoWhiteBalance(const unsigned int ca
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // General element
     tinyxml2::XMLElement* generalElem = document.NewElement("General");
     rootElem->InsertEndChild(generalElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     generalElem->InsertEndChild(cameraElem);
 
-    // Add Camera ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
 
-    // AutoWhiteBalance element
     tinyxml2::XMLElement* autoWhiteBalanceElem = document.NewElement("AutoWhiteBalance");
     autoWhiteBalanceElem->SetText(enable ? "true" : "false");
     cameraElem->InsertEndChild(autoWhiteBalanceElem);
@@ -705,25 +649,19 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int cameraId, c
 {
     tinyxml2::XMLDocument document;
 
-    // Root element
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
     document.InsertFirstChild(rootElem);
 
-    // Image element
     tinyxml2::XMLElement* imageElem = document.NewElement("Image");
     rootElem->InsertEndChild(imageElem);
 
-    // Camera element
     tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
     imageElem->InsertEndChild(cameraElem);
 
-    // ID
     AddXMLElementUnsignedInt(*cameraElem, "ID", cameraId, document);
 
-    // Enabled
     AddXMLElementBool(*cameraElem, "Enabled", enable, document);
 
-    // Format
     if (format)
     {
         const char* formatStr = nullptr;
@@ -751,7 +689,6 @@ std::string CTinyxml2Serializer::SetImageSettings(const unsigned int cameraId, c
         }
     }
 
-    // Other settings
     AddXMLElementUnsignedInt(*cameraElem, "Width", width, document);
     AddXMLElementUnsignedInt(*cameraElem, "Height", height, document);
     AddXMLElementFloat(*cameraElem, "Left_Crop", leftCrop, 6, document);
