@@ -8,7 +8,7 @@ namespace qualisys_cpp_sdk
 {
     struct DLL_EXPORT CTinyxml2Deserializer : ISettingsDeserializer
     {
-        CTinyxml2Deserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
+        CTinyxml2Deserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion);
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) override;
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) override;
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) override;

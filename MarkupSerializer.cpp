@@ -285,8 +285,8 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 }
 
 
-CMarkupDeserializer::CMarkupDeserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(data)
+CMarkupDeserializer::CMarkupDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mErrorStr{0}, oXML(data)
 {
 }
 
@@ -3040,8 +3040,8 @@ SRotation CMarkupDeserializer::DeserializeXMLRotation(CMarkup& xml, const std::s
     return rotation;
 }
 
-CMarkupSerializer::CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
+CMarkupSerializer::CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion)
 {
 }
 

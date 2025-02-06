@@ -6,7 +6,7 @@
 namespace qualisys_cpp_sdk {
 
     struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
-        CMarkupDeserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion );
+        CMarkupDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion );
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) override;
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) override;
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) override;
@@ -39,7 +39,7 @@ namespace qualisys_cpp_sdk {
     };
 
     struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
-        CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
+        CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
         CMarkup oXML;
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
             const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,

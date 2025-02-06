@@ -93,8 +93,8 @@ namespace
     }
 }
 
-CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
+CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion)
 {
     mDocument.Parse(data);
 }
