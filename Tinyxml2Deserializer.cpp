@@ -101,7 +101,7 @@ CTinyxml2Deserializer::CTinyxml2Deserializer(const char* pData, std::uint32_t pM
 
 namespace
 {
-    bool ReadElementDouble(tinyxml2::XMLElement& element, const char* elementName, double& output)
+    bool TryReadElementDouble(tinyxml2::XMLElement& element, const char* elementName, double& output)
     {
         if (auto childElem = element.FirstChildElement(elementName))
         {
@@ -112,7 +112,7 @@ namespace
     }
 
 
-    bool ReadElementFloat(tinyxml2::XMLElement& element, const char* elementName, float& output)
+    bool TryReadElementFloat(tinyxml2::XMLElement& element, const char* elementName, float& output)
     {
         if (auto childElem = element.FirstChildElement(elementName))
         {
@@ -122,7 +122,7 @@ namespace
         return false;
     }
 
-    bool ReadElementUnsignedInt32(tinyxml2::XMLElement& element, const char* elementName, std::uint32_t& output)
+    bool TryReadElementUnsignedInt32(tinyxml2::XMLElement& element, const char* elementName, std::uint32_t& output)
     {
         if (auto childElem = element.FirstChildElement(elementName))
         {
@@ -132,22 +132,17 @@ namespace
         return false;
     }
 
-    bool ReadElementStringAllowEmpty(tinyxml2::XMLElement& element, const char* elementName, std::string& output)
+    bool TryReadElementString(tinyxml2::XMLElement& element, const char* elementName, std::string& output)
     {
         output.clear();
 
         if (auto childElem = element.FirstChildElement(elementName))
         {
-            if (auto text = childElem->GetText())
+            if (auto charPtr = childElem->GetText())
             {
-                output = text;
+                output = charPtr;
             }
             return true;
-
-        }
-        else
-        {
-            return false;
         }
     }
 
@@ -220,7 +215,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string signalSource;
-        if (!ReadElementStringAllowEmpty(*extTimeBaseElem, "Signal_Source", signalSource))
+        if (!TryReadElementString(*extTimeBaseElem, "Signal_Source", signalSource))
         {
             return false;
         }
@@ -252,7 +247,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string signalMode;
-        if (!ReadElementStringAllowEmpty(*extTimeBaseElem, "Signal_Mode", signalMode))
+        if (!TryReadElementString(*extTimeBaseElem, "Signal_Mode", signalMode))
         {
             return false;
         }
@@ -270,25 +265,25 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         {
             return false;
         }
-        if (!ReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Multiplier", pGeneralSettings.sExternalTimebase.nFreqMultiplier))
+        if (!TryReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Multiplier", pGeneralSettings.sExternalTimebase.nFreqMultiplier))
         {
             return false;
         }
 
-        if (!ReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Divisor", pGeneralSettings.sExternalTimebase.nFreqDivisor))
+        if (!TryReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Divisor", pGeneralSettings.sExternalTimebase.nFreqDivisor))
         {
             return false;
         }
 
-        if (!ReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Tolerance", pGeneralSettings.sExternalTimebase.nFreqTolerance))
+        if (!TryReadElementUnsignedInt32(*extTimeBaseElem, "Frequency_Tolerance", pGeneralSettings.sExternalTimebase.nFreqTolerance))
         {
             return false;
         }
 
-        if (!ReadElementFloat(*extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
+        if (!TryReadElementFloat(*extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
         {
             std::string nominalFrequency;
-            if (ReadElementStringAllowEmpty(*extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
+            if (TryReadElementString(*extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
             {
                 if (ToLower(nominalFrequency) == "none")
                 {
@@ -302,7 +297,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string signalEdge;
-        if (ReadElementStringAllowEmpty(*extTimeBaseElem, "Signal_Edge", signalEdge))
+        if (TryReadElementString(*extTimeBaseElem, "Signal_Edge", signalEdge))
         {
             signalEdge = ToLower(signalEdge);
             if (signalEdge == "negative")
@@ -323,10 +318,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (!ReadElementFloat(*extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
+        if (!TryReadElementFloat(*extTimeBaseElem, "Nominal_Frequency", pGeneralSettings.sExternalTimebase.fNominalFrequency))
         {
             std::string nominalFrequency;
-            if (ReadElementStringAllowEmpty(*extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
+            if (TryReadElementString(*extTimeBaseElem, "Nominal_Frequency", nominalFrequency))
             {
                 if (ToLower(nominalFrequency) == "none")
                 {
@@ -339,12 +334,12 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
         }
 
-        if (!ReadElementUnsignedInt32(*extTimeBaseElem, "Signal_Shutter_Delay", pGeneralSettings.sExternalTimebase.nSignalShutterDelay))
+        if (!TryReadElementUnsignedInt32(*extTimeBaseElem, "Signal_Shutter_Delay", pGeneralSettings.sExternalTimebase.nSignalShutterDelay))
         {
             return false;
         }
 
-        if (!ReadElementFloat(*extTimeBaseElem, "Non_Periodic_Timeout", pGeneralSettings.sExternalTimebase.fNonPeriodicTimeout))
+        if (!TryReadElementFloat(*extTimeBaseElem, "Non_Periodic_Timeout", pGeneralSettings.sExternalTimebase.fNonPeriodicTimeout))
         {
             return false;
         }
@@ -363,7 +358,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string type;
-        if (ReadElementStringAllowEmpty(*externalTimestampElem, "Type", type))
+        if (TryReadElementString(*externalTimestampElem, "Type", type))
         {
             type = ToLower(type);
             if (type == "smpte")
@@ -380,7 +375,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             }
         }
 
-        ReadElementUnsignedInt32(*externalTimestampElem, "Frequency", pGeneralSettings.sTimestamp.nFrequency);
+        TryReadElementUnsignedInt32(*externalTimestampElem, "Frequency", pGeneralSettings.sTimestamp.nFrequency);
     }
 
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
@@ -430,7 +425,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string trackingMode;
-        if (!ReadElementStringAllowEmpty(*processingElem, "Tracking", trackingMode))
+        if (!TryReadElementString(*processingElem, "Tracking", trackingMode))
         {
             return false;
         }
@@ -519,12 +514,12 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
     for (auto cameraElem = generalElem->FirstChildElement("Camera"); cameraElem != nullptr; cameraElem = cameraElem->NextSiblingElement("Camera"))
     {
         SSettingsGeneralCamera sCameraSettings{};
-        if (!ReadElementUnsignedInt32(*cameraElem, "ID", sCameraSettings.nID))
+        if (!TryReadElementUnsignedInt32(*cameraElem, "ID", sCameraSettings.nID))
         {
             return false;
         }
         std::string model;
-        if (!ReadElementStringAllowEmpty(*cameraElem, "Model", model))
+        if (!TryReadElementString(*cameraElem, "Model", model))
         {
             return false;
         }
@@ -647,13 +642,13 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         ReadXmlBool(cameraElem, "Underwater", sCameraSettings.bUnderwater);
         ReadXmlBool(cameraElem, "Supports_HW_Sync", sCameraSettings.bSupportsHwSync);
 
-        if (!ReadElementUnsignedInt32(*cameraElem, "Serial", sCameraSettings.nSerial))
+        if (!TryReadElementUnsignedInt32(*cameraElem, "Serial", sCameraSettings.nSerial))
         {
             return false;
         }
 
         std::string mode;
-        if (!ReadElementStringAllowEmpty(*cameraElem, "Mode", mode))
+        if (!TryReadElementString(*cameraElem, "Mode", mode))
         {
             return false;
         }
@@ -678,14 +673,14 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
 
         if (mMajorVersion > 1 || mMinorVersion > 11)
         {
-            if (!ReadElementUnsignedInt32(*cameraElem, "Video_Frequency", sCameraSettings.nVideoFrequency))
+            if (!TryReadElementUnsignedInt32(*cameraElem, "Video_Frequency", sCameraSettings.nVideoFrequency))
             {
                 return false;
             }
         }
 
         std::string videoResolution;
-        if (ReadElementStringAllowEmpty(*cameraElem, "Video_Resolution", videoResolution))
+        if (TryReadElementString(*cameraElem, "Video_Resolution", videoResolution))
         {
             videoResolution = ToLower(videoResolution);
             if (videoResolution == "1440p")
@@ -719,7 +714,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         }
 
         std::string videoAspectRatio;
-        if (ReadElementStringAllowEmpty(*cameraElem, "Video_Aspect_Ratio", videoAspectRatio))
+        if (TryReadElementString(*cameraElem, "Video_Aspect_Ratio", videoAspectRatio))
         {
             videoAspectRatio = ToLower(videoAspectRatio);
             if (videoAspectRatio == "16x9")
@@ -747,9 +742,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoExposureElem = cameraElem->FirstChildElement("Video_Exposure");
         if (videoExposureElem)
         {
-            if (!ReadElementUnsignedInt32(*videoExposureElem, "Current", sCameraSettings.nVideoExposure)
-                || !ReadElementUnsignedInt32(*videoExposureElem, "Min", sCameraSettings.nVideoExposureMin)
-                || !ReadElementUnsignedInt32(*videoExposureElem, "Max", sCameraSettings.nVideoExposureMax))
+            if (!TryReadElementUnsignedInt32(*videoExposureElem, "Current", sCameraSettings.nVideoExposure)
+                || !TryReadElementUnsignedInt32(*videoExposureElem, "Min", sCameraSettings.nVideoExposureMin)
+                || !TryReadElementUnsignedInt32(*videoExposureElem, "Max", sCameraSettings.nVideoExposureMax))
             {
                 return false;
             }
@@ -762,9 +757,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoFlashTime = cameraElem->FirstChildElement("Video_Flash_Time");
         if (videoFlashTime)
         {
-            if (!ReadElementUnsignedInt32(*videoFlashTime, "Current", sCameraSettings.nVideoFlashTime)
-                || !ReadElementUnsignedInt32(*videoFlashTime, "Min", sCameraSettings.nVideoFlashTimeMin)
-                || !ReadElementUnsignedInt32(*videoFlashTime, "Max", sCameraSettings.nVideoFlashTimeMax))
+            if (!TryReadElementUnsignedInt32(*videoFlashTime, "Current", sCameraSettings.nVideoFlashTime)
+                || !TryReadElementUnsignedInt32(*videoFlashTime, "Min", sCameraSettings.nVideoFlashTimeMin)
+                || !TryReadElementUnsignedInt32(*videoFlashTime, "Max", sCameraSettings.nVideoFlashTimeMax))
             {
                 return false;
             }
@@ -777,9 +772,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerExposureElem = cameraElem->FirstChildElement("Marker_Exposure");
         if (markerExposureElem)
         {
-            if (!ReadElementUnsignedInt32(*markerExposureElem, "Current", sCameraSettings.nMarkerExposure)
-                || !ReadElementUnsignedInt32(*markerExposureElem, "Min", sCameraSettings.nMarkerExposureMin)
-                || !ReadElementUnsignedInt32(*markerExposureElem, "Max", sCameraSettings.nMarkerExposureMax))
+            if (!TryReadElementUnsignedInt32(*markerExposureElem, "Current", sCameraSettings.nMarkerExposure)
+                || !TryReadElementUnsignedInt32(*markerExposureElem, "Min", sCameraSettings.nMarkerExposureMin)
+                || !TryReadElementUnsignedInt32(*markerExposureElem, "Max", sCameraSettings.nMarkerExposureMax))
             {
                 return false;
             }
@@ -792,9 +787,9 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerThresholdElem = cameraElem->FirstChildElement("Marker_Threshold");
         if (markerThresholdElem)
         {
-            if (!ReadElementUnsignedInt32(*markerThresholdElem, "Current", sCameraSettings.nMarkerThreshold)
-                || !ReadElementUnsignedInt32(*markerThresholdElem, "Min", sCameraSettings.nMarkerThresholdMin)
-                || !ReadElementUnsignedInt32(*markerThresholdElem, "Max", sCameraSettings.nMarkerThresholdMax))
+            if (!TryReadElementUnsignedInt32(*markerThresholdElem, "Current", sCameraSettings.nMarkerThreshold)
+                || !TryReadElementUnsignedInt32(*markerThresholdElem, "Min", sCameraSettings.nMarkerThresholdMin)
+                || !TryReadElementUnsignedInt32(*markerThresholdElem, "Max", sCameraSettings.nMarkerThresholdMax))
             {
                 return false;
             }
@@ -807,18 +802,18 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto positionElem = cameraElem->FirstChildElement("Position");
         if (positionElem)
         {
-            if (!ReadElementFloat(*positionElem, "X", sCameraSettings.fPositionX)
-                || !ReadElementFloat(*positionElem, "Y", sCameraSettings.fPositionY)
-                || !ReadElementFloat(*positionElem, "Z", sCameraSettings.fPositionZ)
-                || !ReadElementFloat(*positionElem, "Rot_1_1", sCameraSettings.fPositionRotMatrix[0][0])
-                || !ReadElementFloat(*positionElem, "Rot_2_1", sCameraSettings.fPositionRotMatrix[1][0])
-                || !ReadElementFloat(*positionElem, "Rot_3_1", sCameraSettings.fPositionRotMatrix[2][0])
-                || !ReadElementFloat(*positionElem, "Rot_1_2", sCameraSettings.fPositionRotMatrix[0][1])
-                || !ReadElementFloat(*positionElem, "Rot_2_2", sCameraSettings.fPositionRotMatrix[1][1])
-                || !ReadElementFloat(*positionElem, "Rot_3_2", sCameraSettings.fPositionRotMatrix[2][1])
-                || !ReadElementFloat(*positionElem, "Rot_1_3", sCameraSettings.fPositionRotMatrix[0][2])
-                || !ReadElementFloat(*positionElem, "Rot_2_3", sCameraSettings.fPositionRotMatrix[1][2])
-                || !ReadElementFloat(*positionElem, "Rot_3_3", sCameraSettings.fPositionRotMatrix[2][2])
+            if (!TryReadElementFloat(*positionElem, "X", sCameraSettings.fPositionX)
+                || !TryReadElementFloat(*positionElem, "Y", sCameraSettings.fPositionY)
+                || !TryReadElementFloat(*positionElem, "Z", sCameraSettings.fPositionZ)
+                || !TryReadElementFloat(*positionElem, "Rot_1_1", sCameraSettings.fPositionRotMatrix[0][0])
+                || !TryReadElementFloat(*positionElem, "Rot_2_1", sCameraSettings.fPositionRotMatrix[1][0])
+                || !TryReadElementFloat(*positionElem, "Rot_3_1", sCameraSettings.fPositionRotMatrix[2][0])
+                || !TryReadElementFloat(*positionElem, "Rot_1_2", sCameraSettings.fPositionRotMatrix[0][1])
+                || !TryReadElementFloat(*positionElem, "Rot_2_2", sCameraSettings.fPositionRotMatrix[1][1])
+                || !TryReadElementFloat(*positionElem, "Rot_3_2", sCameraSettings.fPositionRotMatrix[2][1])
+                || !TryReadElementFloat(*positionElem, "Rot_1_3", sCameraSettings.fPositionRotMatrix[0][2])
+                || !TryReadElementFloat(*positionElem, "Rot_2_3", sCameraSettings.fPositionRotMatrix[1][2])
+                || !TryReadElementFloat(*positionElem, "Rot_3_3", sCameraSettings.fPositionRotMatrix[2][2])
                 )
             {
                 return false;
@@ -829,7 +824,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
             return false;
         }
 
-        if (!ReadElementUnsignedInt32(*cameraElem, "Orientation", sCameraSettings.nOrientation))
+        if (!TryReadElementUnsignedInt32(*cameraElem, "Orientation", sCameraSettings.nOrientation))
         {
             return false;
         }
@@ -837,8 +832,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerResElem = cameraElem->FirstChildElement("Marker_Res");
         if (markerResElem)
         {
-            if (!ReadElementUnsignedInt32(*markerResElem, "Width", sCameraSettings.nMarkerResolutionWidth)
-                || !ReadElementUnsignedInt32(*markerResElem, "Height", sCameraSettings.nMarkerResolutionHeight)
+            if (!TryReadElementUnsignedInt32(*markerResElem, "Width", sCameraSettings.nMarkerResolutionWidth)
+                || !TryReadElementUnsignedInt32(*markerResElem, "Height", sCameraSettings.nMarkerResolutionHeight)
                 )
             {
                 return false;
@@ -852,8 +847,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoResElem = cameraElem->FirstChildElement("Video_Res");
         if (videoResElem)
         {
-            if (!ReadElementUnsignedInt32(*videoResElem, "Width", sCameraSettings.nVideoResolutionWidth)
-                || !ReadElementUnsignedInt32(*videoResElem, "Height", sCameraSettings.nVideoResolutionHeight)
+            if (!TryReadElementUnsignedInt32(*videoResElem, "Width", sCameraSettings.nVideoResolutionWidth)
+                || !TryReadElementUnsignedInt32(*videoResElem, "Height", sCameraSettings.nVideoResolutionHeight)
                 )
             {
                 return false;
@@ -867,10 +862,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto markerFovElem = cameraElem->FirstChildElement("Marker_FOV");
         if (markerFovElem)
         {
-            if (!ReadElementUnsignedInt32(*markerFovElem, "Left", sCameraSettings.nMarkerFOVLeft)
-                || !ReadElementUnsignedInt32(*markerFovElem, "Top", sCameraSettings.nMarkerFOVTop)
-                || !ReadElementUnsignedInt32(*markerFovElem, "Right", sCameraSettings.nMarkerFOVRight)
-                || !ReadElementUnsignedInt32(*markerFovElem, "Bottom", sCameraSettings.nMarkerFOVBottom)
+            if (!TryReadElementUnsignedInt32(*markerFovElem, "Left", sCameraSettings.nMarkerFOVLeft)
+                || !TryReadElementUnsignedInt32(*markerFovElem, "Top", sCameraSettings.nMarkerFOVTop)
+                || !TryReadElementUnsignedInt32(*markerFovElem, "Right", sCameraSettings.nMarkerFOVRight)
+                || !TryReadElementUnsignedInt32(*markerFovElem, "Bottom", sCameraSettings.nMarkerFOVBottom)
                 )
             {
                 return false;
@@ -884,10 +879,10 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
         auto videoFovElem = cameraElem->FirstChildElement("Marker_FOV");
         if (videoFovElem)
         {
-            if (!ReadElementUnsignedInt32(*videoFovElem, "Left", sCameraSettings.nVideoFOVLeft)
-                || !ReadElementUnsignedInt32(*videoFovElem, "Top", sCameraSettings.nVideoFOVTop)
-                || !ReadElementUnsignedInt32(*videoFovElem, "Right", sCameraSettings.nVideoFOVRight)
-                || !ReadElementUnsignedInt32(*videoFovElem, "Bottom", sCameraSettings.nVideoFOVBottom)
+            if (!TryReadElementUnsignedInt32(*videoFovElem, "Left", sCameraSettings.nVideoFOVLeft)
+                || !TryReadElementUnsignedInt32(*videoFovElem, "Top", sCameraSettings.nVideoFOVTop)
+                || !TryReadElementUnsignedInt32(*videoFovElem, "Right", sCameraSettings.nVideoFOVRight)
+                || !TryReadElementUnsignedInt32(*videoFovElem, "Bottom", sCameraSettings.nVideoFOVBottom)
                 )
             {
                 return false;
@@ -910,7 +905,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                 if (port < 2)
                 {
                     std::string mode;
-                    if (!ReadElementStringAllowEmpty(*syncOutElem, "Mode", mode))
+                    if (!TryReadElementString(*syncOutElem, "Mode", mode))
                     {
                         return false;
                     }
@@ -953,8 +948,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                         sCameraSettings.eSyncOutMode[port] == ModeDivisor ||
                         sCameraSettings.eSyncOutMode[port] == ModeIndependentFreq)
                     {
-                        if (!ReadElementUnsignedInt32(*syncOutElem, "Value", sCameraSettings.nSyncOutValue[port])
-                            || !ReadElementFloat(*syncOutElem, "Duty_Cycle", sCameraSettings.fSyncOutDutyCycle[port]))
+                        if (!TryReadElementUnsignedInt32(*syncOutElem, "Value", sCameraSettings.nSyncOutValue[port])
+                            || !TryReadElementFloat(*syncOutElem, "Duty_Cycle", sCameraSettings.fSyncOutDutyCycle[port]))
                         {
                             return false;
                         }
@@ -964,7 +959,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& pGenera
                 if (port == 2 || (sCameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
                 {
                     std::string signalPolarity;
-                    if (ReadElementStringAllowEmpty(*syncOutElem, "Signal_Polarity", signalPolarity))
+                    if (TryReadElementString(*syncOutElem, "Signal_Polarity", signalPolarity))
                     {
                         sCameraSettings.bSyncOutNegativePolarity[port] = ToLower(signalPolarity) == "negative";
                     }
@@ -1052,9 +1047,9 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 
     if (auto axisUpwards = t3dElem->FirstChildElement("AxisUpwards"))
     {
-        if (const char* charptr = axisUpwards->GetText())
+        if (const char* charPtr = axisUpwards->GetText())
         {
-            auto tStr = ToLower(charptr);
+            auto tStr = ToLower(charPtr);
             if (tStr == "+x")
             {
                 p3dSettings.eAxisUpwards = XPos;
@@ -1141,9 +1136,9 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 
         if (auto typeElem = labelElem->FirstChildElement("Trajectory_Type"))
         {
-            if (auto text = typeElem->GetText())
+            if (auto charPtr = typeElem->GetText())
             {
-                label.type = text;
+                label.type = charPtr;
             }
         }
 
@@ -1182,7 +1177,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool
 
 namespace
 {
-    bool TryReadSetEnabled(std::uint32_t nMajorVer, std::uint32_t nMinorVer, tinyxml2::XMLElement& oXML, bool& bTarget)
+    bool TryRead6DofElementEnabled(std::uint32_t nMajorVer, std::uint32_t nMinorVer, tinyxml2::XMLElement& oXML, bool& bTarget)
     {
         if (nMajorVer > 1 || nMinorVer > 23)
         {
@@ -1198,25 +1193,8 @@ namespace
         return false;
     }
 
-    bool TryReadSetName(tinyxml2::XMLElement& oXML, std::string& sTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("Name"))
-        {
-            if (auto text = elem->GetText())
-            {
-                sTarget = text;
-            }
-            else
-            {
-                sTarget = {};
-            }
-            return true;
-        }
 
-        return false;
-    }
-
-    bool TryReadSetColor(tinyxml2::XMLElement& oXML, std::uint32_t& nTarget)
+    bool TryReadAttributesRGBColor(tinyxml2::XMLElement& oXML, std::uint32_t& nTarget)
     {
         if (auto elem = oXML.FirstChildElement("Color"))
         {
@@ -1228,42 +1206,6 @@ namespace
         }
 
         nTarget = 0;
-        return false;
-    }
-
-    bool TryReadSetMaxResidual(tinyxml2::XMLElement& oXML, float& fTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("MaximumResidual"))
-        {
-            fTarget = static_cast<float>(atof(elem->GetText()));
-            return true;
-        }
-
-        fTarget = .0f;
-        return false;
-    }
-
-    bool TryReadSetMinMarkersInBody(tinyxml2::XMLElement& oXML, std::uint32_t& nTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("MinimumMarkersInBody"))
-        {
-            nTarget = elem->IntText(0);
-            return true;
-        }
-
-        nTarget = 0;
-        return false;
-    }
-
-    bool TryReadSetBoneLenTolerance(tinyxml2::XMLElement& oXML, float& fTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("BoneLengthTolerance"))
-        {
-            fTarget = static_cast<float>(atof(elem->GetText()));
-            return true;
-        }
-
-        fTarget = .0f;
         return false;
     }
 
@@ -1306,29 +1248,6 @@ namespace
         return false;
     }
 
-    bool TryReadSetScale(tinyxml2::XMLElement& oXML, float& fTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("Scale"))
-        {
-            fTarget = static_cast<float>(atof(elem->GetText()));
-            return true;
-        }
-
-        fTarget = .0f;
-        return false;
-    }
-
-    bool TryReadSetOpacity(tinyxml2::XMLElement& oXML, float& fTarget)
-    {
-        if (auto elem = oXML.FirstChildElement("Opacity"))
-        {
-            fTarget = static_cast<float>(atof(elem->GetText()));
-            return true;
-        }
-
-        fTarget = .0f;
-        return false;
-    }
 
     bool TryReadSetPoints(tinyxml2::XMLElement& oXML, std::vector<SBodyPoint>& vTarget)
     {
@@ -1391,8 +1310,7 @@ namespace
         return false;
     }
 
-
-    bool TryReadSetRGBColor(tinyxml2::XMLElement& oXML, std::uint32_t& oTarget)
+    bool TryReadElementRGBColor(tinyxml2::XMLElement& oXML, std::uint32_t& oTarget)
     {
         if (auto elem = oXML.FirstChildElement("RGBColor"))
         {
@@ -1404,29 +1322,6 @@ namespace
         return false;
     }
 
-    bool TryReadFloatElement(tinyxml2::XMLElement& parent, const char* childElementName, float& output)
-    {
-        if (auto elem = parent.FirstChildElement(childElementName))
-        {
-            output = elem->FloatText(.0f);
-            return true;
-        }
-        output = .0f;
-        return false;
-    }
-
-    bool TryReadTextElement(tinyxml2::XMLElement& parent, const char* childElementName, std::string& output)
-    {
-        if (auto elem = parent.FirstChildElement(childElementName))
-        {
-            output = elem->GetText();
-            return true;
-        }
-
-        output = {};
-        return false;
-    }
-
     bool TryReadSetPointsOld(tinyxml2::XMLElement& oXML, std::vector<SBodyPoint>& vTarget)
     {
         vTarget.clear();
@@ -1434,17 +1329,17 @@ namespace
         {
             SBodyPoint sPoint;
 
-            if (!TryReadFloatElement(*pointElem, "X", sPoint.fX))
+            if (!TryReadElementFloat(*pointElem, "X", sPoint.fX))
             {
                 return false;
             }
 
-            if (!TryReadFloatElement(*pointElem, "Y", sPoint.fY))
+            if (!TryReadElementFloat(*pointElem, "Y", sPoint.fY))
             {
                 return false;
             }
 
-            if (!TryReadFloatElement(*pointElem, "Z", sPoint.fZ))
+            if (!TryReadElementFloat(*pointElem, "Z", sPoint.fZ))
             {
                 return false;
             }
@@ -1458,9 +1353,9 @@ namespace
     {
         if (auto elem = oXML.FirstChildElement("Euler"))
         {
-            return TryReadTextElement(*elem, "First", sTargetFirst)
-                && TryReadTextElement(*elem, "Second", sTargetSecond)
-                && TryReadTextElement(*elem, "Third", sTargetThird);
+            return TryReadElementString(*elem, "First", sTargetFirst)
+                && TryReadElementString(*elem, "Second", sTargetSecond)
+                && TryReadElementString(*elem, "Third", sTargetThird);
         }
 
         return false;
@@ -1494,16 +1389,16 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
         {
             SSettings6DOFBody s6DOFBodySettings;
 
-            if (!TryReadSetName(*bodyElem, s6DOFBodySettings.name))
+            if (!TryReadElementString(*bodyElem, "Name", s6DOFBodySettings.name))
             { // Name --- REQUIRED
                 return false;
             }
 
-            TryReadSetEnabled(mMajorVersion, mMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
-            if (!TryReadSetColor(*bodyElem, s6DOFBodySettings.color)
-                || !TryReadSetMaxResidual(*bodyElem, s6DOFBodySettings.maxResidual)
-                || !TryReadSetMinMarkersInBody(*bodyElem, s6DOFBodySettings.minMarkersInBody)
-                || !TryReadSetBoneLenTolerance(*bodyElem, s6DOFBodySettings.boneLengthTolerance)
+            TryRead6DofElementEnabled(mMajorVersion, mMinorVersion, *bodyElem, s6DOFBodySettings.enabled);
+            if (!TryReadAttributesRGBColor(*bodyElem, s6DOFBodySettings.color)
+                || !TryReadElementFloat(*bodyElem, "MaximumResidual", s6DOFBodySettings.maxResidual)
+                || !TryReadElementUnsignedInt32(*bodyElem, "MinimumMarkersInBody", s6DOFBodySettings.minMarkersInBody)
+                || !TryReadElementFloat(*bodyElem, "BoneLengthTolerance", s6DOFBodySettings.boneLengthTolerance)
                 || !TryReadSetFilter(*bodyElem, s6DOFBodySettings.filterPreset))
             { // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
                 return false;
@@ -1512,11 +1407,11 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
             if (auto meshElem = bodyElem->FirstChildElement("Mesh"))
             {
-                if (!TryReadSetName(*meshElem, s6DOFBodySettings.mesh.name)
+                if (!TryReadElementString(*meshElem, "Name",s6DOFBodySettings.mesh.name)
                     || !TryReadSetPos(*meshElem, s6DOFBodySettings.mesh.position.fX, s6DOFBodySettings.mesh.position.fY, s6DOFBodySettings.mesh.position.fZ)
                     || !TryReadSetRotation(*meshElem, s6DOFBodySettings.mesh.rotation.fX, s6DOFBodySettings.mesh.rotation.fY, s6DOFBodySettings.mesh.rotation.fZ)
-                    || !TryReadSetScale(*meshElem, s6DOFBodySettings.mesh.scale)
-                    || !TryReadSetOpacity(*meshElem, s6DOFBodySettings.mesh.opacity))
+                    || !TryReadElementFloat(*meshElem, "Scale", s6DOFBodySettings.mesh.scale)
+                    || !TryReadElementFloat(*meshElem, "Opacity", s6DOFBodySettings.mesh.opacity))
                 { // Name, Position, Rotation, Scale, Opacity --- REQUIRED
                     return false;
                 }
@@ -1549,8 +1444,8 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
             SSettings6DOFBody s6DOFBodySettings{};
 
             // Name, RGBColor, Points(OLD) --- REQUIRED
-            if (!TryReadSetName(*bodyElem, s6DOFBodySettings.name)
-                || !TryReadSetRGBColor(*bodyElem, s6DOFBodySettings.color)
+            if (!TryReadElementString(*bodyElem, "Name", s6DOFBodySettings.name)
+                || !TryReadElementRGBColor(*bodyElem, s6DOFBodySettings.color)
                 || !TryReadSetPointsOld(*bodyElem, s6DOFBodySettings.points))
             {
                 return false;
@@ -1695,17 +1590,17 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
         SAnalogDevice analogDevice{};
         analogDevice.nDeviceID = 1;   // Always channel 1
         analogDevice.oName = "AnalogDevice";
-        if (!ReadElementUnsignedInt32(*analogElem, "Channels", analogDevice.nChannels)
-            || !ReadElementUnsignedInt32(*analogElem, "Frequency", analogDevice.nFrequency)
-            || !ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
+        if (!TryReadElementUnsignedInt32(*analogElem, "Channels", analogDevice.nChannels)
+            || !TryReadElementUnsignedInt32(*analogElem, "Frequency", analogDevice.nFrequency)
+            || !TryReadElementString(*analogElem, "Unit", analogDevice.oUnit))
         {
             return false;
         }
 
         auto rangeElem = analogElem->FirstChildElement("Range");
         if (!rangeElem
-            || !ReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
-            || !ReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
+            || !TryReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
+            || !TryReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
         {
             return false;
         }
@@ -1718,10 +1613,10 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     for (auto deviceElem = analogElem->FirstChildElement("Device"); deviceElem != nullptr; deviceElem = deviceElem->NextSiblingElement("Device"))
     {
         SAnalogDevice analogDevice{};
-        if (!ReadElementUnsignedInt32(*deviceElem, "Device_ID", analogDevice.nDeviceID)
-            || !ReadElementStringAllowEmpty(*deviceElem, "Device_Name", analogDevice.oName)
-            || !ReadElementUnsignedInt32(*deviceElem, "Channels", analogDevice.nChannels)
-            || !ReadElementUnsignedInt32(*deviceElem, "Frequency", analogDevice.nFrequency)
+        if (!TryReadElementUnsignedInt32(*deviceElem, "Device_ID", analogDevice.nDeviceID)
+            || !TryReadElementString(*deviceElem, "Device_Name", analogDevice.oName)
+            || !TryReadElementUnsignedInt32(*deviceElem, "Channels", analogDevice.nChannels)
+            || !TryReadElementUnsignedInt32(*deviceElem, "Frequency", analogDevice.nFrequency)
             )
         {
             continue;
@@ -1729,7 +1624,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
         if (mMajorVersion == 1 && mMinorVersion < 11)
         {
-            if (!ReadElementStringAllowEmpty(*analogElem, "Unit", analogDevice.oUnit))
+            if (!TryReadElementString(*analogElem, "Unit", analogDevice.oUnit))
             {
                 continue;
             }
@@ -1737,8 +1632,8 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
         auto rangeElem = deviceElem->FirstChildElement("Range");
         if (!rangeElem
-            || !ReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
-            || !ReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
+            || !TryReadElementFloat(*rangeElem, "Min", analogDevice.fMinRange)
+            || !TryReadElementFloat(*rangeElem, "Max", analogDevice.fMaxRange))
         {
             continue;
         }
@@ -1748,7 +1643,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             for (std::size_t i = 0; i < analogDevice.nChannels; i++)
             {
                 std::string label;
-                if (ReadElementStringAllowEmpty(*deviceElem, "Label", label))
+                if (TryReadElementString(*deviceElem, "Label", label))
                 {
                     analogDevice.voLabels.push_back(label);
                 }
@@ -1764,13 +1659,13 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
             for (auto channelElem = deviceElem->FirstChildElement("Channel"); channelElem != nullptr; channelElem = channelElem->NextSiblingElement("Channel"))
             {
                 std::string label;
-                if (ReadElementStringAllowEmpty(*channelElem, "Label", label))
+                if (TryReadElementString(*channelElem, "Label", label))
                 {
                     analogDevice.voLabels.push_back(label);
                 }
 
                 std::string unit;
-                if (ReadElementStringAllowEmpty(*channelElem, "Unit", unit))
+                if (TryReadElementString(*channelElem, "Unit", unit))
                 {
                     analogDevice.voUnits.push_back(unit);
                 }
@@ -1886,12 +1781,12 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     sForcePlate.nCalibrationMatrixRows = 6;
     sForcePlate.nCalibrationMatrixColumns = 6;
 
-    if (!TryReadTextElement(*forceElem, "Unit_Length", pForceSettings.oUnitLength))
+    if (!TryReadElementString(*forceElem, "Unit_Length", pForceSettings.oUnitLength))
     {
         return false;
     }
 
-    if (!TryReadTextElement(*forceElem, "Unit_Force", pForceSettings.oUnitForce))
+    if (!TryReadElementString(*forceElem, "Unit_Force", pForceSettings.oUnitForce))
     {
         return false;
     }
@@ -1901,36 +1796,36 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
     {
         iPlate++;
 
-        if (!ReadElementUnsignedInt32(*plateElem, "Plate_ID", sForcePlate.nID))
+        if (!TryReadElementUnsignedInt32(*plateElem, "Plate_ID", sForcePlate.nID))
         {
-            if (!ReadElementUnsignedInt32(*plateElem, "Force_Plate_Index", sForcePlate.nID)) // Version 1.7 and earlier.
+            if (!TryReadElementUnsignedInt32(*plateElem, "Force_Plate_Index", sForcePlate.nID)) // Version 1.7 and earlier.
             {
                 return false;
             }
         }
 
-        if (!ReadElementUnsignedInt32(*plateElem, "Analog_Device_ID", sForcePlate.nAnalogDeviceID))
+        if (!TryReadElementUnsignedInt32(*plateElem, "Analog_Device_ID", sForcePlate.nAnalogDeviceID))
         {
             sForcePlate.nAnalogDeviceID = 0;
         }
 
-        if (!ReadElementUnsignedInt32(*plateElem, "Frequency", sForcePlate.nFrequency))
+        if (!TryReadElementUnsignedInt32(*plateElem, "Frequency", sForcePlate.nFrequency))
         {
             return false;
         }
 
-        if (!TryReadTextElement(*plateElem, "Type", sForcePlate.oType))
+        if (!TryReadElementString(*plateElem, "Type", sForcePlate.oType))
         {
             sForcePlate.oType = "unknown";
         }
 
-        if (!TryReadTextElement(*plateElem, "Name", sForcePlate.oName))
+        if (!TryReadElementString(*plateElem, "Name", sForcePlate.oName))
         {
             sForcePlate.oName = "#" + std::to_string(iPlate);
         }
 
-        TryReadFloatElement(*plateElem, "Length", sForcePlate.fLength);
-        TryReadFloatElement(*plateElem, "Width", sForcePlate.fWidth);
+        TryReadElementFloat(*plateElem, "Length", sForcePlate.fLength);
+        TryReadElementFloat(*plateElem, "Width", sForcePlate.fWidth);
 
         auto locationElem = plateElem->FirstChildElement("Location");
         if (locationElem)
@@ -1952,18 +1847,18 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
             for (const auto& c : corners)
             {
                 auto cornerElem = locationElem->FirstChildElement(c.name);
-                TryReadFloatElement(*cornerElem, "X", sForcePlate.asCorner[c.index].fX);
-                TryReadFloatElement(*cornerElem, "Y", sForcePlate.asCorner[c.index].fY);
-                TryReadFloatElement(*cornerElem, "Z", sForcePlate.asCorner[c.index].fZ);
+                TryReadElementFloat(*cornerElem, "X", sForcePlate.asCorner[c.index].fX);
+                TryReadElementFloat(*cornerElem, "Y", sForcePlate.asCorner[c.index].fY);
+                TryReadElementFloat(*cornerElem, "Z", sForcePlate.asCorner[c.index].fZ);
             }
         }
 
         auto originElem = plateElem->FirstChildElement("Origin");
         if (originElem)
         {
-            TryReadFloatElement(*originElem, "X", sForcePlate.sOrigin.fX);
-            TryReadFloatElement(*originElem, "Y", sForcePlate.sOrigin.fY);
-            TryReadFloatElement(*originElem, "Z", sForcePlate.sOrigin.fZ);
+            TryReadElementFloat(*originElem, "X", sForcePlate.sOrigin.fX);
+            TryReadElementFloat(*originElem, "Y", sForcePlate.sOrigin.fY);
+            TryReadElementFloat(*originElem, "Z", sForcePlate.sOrigin.fZ);
         }
 
         sForcePlate.vChannels.clear();
@@ -1973,8 +1868,8 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& pForceSetti
             SForceChannel sForceChannel{};
             for (auto channelElem : ChildElementRange{ *channelsElem, "Channel" })
             {
-                ReadElementUnsignedInt32(*channelElem, "Channel_No", sForceChannel.nChannelNumber);
-                ReadElementFloat(*channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
+                TryReadElementUnsignedInt32(*channelElem, "Channel_No", sForceChannel.nChannelNumber);
+                TryReadElementFloat(*channelElem, "ConversionFactor", sForceChannel.fConversionFactor);
                 sForcePlate.vChannels.push_back(sForceChannel);
             }
         }
@@ -2063,7 +1958,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
     {
         SImageCamera sImageCamera{};
 
-        if (!ReadElementUnsignedInt32(*camera, "ID", sImageCamera.nID))
+        if (!TryReadElementUnsignedInt32(*camera, "ID", sImageCamera.nID))
         {
             return false;
         }
@@ -2074,7 +1969,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
         }
 
         std::string format;
-        if (!ReadElementStringAllowEmpty(*camera, "Format", format))
+        if (!TryReadElementString(*camera, "Format", format))
         {
             return false;
         }
@@ -2101,16 +1996,16 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
             return false;
         }
 
-        if (!ReadElementUnsignedInt32(*camera, "Width", sImageCamera.nWidth)
-            || !ReadElementUnsignedInt32(*camera, "Height", sImageCamera.nHeight))
+        if (!TryReadElementUnsignedInt32(*camera, "Width", sImageCamera.nWidth)
+            || !TryReadElementUnsignedInt32(*camera, "Height", sImageCamera.nHeight))
         {
             return false;
         }
 
-        if (!ReadElementFloat(*camera, "Left_Crop", sImageCamera.fCropLeft)
-            || !ReadElementFloat(*camera, "Top_Crop", sImageCamera.fCropTop)
-            || !ReadElementFloat(*camera, "Right_Crop", sImageCamera.fCropRight)
-            || !ReadElementFloat(*camera, "Bottom_Crop", sImageCamera.fCropBottom))
+        if (!TryReadElementFloat(*camera, "Left_Crop", sImageCamera.fCropLeft)
+            || !TryReadElementFloat(*camera, "Top_Crop", sImageCamera.fCropTop)
+            || !TryReadElementFloat(*camera, "Right_Crop", sImageCamera.fCropRight)
+            || !TryReadElementFloat(*camera, "Bottom_Crop", sImageCamera.fCropBottom))
         {
             return false;
         }
@@ -2208,8 +2103,8 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
             skeletonHierarchical.name = skeletonElem->Attribute("Name");
             skeleton.name = skeletonHierarchical.name;
 
-            ReadElementStringAllowEmpty(*skeletonElem, "Solver", skeletonHierarchical.rootSegment.solver);
-            ReadElementDouble(*skeletonElem, "Scale", skeletonHierarchical.scale);
+            TryReadElementString(*skeletonElem, "Solver", skeletonHierarchical.rootSegment.solver);
+            TryReadElementDouble(*skeletonElem, "Scale", skeletonHierarchical.scale);
 
             auto segmentsElem = skeletonElem->FirstChildElement("Segments");
             if (segmentsElem)
@@ -2222,10 +2117,10 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
                     {
                         segmentHierarchical.name = segmentElem.Attribute("Name");
 
-                        ReadElementUnsignedInt32(segmentElem, "ID", segmentHierarchical.id);
+                        TryReadElementUnsignedInt32(segmentElem, "ID", segmentHierarchical.id);
                         segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
-                        ReadElementStringAllowEmpty(segmentElem, "Solver", segmentHierarchical.solver);
+                        TryReadElementString(segmentElem, "Solver", segmentHierarchical.solver);
 
                         auto transformElem = segmentElem.FirstChildElement("Transform");
                         if (transformElem)
@@ -2271,7 +2166,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
 
                                 marker.position = ReadSPosition(*markerElem, "Position");
 
-                                if (!ReadElementDouble(*markerElem, "Weight", marker.weight))
+                                if (!TryReadElementDouble(*markerElem, "Weight", marker.weight))
                                 {
                                     marker.weight = 1.0;
                                 }
@@ -2295,7 +2190,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
                                     body.rotation = ReadSRotation(*rbodyTransformElem, "Rotation");
                                 }
 
-                                if (!ReadElementDouble(*rbodyTransformElem, "Weight", body.weight))
+                                if (!TryReadElementDouble(*rbodyTransformElem, "Weight", body.weight))
                                 {
                                     body.weight = 1.0;
                                 }
@@ -2407,7 +2302,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData
 
 namespace
 {
-    bool ReadXmlFov(std::string name, tinyxml2::XMLElement& parentElement, SCalibrationFov& fov)
+    bool TryReadXmlFov(std::string name, tinyxml2::XMLElement& parentElement, SCalibrationFov& fov)
     {
         auto childElement = parentElement.FirstChildElement(name.data());
         if (!childElement)
@@ -2509,22 +2404,22 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& pCalibr
             camera.model = cameraElem->Attribute("model");
             camera.view_rotation = cameraElem->UnsignedAttribute("viewrotation");
 
-            if (!ReadXmlFov("fov_marker", *cameraElem, camera.fov_marker))
+            if (!TryReadXmlFov("fov_marker", *cameraElem, camera.fov_marker))
             {
                 return false;
             }
 
-            if (!ReadXmlFov("fov_marker_max", *cameraElem, camera.fov_marker_max))
+            if (!TryReadXmlFov("fov_marker_max", *cameraElem, camera.fov_marker_max))
             {
                 return false;
             }
 
-            if (!ReadXmlFov("fov_video", *cameraElem, camera.fov_video))
+            if (!TryReadXmlFov("fov_video", *cameraElem, camera.fov_video))
             {
                 return false;
             }
 
-            if (!ReadXmlFov("fov_video_max", *cameraElem, camera.fov_video_max))
+            if (!TryReadXmlFov("fov_video_max", *cameraElem, camera.fov_video_max))
             {
                 return false;
             }
