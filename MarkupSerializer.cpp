@@ -90,7 +90,7 @@ void CMarkupSerializer::AddXMLElementDOF(CMarkup& xml, const std::string& name, 
     xml.AddElem(name.c_str());
     if (!std::isnan(degreeOfFreedoms.lowerBound) && !std::isnan(degreeOfFreedoms.upperBound))
     {
-        if (mnMajorVersion > 1 || mnMinorVersion > 21)
+        if (mMajorVersion > 1 || mMinorVersion > 21)
         {
             xml.IntoElem();
             xml.AddElem("Constraint");
@@ -99,7 +99,7 @@ void CMarkupSerializer::AddXMLElementDOF(CMarkup& xml, const std::string& name, 
         xml.AddAttrib("UpperBound", std::to_string(degreeOfFreedoms.upperBound).c_str());
     }
 
-    if (std::isnan(degreeOfFreedoms.lowerBound) || std::isnan(degreeOfFreedoms.upperBound) || (mnMajorVersion == 1 && mnMinorVersion < 22))
+    if (std::isnan(degreeOfFreedoms.lowerBound) || std::isnan(degreeOfFreedoms.upperBound) || (mMajorVersion == 1 && mMinorVersion < 22))
     {
         xml.IntoElem();
     }
@@ -286,7 +286,7 @@ SRotation CMarkupDeserializer::ReadXMLRotation(CMarkup& xml, const std::string& 
 
 
 CMarkupDeserializer::CMarkupDeserializer(const char* pData, std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion), maErrorStr{0}, oXML(pData)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion), mErrorStr{0}, oXML(pData)
 {
 }
 
@@ -320,7 +320,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
     {
         return false;
     }
-    if (mnMajorVersion > 1 || mnMinorVersion > 14)
+    if (mMajorVersion > 1 || mMinorVersion > 14)
     {
         if (!ReadXmlBool(&oXML, "Start_On_Trigger_NO", pGeneralSettings.bStartOnTrigNO))
         {
@@ -564,7 +564,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
         &pGeneralSettings.eRtProcessingActions,
         &pGeneralSettings.eReprocessingActions
     };
-    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
         // ==================== Processing actions ====================
@@ -576,7 +576,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
 
         *processingActions[i] = ProcessingNone;
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 13)
+        if (mMajorVersion > 1 || mMinorVersion > 13)
         {
             if (!oXML.FindChildElem("PreProcessing2D"))
             {
@@ -650,7 +650,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
             *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingForceData);
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             if (!oXML.FindChildElem("GazeVector"))
             {
@@ -691,7 +691,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
                 *processingActions[i] = (EProcessingActions)(*processingActions[i] + ProcessingExportMatlabFile);
             }
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 11)
+            if (mMajorVersion > 1 || mMinorVersion > 11)
             {
                 if (!oXML.FindChildElem("ExportAviFile"))
                 {
@@ -888,7 +888,7 @@ bool CMarkupDeserializer::DeserializeGeneralSettings(SSettingsGeneral& pGeneralS
             return false;
         }
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 11)
+        if (mMajorVersion > 1 || mMinorVersion > 11)
         {
             // ==================== Video frequency ====================
             if (!oXML.FindChildElem("Video_Frequency"))
@@ -1807,7 +1807,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
     {
         oXML.IntoElem();
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 20)
+        if (mMajorVersion > 1 || mMinorVersion > 20)
         {
             while (oXML.FindChildElem("Body"))
             {
@@ -1822,7 +1822,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                     return false;
                 }
                 // Enabled --- NOT(!) REQUIRED
-                TryReadSetEnabled(mnMajorVersion, mnMinorVersion, oXML, s6DOFBodySettings.enabled);
+                TryReadSetEnabled(mMajorVersion, mMinorVersion, oXML, s6DOFBodySettings.enabled);
                 if (!TryReadSetColor(oXML, s6DOFBodySettings.color)
                     || !TryReadSetMaxResidual(oXML, s6DOFBodySettings.maxResidual)
                     || !TryReadSetMinMarkersInBody(oXML, s6DOFBodySettings.minMarkersInBody)
@@ -1895,7 +1895,7 @@ bool CMarkupDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>
                 p6DOFSettings.push_back(s6DOFBodySettings);
                 oXML.OutOfElem(); // Body
             }
-            if (mnMajorVersion > 1 || mnMinorVersion > 15)
+            if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 if (!TryReadSetEuler(oXML, pGeneralSettings.eulerRotations[0], pGeneralSettings.eulerRotations[1], pGeneralSettings.eulerRotations[2]))
                 { // Euler --- REQUIRED
@@ -2018,7 +2018,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
 
     oXML.IntoElem();
 
-    if (mnMajorVersion == 1 && mnMinorVersion == 0)
+    if (mMajorVersion == 1 && mMinorVersion == 0)
     {
         sAnalogDevice.nDeviceID = 1;   // Always channel 1
         sAnalogDevice.oName = "AnalogDevice";
@@ -2091,7 +2091,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
             }
             sAnalogDevice.nFrequency = atoi(oXML.GetChildData().c_str());
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 11)
+            if (mMajorVersion == 1 && mMinorVersion < 11)
             {
                 if (!oXML.FindChildElem("Unit"))
                 {
@@ -2124,7 +2124,7 @@ bool CMarkupDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& 
             sAnalogDevice.fMaxRange = (float)atof(oXML.GetChildData().c_str());
             oXML.OutOfElem(); // Range
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 11)
+            if (mMajorVersion == 1 && mMinorVersion < 11)
             {
                 for (unsigned int i = 0; i < sAnalogDevice.nChannels; i++)
                 {
@@ -2391,7 +2391,7 @@ bool CMarkupDeserializer::DeserializeForceSettings(SSettingsForce& pForceSetting
             oXML.IntoElem();
             int nRow = 0;
 
-            if (mnMajorVersion == 1 && mnMinorVersion < 12)
+            if (mMajorVersion == 1 && mMinorVersion < 12)
             {
                 char strRow[16];
                 char strCol[16];
@@ -2596,7 +2596,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
     {
         xml.IntoElem();
 
-        if (mnMajorVersion > 1 || mnMinorVersion > 20)
+        if (mMajorVersion > 1 || mMinorVersion > 20)
         {
             while (xml.FindElem("Skeleton"))
             {
@@ -2618,7 +2618,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
                 {
                     if (!ParseString(xml.GetData(), skeletonHierarchical.scale))
                     {
-                        sprintf(maErrorStr, "Scale element parse error");
+                        sprintf(mErrorStr, "Scale element parse error");
                         return false;
                     }
                 }
@@ -2856,7 +2856,7 @@ bool CMarkupDeserializer::DeserializeCalibrationSettings(SCalibration& pCalibrat
 
     if (!oXML.FindChildElem("calibration"))
     {
-        sprintf(maErrorStr, "Missing calibration element");
+        sprintf(mErrorStr, "Missing calibration element");
         return false;
     }
     oXML.IntoElem();
@@ -3041,7 +3041,7 @@ SRotation CMarkupDeserializer::DeserializeXMLRotation(CMarkup& xml, const std::s
 }
 
 CMarkupSerializer::CMarkupSerializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion)
-    : mnMajorVersion(pMajorVersion), mnMinorVersion(pMinorVersion)
+    : mMajorVersion(pMajorVersion), mMinorVersion(pMinorVersion)
 {
 }
 
@@ -3068,7 +3068,7 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
     if (pbStartOnExtTrig)
     {
         AddXMLElementBool(&oXML, "Start_On_External_Trigger", pbStartOnExtTrig);
-        if (mnMajorVersion > 1 || mnMinorVersion > 14)
+        if (mMajorVersion > 1 || mMinorVersion > 14)
         {
             AddXMLElementBool(&oXML, "Start_On_Trigger_NO", pStartOnTrigNO);
             AddXMLElementBool(&oXML, "Start_On_Trigger_NC", pStartOnTrigNC);
@@ -3079,7 +3079,7 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
     const char* processings[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
     const EProcessingActions* processingActions[3] = { peProcessingActions, peRtProcessingActions, peReprocessingActions };
 
-    auto actionsCount = (mnMajorVersion > 1 || mnMinorVersion > 13) ? 3 : 1;
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
 
     for (auto i = 0; i < actionsCount; i++)
     {
@@ -3088,7 +3088,7 @@ std::string CMarkupSerializer::SetGeneralSettings(const unsigned int* pnCaptureF
             oXML.AddElem(processings[i]);
             oXML.IntoElem();
 
-            if (mnMajorVersion > 1 || mnMinorVersion > 13)
+            if (mMajorVersion > 1 || mMinorVersion > 13)
             {
                 AddXMLElementBool(&oXML, "PreProcessing2D", (*processingActions[i] & ProcessingPreProcess2D) != 0);
             }
@@ -3560,7 +3560,7 @@ std::string CMarkupSerializer::SetForceSettings(const unsigned int pPlateId, con
     oXML.AddElem("Plate");
     oXML.IntoElem();
 
-    if (mnMajorVersion > 1 || mnMinorVersion > 7)
+    if (mMajorVersion > 1 || mMinorVersion > 7)
     {
         AddXMLElementUnsignedInt(&oXML, "Plate_ID", &pPlateId);
     }
@@ -3707,7 +3707,7 @@ std::string CMarkupSerializer::SetSkeletonSettings(const std::vector<SSettingsSk
         xml.AddElem("Skeleton");
         xml.SetAttrib("Name", skeleton.name.c_str());
         xml.IntoElem();
-        if (mnMajorVersion == 1 && mnMinorVersion < 22)
+        if (mMajorVersion == 1 && mMinorVersion < 22)
         {
             xml.AddElem("Solver", skeleton.rootSegment.solver.c_str());
         }
@@ -3721,7 +3721,7 @@ std::string CMarkupSerializer::SetSkeletonSettings(const std::vector<SSettingsSk
                 xml.SetAttrib("Name", segment.name.c_str());
                 xml.IntoElem();
                 {
-                    if (mnMajorVersion > 1 || mnMinorVersion > 21)
+                    if (mMajorVersion > 1 || mMinorVersion > 21)
                     {
                         xml.AddElem("Solver", segment.solver.c_str());
                     }

@@ -6,65 +6,63 @@
 
 namespace qualisys_cpp_sdk {
 
-
-
     struct DLL_EXPORT CTinyxml2Serializer : public ISettingsSerializer {
-        CTinyxml2Serializer(std::uint32_t pMajorVersion, std::uint32_t pMinorVersion);
-        tinyxml2::XMLDocument oXML;
-        std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,
-            const bool* pbStartOnExtTrig, const bool* pStartOnTrigNO, const bool* pStartOnTrigNC, const bool* pStartOnTrigSoftware,
-            const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions) override;
+        CTinyxml2Serializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
+
+        std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
+            const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
+            const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
 
         std::string SetExtTimeBaseSettings(
-            const bool* pbEnabled, const ESignalSource* peSignalSource,
-            const bool* pbSignalModePeriodic, const unsigned int* pnFreqMultiplier,
-            const unsigned int* pnFreqDivisor, const unsigned int* pnFreqTolerance,
-            const float* pfNominalFrequency, const bool* pbNegativeEdge,
-            const unsigned int* pnSignalShutterDelay, const float* pfNonPeriodicTimeout) override;
+            const bool* enabled, const ESignalSource* signalSource,
+            const bool* signalModePeriodic, const unsigned int* freqMultiplier,
+            const unsigned int* freqDivisor, const unsigned int* freqTolerance,
+            const float* nominalFrequency, const bool* negativeEdge,
+            const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout) override;
 
         std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings) override;
 
         std::string SetCameraSettings(
-            const unsigned int pCameraId, const ECameraMode* peMode,
-            const float* pfMarkerExposure, const float* pfMarkerThreshold,
-            const int* pnOrientation) override;
+            const unsigned int cameraId, const ECameraMode* mode,
+            const float* markerExposure, const float* markerThreshold,
+            const int* orientation) override;
 
         std::string SetCameraVideoSettings(
-            const unsigned int pCameraId, const EVideoResolution* eVideoResolution,
-            const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
-            const float* pfVideoExposure, const float* pfVideoFlashTime) override;
+            const unsigned int cameraId, const EVideoResolution* videoResolution,
+            const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency,
+            const float* videoExposure, const float* videoFlashTime) override;
 
         std::string SetCameraSyncOutSettings(
-            const unsigned int  pCameraId, const unsigned int portNumber, const ESyncOutFreqMode* peSyncOutMode,
-            const unsigned int* pnSyncOutValue, const float* pfSyncOutDutyCycle,
-            const bool* pbSyncOutNegativePolarity) override;
+            const unsigned int cameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
+            const unsigned int* syncOutValue, const float* syncOutDutyCycle,
+            const bool* syncOutNegativePolarity) override;
 
-        std::string SetCameraLensControlSettings(const unsigned int pCameraId, const float pFocus, const float pAperture) override;
-        std::string SetCameraAutoExposureSettings(const unsigned int pCameraId, const bool pAutoExposure, const float pCompensation) override;
-        std::string SetCameraAutoWhiteBalance(const unsigned int pCameraId, const bool pEnable) override;
+        std::string SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture) override;
+        std::string SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation) override;
+        std::string SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable) override;
         std::string SetImageSettings(
-            const unsigned int  pCameraId, const bool* pbEnable, const CRTPacket::EImageFormat* peFormat,
-            const unsigned int* pnWidth, const unsigned int* pnHeight, const float* pfLeftCrop,
-            const float* pfTopCrop, const float* pfRightCrop, const float* pfBottomCrop) override;
+            const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+            const unsigned int* width, const unsigned int* height, const float* leftCrop,
+            const float* topCrop, const float* rightCrop, const float* bottomCrop) override;
 
         std::string SetForceSettings(
-            const unsigned int pPlateId, const SPoint* pCorner1, const SPoint* pCorner2,
-            const SPoint* pCorner3, const SPoint* pCorner4) override;
+            const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
+            const SPoint* corner3, const SPoint* corner4) override;
 
-        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& pSettings6Dofs) override;
-        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& pSettingsSkeletons) override;
+        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs) override;
+        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons) override;
 
     private:
-        std::uint32_t mnMajorVersion;
-        std::uint32_t mnMinorVersion;
-        void AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool* pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue = "True", const char* tFalse = "False");
-        void AddXMLElementBool(tinyxml2::XMLElement& parent, const char* tTag, const bool pbValue, tinyxml2::XMLDocument& oXML, const char* tTrue = "True", const char* tFalse = "False");
-        void AddXMLElementInt(tinyxml2::XMLElement& parent, const char* tTag, const int* pnValue, tinyxml2::XMLDocument& oXML);
-        void AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int nValue, tinyxml2::XMLDocument& oXML);
-        void AddXMLElementUnsignedInt(tinyxml2::XMLElement& parent, const char* tTag, const unsigned int* pnValue, tinyxml2::XMLDocument& oXML);
-        void AddXMLElementFloat(tinyxml2::XMLElement& parent, const char* tTag, const float* pfValue, unsigned int pnDecimals, tinyxml2::XMLDocument& oXML);
-        void AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parent, const char* elementName, const char* attributeName, const float& value, unsigned int decimals);
-        void AddXMLElementTransform(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation);
-        void AddXMLElementDOF(tinyxml2::XMLDocument& oXML, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreeOfFreedoms);
+        std::uint32_t mMajorVersion;
+        std::uint32_t mMinorVersion;
+        void AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool* value, tinyxml2::XMLDocument& document, const char* trueText = "True", const char* falseText = "False");
+        void AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool value, tinyxml2::XMLDocument& document, const char* trueText = "True", const char* falseText = "False");
+        void AddXMLElementInt(tinyxml2::XMLElement& parentElem, const char* elementName, const int* value, tinyxml2::XMLDocument& document);
+        void AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int value, tinyxml2::XMLDocument& document);
+        void AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int* value, tinyxml2::XMLDocument& document);
+        void AddXMLElementFloat(tinyxml2::XMLElement& parentElem, const char* elementName, const float* value, unsigned int decimals, tinyxml2::XMLDocument& document);
+        void AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const char* elementName, const char* attributeName, const float& value, unsigned int decimals);
+        void AddXMLElementTransform(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation);
+        void AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreeOfFreedoms);
     };
 }
