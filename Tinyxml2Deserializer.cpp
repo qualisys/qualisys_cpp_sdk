@@ -1019,79 +1019,79 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
 namespace
 {
-    bool TryRead6DofElementEnabled(std::uint32_t nMajorVer, std::uint32_t nMinorVer, Deserializer& xmlDocument, bool& bTarget)
+    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, Deserializer& xmlDocument, bool& target)
     {
-        if (nMajorVer > 1 || nMinorVer > 23)
+        if (majorVer > 1 || minorVer > 23)
         {
             if (auto enabledElem = xmlDocument.FirstChildElement("Enabled"))
             {
-                bTarget = enabledElem.GetText() == "true";
+                target = enabledElem.GetText() == "true";
                 return true;
             }
         }
 
         // Enabled is default true for 6dof bodies
-        bTarget = true;
+        target = true;
         return false;
     }
 
 
-    bool TryReadAttributesRGBColor(Deserializer& xmlDocument, std::uint32_t& nTarget)
+    bool TryReadAttributesRGBColor(Deserializer& xmlDocument, std::uint32_t& target)
     {
         if (auto elem = xmlDocument.FirstChildElement("Color"))
         {
             std::uint32_t colorR = elem.UnsignedAttribute("R");
             std::uint32_t colorG = elem.UnsignedAttribute("G");
             std::uint32_t colorB = elem.UnsignedAttribute("B");
-            nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+            target = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
             return true;
         }
 
-        nTarget = 0;
+        target = 0;
         return false;
     }
 
-    bool TryReadSetFilter(Deserializer& xmlDocument, std::string& sTarget)
+    bool TryReadSetFilter(Deserializer& xmlDocument, std::string& target)
     {
         if (auto elem = xmlDocument.FirstChildElement("Filter"))
         {
-            sTarget = elem.Attribute("Preset");
+            target = elem.Attribute("Preset");
             return true;
         }
 
         return false;
     }
 
-    bool TryReadSetPos(Deserializer& xmlDocument, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetPos(Deserializer& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = xmlDocument.FirstChildElement("Position"))
         {
-            fTargetX = elem.FloatAttribute("X");
-            fTargetY = elem.FloatAttribute("Y");
-            fTargetZ = elem.FloatAttribute("Z");
+            targetX = elem.FloatAttribute("X");
+            targetY = elem.FloatAttribute("Y");
+            targetZ = elem.FloatAttribute("Z");
             return true;
         }
 
-        fTargetZ = fTargetY = fTargetX = .0f;
+        targetZ = targetY = targetX = .0f;
         return false;
     }
 
-    bool TryReadSetRotation(Deserializer& xmlDocument, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetRotation(Deserializer& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = xmlDocument.FirstChildElement("Rotation"))
         {
-            fTargetX = elem.FloatAttribute("X");
-            fTargetY = elem.FloatAttribute("Y");
-            fTargetZ = elem.FloatAttribute("Z");
+            targetX = elem.FloatAttribute("X");
+            targetY = elem.FloatAttribute("Y");
+            targetZ = elem.FloatAttribute("Z");
             return true;
         }
 
-        fTargetZ = fTargetY = fTargetX = .0f;
+        targetZ = targetY = targetX = .0f;
         return false;
     }
 
 
-    bool TryReadSetPoints(Deserializer& xmlDocument, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetPoints(Deserializer& xmlDocument, std::vector<SBodyPoint>& target)
     {
         if (auto pointsElem = xmlDocument.FirstChildElement("Points"))
         {
@@ -1106,7 +1106,7 @@ namespace
                 bodyPoint.virtual_ = 0 != pointElem.UnsignedAttribute("Virtual");
                 bodyPoint.physicalId = pointElem.UnsignedAttribute("PhysicalId");
                 bodyPoint.name = pointElem.Attribute("Name");
-                vTarget.push_back(bodyPoint);
+                target.push_back(bodyPoint);
             }
 
             return true;
@@ -1115,19 +1115,19 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(Deserializer& xmlDocument, SOrigin& oTarget)
+    bool TryReadSetDataOrigin(Deserializer& xmlDocument, SOrigin& target)
     {
         if (auto elem = xmlDocument.FirstChildElement("Data_origin"))
         {
-            oTarget.type = static_cast<EOriginType>(elem.UnsignedText());
-            oTarget.position.fX = elem.FloatAttribute("X");
-            oTarget.position.fY = elem.FloatAttribute("Y");
-            oTarget.position.fZ = elem.FloatAttribute("Z");
-            oTarget.relativeBody = elem.UnsignedAttribute("Relative_body");
+            target.type = static_cast<EOriginType>(elem.UnsignedText());
+            target.position.fX = elem.FloatAttribute("X");
+            target.position.fY = elem.FloatAttribute("Y");
+            target.position.fZ = elem.FloatAttribute("Z");
+            target.relativeBody = elem.UnsignedAttribute("Relative_body");
         }
         else
         {
-            oTarget = {};
+            target = {};
             return false;
         }
 
@@ -1137,7 +1137,7 @@ namespace
             for (std::uint32_t i = 0; i < 9; i++)
             {
                 (void)sprintf_s(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-                oTarget.rotation[i] = elem.FloatAttribute(tmpStr);
+                target.rotation[i] = elem.FloatAttribute(tmpStr);
             }
 
 
@@ -1145,28 +1145,28 @@ namespace
             auto body = static_cast<std::uint32_t>(elem.UnsignedAttribute("Relative_body"));
 
             // Validation: type and relativeBody must be the same between orientation and origin
-            return type == oTarget.type && body == oTarget.relativeBody;
+            return type == target.type && body == target.relativeBody;
         }
 
-        oTarget = {};
+        target = {};
         return false;
     }
 
-    bool TryReadElementRGBColor(Deserializer& xmlDocument, std::uint32_t& oTarget)
+    bool TryReadElementRGBColor(Deserializer& xmlDocument, std::uint32_t& target)
     {
         if (auto elem = xmlDocument.FirstChildElement("RGBColor"))
         {
-            oTarget = elem.IntText();
+            target = elem.IntText();
             return true;
         }
 
-        oTarget = 0;
+        target = 0;
         return false;
     }
 
-    bool TryReadSetPointsOld(Deserializer& xmlDocument, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetPointsOld(Deserializer& xmlDocument, std::vector<SBodyPoint>& target)
     {
-        vTarget.clear();
+        target.clear();
         for (auto pointElem = xmlDocument.FirstChildElement("Point"); pointElem != nullptr; pointElem = pointElem.NextSiblingElement("Point"))
         {
             SBodyPoint point;
@@ -1186,7 +1186,7 @@ namespace
                 return false;
             }
 
-            vTarget.push_back(point);
+            target.push_back(point);
         }
         return true;
     }
@@ -1845,11 +1845,11 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& pSkeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& pSkeletonSettings, bool& dataAvailable)
+bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData, std::vector<SSettingsSkeletonHierarchical>& skeletonSettingsHierarchical, std::vector<SSettingsSkeleton>& skeletonSettings, bool& dataAvailable)
 {
     dataAvailable = false;
-    pSkeletonSettings.clear();
-    pSkeletonSettingsHierarchical.clear();
+    skeletonSettings.clear();
+    skeletonSettingsHierarchical.clear();
 
     auto rootElem = mDeserializer;
     if (!rootElem)
@@ -2004,8 +2004,8 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
             }
 
             dataAvailable = true;
-            pSkeletonSettings.push_back(skeleton);
-            pSkeletonSettingsHierarchical.push_back(skeletonHierarchical);
+            skeletonSettings.push_back(skeleton);
+            skeletonSettingsHierarchical.push_back(skeletonHierarchical);
         }
 
         return true;
@@ -2050,7 +2050,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
         }
 
         dataAvailable = true;
-        pSkeletonSettings.push_back(skeleton);
+        skeletonSettings.push_back(skeleton);
     }
 
     return true;

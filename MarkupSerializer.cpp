@@ -1540,34 +1540,34 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
 
 namespace
 {
-    bool TryReadSetEnabled(const int nMajorVer, const int nMinorVer, CMarkup& xmlDocument, bool& bTarget)
+    bool TryReadSetEnabled(const int majorVer, const int minorVer, CMarkup& xmlDocument, bool& target)
     {
-        if (nMajorVer > 1 || nMinorVer > 23)
+        if (majorVer > 1 || minorVer > 23)
         {
             if (!xmlDocument.FindChildElem("Enabled"))
             {
-                bTarget = true;
+                target = true;
                 return true;
             }
 
-            bTarget = xmlDocument.GetChildData() == "true" ? true : false;
+            target = xmlDocument.GetChildData() == "true" ? true : false;
             return false;
         }
 
         return false;
     }
 
-    bool TryReadSetName(CMarkup& xmlDocument, std::string& sTarget)
+    bool TryReadSetName(CMarkup& xmlDocument, std::string& target)
     {
         if (!xmlDocument.FindChildElem("Name"))
         {
             return false;
         }
-        sTarget = xmlDocument.GetChildData();
+        target = xmlDocument.GetChildData();
         return true;
     }
 
-    bool TryReadSetColor(CMarkup& xmlDocument, std::uint32_t& nTarget)
+    bool TryReadSetColor(CMarkup& xmlDocument, std::uint32_t& target)
     {
         if (!xmlDocument.FindChildElem("Color"))
         {
@@ -1576,7 +1576,7 @@ namespace
         std::uint32_t colorR = atoi(xmlDocument.GetChildAttrib("R").c_str());
         std::uint32_t colorG = atoi(xmlDocument.GetChildAttrib("G").c_str());
         std::uint32_t colorB = atoi(xmlDocument.GetChildAttrib("B").c_str());
-        nTarget = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
+        target = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
 
         return true;
     }
@@ -1592,13 +1592,13 @@ namespace
         return true;
     }
 
-    bool TryReadSetMinMarkersInBody(CMarkup& xmlDocument, std::uint32_t& nTarget)
+    bool TryReadSetMinMarkersInBody(CMarkup& xmlDocument, std::uint32_t& target)
     {
         if (!xmlDocument.FindChildElem("MinimumMarkersInBody"))
         {
             return false;
         }
-        nTarget = atoi(xmlDocument.GetChildData().c_str());
+        target = atoi(xmlDocument.GetChildData().c_str());
 
         return true;
     }
@@ -1614,39 +1614,39 @@ namespace
         return true;
     }
 
-    bool TryReadSetFilter(CMarkup& xmlDocument, std::string& sTarget)
+    bool TryReadSetFilter(CMarkup& xmlDocument, std::string& target)
     {
         if (!xmlDocument.FindChildElem("Filter"))
         {
             return false;
         }
-        sTarget = xmlDocument.GetChildAttrib("Preset");
+        target = xmlDocument.GetChildAttrib("Preset");
 
         return true;
     }
 
-    bool TryReadSetPos(CMarkup& xmlDocument, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetPos(CMarkup& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
         if (!xmlDocument.FindChildElem("Position"))
         {
             return false;
         }
-        fTargetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
-        fTargetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
-        fTargetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
+        targetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        targetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        targetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
 
         return true;
     }
 
-    bool TryReadSetRotation(CMarkup& xmlDocument, float& fTargetX, float& fTargetY, float& fTargetZ)
+    bool TryReadSetRotation(CMarkup& xmlDocument, float& targetX, float& targetY, float& targetZ)
     {
         if (!xmlDocument.FindChildElem("Rotation"))
         {
             return false;
         }
-        fTargetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
-        fTargetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
-        fTargetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
+        targetX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        targetY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        targetZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
 
         return true;
     }
@@ -1673,7 +1673,7 @@ namespace
         return true;
     }
 
-    bool TryReadSetPoints(CMarkup& xmlDocument, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetPoints(CMarkup& xmlDocument, std::vector<SBodyPoint>& target)
     {
         if (xmlDocument.FindChildElem("Points"))
         {
@@ -1690,7 +1690,7 @@ namespace
                 bodyPoint.virtual_ = (0 != atoi(xmlDocument.GetChildAttrib("Virtual").c_str()));
                 bodyPoint.physicalId = atoi(xmlDocument.GetChildAttrib("PhysicalId").c_str());
                 bodyPoint.name = xmlDocument.GetChildAttrib("Name");
-                vTarget.push_back(bodyPoint);
+                target.push_back(bodyPoint);
             }
             xmlDocument.OutOfElem(); // Points
 
@@ -1700,45 +1700,45 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(CMarkup& xmlDocument, SOrigin& oTarget)
+    bool TryReadSetDataOrigin(CMarkup& xmlDocument, SOrigin& target)
     {
         if (!xmlDocument.FindChildElem("Data_origin"))
         {
             return false;
         }
-        oTarget.type = (EOriginType)atoi(xmlDocument.GetChildData().c_str());
-        oTarget.position.fX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
-        oTarget.position.fY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
-        oTarget.position.fZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
-        oTarget.relativeBody = atoi(xmlDocument.GetChildAttrib("Relative_body").c_str());
+        target.type = (EOriginType)atoi(xmlDocument.GetChildData().c_str());
+        target.position.fX = (float)atof(xmlDocument.GetChildAttrib("X").c_str());
+        target.position.fY = (float)atof(xmlDocument.GetChildAttrib("Y").c_str());
+        target.position.fZ = (float)atof(xmlDocument.GetChildAttrib("Z").c_str());
+        target.relativeBody = atoi(xmlDocument.GetChildAttrib("Relative_body").c_str());
 
         return true;
     }
 
-    void ReadSetRotations(CMarkup& xmlDocument, SOrigin& oTarget)
+    void ReadSetRotations(CMarkup& xmlDocument, SOrigin& target)
     {
         char tmpStr[10];
         for (std::uint32_t i = 0; i < 9; i++)
         {
             sprintf(tmpStr, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-            oTarget.rotation[i] = (float)atof(xmlDocument.GetChildAttrib(tmpStr).c_str());
+            target.rotation[i] = (float)atof(xmlDocument.GetChildAttrib(tmpStr).c_str());
         }
     }
 
-    bool TryReadSetRGBColor(CMarkup& xmlDocument, std::uint32_t& oTarget)
+    bool TryReadSetRGBColor(CMarkup& xmlDocument, std::uint32_t& target)
     {
         if (!xmlDocument.FindChildElem("RGBColor"))
         {
             return false;
         }
-        oTarget = atoi(xmlDocument.GetChildData().c_str());
+        target = atoi(xmlDocument.GetChildData().c_str());
 
         return true;
     }
 
-    bool TryReadSetPointsOld(CMarkup& xmlDocument, std::vector<SBodyPoint>& vTarget)
+    bool TryReadSetPointsOld(CMarkup& xmlDocument, std::vector<SBodyPoint>& target)
     {
-        vTarget.clear();
+        target.clear();
 
         while (xmlDocument.FindChildElem("Point"))
         {
@@ -1764,7 +1764,7 @@ namespace
             point.fZ = (float)atof(xmlDocument.GetChildData().c_str());
 
             xmlDocument.OutOfElem(); // Point
-            vTarget.push_back(point);
+            target.push_back(point);
         }
 
         return true;
