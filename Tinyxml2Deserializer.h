@@ -24,12 +24,5 @@ namespace qualisys_cpp_sdk
         std::uint32_t mnMajorVersion;
         std::uint32_t mnMinorVersion;
         tinyxml2::XMLDocument oXML;
-        static std::string ToLower(std::string str);
-        static bool ParseString(const std::string& str, std::uint32_t& value);
-        static bool ParseString(const std::string& str, std::int32_t& value);
-        static bool ParseString(const std::string& str, float& value);
-        static bool ParseString(const std::string& str, double& value);
-        static bool ParseString(const std::string& str, bool& value);
-        bool ReadXmlBool(tinyxml2::XMLElement* xml, const std::string& element, bool& value) const;
     };
 }
