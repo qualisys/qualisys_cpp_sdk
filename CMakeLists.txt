@@ -18,7 +18,8 @@ add_library(${PROJECT_NAME}
         Tinyxml2Serializer.cpp
         Tinyxml2Deserializer.cpp
         Deserializer.cpp
- "Serializer.cpp" "Serializer.h")
+        Serializer.cpp
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
