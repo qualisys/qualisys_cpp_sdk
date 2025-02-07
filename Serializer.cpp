@@ -1,5 +1,6 @@
 #include "Serializer.h"
 
+#include "tinyxml2.h"
 #include <functional>
 
 using namespace qualisys_cpp_sdk;

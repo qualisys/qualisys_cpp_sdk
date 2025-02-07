@@ -2,11 +2,19 @@
 
 #include <memory>
 #include <string>
-#include <tinyxml2.h>
 #include "Settings.h"
+
+namespace tinyxml2
+{
+    class XMLDocument;
+    class XMLElement;
+}
 
 namespace qualisys_cpp_sdk
 {
+    struct SPosition;
+    struct SRotation;
+
     struct Serializer
     {
     private:
