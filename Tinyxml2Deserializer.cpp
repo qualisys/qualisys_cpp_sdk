@@ -688,8 +688,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
                 || !TryReadElementFloat(positionElem, "Rot_3_2", cameraSettings.fPositionRotMatrix[2][1])
                 || !TryReadElementFloat(positionElem, "Rot_1_3", cameraSettings.fPositionRotMatrix[0][2])
                 || !TryReadElementFloat(positionElem, "Rot_2_3", cameraSettings.fPositionRotMatrix[1][2])
-                || !TryReadElementFloat(positionElem, "Rot_3_3", cameraSettings.fPositionRotMatrix[2][2])
-            )
+                || !TryReadElementFloat(positionElem, "Rot_3_3", cameraSettings.fPositionRotMatrix[2][2]))
             {
                 return false;
             }
