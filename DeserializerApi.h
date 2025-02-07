@@ -12,9 +12,6 @@ namespace tinyxml2
 
 namespace qualisys_cpp_sdk
 {
-    struct SPosition;
-    struct SRotation;
-
     struct DeserializerApi
     {
     private:
@@ -80,6 +77,4 @@ namespace qualisys_cpp_sdk
     bool TryReadElementUnsignedInt32(DeserializerApi& element, const char* elementName, std::uint32_t& output);
     bool TryReadElementString(DeserializerApi& element, const char* elementName, std::string& output);
     bool ReadXmlBool(DeserializerApi xml, const std::string& element, bool& value);
-    SPosition ReadSPosition(DeserializerApi& parentElem, const std::string& element);
-    SRotation ReadSRotation(DeserializerApi& parentElem, const std::string& element);
 }

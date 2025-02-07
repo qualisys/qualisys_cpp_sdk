@@ -1,5 +1,4 @@
 #include "DeserializerApi.h"
-#include "Settings.h"
 
 #include <algorithm>
 #include <tinyxml2.h>
@@ -255,35 +254,4 @@ bool qualisys_cpp_sdk::ReadXmlBool(DeserializerApi xml, const std::string& eleme
     }
 
     return true;
-}
-
-qualisys_cpp_sdk::SPosition qualisys_cpp_sdk::ReadSPosition(DeserializerApi& parentElem, const std::string& element)
-{
-    auto positionElem = parentElem.FirstChildElement(element.data());
-    if (positionElem)
-    {
-        return {
-            positionElem.DoubleAttribute("X"),
-            positionElem.DoubleAttribute("Y"),
-            positionElem.DoubleAttribute("Z"),
-        };
-    }
-
-    return {};
-}
-
-qualisys_cpp_sdk::SRotation qualisys_cpp_sdk::ReadSRotation(DeserializerApi& parentElem, const std::string& element)
-{
-    auto rotationElem = parentElem.FirstChildElement(element.data());
-    if (rotationElem)
-    {
-        return {
-            rotationElem.DoubleAttribute("X"),
-            rotationElem.DoubleAttribute("Y"),
-            rotationElem.DoubleAttribute("Z"),
-            rotationElem.DoubleAttribute("W")
-        };
-    }
-
-    return {};
 }

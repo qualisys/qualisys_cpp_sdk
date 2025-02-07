@@ -1794,6 +1794,37 @@ bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& i
 
 namespace
 {
+    SPosition ReadSPosition(DeserializerApi& parentElem, const std::string& element)
+    {
+        auto positionElem = parentElem.FirstChildElement(element.data());
+        if (positionElem)
+        {
+            return {
+                positionElem.DoubleAttribute("X"),
+                positionElem.DoubleAttribute("Y"),
+                positionElem.DoubleAttribute("Z"),
+            };
+        }
+
+        return {};
+    }
+
+    SRotation ReadSRotation(DeserializerApi& parentElem, const std::string& element)
+    {
+        auto rotationElem = parentElem.FirstChildElement(element.data());
+        if (rotationElem)
+        {
+            return {
+                rotationElem.DoubleAttribute("X"),
+                rotationElem.DoubleAttribute("Y"),
+                rotationElem.DoubleAttribute("Z"),
+                rotationElem.DoubleAttribute("W")
+            };
+        }
+
+        return {};
+    }
+
     bool TryReadSDegreeOfFreedom(DeserializerApi& parentElement, const std::string& elementName,
                                  std::vector<SDegreeOfFreedom>& degreesOfFreedom)
     {
@@ -2023,7 +2054,6 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
             {
                 segment.parentIndex = segmentIdIndexMap[segment.parentId];
             }
-
 
             if (auto positionElement = segmentElem.FirstChildElement("Position"))
             {
