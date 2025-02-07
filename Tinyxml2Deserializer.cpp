@@ -1014,12 +1014,12 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
 namespace
 {
-    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, Deserializer& xmlDocument,
+    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, Deserializer& deserializer,
                                    bool& target)
     {
         if (majorVer > 1 || minorVer > 23)
         {
-            if (auto enabledElem = xmlDocument.FirstChildElement("Enabled"))
+            if (auto enabledElem = deserializer.FirstChildElement("Enabled"))
             {
                 target = enabledElem.GetText() == "true";
                 return true;
@@ -1032,9 +1032,9 @@ namespace
     }
 
 
-    bool TryReadAttributesRGBColor(Deserializer& xmlDocument, std::uint32_t& target)
+    bool TryReadAttributesRGBColor(Deserializer& deserializer, std::uint32_t& target)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Color"))
+        if (auto elem = deserializer.FirstChildElement("Color"))
         {
             std::uint32_t colorR = elem.UnsignedAttribute("R");
             std::uint32_t colorG = elem.UnsignedAttribute("G");
@@ -1047,9 +1047,9 @@ namespace
         return false;
     }
 
-    bool TryReadSetFilter(Deserializer& xmlDocument, std::string& target)
+    bool TryReadSetFilter(Deserializer& deserializer, std::string& target)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Filter"))
+        if (auto elem = deserializer.FirstChildElement("Filter"))
         {
             target = elem.Attribute("Preset");
             return true;
@@ -1058,9 +1058,9 @@ namespace
         return false;
     }
 
-    bool TryReadSetPos(Deserializer& xmlDocument, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetPos(Deserializer& deserializer, float& targetX, float& targetY, float& targetZ)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Position"))
+        if (auto elem = deserializer.FirstChildElement("Position"))
         {
             targetX = elem.FloatAttribute("X");
             targetY = elem.FloatAttribute("Y");
@@ -1072,9 +1072,9 @@ namespace
         return false;
     }
 
-    bool TryReadSetRotation(Deserializer& xmlDocument, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetRotation(Deserializer& deserializer, float& targetX, float& targetY, float& targetZ)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Rotation"))
+        if (auto elem = deserializer.FirstChildElement("Rotation"))
         {
             targetX = elem.FloatAttribute("X");
             targetY = elem.FloatAttribute("Y");
@@ -1087,9 +1087,9 @@ namespace
     }
 
 
-    bool TryReadSetPoints(Deserializer& xmlDocument, std::vector<SBodyPoint>& target)
+    bool TryReadSetPoints(Deserializer& deserializer, std::vector<SBodyPoint>& target)
     {
-        if (auto pointsElem = xmlDocument.FirstChildElement("Points"))
+        if (auto pointsElem = deserializer.FirstChildElement("Points"))
         {
             for (auto pointElem : ChildElementRange{pointsElem, "Point"})
             {
@@ -1111,9 +1111,9 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(Deserializer& xmlDocument, SOrigin& target)
+    bool TryReadSetDataOrigin(Deserializer& deserializer, SOrigin& target)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Data_origin"))
+        if (auto elem = deserializer.FirstChildElement("Data_origin"))
         {
             target.type = static_cast<EOriginType>(elem.UnsignedText());
             target.position.fX = elem.FloatAttribute("X");
@@ -1127,7 +1127,7 @@ namespace
             return false;
         }
 
-        if (auto elem = xmlDocument.FirstChildElement("Data_orientation"))
+        if (auto elem = deserializer.FirstChildElement("Data_orientation"))
         {
             char tmpStr[10];
             for (std::uint32_t i = 0; i < 9; i++)
@@ -1148,9 +1148,9 @@ namespace
         return false;
     }
 
-    bool TryReadElementRGBColor(Deserializer& xmlDocument, std::uint32_t& target)
+    bool TryReadElementRGBColor(Deserializer& deserializer, std::uint32_t& target)
     {
-        if (auto elem = xmlDocument.FirstChildElement("RGBColor"))
+        if (auto elem = deserializer.FirstChildElement("RGBColor"))
         {
             target = elem.IntText();
             return true;
@@ -1160,10 +1160,10 @@ namespace
         return false;
     }
 
-    bool TryReadSetPointsOld(Deserializer& xmlDocument, std::vector<SBodyPoint>& target)
+    bool TryReadSetPointsOld(Deserializer& deserializer, std::vector<SBodyPoint>& target)
     {
         target.clear();
-        for (auto pointElem : ChildElementRange{xmlDocument, "Bone"})
+        for (auto pointElem : ChildElementRange{deserializer, "Bone"})
         {
             SBodyPoint point;
 
@@ -1187,10 +1187,10 @@ namespace
         return true;
     }
 
-    bool TryReadSetEuler(Deserializer& xmlDocument, std::string& targetFirst, std::string& targetSecond,
+    bool TryReadSetEuler(Deserializer& deserializer, std::string& targetFirst, std::string& targetSecond,
                          std::string& targetThird)
     {
-        if (auto elem = xmlDocument.FirstChildElement("Euler"))
+        if (auto elem = deserializer.FirstChildElement("Euler"))
         {
             return TryReadElementString(elem, "First", targetFirst)
                 && TryReadElementString(elem, "Second", targetSecond)
