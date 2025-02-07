@@ -1,16 +1,16 @@
-#include "Serializer.h"
+#include "SerializationApi.h"
 
 #include "tinyxml2.h"
 #include <functional>
 
 using namespace qualisys_cpp_sdk;
 
-Serializer::Serializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
+SerializationApi::SerializationApi(std::uint32_t majorVersion, std::uint32_t minorVersion)
     : mMajorVersion(majorVersion), mMinorVersion(minorVersion)
 {
 }
 
-void Serializer::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool* value, tinyxml2::XMLDocument& document, const char* trueText, const char* falseText)
+void SerializationApi::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool* value, tinyxml2::XMLDocument& document, const char* trueText, const char* falseText)
 {
     if (value)
     {
@@ -20,14 +20,14 @@ void Serializer::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char*
     }
 }
 
-void Serializer::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool value, tinyxml2::XMLDocument& document, const char* trueText, const char* falseText)
+void SerializationApi::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool value, tinyxml2::XMLDocument& document, const char* trueText, const char* falseText)
 {
     tinyxml2::XMLElement* elem = document.NewElement(elementName);
     elem->SetText(value ? trueText : falseText);
     parentElem.InsertEndChild(elem);
 }
 
-void Serializer::AddXMLElementInt(tinyxml2::XMLElement& parentElem, const char* elementName, const int* value, tinyxml2::XMLDocument& document)
+void SerializationApi::AddXMLElementInt(tinyxml2::XMLElement& parentElem, const char* elementName, const int* value, tinyxml2::XMLDocument& document)
 {
     if (value)
     {
@@ -37,14 +37,14 @@ void Serializer::AddXMLElementInt(tinyxml2::XMLElement& parentElem, const char* 
     }
 }
 
-void Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int value, tinyxml2::XMLDocument& document)
+void SerializationApi::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int value, tinyxml2::XMLDocument& document)
 {
     tinyxml2::XMLElement* elem = document.NewElement(elementName);
     elem->SetText(value);
     parentElem.InsertEndChild(elem);
 }
 
-void Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int* value, tinyxml2::XMLDocument& document)
+void SerializationApi::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, const char* elementName, const unsigned int* value, tinyxml2::XMLDocument& document)
 {
     if (value)
     {
@@ -52,7 +52,7 @@ void Serializer::AddXMLElementUnsignedInt(tinyxml2::XMLElement& parentElem, cons
     }
 }
 
-void Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parentElem, const char* elementName, const float* value, unsigned int decimals, tinyxml2::XMLDocument& document)
+void SerializationApi::AddXMLElementFloat(tinyxml2::XMLElement& parentElem, const char* elementName, const float* value, unsigned int decimals, tinyxml2::XMLDocument& document)
 {
     char formattedValue[32];
     snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, *value);
@@ -62,7 +62,7 @@ void Serializer::AddXMLElementFloat(tinyxml2::XMLElement& parentElem, const char
     parentElem.InsertEndChild(elem);
 }
 
-void Serializer::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const char* elementName, const char* attributeName, const float& value, unsigned int decimals)
+void SerializationApi::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const char* elementName, const char* attributeName, const float& value, unsigned int decimals)
 {
     char formattedValue[32];
     snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
@@ -72,7 +72,7 @@ void Serializer::AddXMLElementFloatWithTextAttribute(tinyxml2::XMLDocument& docu
     parentElem.InsertEndChild(elem);
 }
 
-void Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
+void SerializationApi::AddXMLElementTransform(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SPosition& position, const SRotation& rotation)
 {
     tinyxml2::XMLElement* transformElem = document.NewElement(name.c_str());
     parentElem.InsertEndChild(transformElem);
@@ -91,7 +91,7 @@ void Serializer::AddXMLElementTransform(tinyxml2::XMLDocument& document, tinyxml
     transformElem->InsertEndChild(rotationElem);
 }
 
-void Serializer::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreesOfFreedom)
+void SerializationApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreesOfFreedom)
 {
     tinyxml2::XMLElement* dofElem = document.NewElement(name.c_str());
     parentElem.InsertEndChild(dofElem);
@@ -137,7 +137,7 @@ void Serializer::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::XML
     }
 }
 
-std::string Serializer::SetGeneralSettings(const unsigned int* captureFrequency,
+std::string SerializationApi::SetGeneralSettings(const unsigned int* captureFrequency,
     const float* captureTime, const bool* startOnExtTrig,
     const bool* startOnTrigNO, const bool* startOnTrigNC,
     const bool* startOnTrigSoftware, const EProcessingActions* processingActions,
@@ -236,7 +236,7 @@ std::string Serializer::SetGeneralSettings(const unsigned int* captureFrequency,
     return printer.CStr();
 }
 
-std::string Serializer::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource, const bool* signalModePeriodic,
+std::string SerializationApi::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource, const bool* signalModePeriodic,
     const unsigned int* freqMultiplier, const unsigned int* freqDivisor, const unsigned int* freqTolerance,
     const float* nominalFrequency, const bool* negativeEdge, const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
 {
@@ -305,7 +305,7 @@ std::string Serializer::SetExtTimeBaseSettings(const bool* enabled, const ESigna
     return printer.CStr();
 }
 
-std::string Serializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
+std::string SerializationApi::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
     tinyxml2::XMLDocument document;
 
@@ -344,7 +344,7 @@ std::string Serializer::SetExtTimestampSettings(const SSettingsGeneralExternalTi
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraSettings(
+std::string SerializationApi::SetCameraSettings(
     const unsigned int cameraId, const ECameraMode* mode,
     const float* markerExposure, const float* markerThreshold,
     const int* orientation)
@@ -389,7 +389,7 @@ std::string Serializer::SetCameraSettings(
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraVideoSettings(const unsigned int cameraId, const EVideoResolution* videoResolution,
+std::string SerializationApi::SetCameraVideoSettings(const unsigned int cameraId, const EVideoResolution* videoResolution,
     const EVideoAspectRatio* videoAspectRatio, const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
 {
     tinyxml2::XMLDocument document;
@@ -460,7 +460,7 @@ std::string Serializer::SetCameraVideoSettings(const unsigned int cameraId, cons
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
+std::string SerializationApi::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle,
     const bool* syncOutNegativePolarity)
 {
@@ -543,7 +543,7 @@ std::string Serializer::SetCameraSyncOutSettings(const unsigned int cameraId, co
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
+std::string SerializationApi::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
 {
     tinyxml2::XMLDocument document;
 
@@ -569,7 +569,7 @@ std::string Serializer::SetCameraLensControlSettings(const unsigned int cameraId
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
+std::string SerializationApi::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
 {
     tinyxml2::XMLDocument document;
 
@@ -601,7 +601,7 @@ std::string Serializer::SetCameraAutoExposureSettings(const unsigned int cameraI
     return printer.CStr();
 }
 
-std::string Serializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
+std::string SerializationApi::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
 {
     tinyxml2::XMLDocument document;
 
@@ -625,7 +625,7 @@ std::string Serializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, c
     return printer.CStr();
 }
 
-std::string Serializer::SetImageSettings(const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
+std::string SerializationApi::SetImageSettings(const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
     const unsigned int* width, const unsigned int* height, const float* leftCrop,
     const float* topCrop, const float* rightCrop, const float* bottomCrop)
 {
@@ -683,7 +683,7 @@ std::string Serializer::SetImageSettings(const unsigned int  cameraId, const boo
     return printer.CStr();
 }
 
-std::string Serializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
+std::string SerializationApi::SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
     const SPoint* corner3, const SPoint* corner4)
 {
     tinyxml2::XMLDocument document;
@@ -728,7 +728,7 @@ std::string Serializer::SetForceSettings(const unsigned int plateId, const SPoin
     return printer.CStr();
 }
 
-std::string Serializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
+std::string SerializationApi::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
 {
     tinyxml2::XMLDocument document;
     auto* rootElem = document.NewElement("QTM_Settings");
@@ -845,7 +845,7 @@ std::string Serializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>
     return printer.CStr();
 }
 
-std::string Serializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
+std::string SerializationApi::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
 {
     tinyxml2::XMLDocument document;
     tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");

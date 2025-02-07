@@ -1,13 +1,15 @@
 #pragma once
 
 #include "Settings.h"
-#include "Serializer.h"
 
-namespace qualisys_cpp_sdk {
+namespace qualisys_cpp_sdk
+{
+    struct SerializationApi;
 
-    struct DLL_EXPORT CTinyxml2Serializer : public ISettingsSerializer {
-        CTinyxml2Serializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
-
+    struct SettingsSerializer : public ISettingsSerializer
+    {
+        SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
+        ~SettingsSerializer() override;
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
             const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
             const EProcessingActions* processingActions, const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions) override;
@@ -51,6 +53,6 @@ namespace qualisys_cpp_sdk {
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        Serializer mSerializer;
+        SerializationApi* mSerializer;
     };
 }
