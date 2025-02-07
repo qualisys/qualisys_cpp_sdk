@@ -18,6 +18,7 @@ add_library(${PROJECT_NAME}
         Tinyxml2Serializer.cpp
         Tinyxml2Deserializer.cpp
         Deserializer.cpp
+        Serializer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
