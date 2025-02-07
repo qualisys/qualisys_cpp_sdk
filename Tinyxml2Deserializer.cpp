@@ -66,10 +66,12 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         {
             return false;
         }
+
         if (!ReadXmlBool(generalElem, "Start_On_Trigger_NC", generalSettings.bStartOnTrigNC))
         {
             return false;
         }
+
         if (!ReadXmlBool(generalElem, "Start_On_Trigger_Software", generalSettings.bStartOnTrigSoftware))
         {
             return false;
@@ -134,6 +136,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         {
             return false;
         }
+
         if (!TryReadElementUnsignedInt32(extTimeBaseElem, "Frequency_Multiplier",
                                          generalSettings.sExternalTimebase.nFreqMultiplier))
         {
@@ -273,10 +276,8 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
             }
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     };
 
     auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
@@ -306,6 +307,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         {
             return false;
         }
+
         trackingMode = ToLowerXmlString(trackingMode);
         if (trackingMode == "3d")
         {
@@ -397,6 +399,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         {
             return false;
         }
+
         std::string model;
         if (!TryReadElementString(cameraElem, "Model", model))
         {
