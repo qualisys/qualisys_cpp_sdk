@@ -707,8 +707,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         if (auto markerResElem = cameraElem.FirstChildElement("Marker_Res"))
         {
             if (!TryReadElementUnsignedInt32(markerResElem, "Width", cameraSettings.nMarkerResolutionWidth)
-                || !TryReadElementUnsignedInt32(markerResElem, "Height", cameraSettings.nMarkerResolutionHeight)
-            )
+                || !TryReadElementUnsignedInt32(markerResElem, "Height", cameraSettings.nMarkerResolutionHeight))
             {
                 return false;
             }
@@ -721,8 +720,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         if (auto videoResElem = cameraElem.FirstChildElement("Video_Res"))
         {
             if (!TryReadElementUnsignedInt32(videoResElem, "Width", cameraSettings.nVideoResolutionWidth)
-                || !TryReadElementUnsignedInt32(videoResElem, "Height", cameraSettings.nVideoResolutionHeight)
-            )
+                || !TryReadElementUnsignedInt32(videoResElem, "Height", cameraSettings.nVideoResolutionHeight))
             {
                 return false;
             }
@@ -737,8 +735,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
             if (!TryReadElementUnsignedInt32(markerFovElem, "Left", cameraSettings.nMarkerFOVLeft)
                 || !TryReadElementUnsignedInt32(markerFovElem, "Top", cameraSettings.nMarkerFOVTop)
                 || !TryReadElementUnsignedInt32(markerFovElem, "Right", cameraSettings.nMarkerFOVRight)
-                || !TryReadElementUnsignedInt32(markerFovElem, "Bottom", cameraSettings.nMarkerFOVBottom)
-            )
+                || !TryReadElementUnsignedInt32(markerFovElem, "Bottom", cameraSettings.nMarkerFOVBottom))
             {
                 return false;
             }
@@ -753,8 +750,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
             if (!TryReadElementUnsignedInt32(videoFovElem, "Left", cameraSettings.nVideoFOVLeft)
                 || !TryReadElementUnsignedInt32(videoFovElem, "Top", cameraSettings.nVideoFOVTop)
                 || !TryReadElementUnsignedInt32(videoFovElem, "Right", cameraSettings.nVideoFOVRight)
-                || !TryReadElementUnsignedInt32(videoFovElem, "Bottom", cameraSettings.nVideoFOVBottom)
-            )
+                || !TryReadElementUnsignedInt32(videoFovElem, "Bottom", cameraSettings.nVideoFOVBottom))
             {
                 return false;
             }
@@ -1534,10 +1530,6 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
 
     return true;
 } // ReadAnalogSettings
-
-namespace
-{
-}
 
 bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable)
 {
