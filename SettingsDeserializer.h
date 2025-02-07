@@ -1,13 +1,14 @@
 #pragma once
-
 #include "Settings.h"
-#include "Deserializer.h"
 
 namespace qualisys_cpp_sdk
 {
-    struct DLL_EXPORT CTinyxml2Deserializer : ISettingsDeserializer
+    struct DeserializerApi;
+
+    struct SettingsDeserializer : ISettingsDeserializer
     {
-        CTinyxml2Deserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion);
+        SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion);
+        ~SettingsDeserializer() override;
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) override;
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) override;
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable) override;
@@ -22,6 +23,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        Deserializer mDeserializer;
+        DeserializerApi* mDeserializer;
     };
 }

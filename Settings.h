@@ -636,7 +636,7 @@ namespace qualisys_cpp_sdk
 
     DLL_EXPORT EDegreeOfFreedom SkeletonStringToDofSettings(const std::string& str);
 
-    struct DLL_EXPORT ISettingsDeserializer {
+    struct ISettingsDeserializer {
         virtual ~ISettingsDeserializer() = default;
         virtual bool DeserializeGeneralSettings(SSettingsGeneral& pGeneralSettings) = 0;
         virtual bool Deserialize3DSettings(SSettings3D& p3dSettings, bool& pDataAvailable) = 0;
@@ -650,7 +650,7 @@ namespace qualisys_cpp_sdk
         virtual bool DeserializeCalibrationSettings(SCalibration& pCalibrationSettings) = 0;
     };
 
-    struct DLL_EXPORT ISettingsSerializer {
+    struct ISettingsSerializer {
         virtual ~ISettingsSerializer() = default;
 
         virtual std::string SetGeneralSettings(const unsigned int* pnCaptureFrequency, const float* pfCaptureTime,

@@ -15,8 +15,8 @@
 #include <functional>
 
 #include "Network.h"
-#include "Tinyxml2Deserializer.h"
-#include "Tinyxml2Serializer.h"
+#include "SettingsDeserializer.h"
+#include "SettingsSerializer.h"
 #include "RTProtocol.h"
 
 
@@ -1698,7 +1698,7 @@ bool CRTProtocol::ReadGeneralSettings()
         return false;
     }
 
-    CTinyxml2Deserializer serializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer serializer(data, mMajorVersion, mMinorVersion);
 
     return serializer.DeserializeGeneralSettings(mGeneralSettings);
 
@@ -1727,7 +1727,7 @@ bool CRTProtocol::Read3DSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.Deserialize3DSettings(m3DSettings, bDataAvailable);
 }
 
@@ -1741,7 +1741,7 @@ bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.Deserialize6DOFSettings(m6DOFSettings, mGeneralSettings, bDataAvailable);
 }
 
@@ -1757,7 +1757,7 @@ bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeGazeVectorSettings(mGazeVectorSettings, bDataAvailable);
 }
 
@@ -1773,7 +1773,7 @@ bool CRTProtocol::ReadEyeTrackerSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeEyeTrackerSettings(mEyeTrackerSettings, bDataAvailable);
 }
 
@@ -1788,7 +1788,7 @@ bool CRTProtocol::ReadAnalogSettings(bool& bDataAvailable)
     {
         return false;
     }
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeAnalogSettings(mAnalogDeviceSettings, bDataAvailable);
 }
 
@@ -1804,7 +1804,7 @@ bool CRTProtocol::ReadForceSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeForceSettings(mForceSettings, bDataAvailable);
 }
 
@@ -1820,7 +1820,7 @@ bool CRTProtocol::ReadImageSettings(bool& bDataAvailable)
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeImageSettings(mImageSettings, bDataAvailable);
 }
 
@@ -1837,7 +1837,7 @@ bool CRTProtocol::ReadSkeletonSettings(bool& bDataAvailable, bool skeletonGlobal
         return false;
     }
 
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeSkeletonSettings(skeletonGlobalData, mSkeletonSettingsHierarchical, mSkeletonSettings, bDataAvailable);
 }
 
@@ -1891,7 +1891,7 @@ bool CRTProtocol::ReceiveCalibrationSettings(int timeout)
     }
 
     auto data = mRTPacket->GetXMLString();
-    CTinyxml2Deserializer deserializer(data, mMajorVersion, mMinorVersion);
+    SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
     return deserializer.DeserializeCalibrationSettings(mCalibrationSettings);
 } // ReadCalibrationSettings
 
@@ -2656,7 +2656,7 @@ bool CRTProtocol::SetGeneralSettings(
     const bool* pbStartOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,
     const EProcessingActions* peProcessingActions, const EProcessingActions* peRtProcessingActions, const EProcessingActions* peReprocessingActions)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetGeneralSettings(pnCaptureFrequency, pfCaptureTime, pbStartOnExtTrig,startOnTrigNO, startOnTrigNC, startOnTrigSoftware, peProcessingActions, peRtProcessingActions, peReprocessingActions);
     
     if (SendXML(message.data()))
@@ -2675,7 +2675,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
     const float*        pfNominalFrequency,   const bool*          pbNegativeEdge,
     const unsigned int* pnSignalShutterDelay, const float*         pfNonPeriodicTimeout)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetExtTimeBaseSettings(
         pbEnabled, peSignalSource,
         pbSignalModePeriodic, pnFreqMultiplier,
@@ -2690,7 +2690,7 @@ bool CRTProtocol::SetExtTimeBaseSettings(
 
 bool CRTProtocol::SetExtTimestampSettings(const CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetExtTimestampSettings(timestampSettings);
 
     return SendXML(message.data());
@@ -2703,7 +2703,7 @@ bool CRTProtocol::SetCameraSettings(
     const float*       pfMarkerExposure, const float*       pfMarkerThreshold,
     const int*         pnOrientation)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraSettings(
         nCameraID, peMode,
         pfMarkerExposure, pfMarkerThreshold,
@@ -2719,7 +2719,7 @@ bool CRTProtocol::SetCameraVideoSettings(
     const EVideoAspectRatio* eVideoAspectRatio, const unsigned int* pnVideoFrequency,
     const float* pfVideoExposure,                const float* pfVideoFlashTime)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraVideoSettings(
         nCameraID, eVideoResolution,
         eVideoAspectRatio, pnVideoFrequency,
@@ -2737,7 +2737,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
     const unsigned int* pnSyncOutValue, const float*       pfSyncOutDutyCycle,
     const bool*         pbSyncOutNegativePolarity)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraSyncOutSettings(
         nCameraID, portNumber, peSyncOutMode,
         pnSyncOutValue, pfSyncOutDutyCycle,
@@ -2751,7 +2751,7 @@ bool CRTProtocol::SetCameraSyncOutSettings(
   // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, const float focus, const float aperture)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraLensControlSettings(nCameraID, focus, aperture);
     return SendXML(message.data());
 
@@ -2760,7 +2760,7 @@ bool CRTProtocol::SetCameraLensControlSettings(const unsigned int nCameraID, con
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, const bool autoExposure, const float compensation)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraAutoExposureSettings(nCameraID, autoExposure, compensation);
     return SendXML(message.data());
 }
@@ -2768,7 +2768,7 @@ bool CRTProtocol::SetCameraAutoExposureSettings(const unsigned int nCameraID, co
 // nCameraID starts on 1. If nCameraID < 0 then settings are applied to all cameras.
 bool CRTProtocol::SetCameraAutoWhiteBalance(const unsigned int nCameraID, const bool enable)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetCameraAutoWhiteBalance(nCameraID, enable);
     return SendXML(message.data());
 }
@@ -2779,7 +2779,7 @@ bool CRTProtocol::SetImageSettings(
     const unsigned int* pnWidth,   const unsigned int* pnHeight,    const float* pfLeftCrop,
     const float*        pfTopCrop, const float*        pfRightCrop, const float* pfBottomCrop)
 {
-    CTinyxml2Serializer serializer (mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer (mMajorVersion, mMinorVersion);
     auto message = serializer.SetImageSettings(
         nCameraID, pbEnable, peFormat,
         pnWidth, pnHeight, pfLeftCrop,
@@ -2796,7 +2796,7 @@ bool CRTProtocol::SetForceSettings(
 {
     if (nPlateID > 0)
     {
-        CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+        SettingsSerializer serializer(mMajorVersion, mMinorVersion);
         auto message = serializer.SetForceSettings(nPlateID, psCorner1, psCorner2,
             psCorner3, psCorner4);
         return SendXML(message.data());
@@ -2817,7 +2817,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
         return false;
     }
 
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.Set6DOFBodySettings(settings);
 
     return SendXML(message.data());
@@ -2825,7 +2825,7 @@ bool CRTProtocol::Set6DOFBodySettings(std::vector<SSettings6DOFBody> settings)
 
 bool CRTProtocol::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& skeletons)
 {
-    CTinyxml2Serializer serializer(mMajorVersion, mMinorVersion);
+    SettingsSerializer serializer(mMajorVersion, mMinorVersion);
     auto message = serializer.SetSkeletonSettings(skeletons);
 
     return SendXML(message.data());

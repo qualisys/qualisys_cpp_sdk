@@ -5,7 +5,7 @@
 
 namespace qualisys_cpp_sdk {
 
-    struct DLL_EXPORT CMarkupDeserializer : ISettingsDeserializer {
+    struct CMarkupDeserializer : ISettingsDeserializer {
         CMarkupDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion );
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings) override;
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable) override;
@@ -38,7 +38,7 @@ namespace qualisys_cpp_sdk {
         SRotation DeserializeXMLRotation(CMarkup& xml, const std::string& element);
     };
 
-    struct DLL_EXPORT CMarkupSerializer : public ISettingsSerializer {
+    struct CMarkupSerializer : public ISettingsSerializer {
         CMarkupSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
         CMarkup xmlDocument;
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,

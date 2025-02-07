@@ -95,6 +95,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -142,6 +143,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -184,30 +186,30 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Deserializer.cpp" />
     <ClCompile Include="external\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="Markup.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
-    <ClCompile Include="Serializer.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="MarkupSerializer.cpp" />
-    <ClCompile Include="Tinyxml2Deserializer.cpp" />
-    <ClCompile Include="Tinyxml2Serializer.cpp" />
+    <ClCompile Include="SerializerApi.cpp" />
+    <ClCompile Include="DeserializerApi.cpp" />
+    <ClCompile Include="SettingsDeserializer.cpp" />
+    <ClCompile Include="SettingsSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Deserializer.h" />
     <ClInclude Include="external\tinyxml2\tinyxml2.h" />
     <ClInclude Include="Markup.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="RTPacket.h" />
     <ClInclude Include="RTProtocol.h" />
-    <ClInclude Include="Serializer.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="MarkupSerializer.h" />
-    <ClInclude Include="Tinyxml2Deserializer.h" />
-    <ClInclude Include="Tinyxml2Serializer.h" />
+    <ClInclude Include="SerializerApi.h" />
+    <ClInclude Include="DeserializerApi.h" />
+    <ClInclude Include="SettingsDeserializer.h" />
+    <ClInclude Include="SettingsSerializer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

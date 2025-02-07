@@ -1,5 +1,5 @@
-#include "Tinyxml2Deserializer.h"
-#include "Deserializer.h"
+#include "SettingsDeserializer.h"
+#include "DeserializerApi.h"
 #include "Settings.h"
 
 #include <functional>
@@ -8,10 +8,15 @@
 
 using namespace qualisys_cpp_sdk;
 
-CTinyxml2Deserializer::CTinyxml2Deserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
+SettingsDeserializer::SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
     : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mDeserializer{nullptr}
 {
-    mDeserializer = {data};
+    mDeserializer = new DeserializerApi(data);
+}
+
+SettingsDeserializer::~SettingsDeserializer()
+{
+    delete mDeserializer;
 }
 
 namespace
@@ -22,7 +27,7 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& generalSettings)
+bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalSettings)
 {
     generalSettings.vsCameras.clear();
 
@@ -31,7 +36,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         return true;
     }
 
-    auto generalElem = mDeserializer.FirstChildElement("General");
+    auto generalElem = mDeserializer->FirstChildElement("General");
     if (!generalElem)
     {
         return true;
@@ -264,7 +269,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
         &generalSettings.eReprocessingActions
     };
 
-    auto AddFlagFromBoolElement = [this](Deserializer& parent, const char* elementName, EProcessingActions flag,
+    auto AddFlagFromBoolElement = [this](DeserializerApi& parent, const char* elementName, EProcessingActions flag,
                                          EProcessingActions& target) -> bool
     {
         bool value;
@@ -895,7 +900,7 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
     return true;
 }
 
-bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable)
+bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -906,7 +911,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
         return true;
     }
 
-    auto threeDElem = mDeserializer.FirstChildElement("The_3D");
+    auto threeDElem = mDeserializer->FirstChildElement("The_3D");
     if (!threeDElem)
     {
         return true;
@@ -1016,7 +1021,7 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
 namespace
 {
-    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, Deserializer& deserializer,
+    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, DeserializerApi& deserializer,
                                    bool& target)
     {
         if (majorVer > 1 || minorVer > 23)
@@ -1034,7 +1039,7 @@ namespace
     }
 
 
-    bool TryReadAttributesRGBColor(Deserializer& deserializer, std::uint32_t& target)
+    bool TryReadAttributesRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
         if (auto elem = deserializer.FirstChildElement("Color"))
         {
@@ -1049,7 +1054,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetFilter(Deserializer& deserializer, std::string& target)
+    bool TryReadSetFilter(DeserializerApi& deserializer, std::string& target)
     {
         if (auto elem = deserializer.FirstChildElement("Filter"))
         {
@@ -1060,7 +1065,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetPos(Deserializer& deserializer, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetPos(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = deserializer.FirstChildElement("Position"))
         {
@@ -1074,7 +1079,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetRotation(Deserializer& deserializer, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetRotation(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = deserializer.FirstChildElement("Rotation"))
         {
@@ -1089,7 +1094,7 @@ namespace
     }
 
 
-    bool TryReadSetPoints(Deserializer& deserializer, std::vector<SBodyPoint>& target)
+    bool TryReadSetPoints(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
         if (auto pointsElem = deserializer.FirstChildElement("Points"))
         {
@@ -1113,7 +1118,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(Deserializer& deserializer, SOrigin& target)
+    bool TryReadSetDataOrigin(DeserializerApi& deserializer, SOrigin& target)
     {
         if (auto elem = deserializer.FirstChildElement("Data_origin"))
         {
@@ -1150,7 +1155,7 @@ namespace
         return false;
     }
 
-    bool TryReadElementRGBColor(Deserializer& deserializer, std::uint32_t& target)
+    bool TryReadElementRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
         if (auto elem = deserializer.FirstChildElement("RGBColor"))
         {
@@ -1162,7 +1167,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetPointsOld(Deserializer& deserializer, std::vector<SBodyPoint>& target)
+    bool TryReadSetPointsOld(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
         target.clear();
         for (auto pointElem : ChildElementRange{deserializer, "Bone"})
@@ -1189,7 +1194,7 @@ namespace
         return true;
     }
 
-    bool TryReadSetEuler(Deserializer& deserializer, std::string& targetFirst, std::string& targetSecond,
+    bool TryReadSetEuler(DeserializerApi& deserializer, std::string& targetFirst, std::string& targetSecond,
                          std::string& targetThird)
     {
         if (auto elem = deserializer.FirstChildElement("Euler"))
@@ -1203,7 +1208,7 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof,
+bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof,
                                                     SSettingsGeneral& generalSettings, bool& dataAvailable)
 {
     dataAvailable = false;
@@ -1218,7 +1223,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     //
     // Read gaze vectors
     //
-    Deserializer sixDofElem = mDeserializer.FirstChildElement("The_6D");
+    DeserializerApi sixDofElem = mDeserializer->FirstChildElement("The_6D");
     if (!sixDofElem)
     {
         return true; // NO eye tracker data available.
@@ -1280,12 +1285,12 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     }
     else
     {
-        if (!mDeserializer.FirstChildElement("Bodies"))
+        if (!mDeserializer->FirstChildElement("Bodies"))
         {
             return false;
         }
 
-        for (auto bodyElem : ChildElementRange{mDeserializer, "Body"})
+        for (auto bodyElem : ChildElementRange{*mDeserializer, "Body"})
         {
             SSettings6DOFBody bodySettings6Dof{};
 
@@ -1300,7 +1305,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
             if (mMajorVersion > 1 || mMinorVersion > 15)
             {
                 // Euler --- REQUIRED
-                if (!TryReadSetEuler(mDeserializer, generalSettings.eulerRotations[0],
+                if (!TryReadSetEuler(*mDeserializer, generalSettings.eulerRotations[0],
                                      generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
                 {
                     return false;
@@ -1315,7 +1320,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     return true;
 } // Read6DOFSettings
 
-bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings,
+bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings,
                                                           bool& dataAvailable)
 {
     dataAvailable = false;
@@ -1330,7 +1335,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
     //
     // Read gaze vectors
     //
-    Deserializer gazeVectorElem = mDeserializer.FirstChildElement("Gaze_Vector");
+    DeserializerApi gazeVectorElem = mDeserializer->FirstChildElement("Gaze_Vector");
     if (!gazeVectorElem)
     {
         return true; // NO eye tracker data available.
@@ -1367,7 +1372,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
     return true;
 } // ReadGazeVectorSettings
 
-bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings,
+bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings,
                                                           bool& dataAvailable)
 {
     dataAvailable = false;
@@ -1379,7 +1384,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
         return true;
     }
 
-    Deserializer eyeTrackerElem = mDeserializer.FirstChildElement("Eye_Tracker");
+    DeserializerApi eyeTrackerElem = mDeserializer->FirstChildElement("Eye_Tracker");
 
     if (!eyeTrackerElem)
     {
@@ -1414,7 +1419,7 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
     return true;
 } // ReadEyeTrackerSettings
 
-bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings,
+bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings,
                                                       bool& dataAvailable)
 {
     dataAvailable = false;
@@ -1425,7 +1430,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
         return true;
     }
 
-    auto analogElem = mDeserializer.FirstChildElement("Analog");
+    auto analogElem = mDeserializer->FirstChildElement("Analog");
     if (!analogElem)
     {
         // No analog data available.
@@ -1532,7 +1537,7 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     return true;
 } // ReadAnalogSettings
 
-bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable)
+bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -1543,7 +1548,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettin
         return true;
     }
 
-    auto forceElem = mDeserializer.FirstChildElement("Force");
+    auto forceElem = mDeserializer->FirstChildElement("Force");
     if (!forceElem)
     {
         // No analog data available.
@@ -1707,7 +1712,7 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettin
     return true;
 } // Read force settings
 
-bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable)
+bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -1718,7 +1723,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
         return true;
     }
 
-    auto imageElem = mDeserializer.FirstChildElement("Image");
+    auto imageElem = mDeserializer->FirstChildElement("Image");
     if (!imageElem)
     {
         return true;
@@ -1789,7 +1794,7 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
 
 namespace
 {
-    bool TryReadSDegreeOfFreedom(Deserializer& parentElement, const std::string& elementName,
+    bool TryReadSDegreeOfFreedom(DeserializerApi& parentElement, const std::string& elementName,
                                  std::vector<SDegreeOfFreedom>& degreesOfFreedom)
     {
         SDegreeOfFreedom degreeOfFreedom;
@@ -1838,7 +1843,7 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
+bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                                                         std::vector<SSettingsSkeletonHierarchical>&
                                                         skeletonSettingsHierarchical,
                                                         std::vector<SSettingsSkeleton>& skeletonSettings,
@@ -1853,7 +1858,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
         return true;
     }
 
-    auto skeletonsElem = mDeserializer.FirstChildElement("Skeletons");
+    auto skeletonsElem = mDeserializer->FirstChildElement("Skeletons");
     if (!skeletonsElem)
     {
         return true;
@@ -1878,10 +1883,10 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
             if (auto segmentsElem = skeletonElem.FirstChildElement("Segments"))
             {
-                std::function<void(Deserializer&, SSettingsSkeletonSegmentHierarchical&,
+                std::function<void(DeserializerApi&, SSettingsSkeletonSegmentHierarchical&,
                                    std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments
                     = [&recurseSegments, &segmentIdIndexMap, &segmentIndex, &skeleton](
-                    Deserializer& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
+                    DeserializerApi& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
                     std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
                 {
                     segmentHierarchical.name = segmentElem.Attribute("Name");
@@ -2047,7 +2052,7 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
 namespace
 {
-    bool TryReadXmlFov(std::string name, Deserializer& parentElement, SCalibrationFov& fov)
+    bool TryReadXmlFov(std::string name, DeserializerApi& parentElement, SCalibrationFov& fov)
     {
         auto childElement = parentElement.FirstChildElement(name.data());
         if (!childElement)
@@ -2064,7 +2069,7 @@ namespace
     }
 }
 
-bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& calibrationSettings)
+bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrationSettings)
 {
     SCalibration settings{};
 
@@ -2073,7 +2078,7 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& calibra
         return true;
     }
 
-    auto calibrationElem = mDeserializer.FirstChildElement("calibration");
+    auto calibrationElem = mDeserializer->FirstChildElement("calibration");
     if (!calibrationElem)
     {
         return false;
