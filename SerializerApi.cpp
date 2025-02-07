@@ -6,8 +6,9 @@
 using namespace qualisys_cpp_sdk;
 
 SerializerApi::SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion)
-    : mMajorVersion(majorVersion), mMinorVersion(minorVersion)
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mDocument(new tinyxml2::XMLDocument)
 {
+     mCurrentElement = mDocument->RootElement();
 }
 
 void SerializerApi::AddXMLElementBool(tinyxml2::XMLElement& parentElem, const char* elementName, const bool* value, tinyxml2::XMLDocument& document, const char* trueText, const char* falseText)

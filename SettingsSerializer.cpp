@@ -86,7 +86,33 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
     const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
 {
-    return mSerializer->SetForceSettings(plateId, corner1, corner2, corner3, corner4);
+    auto settingsElem = mSerializer->Element("QTM_Settings");
+    auto forceElem = settingsElem.Element("Force");
+    auto plateElem = forceElem.Element("Plate");
+
+    if (mMajorVersion > 1 || mMinorVersion > 7)
+    {
+        plateElem.ElementUnsignedInt("Plate_ID", plateId);
+    }
+    else
+    {
+        plateElem.ElementUnsignedInt("Force_Plate_Index", plateId);
+    }
+
+    auto addCorner = [&](const char* name, const SPoint pCorner, SerializerApi elem)
+        {
+            auto cornerElem = elem.Element(name);
+            cornerElem.ElementFloat("X", pCorner.fX, 6);
+            cornerElem.ElementFloat("Y", pCorner.fY, 6);
+            cornerElem.ElementFloat("Z", pCorner.fZ, 6);
+        };
+
+    addCorner("Corner1", *corner1, plateElem);
+    addCorner("Corner2", *corner2, plateElem);
+    addCorner("Corner3", *corner3, plateElem);
+    addCorner("Corner4", *corner4, plateElem);
+    
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
