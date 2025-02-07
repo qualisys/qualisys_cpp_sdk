@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <tinyxml2.h>
-#include <Settings.h>
+#include "Settings.h"
 
 
 /// <summary>
