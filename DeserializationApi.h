@@ -19,7 +19,7 @@ namespace qualisys_cpp_sdk
     {
     private:
         std::shared_ptr<tinyxml2::XMLDocument> mDocument;
-        DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument>, tinyxml2::XMLElement*);
+        DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument> document, tinyxml2::XMLElement* element);
 
     public:
         tinyxml2::XMLElement* mPtr;

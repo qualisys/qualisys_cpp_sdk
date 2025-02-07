@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <tinyxml2.h>
 
-qualisys_cpp_sdk::DeserializationApi::DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument> mDocument,
-                                             tinyxml2::XMLElement* ptr)
-    : mDocument(mDocument), mPtr(ptr)
+qualisys_cpp_sdk::DeserializationApi::DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument> document,
+                                             tinyxml2::XMLElement* element)
+    : mDocument(document), mPtr(element)
 {
 }
 
