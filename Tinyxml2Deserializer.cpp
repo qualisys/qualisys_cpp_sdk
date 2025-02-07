@@ -1,10 +1,9 @@
 #include "Tinyxml2Deserializer.h"
 #include "Deserializer.h"
-#include <map>
-
 #include "Settings.h"
 
 #include <functional>
+#include <map>
 #include <stdexcept>
 
 using namespace qualisys_cpp_sdk;
