@@ -27,13 +27,12 @@ bool CTinyxml2Deserializer::DeserializeGeneralSettings(SSettingsGeneral& general
 {
     generalSettings.vsCameras.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto generalElem = rootElem.FirstChildElement("General");
+    auto generalElem = mDeserializer.FirstChildElement("General");
     if (!generalElem)
     {
         return true;
@@ -893,13 +892,12 @@ bool CTinyxml2Deserializer::Deserialize3DSettings(SSettings3D& settings3D, bool&
 
     settings3D.pCalibrationTime[0] = 0;
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto threeDElem = rootElem.FirstChildElement("The_3D");
+    auto threeDElem = mDeserializer.FirstChildElement("The_3D");
     if (!threeDElem)
     {
         return true;
@@ -1200,8 +1198,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
 
     settings6Dof.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
@@ -1209,7 +1206,7 @@ bool CTinyxml2Deserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBod
     //
     // Read gaze vectors
     //
-    Deserializer sixDofElem = rootElem.FirstChildElement("The_6D");
+    Deserializer sixDofElem = mDeserializer.FirstChildElement("The_6D");
     if (!sixDofElem)
     {
         return true; // NO eye tracker data available.
@@ -1306,8 +1303,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
 
     gazeVectorSettings.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
@@ -1315,7 +1311,7 @@ bool CTinyxml2Deserializer::DeserializeGazeVectorSettings(std::vector<SGazeVecto
     //
     // Read gaze vectors
     //
-    Deserializer gazeVectorElem = rootElem.FirstChildElement("Gaze_Vector");
+    Deserializer gazeVectorElem = mDeserializer.FirstChildElement("Gaze_Vector");
     if (!gazeVectorElem)
     {
         return true; // NO eye tracker data available.
@@ -1358,13 +1354,12 @@ bool CTinyxml2Deserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracke
 
     eyeTrackerSettings.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    Deserializer eyeTrackerElem = rootElem.FirstChildElement("Eye_Tracker");
+    Deserializer eyeTrackerElem = mDeserializer.FirstChildElement("Eye_Tracker");
 
     if (!eyeTrackerElem)
     {
@@ -1404,13 +1399,12 @@ bool CTinyxml2Deserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>
     dataAvailable = false;
     analogDeviceSettings.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto analogElem = rootElem.FirstChildElement("Analog");
+    auto analogElem = mDeserializer.FirstChildElement("Analog");
     if (!analogElem)
     {
         // No analog data available.
@@ -1528,13 +1522,12 @@ bool CTinyxml2Deserializer::DeserializeForceSettings(SSettingsForce& forceSettin
 
     forceSettings.vsForcePlates.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto forceElem = rootElem.FirstChildElement("Force");
+    auto forceElem = mDeserializer.FirstChildElement("Force");
     if (!forceElem)
     {
         // No analog data available.
@@ -1703,13 +1696,12 @@ bool CTinyxml2Deserializer::DeserializeImageSettings(std::vector<SImageCamera>& 
 
     imageSettings.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto imageElem = rootElem.FirstChildElement("Image");
+    auto imageElem = mDeserializer.FirstChildElement("Image");
     if (!imageElem)
     {
         return true;
@@ -1834,13 +1826,12 @@ bool CTinyxml2Deserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
     skeletonSettings.clear();
     skeletonSettingsHierarchical.clear();
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto skeletonsElem = rootElem.FirstChildElement("Skeletons");
+    auto skeletonsElem = mDeserializer.FirstChildElement("Skeletons");
     if (!skeletonsElem)
     {
         return true;
@@ -2055,13 +2046,12 @@ bool CTinyxml2Deserializer::DeserializeCalibrationSettings(SCalibration& calibra
 {
     SCalibration settings{};
 
-    auto rootElem = mDeserializer;
-    if (!rootElem)
+    if (!mDeserializer)
     {
         return true;
     }
 
-    auto calibrationElem = rootElem.FirstChildElement("calibration");
+    auto calibrationElem = mDeserializer.FirstChildElement("calibration");
     if (!calibrationElem)
     {
         return false;
