@@ -1,8 +1,8 @@
 #include "DeserializationApi.h"
+#include "Settings.h"
 
 #include <algorithm>
 #include <tinyxml2.h>
-#include <Settings.h>
 
 qualisys_cpp_sdk::DeserializationApi::DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument> mDocument,
                                              tinyxml2::XMLElement* ptr)
