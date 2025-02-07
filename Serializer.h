@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <tinyxml2.h>
-#include <Settings.h>
+#include "Settings.h"
 
 namespace qualisys_cpp_sdk
 {
