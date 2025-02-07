@@ -193,8 +193,8 @@
     <ClCompile Include="RTProtocol.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="MarkupSerializer.cpp" />
-    <ClCompile Include="SerializationApi.cpp" />
-    <ClCompile Include="DeserializationApi.cpp" />
+    <ClCompile Include="SerializerApi.cpp" />
+    <ClCompile Include="DeserializerApi.cpp" />
     <ClCompile Include="SettingsDeserializer.cpp" />
     <ClCompile Include="SettingsSerializer.cpp" />
   </ItemGroup>
@@ -206,8 +206,8 @@
     <ClInclude Include="RTProtocol.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="MarkupSerializer.h" />
-    <ClInclude Include="SerializationApi.h" />
-    <ClInclude Include="DeserializationApi.h" />
+    <ClInclude Include="SerializerApi.h" />
+    <ClInclude Include="DeserializerApi.h" />
     <ClInclude Include="SettingsDeserializer.h" />
     <ClInclude Include="SettingsSerializer.h" />
   </ItemGroup>

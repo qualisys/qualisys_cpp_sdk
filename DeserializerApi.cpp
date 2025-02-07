@@ -1,84 +1,84 @@
-#include "DeserializationApi.h"
+#include "DeserializerApi.h"
 #include "Settings.h"
 
 #include <algorithm>
 #include <tinyxml2.h>
 
-qualisys_cpp_sdk::DeserializationApi::DeserializationApi(std::shared_ptr<tinyxml2::XMLDocument> document,
+qualisys_cpp_sdk::DeserializerApi::DeserializerApi(std::shared_ptr<tinyxml2::XMLDocument> document,
                                              tinyxml2::XMLElement* element)
     : mDocument(document), mPtr(element)
 {
 }
 
-qualisys_cpp_sdk::DeserializationApi::DeserializationApi(const char* data)
+qualisys_cpp_sdk::DeserializerApi::DeserializerApi(const char* data)
 {
     mDocument = std::make_unique<tinyxml2::XMLDocument>();
     mDocument->Parse(data);
     mPtr = mDocument->RootElement();
 }
 
-qualisys_cpp_sdk::DeserializationApi qualisys_cpp_sdk::DeserializationApi::FirstChildElement(const char* elementName) const
+qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::FirstChildElement(const char* elementName) const
 {
     return {mDocument, mPtr->FirstChildElement(elementName)};
 }
 
-qualisys_cpp_sdk::DeserializationApi qualisys_cpp_sdk::DeserializationApi::NextSiblingElement(const char* elementName) const
+qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::NextSiblingElement(const char* elementName) const
 {
     return {mDocument, mPtr->NextSiblingElement(elementName)};
 }
 
-double qualisys_cpp_sdk::DeserializationApi::DoubleAttribute(const char* attributeName, double defaultValue) const
+double qualisys_cpp_sdk::DeserializerApi::DoubleAttribute(const char* attributeName, double defaultValue) const
 {
     return mPtr->DoubleAttribute(attributeName, defaultValue);
 }
 
-std::uint32_t qualisys_cpp_sdk::DeserializationApi::UnsignedAttribute(const char* attributeName,
+std::uint32_t qualisys_cpp_sdk::DeserializerApi::UnsignedAttribute(const char* attributeName,
                                                                 std::uint32_t defaultValue) const
 {
     return mPtr->UnsignedAttribute(attributeName, defaultValue);
 }
 
-std::int32_t qualisys_cpp_sdk::DeserializationApi::IntAttribute(const char* attributeName, std::int32_t defaultValue) const
+std::int32_t qualisys_cpp_sdk::DeserializerApi::IntAttribute(const char* attributeName, std::int32_t defaultValue) const
 {
     return mPtr->IntAttribute(attributeName, defaultValue);
 }
 
-bool qualisys_cpp_sdk::DeserializationApi::BoolAttribute(const char* attributeName, bool defaultValue) const
+bool qualisys_cpp_sdk::DeserializerApi::BoolAttribute(const char* attributeName, bool defaultValue) const
 {
     return mPtr->BoolAttribute(attributeName, defaultValue);
 }
 
-bool qualisys_cpp_sdk::DeserializationApi::operator==(const DeserializationApi& other) const
+bool qualisys_cpp_sdk::DeserializerApi::operator==(const DeserializerApi& other) const
 {
     return mPtr == other.mPtr;
 }
 
-bool qualisys_cpp_sdk::DeserializationApi::operator!=(const DeserializationApi& other) const
+bool qualisys_cpp_sdk::DeserializerApi::operator!=(const DeserializerApi& other) const
 {
     return mPtr != other.mPtr;
 }
 
-qualisys_cpp_sdk::DeserializationApi::operator bool() const
+qualisys_cpp_sdk::DeserializerApi::operator bool() const
 {
     return mPtr != nullptr;
 }
 
-int qualisys_cpp_sdk::DeserializationApi::IntText(std::int32_t defaultValue) const
+int qualisys_cpp_sdk::DeserializerApi::IntText(std::int32_t defaultValue) const
 {
     return mPtr->IntText(defaultValue);
 }
 
-unsigned int qualisys_cpp_sdk::DeserializationApi::UnsignedText(std::int32_t defaultValue) const
+unsigned int qualisys_cpp_sdk::DeserializerApi::UnsignedText(std::int32_t defaultValue) const
 {
     return mPtr->UnsignedText(defaultValue);
 }
 
-float qualisys_cpp_sdk::DeserializationApi::FloatText(float defaultValue) const
+float qualisys_cpp_sdk::DeserializerApi::FloatText(float defaultValue) const
 {
     return mPtr->FloatText(defaultValue);
 }
 
-std::string qualisys_cpp_sdk::DeserializationApi::Attribute(const char* name) const
+std::string qualisys_cpp_sdk::DeserializerApi::Attribute(const char* name) const
 {
     if (auto charPtr = mPtr->Attribute(name))
     {
@@ -88,12 +88,12 @@ std::string qualisys_cpp_sdk::DeserializationApi::Attribute(const char* name) co
     return {};
 }
 
-float qualisys_cpp_sdk::DeserializationApi::FloatAttribute(const char* name, float defaultValue) const
+float qualisys_cpp_sdk::DeserializerApi::FloatAttribute(const char* name, float defaultValue) const
 {
     return mPtr->FloatAttribute(name, defaultValue);
 }
 
-std::string qualisys_cpp_sdk::DeserializationApi::GetText() const
+std::string qualisys_cpp_sdk::DeserializerApi::GetText() const
 {
     if (auto charPtr = mPtr->GetText())
     {
@@ -106,12 +106,12 @@ std::string qualisys_cpp_sdk::DeserializationApi::GetText() const
 /// <summary>
 /// ChildElementRange
 /// </summary>
-qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializationApi& parent, const char* elementName) : parent(parent),
+qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, const char* elementName) : parent(parent),
     elementNameGenerator([elementName](auto& buff, std::size_t, std::size_t) { return elementName; })
 {
 }
 
-qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializationApi& parent, TElementNameGenerator generator) :
+qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, TElementNameGenerator generator) :
     parent(parent), elementNameGenerator(std::move(generator))
 {
 }
@@ -127,7 +127,7 @@ qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange&
     current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, buffSize, index++));
 }
 
-qualisys_cpp_sdk::DeserializationApi qualisys_cpp_sdk::ChildElementRange::Iterator::operator*() const
+qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::ChildElementRange::Iterator::operator*() const
 {
     return current;
 }
@@ -166,7 +166,7 @@ std::string qualisys_cpp_sdk::ToLowerXmlString(std::string str)
     return str;
 }
 
-bool qualisys_cpp_sdk::TryReadElementDouble(DeserializationApi& element, const char* elementName, double& output)
+bool qualisys_cpp_sdk::TryReadElementDouble(DeserializerApi& element, const char* elementName, double& output)
 {
     if (auto childElem = element.FirstChildElement(elementName))
     {
@@ -176,7 +176,7 @@ bool qualisys_cpp_sdk::TryReadElementDouble(DeserializationApi& element, const c
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementFloat(DeserializationApi& element, const char* elementName, float& output)
+bool qualisys_cpp_sdk::TryReadElementFloat(DeserializerApi& element, const char* elementName, float& output)
 {
     if (auto childElem = element.FirstChildElement(elementName))
     {
@@ -186,7 +186,7 @@ bool qualisys_cpp_sdk::TryReadElementFloat(DeserializationApi& element, const ch
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementUnsignedInt32(DeserializationApi& element, const char* elementName,
+bool qualisys_cpp_sdk::TryReadElementUnsignedInt32(DeserializerApi& element, const char* elementName,
                                                    std::uint32_t& output)
 {
     if (auto childElem = element.FirstChildElement(elementName))
@@ -197,7 +197,7 @@ bool qualisys_cpp_sdk::TryReadElementUnsignedInt32(DeserializationApi& element, 
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementString(DeserializationApi& element, const char* elementName, std::string& output)
+bool qualisys_cpp_sdk::TryReadElementString(DeserializerApi& element, const char* elementName, std::string& output)
 {
     output.clear();
 
@@ -228,7 +228,7 @@ namespace
     }
 }
 
-bool qualisys_cpp_sdk::ReadXmlBool(DeserializationApi xml, const std::string& element, bool& value)
+bool qualisys_cpp_sdk::ReadXmlBool(DeserializerApi xml, const std::string& element, bool& value)
 {
     auto xmlElem = xml.FirstChildElement(element.c_str());
     if (!xmlElem)
@@ -257,7 +257,7 @@ bool qualisys_cpp_sdk::ReadXmlBool(DeserializationApi xml, const std::string& el
     return true;
 }
 
-qualisys_cpp_sdk::SPosition qualisys_cpp_sdk::ReadSPosition(DeserializationApi& parentElem, const std::string& element)
+qualisys_cpp_sdk::SPosition qualisys_cpp_sdk::ReadSPosition(DeserializerApi& parentElem, const std::string& element)
 {
     auto positionElem = parentElem.FirstChildElement(element.data());
     if (positionElem)
@@ -272,7 +272,7 @@ qualisys_cpp_sdk::SPosition qualisys_cpp_sdk::ReadSPosition(DeserializationApi& 
     return {};
 }
 
-qualisys_cpp_sdk::SRotation qualisys_cpp_sdk::ReadSRotation(DeserializationApi& parentElem, const std::string& element)
+qualisys_cpp_sdk::SRotation qualisys_cpp_sdk::ReadSRotation(DeserializerApi& parentElem, const std::string& element)
 {
     auto rotationElem = parentElem.FirstChildElement(element.data());
     if (rotationElem)

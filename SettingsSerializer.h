@@ -4,7 +4,7 @@
 
 namespace qualisys_cpp_sdk
 {
-    struct SerializationApi;
+    struct SerializerApi;
 
     struct SettingsSerializer : public ISettingsSerializer
     {
@@ -53,6 +53,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        SerializationApi* mSerializer;
+        SerializerApi* mSerializer;
     };
 }

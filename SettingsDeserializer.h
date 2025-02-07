@@ -3,7 +3,7 @@
 
 namespace qualisys_cpp_sdk
 {
-    struct DeserializationApi;
+    struct DeserializerApi;
 
     struct SettingsDeserializer : ISettingsDeserializer
     {
@@ -23,6 +23,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        DeserializationApi* mDeserializer;
+        DeserializerApi* mDeserializer;
     };
 }

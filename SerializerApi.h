@@ -15,7 +15,7 @@ namespace qualisys_cpp_sdk
     struct SPosition;
     struct SRotation;
 
-    struct SerializationApi
+    struct SerializerApi
     {
     private:
         std::shared_ptr<tinyxml2::XMLDocument> mDocument;
@@ -33,7 +33,7 @@ namespace qualisys_cpp_sdk
         void AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::XMLElement& parentElem, const std::string& name, const SDegreeOfFreedom& degreesOfFreedom);
 
     public:
-        SerializationApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
+        SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
 
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
             const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC, const bool* startOnTrigSoftware,

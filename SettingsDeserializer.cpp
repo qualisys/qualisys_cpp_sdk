@@ -1,5 +1,5 @@
 #include "SettingsDeserializer.h"
-#include "DeserializationApi.h"
+#include "DeserializerApi.h"
 #include "Settings.h"
 
 #include <functional>
@@ -11,7 +11,7 @@ using namespace qualisys_cpp_sdk;
 SettingsDeserializer::SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
     : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mDeserializer{nullptr}
 {
-    mDeserializer = new DeserializationApi(data);
+    mDeserializer = new DeserializerApi(data);
 }
 
 SettingsDeserializer::~SettingsDeserializer()
@@ -269,7 +269,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         &generalSettings.eReprocessingActions
     };
 
-    auto AddFlagFromBoolElement = [this](DeserializationApi& parent, const char* elementName, EProcessingActions flag,
+    auto AddFlagFromBoolElement = [this](DeserializerApi& parent, const char* elementName, EProcessingActions flag,
                                          EProcessingActions& target) -> bool
     {
         bool value;
@@ -1021,7 +1021,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
 namespace
 {
-    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, DeserializationApi& deserializer,
+    bool TryRead6DofElementEnabled(std::uint32_t majorVer, std::uint32_t minorVer, DeserializerApi& deserializer,
                                    bool& target)
     {
         if (majorVer > 1 || minorVer > 23)
@@ -1039,7 +1039,7 @@ namespace
     }
 
 
-    bool TryReadAttributesRGBColor(DeserializationApi& deserializer, std::uint32_t& target)
+    bool TryReadAttributesRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
         if (auto elem = deserializer.FirstChildElement("Color"))
         {
@@ -1054,7 +1054,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetFilter(DeserializationApi& deserializer, std::string& target)
+    bool TryReadSetFilter(DeserializerApi& deserializer, std::string& target)
     {
         if (auto elem = deserializer.FirstChildElement("Filter"))
         {
@@ -1065,7 +1065,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetPos(DeserializationApi& deserializer, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetPos(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = deserializer.FirstChildElement("Position"))
         {
@@ -1079,7 +1079,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetRotation(DeserializationApi& deserializer, float& targetX, float& targetY, float& targetZ)
+    bool TryReadSetRotation(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
         if (auto elem = deserializer.FirstChildElement("Rotation"))
         {
@@ -1094,7 +1094,7 @@ namespace
     }
 
 
-    bool TryReadSetPoints(DeserializationApi& deserializer, std::vector<SBodyPoint>& target)
+    bool TryReadSetPoints(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
         if (auto pointsElem = deserializer.FirstChildElement("Points"))
         {
@@ -1118,7 +1118,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetDataOrigin(DeserializationApi& deserializer, SOrigin& target)
+    bool TryReadSetDataOrigin(DeserializerApi& deserializer, SOrigin& target)
     {
         if (auto elem = deserializer.FirstChildElement("Data_origin"))
         {
@@ -1155,7 +1155,7 @@ namespace
         return false;
     }
 
-    bool TryReadElementRGBColor(DeserializationApi& deserializer, std::uint32_t& target)
+    bool TryReadElementRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
         if (auto elem = deserializer.FirstChildElement("RGBColor"))
         {
@@ -1167,7 +1167,7 @@ namespace
         return false;
     }
 
-    bool TryReadSetPointsOld(DeserializationApi& deserializer, std::vector<SBodyPoint>& target)
+    bool TryReadSetPointsOld(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
         target.clear();
         for (auto pointElem : ChildElementRange{deserializer, "Bone"})
@@ -1194,7 +1194,7 @@ namespace
         return true;
     }
 
-    bool TryReadSetEuler(DeserializationApi& deserializer, std::string& targetFirst, std::string& targetSecond,
+    bool TryReadSetEuler(DeserializerApi& deserializer, std::string& targetFirst, std::string& targetSecond,
                          std::string& targetThird)
     {
         if (auto elem = deserializer.FirstChildElement("Euler"))
@@ -1223,7 +1223,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
     //
     // Read gaze vectors
     //
-    DeserializationApi sixDofElem = mDeserializer->FirstChildElement("The_6D");
+    DeserializerApi sixDofElem = mDeserializer->FirstChildElement("The_6D");
     if (!sixDofElem)
     {
         return true; // NO eye tracker data available.
@@ -1335,7 +1335,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
     //
     // Read gaze vectors
     //
-    DeserializationApi gazeVectorElem = mDeserializer->FirstChildElement("Gaze_Vector");
+    DeserializerApi gazeVectorElem = mDeserializer->FirstChildElement("Gaze_Vector");
     if (!gazeVectorElem)
     {
         return true; // NO eye tracker data available.
@@ -1384,7 +1384,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         return true;
     }
 
-    DeserializationApi eyeTrackerElem = mDeserializer->FirstChildElement("Eye_Tracker");
+    DeserializerApi eyeTrackerElem = mDeserializer->FirstChildElement("Eye_Tracker");
 
     if (!eyeTrackerElem)
     {
@@ -1794,7 +1794,7 @@ bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& i
 
 namespace
 {
-    bool TryReadSDegreeOfFreedom(DeserializationApi& parentElement, const std::string& elementName,
+    bool TryReadSDegreeOfFreedom(DeserializerApi& parentElement, const std::string& elementName,
                                  std::vector<SDegreeOfFreedom>& degreesOfFreedom)
     {
         SDegreeOfFreedom degreeOfFreedom;
@@ -1883,10 +1883,10 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
             if (auto segmentsElem = skeletonElem.FirstChildElement("Segments"))
             {
-                std::function<void(DeserializationApi&, SSettingsSkeletonSegmentHierarchical&,
+                std::function<void(DeserializerApi&, SSettingsSkeletonSegmentHierarchical&,
                                    std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments
                     = [&recurseSegments, &segmentIdIndexMap, &segmentIndex, &skeleton](
-                    DeserializationApi& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
+                    DeserializerApi& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
                     std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
                 {
                     segmentHierarchical.name = segmentElem.Attribute("Name");
@@ -2052,7 +2052,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
 namespace
 {
-    bool TryReadXmlFov(std::string name, DeserializationApi& parentElement, SCalibrationFov& fov)
+    bool TryReadXmlFov(std::string name, DeserializerApi& parentElement, SCalibrationFov& fov)
     {
         auto childElement = parentElement.FirstChildElement(name.data());
         if (!childElement)

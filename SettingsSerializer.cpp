@@ -1,5 +1,5 @@
 #include "SettingsSerializer.h"
-#include "SerializationApi.h"
+#include "SerializerApi.h"
 #include "Settings.h"
 
 #include <functional>
@@ -8,7 +8,7 @@
 using namespace qualisys_cpp_sdk;
 
 SettingsSerializer::SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
-    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mSerializer(new SerializationApi(majorVersion, minorVersion))
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mSerializer(new SerializerApi(majorVersion, minorVersion))
 {
 }
 

@@ -15,8 +15,8 @@ add_library(${PROJECT_NAME}
         RTProtocol.cpp
         Settings.cpp
         MarkupSerializer.cpp
-        SerializationApi.cpp
-        DeserializationApi.cpp
+        SerializerApi.cpp
+        DeserializerApi.cpp
         SettingsDeserializer.cpp
         SettingsSerializer.cpp
 )
