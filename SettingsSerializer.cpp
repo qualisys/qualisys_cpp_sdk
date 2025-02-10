@@ -384,7 +384,21 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
 
 std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
 {
-    return mSerializer->SetCameraLensControlSettings(cameraId, focus, aperture);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto cameraElem = theGeneral.Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+
+    auto lensControlElem = cameraElem.Element("LensControl");
+
+    lensControlElem.Element("Focus")
+        .AttributeFloat("Value", focus, 6);
+
+    lensControlElem.Element("Aperture")
+        .AttributeFloat("Value", aperture, 6);
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)

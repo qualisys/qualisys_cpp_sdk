@@ -138,32 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
-{
-    tinyxml2::XMLDocument document;
-
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* generalElem = document.NewElement("General");
-    rootElem->InsertEndChild(generalElem);
-
-    tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
-    generalElem->InsertEndChild(cameraElem);
-
-    AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
-
-    tinyxml2::XMLElement* lensControlElem = document.NewElement("LensControl");
-    cameraElem->InsertEndChild(lensControlElem);
-
-    AddXMLElementFloatWithTextAttribute(document, *lensControlElem, "Focus", "Value", focus, 6);
-    AddXMLElementFloatWithTextAttribute(document, *lensControlElem, "Aperture", "Value", aperture, 6);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
 {
     tinyxml2::XMLDocument document;
