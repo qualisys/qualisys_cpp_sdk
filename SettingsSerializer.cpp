@@ -425,7 +425,7 @@ std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int
     (void)snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
 
     lensControlElem.Element("AutoExposure")
-        .AttributeString("Enabled", (autoExposure ? "true" : "false"))
+        .AttributeBool("Enabled", autoExposure)
         .AttributeString("Compensation", compensationStr);
 
     return mSerializer->ToString();
@@ -650,7 +650,7 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
             skeletonElem.ElementString("Solver", skeleton.rootSegment.solver.c_str());
         }
 
-        skeletonElem.ElementString("Scale", std::to_string(skeleton.scale).c_str());
+        skeletonElem.ElementDouble("Scale", skeleton.scale);
         auto segmentsElem = skeletonElem.Element("Segments");
 
         std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
@@ -703,14 +703,14 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                         if (mMajorVersion > 1 || mMinorVersion > 21)
                         {
                             dofElem.Element("Constraint")
-                                .AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str())
-                                .AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                                .AttributeDouble("LowerBound", dof.lowerBound)
+                                .AttributeDouble("UpperBound", dof.upperBound);
                         }
                         else
                         {
                             // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
-                            dofElem.AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str());
-                            dofElem.AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                            dofElem.AttributeDouble("LowerBound", dof.lowerBound);
+                            dofElem.AttributeDouble("UpperBound", dof.upperBound);
                         }
                     }
 
@@ -722,24 +722,24 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                             couplingsElem.Element("Coupling")
                                 .AttributeString("Segment", coupling.segment.c_str())
                                 .AttributeString("DegreeOfFreedom", SkeletonDofToStringSettings(coupling.degreeOfFreedom))
-                                .AttributeString("Coefficient", std::to_string(coupling.coefficient).c_str());
+                                .AttributeDouble("Coefficient", coupling.coefficient);
                         }
                     }
 
                     if (!std::isnan(dof.goalValue) && !std::isnan(dof.goalWeight))
                     {
                         dofElem.Element("Goal")
-                            .AttributeString("Value", std::to_string(dof.goalValue).c_str())
-                            .AttributeString("Weight", std::to_string(dof.goalWeight).c_str());
+                            .AttributeDouble("Value", dof.goalValue)
+                            .AttributeDouble("Weight", dof.goalWeight);
                     }
                 }
 
                 if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
                 {
                     segmentElem.Element("Endpoint")
-                        .AttributeString("X", std::to_string(segment.endpoint.x).c_str())
-                        .AttributeString("Y", std::to_string(segment.endpoint.y).c_str())
-                        .AttributeString("Z", std::to_string(segment.endpoint.z).c_str());
+                        .AttributeDouble("X", segment.endpoint.x)
+                        .AttributeDouble("Y", segment.endpoint.y)
+                        .AttributeDouble("Z", segment.endpoint.z);
                 }
                 else
                 {
@@ -754,29 +754,30 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                         .AttributeString("Name", marker.name.c_str());
 
                     markerElem.Element("Position")
-                        .AttributeString("X", std::to_string(marker.position.x).c_str())
-                        .AttributeString("Y", std::to_string(marker.position.y).c_str())
-                        .AttributeString("Z", std::to_string(marker.position.z).c_str());
+                        .AttributeDouble("X", marker.position.x)
+                        .AttributeDouble("Y", marker.position.y)
+                        .AttributeDouble("Z", marker.position.z);
 
-                    markerElem.ElementString("Weight", std::to_string(marker.weight).c_str());
+                    markerElem.ElementDouble("Weight", marker.weight);
                 }
 
                 auto rigidBodiesElem = segmentElem.Element("RigidBodies");
                 for (const auto& rigidBody : segment.bodies)
                 {
-                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody").AttributeString("Name", rigidBody.name.c_str());
+                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody")
+                        .AttributeString("Name", rigidBody.name.c_str());
 
                     auto transformElem = rigidBodyElem.Element("Transform");
 
                     transformElem.Element("Position")
-                        .AttributeString("X", std::to_string(rigidBody.position.x).c_str())
-                        .AttributeString("Y", std::to_string(rigidBody.position.y).c_str())
-                        .AttributeString("Z", std::to_string(rigidBody.position.z).c_str());
+                        .AttributeDouble("X", rigidBody.position.x)
+                        .AttributeDouble("Y", rigidBody.position.y)
+                        .AttributeDouble("Z", rigidBody.position.z);
                     transformElem.Element("Rotation")
-                        .AttributeString("X", std::to_string(rigidBody.rotation.x).c_str())
-                        .AttributeString("Y", std::to_string(rigidBody.rotation.y).c_str())
-                        .AttributeString("Z", std::to_string(rigidBody.rotation.z).c_str())
-                        .AttributeString("W", std::to_string(rigidBody.rotation.w).c_str());
+                        .AttributeDouble("X", rigidBody.rotation.x)
+                        .AttributeDouble("Y", rigidBody.rotation.y)
+                        .AttributeDouble("Z", rigidBody.rotation.z)
+                        .AttributeDouble("W", rigidBody.rotation.w);
 
                     rigidBodyElem.ElementDouble("Weight", rigidBody.weight);
                 }
