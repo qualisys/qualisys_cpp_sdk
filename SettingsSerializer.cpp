@@ -448,7 +448,68 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     const CRTPacket::EImageFormat* format, const unsigned int* width, const unsigned int* height,
     const float* leftCrop, const float* topCrop, const float* rightCrop, const float* bottomCrop)
 {
-    return mSerializer->SetImageSettings(cameraId, enable, format, width, height, leftCrop, topCrop, rightCrop, bottomCrop);
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("Image")
+        .Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+    if (enable)
+    {
+        cameraElem.ElementBool("Enabled", *enable);
+    }
+
+    if (format)
+    {
+        const char* formatStr = nullptr;
+        switch (*format)
+        {
+        case CRTPacket::FormatRawGrayscale:
+            formatStr = "RAWGrayscale";
+            break;
+        case CRTPacket::FormatRawBGR:
+            formatStr = "RAWBGR";
+            break;
+        case CRTPacket::FormatJPG:
+            formatStr = "JPG";
+            break;
+        case CRTPacket::FormatPNG:
+            formatStr = "PNG";
+            break;
+        }
+
+        if (formatStr)
+        {
+            cameraElem.ElementString("Format", formatStr);
+        }
+    }
+    
+    if (width)
+    {
+        cameraElem.ElementUnsignedInt("Width", *width);
+    }
+    if (height)
+    {
+        cameraElem.ElementUnsignedInt("Height", *height);
+    }
+    if (leftCrop)
+    {
+        cameraElem.ElementFloat("Left_Crop", *leftCrop, 6);
+    }
+    if (topCrop)
+    {
+        cameraElem.ElementFloat("Top_Crop", *topCrop, 6);
+    }
+    if (rightCrop)
+    {
+        cameraElem.ElementFloat("Right_Crop", *rightCrop, 6);
+    }
+    if (bottomCrop)
+    {
+        cameraElem.ElementFloat("Bottom_Crop", *bottomCrop, 6);
+    }
+
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
@@ -468,33 +529,31 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
         plateElem.ElementUnsignedInt("Force_Plate_Index", plateId);
     }
 
-    auto addCorner = [&](const char* name, const SPoint pCorner, SerializerApi elem)
+    auto addCorner = [&](const char* name, const SPoint* pCorner)
         {
-            auto cornerElem = elem.Element(name);
-            cornerElem.ElementFloat("X", pCorner.fX, 6);
-            cornerElem.ElementFloat("Y", pCorner.fY, 6);
-            cornerElem.ElementFloat("Z", pCorner.fZ, 6);
+            if (pCorner)
+            {
+                auto cornerElem = plateElem.Element(name);
+
+                if (pCorner->fX)
+                {
+                    cornerElem.ElementFloat("X", pCorner->fX, 6);
+                }
+                if (pCorner->fY)
+                {
+                    cornerElem.ElementFloat("Y", pCorner->fY, 6);
+                }
+                if (pCorner->fZ)
+                {
+                    cornerElem.ElementFloat("Z", pCorner->fZ, 6);
+                }
+            }
         };
 
-    if (corner1)
-    {
-        addCorner("Corner1", *corner1, plateElem);
-    }
-
-    if (corner2)
-    {
-        addCorner("Corner2", *corner2, plateElem);
-    }
-
-    if (corner3)
-    {
-        addCorner("Corner3", *corner3, plateElem);
-    }
-
-    if (corner4)
-    {
-        addCorner("Corner4", *corner4, plateElem);
-    }
+    addCorner("Corner1", corner1);
+    addCorner("Corner2", corner2);
+    addCorner("Corner3", corner3);
+    addCorner("Corner4", corner4);
 
     return mSerializer->ToString();
 }
