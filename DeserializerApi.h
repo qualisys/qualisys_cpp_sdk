@@ -22,8 +22,8 @@ namespace qualisys_cpp_sdk
         tinyxml2::XMLElement* mPtr;
         DeserializerApi(const char* data);
 
-        DeserializerApi FirstChildElement(const char* elementName) const;
-        DeserializerApi NextSiblingElement(const char* elementName) const;
+        DeserializerApi FindChild(const char* elementName) const;
+        DeserializerApi FindNextSibling(const char* elementName) const;
 
         bool TryReadElementDouble(const char* elementName, double& output)  const;
         bool TryReadElementFloat(const char* elementName, float& output) const;

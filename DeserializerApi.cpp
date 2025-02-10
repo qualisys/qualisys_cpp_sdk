@@ -16,12 +16,12 @@ qualisys_cpp_sdk::DeserializerApi::DeserializerApi(const char* data)
     mPtr = mDocument->RootElement();
 }
 
-qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::FirstChildElement(const char* elementName) const
+qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::FindChild(const char* elementName) const
 {
     return {mDocument, mPtr->FirstChildElement(elementName)};
 }
 
-qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::NextSiblingElement(const char* elementName) const
+qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::FindNextSibling(const char* elementName) const
 {
     return {mDocument, mPtr->NextSiblingElement(elementName)};
 }
@@ -123,7 +123,7 @@ qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange&
 qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range, std::size_t index) :
     buffer{}, current(nullptr), range(range), index(index)
 {
-    current = range.parent.FirstChildElement(range.elementNameGenerator(buffer, buffSize, index++));
+    current = range.parent.FindChild(range.elementNameGenerator(buffer, buffSize, index++));
 }
 
 qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::ChildElementRange::Iterator::operator*() const
@@ -133,7 +133,7 @@ qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::ChildElementRange::Iterator:
 
 qualisys_cpp_sdk::ChildElementRange::Iterator& qualisys_cpp_sdk::ChildElementRange::Iterator::operator++()
 {
-    current = current.NextSiblingElement(range.elementNameGenerator(buffer, buffSize, index++));
+    current = current.FindNextSibling(range.elementNameGenerator(buffer, buffSize, index++));
     return *this;
 }
 
@@ -154,7 +154,7 @@ qualisys_cpp_sdk::ChildElementRange::Iterator qualisys_cpp_sdk::ChildElementRang
 
 bool qualisys_cpp_sdk::DeserializerApi::TryReadElementDouble(const char* elementName, double& output) const
 {
-    if (auto childElem = FirstChildElement(elementName))
+    if (auto childElem = FindChild(elementName))
     {
         return childElem.mPtr->QueryDoubleText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -164,7 +164,7 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementDouble(const char* element
 
 bool qualisys_cpp_sdk::DeserializerApi::TryReadElementFloat(const char* elementName, float& output) const
 {
-    if (auto childElem = FirstChildElement(elementName))
+    if (auto childElem = FindChild(elementName))
     {
         return childElem.mPtr->QueryFloatText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -175,7 +175,7 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementFloat(const char* elementN
 bool qualisys_cpp_sdk::DeserializerApi::TryReadElementUnsignedInt32(const char* elementName,
                                                    std::uint32_t& output) const
 {
-    if (auto childElem = FirstChildElement(elementName))
+    if (auto childElem = FindChild(elementName))
     {
         return childElem.mPtr->QueryUnsignedText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -187,7 +187,7 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementString(const char* element
 {
     output.clear();
 
-    if (auto childElem = FirstChildElement(elementName))
+    if (auto childElem = FindChild(elementName))
     {
         if (auto charPtr = childElem.mPtr->GetText())
         {
@@ -216,7 +216,7 @@ namespace
 
 bool qualisys_cpp_sdk::DeserializerApi::TryReadElementBool(const std::string& element, bool& value) const
 {
-    auto xmlElem = FirstChildElement(element.c_str());
+    auto xmlElem = FindChild(element.c_str());
     if (!xmlElem)
     {
         return false;

@@ -36,13 +36,13 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         return true;
     }
 
-    auto generalElem = mDeserializer->FirstChildElement("General");
+    auto generalElem = mDeserializer->FindChild("General");
     if (!generalElem)
     {
         return true;
     }
 
-    if (auto frequencyElem = generalElem.FirstChildElement("Frequency"))
+    if (auto frequencyElem = generalElem.FindChild("Frequency"))
     {
         generalSettings.nCaptureFrequency = frequencyElem.ReadUnsignedInt(0);
     }
@@ -51,7 +51,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         return false;
     }
 
-    if (auto captureTimeElem = generalElem.FirstChildElement("Capture_Time"))
+    if (auto captureTimeElem = generalElem.FindChild("Capture_Time"))
     {
         generalSettings.fCaptureTime = captureTimeElem.ReadFloat(.0f);
     }
@@ -83,7 +83,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
     }
 
-    if (auto extTimeBaseElem = generalElem.FirstChildElement("External_Time_Base"))
+    if (auto extTimeBaseElem = generalElem.FindChild("External_Time_Base"))
     {
         if (!extTimeBaseElem.TryReadElementBool("Enabled", generalSettings.sExternalTimebase.bEnabled))
         {
@@ -233,7 +233,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         return false;
     }
 
-    if (auto externalTimestampElem = generalElem.FirstChildElement("External_Timestamp"))
+    if (auto externalTimestampElem = generalElem.FindChild("External_Timestamp"))
     {
         if (!externalTimestampElem.TryReadElementBool("Enabled", generalSettings.sTimestamp.bEnabled))
         {
@@ -290,7 +290,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
     {
         // ==================== Processing actions ====================
 
-        auto processingElem = generalElem.FirstChildElement(processingActionTags[i]);
+        auto processingElem = generalElem.FindChild(processingActionTags[i]);
         if (!processingElem)
         {
             return false;
@@ -389,7 +389,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
     }
 
-    auto eulerElem = generalElem.FirstChildElement("EulerAngles");
+    auto eulerElem = generalElem.FindChild("EulerAngles");
     if (eulerElem)
     {
         generalSettings.eulerRotations[0] = eulerElem.ReadAttributeString("First");
@@ -626,7 +626,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             cameraSettings.eVideoAspectRatio = VideoAspectRatioNone;
         }
 
-        if (auto videoExposureElem = cameraElem.FirstChildElement("Video_Exposure"))
+        if (auto videoExposureElem = cameraElem.FindChild("Video_Exposure"))
         {
             if (!videoExposureElem.TryReadElementUnsignedInt32("Current", cameraSettings.nVideoExposure)
                 || !videoExposureElem.TryReadElementUnsignedInt32("Min", cameraSettings.nVideoExposureMin)
@@ -640,7 +640,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto videoFlashTime = cameraElem.FirstChildElement("Video_Flash_Time"))
+        if (auto videoFlashTime = cameraElem.FindChild("Video_Flash_Time"))
         {
             if (!videoFlashTime.TryReadElementUnsignedInt32("Current", cameraSettings.nVideoFlashTime)
                 || !videoFlashTime.TryReadElementUnsignedInt32("Min", cameraSettings.nVideoFlashTimeMin)
@@ -654,7 +654,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto markerExposureElem = cameraElem.FirstChildElement("Marker_Exposure"))
+        if (auto markerExposureElem = cameraElem.FindChild("Marker_Exposure"))
         {
             if (!markerExposureElem.TryReadElementUnsignedInt32("Current", cameraSettings.nMarkerExposure)
                 || !markerExposureElem.TryReadElementUnsignedInt32("Min", cameraSettings.nMarkerExposureMin)
@@ -668,7 +668,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto markerThresholdElem = cameraElem.FirstChildElement("Marker_Threshold"))
+        if (auto markerThresholdElem = cameraElem.FindChild("Marker_Threshold"))
         {
             if (!markerThresholdElem.TryReadElementUnsignedInt32("Current", cameraSettings.nMarkerThreshold)
                 || !markerThresholdElem.TryReadElementUnsignedInt32("Min", cameraSettings.nMarkerThresholdMin)
@@ -682,7 +682,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto positionElem = cameraElem.FirstChildElement("Position"))
+        if (auto positionElem = cameraElem.FindChild("Position"))
         {
             if (!positionElem.TryReadElementFloat("X", cameraSettings.fPositionX)
                 || !positionElem.TryReadElementFloat("Y", cameraSettings.fPositionY)
@@ -710,7 +710,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto markerResElem = cameraElem.FirstChildElement("Marker_Res"))
+        if (auto markerResElem = cameraElem.FindChild("Marker_Res"))
         {
             if (!markerResElem.TryReadElementUnsignedInt32("Width", cameraSettings.nMarkerResolutionWidth)
                 || !markerResElem.TryReadElementUnsignedInt32("Height", cameraSettings.nMarkerResolutionHeight))
@@ -723,7 +723,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto videoResElem = cameraElem.FirstChildElement("Video_Res"))
+        if (auto videoResElem = cameraElem.FindChild("Video_Res"))
         {
             if (!videoResElem.TryReadElementUnsignedInt32("Width", cameraSettings.nVideoResolutionWidth)
                 || !videoResElem.TryReadElementUnsignedInt32("Height", cameraSettings.nVideoResolutionHeight))
@@ -736,7 +736,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto markerFovElem = cameraElem.FirstChildElement("Marker_FOV"))
+        if (auto markerFovElem = cameraElem.FindChild("Marker_FOV"))
         {
             if (!markerFovElem.TryReadElementUnsignedInt32("Left", cameraSettings.nMarkerFOVLeft)
                 || !markerFovElem.TryReadElementUnsignedInt32("Top", cameraSettings.nMarkerFOVTop)
@@ -751,7 +751,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             return false;
         }
 
-        if (auto videoFovElem = cameraElem.FirstChildElement("Marker_FOV"))
+        if (auto videoFovElem = cameraElem.FindChild("Marker_FOV"))
         {
             if (!videoFovElem.TryReadElementUnsignedInt32("Left", cameraSettings.nVideoFOVLeft)
                 || !videoFovElem.TryReadElementUnsignedInt32("Top", cameraSettings.nVideoFOVTop)
@@ -772,7 +772,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             char syncOutStr[16];
             (void)sprintf_s(syncOutStr, 16, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
 
-            auto syncOutElem = cameraElem.FirstChildElement(syncOutStr);
+            auto syncOutElem = cameraElem.FindChild(syncOutStr);
             if (syncOutElem)
             {
                 if (port < 2)
@@ -851,15 +851,15 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             }
         }
 
-        if (auto lensControlElem = cameraElem.FirstChildElement("LensControl"))
+        if (auto lensControlElem = cameraElem.FindChild("LensControl"))
         {
-            auto focusElem = lensControlElem.FirstChildElement("Focus");
+            auto focusElem = lensControlElem.FindChild("Focus");
             if (focusElem)
             {
                 cameraSettings.fFocus = focusElem.ReadAttributeFloat("Value", std::numeric_limits<float>::quiet_NaN());
             }
 
-            auto apertureElem = lensControlElem.FirstChildElement("Aperture");
+            auto apertureElem = lensControlElem.FindChild("Aperture");
             if (apertureElem)
             {
                 cameraSettings.fAperture = apertureElem.
@@ -872,7 +872,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             cameraSettings.fAperture = std::numeric_limits<float>::quiet_NaN();
         }
 
-        if (auto autoExposureElem = cameraElem.FirstChildElement("AutoExposure"))
+        if (auto autoExposureElem = cameraElem.FindChild("AutoExposure"))
         {
             cameraSettings.autoExposureEnabled = autoExposureElem.ReadAttributeBool("Enabled", false);
             cameraSettings.autoExposureCompensation = autoExposureElem.ReadAttributeFloat(
@@ -911,13 +911,13 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
         return true;
     }
 
-    auto threeDElem = mDeserializer->FirstChildElement("The_3D");
+    auto threeDElem = mDeserializer->FindChild("The_3D");
     if (!threeDElem)
     {
         return true;
     }
 
-    if (auto axisUpwards = threeDElem.FirstChildElement("AxisUpwards"))
+    if (auto axisUpwards = threeDElem.FindChild("AxisUpwards"))
     {
         auto str = ToLowerXmlString(axisUpwards.ReadString());
         if (str == "+x")
@@ -954,7 +954,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
         return false;
     }
 
-    if (auto calibrationTimeElem = threeDElem.FirstChildElement("CalibrationTime"))
+    if (auto calibrationTimeElem = threeDElem.FindChild("CalibrationTime"))
     {
         auto str = calibrationTimeElem.ReadString();
         strcpy_s(settings3D.pCalibrationTime, 32, str.data());
@@ -965,7 +965,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     }
 
     std::size_t labelCount;
-    if (auto labelsElem = threeDElem.FirstChildElement("Labels"))
+    if (auto labelsElem = threeDElem.FindChild("Labels"))
     {
         labelCount = labelsElem.ReadInt(0);
     }
@@ -980,17 +980,17 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     for (auto labelElem : ChildElementRange{threeDElem, "Label"})
     {
         SSettings3DLabel label{};
-        if (auto nameElem = labelElem.FirstChildElement("Name"))
+        if (auto nameElem = labelElem.FindChild("Name"))
         {
             label.oName = nameElem.ReadString();
         }
 
-        if (auto colorElem = labelElem.FirstChildElement("RGBColor"))
+        if (auto colorElem = labelElem.FindChild("RGBColor"))
         {
             label.nRGBColor = colorElem.ReadInt(0);
         }
 
-        if (auto typeElem = labelElem.FirstChildElement("Trajectory_Type"))
+        if (auto typeElem = labelElem.FindChild("Trajectory_Type"))
         {
             label.type = typeElem.ReadString();
         }
@@ -1003,7 +1003,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
         return false;
     }
 
-    if (auto bonesElem = threeDElem.FirstChildElement("Bones"))
+    if (auto bonesElem = threeDElem.FindChild("Bones"))
     {
         for (auto boneElem : ChildElementRange{bonesElem, "Bone"})
         {
@@ -1026,7 +1026,7 @@ namespace
     {
         if (majorVer > 1 || minorVer > 23)
         {
-            if (auto enabledElem = deserializer.FirstChildElement("Enabled"))
+            if (auto enabledElem = deserializer.FindChild("Enabled"))
             {
                 target = enabledElem.ReadString() == "true";
                 return true;
@@ -1041,7 +1041,7 @@ namespace
 
     bool TryReadAttributesRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
-        if (auto elem = deserializer.FirstChildElement("Color"))
+        if (auto elem = deserializer.FindChild("Color"))
         {
             std::uint32_t colorR = elem.ReadAttributeUnsignedInt("R");
             std::uint32_t colorG = elem.ReadAttributeUnsignedInt("G");
@@ -1056,7 +1056,7 @@ namespace
 
     bool TryReadSetFilter(DeserializerApi& deserializer, std::string& target)
     {
-        if (auto elem = deserializer.FirstChildElement("Filter"))
+        if (auto elem = deserializer.FindChild("Filter"))
         {
             target = elem.ReadAttributeString("Preset");
             return true;
@@ -1067,7 +1067,7 @@ namespace
 
     bool TryReadSetPos(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
-        if (auto elem = deserializer.FirstChildElement("Position"))
+        if (auto elem = deserializer.FindChild("Position"))
         {
             targetX = elem.ReadAttributeFloat("X");
             targetY = elem.ReadAttributeFloat("Y");
@@ -1081,7 +1081,7 @@ namespace
 
     bool TryReadSetRotation(DeserializerApi& deserializer, float& targetX, float& targetY, float& targetZ)
     {
-        if (auto elem = deserializer.FirstChildElement("Rotation"))
+        if (auto elem = deserializer.FindChild("Rotation"))
         {
             targetX = elem.ReadAttributeFloat("X");
             targetY = elem.ReadAttributeFloat("Y");
@@ -1096,7 +1096,7 @@ namespace
 
     bool TryReadSetPoints(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
-        if (auto pointsElem = deserializer.FirstChildElement("Points"))
+        if (auto pointsElem = deserializer.FindChild("Points"))
         {
             for (auto pointElem : ChildElementRange{pointsElem, "Point"})
             {
@@ -1120,7 +1120,7 @@ namespace
 
     bool TryReadSetDataOrigin(DeserializerApi& deserializer, SOrigin& target)
     {
-        if (auto elem = deserializer.FirstChildElement("Data_origin"))
+        if (auto elem = deserializer.FindChild("Data_origin"))
         {
             target.type = static_cast<EOriginType>(elem.ReadUnsignedInt());
             target.position.fX = elem.ReadAttributeFloat("X");
@@ -1134,7 +1134,7 @@ namespace
             return false;
         }
 
-        if (auto elem = deserializer.FirstChildElement("Data_orientation"))
+        if (auto elem = deserializer.FindChild("Data_orientation"))
         {
             char tmpStr[10];
             for (std::uint32_t i = 0; i < 9; i++)
@@ -1157,7 +1157,7 @@ namespace
 
     bool TryReadElementRGBColor(DeserializerApi& deserializer, std::uint32_t& target)
     {
-        if (auto elem = deserializer.FirstChildElement("RGBColor"))
+        if (auto elem = deserializer.FindChild("RGBColor"))
         {
             target = elem.ReadInt();
             return true;
@@ -1197,7 +1197,7 @@ namespace
     bool TryReadSetEuler(DeserializerApi& deserializer, std::string& targetFirst, std::string& targetSecond,
                          std::string& targetThird)
     {
-        if (auto elem = deserializer.FirstChildElement("Euler"))
+        if (auto elem = deserializer.FindChild("Euler"))
         {
             return elem.TryReadElementString("First", targetFirst)
                 && elem.TryReadElementString("Second", targetSecond)
@@ -1223,7 +1223,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
     //
     // Read gaze vectors
     //
-    DeserializerApi sixDofElem = mDeserializer->FirstChildElement("The_6D");
+    DeserializerApi sixDofElem = mDeserializer->FindChild("The_6D");
     if (!sixDofElem)
     {
         return true; // NO eye tracker data available.
@@ -1253,7 +1253,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
             }
 
 
-            if (auto meshElem = bodyElem.FirstChildElement("Mesh"))
+            if (auto meshElem = bodyElem.FindChild("Mesh"))
             {
                 if (!meshElem.TryReadElementString("Name", bodySettings6Dof.mesh.name)
                     || !TryReadSetPos(meshElem, bodySettings6Dof.mesh.position.fX, bodySettings6Dof.mesh.position.fY,
@@ -1285,7 +1285,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
     }
     else
     {
-        if (!mDeserializer->FirstChildElement("Bodies"))
+        if (!mDeserializer->FindChild("Bodies"))
         {
             return false;
         }
@@ -1335,7 +1335,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
     //
     // Read gaze vectors
     //
-    DeserializerApi gazeVectorElem = mDeserializer->FirstChildElement("Gaze_Vector");
+    DeserializerApi gazeVectorElem = mDeserializer->FindChild("Gaze_Vector");
     if (!gazeVectorElem)
     {
         return true; // NO eye tracker data available.
@@ -1344,7 +1344,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
     for (auto vectorElem : ChildElementRange{gazeVectorElem, "Vector"})
     {
         std::string name;
-        if (auto nameElem = vectorElem.FirstChildElement("Name"))
+        if (auto nameElem = vectorElem.FindChild("Name"))
         {
             name = nameElem.ReadString();
         }
@@ -1354,7 +1354,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
         }
 
         float frequency = 0;
-        if (auto frequencyElem = vectorElem.FirstChildElement("Frequency"))
+        if (auto frequencyElem = vectorElem.FindChild("Frequency"))
         {
             frequency = frequencyElem.ReadFloat();
         }
@@ -1384,7 +1384,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         return true;
     }
 
-    DeserializerApi eyeTrackerElem = mDeserializer->FirstChildElement("Eye_Tracker");
+    DeserializerApi eyeTrackerElem = mDeserializer->FindChild("Eye_Tracker");
 
     if (!eyeTrackerElem)
     {
@@ -1394,7 +1394,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
     for (auto deviceElem : ChildElementRange{eyeTrackerElem, "Device"})
     {
         std::string name;
-        if (auto nameElem = deviceElem.FirstChildElement("Name"))
+        if (auto nameElem = deviceElem.FindChild("Name"))
         {
             name = nameElem.ReadString();
         }
@@ -1404,7 +1404,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         }
 
         float frequency = 0;
-        if (auto frequencyElem = deviceElem.FirstChildElement("Frequency"))
+        if (auto frequencyElem = deviceElem.FindChild("Frequency"))
         {
             frequency = frequencyElem.ReadFloat();
         }
@@ -1430,7 +1430,7 @@ bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>&
         return true;
     }
 
-    auto analogElem = mDeserializer->FirstChildElement("Analog");
+    auto analogElem = mDeserializer->FindChild("Analog");
     if (!analogElem)
     {
         // No analog data available.
@@ -1449,7 +1449,7 @@ bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>&
             return false;
         }
 
-        auto rangeElem = analogElem.FirstChildElement("Range");
+        auto rangeElem = analogElem.FindChild("Range");
         if (!rangeElem
             || !rangeElem.TryReadElementFloat("Min", analogDevice.fMinRange)
             || !rangeElem.TryReadElementFloat("Max", analogDevice.fMaxRange))
@@ -1482,7 +1482,7 @@ bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>&
             }
         }
 
-        auto rangeElem = deviceElem.FirstChildElement("Range");
+        auto rangeElem = deviceElem.FindChild("Range");
         if (!rangeElem
             || !rangeElem.TryReadElementFloat("Min", analogDevice.fMinRange)
             || !rangeElem.TryReadElementFloat("Max", analogDevice.fMaxRange))
@@ -1548,7 +1548,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         return true;
     }
 
-    auto forceElem = mDeserializer->FirstChildElement("Force");
+    auto forceElem = mDeserializer->FindChild("Force");
     if (!forceElem)
     {
         // No analog data available.
@@ -1607,7 +1607,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         plateElem.TryReadElementFloat("Length", forcePlate.fLength);
         plateElem.TryReadElementFloat("Width", forcePlate.fWidth);
 
-        if (auto locationElem = plateElem.FirstChildElement("Location"))
+        if (auto locationElem = plateElem.FindChild("Location"))
         {
             struct Corner
             {
@@ -1625,14 +1625,14 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
 
             for (const auto& c : corners)
             {
-                auto cornerElem = locationElem.FirstChildElement(c.name);
+                auto cornerElem = locationElem.FindChild(c.name);
                 cornerElem.TryReadElementFloat("X", forcePlate.asCorner[c.index].fX);
                 cornerElem.TryReadElementFloat("Y", forcePlate.asCorner[c.index].fY);
                 cornerElem.TryReadElementFloat("Z", forcePlate.asCorner[c.index].fZ);
             }
         }
 
-        if (auto originElem = plateElem.FirstChildElement("Origin"))
+        if (auto originElem = plateElem.FindChild("Origin"))
         {
             originElem.TryReadElementFloat("X", forcePlate.sOrigin.fX);
             originElem.TryReadElementFloat("Y", forcePlate.sOrigin.fY);
@@ -1640,7 +1640,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         }
 
         forcePlate.vChannels.clear();
-        if (auto channelsElem = plateElem.FirstChildElement("Channels"))
+        if (auto channelsElem = plateElem.FindChild("Channels"))
         {
             SForceChannel forceChannel{};
             for (auto channelElem : ChildElementRange{channelsElem, "Channel"})
@@ -1651,7 +1651,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
             }
         }
 
-        if (auto calibrationMatrix = plateElem.FirstChildElement("Calibration_Matrix"))
+        if (auto calibrationMatrix = plateElem.FindChild("Calibration_Matrix"))
         {
             if (mMajorVersion == 1 && mMinorVersion < 12)
             {
@@ -1681,13 +1681,13 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
             }
             else
             {
-                auto rows = calibrationMatrix.FirstChildElement("Rows");
+                auto rows = calibrationMatrix.FindChild("Rows");
                 if (rows)
                 {
                     unsigned int iRow = 0;
                     for (auto rowElement : ChildElementRange{rows, "Row"})
                     {
-                        auto columns = rowElement.FirstChildElement("Columns");
+                        auto columns = rowElement.FindChild("Columns");
                         if (columns)
                         {
                             unsigned int iCol = 0;
@@ -1723,7 +1723,7 @@ bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& i
         return true;
     }
 
-    auto imageElem = mDeserializer->FirstChildElement("Image");
+    auto imageElem = mDeserializer->FindChild("Image");
     if (!imageElem)
     {
         return true;
@@ -1796,7 +1796,7 @@ namespace
 {
     SPosition ReadSPosition(DeserializerApi& parentElem, const std::string& element)
     {
-        auto positionElem = parentElem.FirstChildElement(element.data());
+        auto positionElem = parentElem.FindChild(element.data());
         if (positionElem)
         {
             return {
@@ -1811,7 +1811,7 @@ namespace
 
     SRotation ReadSRotation(DeserializerApi& parentElem, const std::string& element)
     {
-        auto rotationElem = parentElem.FirstChildElement(element.data());
+        auto rotationElem = parentElem.FindChild(element.data());
         if (rotationElem)
         {
             return {
@@ -1830,7 +1830,7 @@ namespace
     {
         SDegreeOfFreedom degreeOfFreedom;
 
-        auto degreeOfFreedomElement = parentElement.FirstChildElement(elementName.data());
+        auto degreeOfFreedomElement = parentElement.FindChild(elementName.data());
         if (!degreeOfFreedomElement)
         {
             return false;
@@ -1838,7 +1838,7 @@ namespace
 
         degreeOfFreedom.type = SkeletonStringToDofSettings(elementName);
 
-        if (auto constraintElem = degreeOfFreedomElement.FirstChildElement("Constraint"))
+        if (auto constraintElem = degreeOfFreedomElement.FindChild("Constraint"))
         {
             degreeOfFreedom.lowerBound = constraintElem.ReadAttributeDouble("LowerBound");
             degreeOfFreedom.upperBound = constraintElem.ReadAttributeDouble("UpperBound");
@@ -1849,7 +1849,7 @@ namespace
             degreeOfFreedom.upperBound = degreeOfFreedomElement.ReadAttributeDouble("UpperBound");
         }
 
-        if (auto couplingsElem = degreeOfFreedomElement.FirstChildElement("Couplings"))
+        if (auto couplingsElem = degreeOfFreedomElement.FindChild("Couplings"))
         {
             for (auto couplingElem : ChildElementRange{couplingsElem, "Coupling"})
             {
@@ -1862,7 +1862,7 @@ namespace
             }
         }
 
-        if (auto goalElem = degreeOfFreedomElement.FirstChildElement("Goal"))
+        if (auto goalElem = degreeOfFreedomElement.FindChild("Goal"))
         {
             degreeOfFreedom.goalValue = goalElem.ReadAttributeDouble("Value");
             degreeOfFreedom.goalWeight = goalElem.ReadAttributeDouble("Weight");
@@ -1889,7 +1889,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
         return true;
     }
 
-    auto skeletonsElem = mDeserializer->FirstChildElement("Skeletons");
+    auto skeletonsElem = mDeserializer->FindChild("Skeletons");
     if (!skeletonsElem)
     {
         return true;
@@ -1912,7 +1912,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
             skeletonElem.TryReadElementString("Solver", skeletonHierarchical.rootSegment.solver);
             skeletonElem.TryReadElementDouble("Scale", skeletonHierarchical.scale);
 
-            if (auto segmentsElem = skeletonElem.FirstChildElement("Segments"))
+            if (auto segmentsElem = skeletonElem.FindChild("Segments"))
             {
                 std::function<void(DeserializerApi&, SSettingsSkeletonSegmentHierarchical&,
                                    std::vector<SSettingsSkeletonSegment>&, std::uint32_t)> recurseSegments
@@ -1927,19 +1927,19 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
                     segmentElem.TryReadElementString("Solver", segmentHierarchical.solver);
 
-                    if (auto transformElem = segmentElem.FirstChildElement("Transform"))
+                    if (auto transformElem = segmentElem.FindChild("Transform"))
                     {
                         segmentHierarchical.position = ReadSPosition(transformElem, "Position");
                         segmentHierarchical.rotation = ReadSRotation(transformElem, "Rotation");
                     }
 
-                    if (auto defaultTransformElem = segmentElem.FirstChildElement("DefaultTransform"))
+                    if (auto defaultTransformElem = segmentElem.FindChild("DefaultTransform"))
                     {
                         segmentHierarchical.defaultPosition = ReadSPosition(defaultTransformElem, "Position");
                         segmentHierarchical.defaultRotation = ReadSRotation(defaultTransformElem, "Rotation");
                     }
 
-                    if (auto degreesOfFreedomElem = segmentElem.FirstChildElement("DegreesOfFreedom"))
+                    if (auto degreesOfFreedomElem = segmentElem.FindChild("DegreesOfFreedom"))
                     {
                         TryReadSDegreeOfFreedom(degreesOfFreedomElem, "RotationX",
                                                 segmentHierarchical.degreesOfFreedom);
@@ -1957,7 +1957,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
                     segmentHierarchical.endpoint = ReadSPosition(segmentElem, "Endpoint");
 
-                    if (auto markersElem = segmentElem.FirstChildElement("Markers"))
+                    if (auto markersElem = segmentElem.FindChild("Markers"))
                     {
                         for (auto markerElem : ChildElementRange{markersElem, "Marker"})
                         {
@@ -1976,7 +1976,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                         }
                     }
 
-                    if (auto rigidBodiesElem = segmentElem.FirstChildElement("Markers"))
+                    if (auto rigidBodiesElem = segmentElem.FindChild("Markers"))
                     {
                         for (auto rigidBodyElem : ChildElementRange{rigidBodiesElem, "RigidBody"})
                         {
@@ -1984,7 +1984,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
                             body.name = rigidBodyElem.ReadAttributeString("Name");
 
-                            auto rbodyTransformElem = rigidBodyElem.FirstChildElement("Transform");
+                            auto rbodyTransformElem = rigidBodyElem.FindChild("Transform");
                             if (rbodyTransformElem)
                             {
                                 body.position = ReadSPosition(rbodyTransformElem, "Position");
@@ -2023,7 +2023,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                     }
                 };
 
-                if (auto rootSegmentElem = segmentsElem.FirstChildElement("Segment"))
+                if (auto rootSegmentElem = segmentsElem.FindChild("Segment"))
                 {
                     recurseSegments(rootSegmentElem, skeletonHierarchical.rootSegment, skeleton.segments, -1);
                 }
@@ -2055,14 +2055,14 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                 segment.parentIndex = segmentIdIndexMap[segment.parentId];
             }
 
-            if (auto positionElement = segmentElem.FirstChildElement("Position"))
+            if (auto positionElement = segmentElem.FindChild("Position"))
             {
                 segment.positionX = positionElement.ReadAttributeFloat("X");
                 segment.positionY = positionElement.ReadAttributeFloat("Y");
                 segment.positionZ = positionElement.ReadAttributeFloat("Z");
             }
 
-            if (auto rotationElement = segmentElem.FirstChildElement("Rotation"))
+            if (auto rotationElement = segmentElem.FindChild("Rotation"))
             {
                 segment.rotationX = rotationElement.ReadAttributeFloat("X");
                 segment.rotationY = rotationElement.ReadAttributeFloat("Y");
@@ -2084,7 +2084,7 @@ namespace
 {
     bool TryReadXmlFov(std::string name, DeserializerApi& parentElement, SCalibrationFov& fov)
     {
-        auto childElement = parentElement.FirstChildElement(name.data());
+        auto childElement = parentElement.FindChild(name.data());
         if (!childElement)
         {
             return false;
@@ -2108,7 +2108,7 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
         return true;
     }
 
-    auto calibrationElem = mDeserializer->FirstChildElement("calibration");
+    auto calibrationElem = mDeserializer->FindChild("calibration");
     if (!calibrationElem)
     {
         return false;
@@ -2148,7 +2148,7 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
             settings.long_arm_end = calibrationElem.ReadAttributeDouble("longArmEnd");
             settings.long_arm_middle = calibrationElem.ReadAttributeDouble("longArmMiddle");
 
-            auto resultsElem = calibrationElem.FirstChildElement("results");
+            auto resultsElem = calibrationElem.FindChild("results");
             if (!resultsElem)
             {
                 return false;
@@ -2164,7 +2164,7 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
             }
         }
 
-        auto camerasElem = calibrationElem.FirstChildElement("cameras");
+        auto camerasElem = calibrationElem.FindChild("cameras");
         if (!camerasElem)
         {
             return false;
@@ -2203,7 +2203,7 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
                 return false;
             }
 
-            auto transformElem = cameraElem.FirstChildElement("transform");
+            auto transformElem = cameraElem.FindChild("transform");
             if (!transformElem)
             {
                 return false;
@@ -2222,7 +2222,7 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
             camera.transform.r32 = transformElem.ReadAttributeDouble("r32");
             camera.transform.r33 = transformElem.ReadAttributeDouble("r33");
 
-            auto intrinsicElem = cameraElem.FirstChildElement("intrinsic");
+            auto intrinsicElem = cameraElem.FindChild("intrinsic");
             if (!intrinsicElem)
             {
                 return false;
