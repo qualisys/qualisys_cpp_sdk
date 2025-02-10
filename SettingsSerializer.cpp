@@ -201,14 +201,110 @@ std::string SettingsSerializer::SetCameraSettings(
     const float* markerExposure, const float* markerThreshold,
     const int* orientation)
 {
-    return mSerializer->SetCameraSettings(cameraId, mode, markerExposure, markerThreshold, orientation);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto cameraElem = theGeneral.Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+
+    if (mode)
+    {
+        switch (*mode)
+        {
+        case ModeMarker:
+            cameraElem.ElementString("Mode", "Marker");
+            break;
+        case ModeMarkerIntensity:
+            cameraElem.ElementString("Mode", "Marker Intensity");
+            break;
+        case ModeVideo:
+            cameraElem.ElementString("Mode", "Video");
+            break;
+        }
+    }
+
+    if (markerExposure)
+    {
+        cameraElem.ElementFloat("Marker_Exposure", *markerExposure, 6);
+    }
+    if (markerThreshold)
+    {
+        cameraElem.ElementFloat("Marker_Threshold", *markerThreshold, 6);
+    }
+    if (orientation)
+    {
+        cameraElem.ElementInt("Orientation", *orientation);
+    }
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int cameraId,
     const EVideoResolution* videoResolution, const EVideoAspectRatio* videoAspectRatio,
     const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
 {
-    return mSerializer->SetCameraVideoSettings(cameraId, videoResolution, videoAspectRatio, videoFrequency, videoExposure, videoFlashTime);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto cameraElem = theGeneral.Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+
+    if (videoResolution)
+    {
+        switch (*videoResolution)
+        {
+        case VideoResolution1440p:
+            cameraElem.ElementString("Video_Resolution", "1440p");
+            break;
+        case VideoResolution1080p:
+            cameraElem.ElementString("Video_Resolution", "1080p");
+            break;
+        case VideoResolution720p:
+            cameraElem.ElementString("Video_Resolution", "720p");
+            break;
+        case VideoResolution540p:
+            cameraElem.ElementString("Video_Resolution", "540p");
+            break;
+        case VideoResolution480p:
+            cameraElem.ElementString("Video_Resolution", "480p");
+            break;
+        case VideoResolutionNone:
+            break;
+        }
+    }
+
+    if (videoAspectRatio)
+    {
+        switch (*videoAspectRatio)
+        {
+        case VideoAspectRatio16x9:
+            cameraElem.ElementString("Video_Aspect_Ratio", "16x9");
+            break;
+        case VideoAspectRatio4x3:
+            cameraElem.ElementString("Video_Aspect_Ratio", "4x3");
+            break;
+        case VideoAspectRatio1x1:
+            cameraElem.ElementString("Video_Aspect_Ratio", "1x1");
+            break;
+        case VideoAspectRatioNone:
+            break;
+        }
+    }
+
+    if (videoFrequency)
+    {
+        cameraElem.ElementUnsignedInt("Video_Frequency", *videoFrequency);
+    }
+    if (videoExposure)
+    {
+        cameraElem.ElementFloat("Video_Exposure", *videoExposure, 6);
+    }
+    if (videoFlashTime)
+    {
+        cameraElem.ElementFloat("Video_Flash_Time", *videoFlashTime, 6);
+    }
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
