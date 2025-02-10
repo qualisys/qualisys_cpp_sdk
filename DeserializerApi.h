@@ -26,8 +26,13 @@ namespace qualisys_cpp_sdk
 
         DeserializerApi NextSiblingElement(const char* elementName) const;
 
-        double DoubleAttribute(const char* attributeName, double defaultValue = 0) const;
+        bool TryReadElementDouble(const char* elementName, double& output)  const;
+        bool TryReadElementFloat(const char* elementName, float& output) const;
+        bool TryReadElementUnsignedInt32(const char* elementName, std::uint32_t& output) const ;
+        bool TryReadElementString(const char* elementName, std::string& output) const;
+        bool TryReadElementBool(const std::string& element, bool& value) const;
 
+        double DoubleAttribute(const char* attributeName, double defaultValue = 0) const;
         std::uint32_t UnsignedAttribute(const char* attributeName, std::uint32_t defaultValue = 0) const;
         std::int32_t IntAttribute(const char* attributeName, std::int32_t defaultValue = 0) const;
         std::string Attribute(const char* name) const;
@@ -78,10 +83,5 @@ namespace qualisys_cpp_sdk
         Iterator end() const;
     };
 
-    std::string ToLowerXmlString(std::string str);
-    bool TryReadElementDouble(DeserializerApi& element, const char* elementName, double& output);
-    bool TryReadElementFloat(DeserializerApi& element, const char* elementName, float& output);
-    bool TryReadElementUnsignedInt32(DeserializerApi& element, const char* elementName, std::uint32_t& output);
-    bool TryReadElementString(DeserializerApi& element, const char* elementName, std::string& output);
-    bool TryReadElementBool(DeserializerApi xml, const std::string& element, bool& value);
+    std::string ToLowerXmlString(std::string& str);
 }

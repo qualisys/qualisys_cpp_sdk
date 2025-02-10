@@ -152,22 +152,9 @@ qualisys_cpp_sdk::ChildElementRange::Iterator qualisys_cpp_sdk::ChildElementRang
     return Iterator(*this);
 }
 
-
-/// <summary>
-/// Helper functions
-/// </summary>
-std::string qualisys_cpp_sdk::ToLowerXmlString(std::string str)
+bool qualisys_cpp_sdk::DeserializerApi::TryReadElementDouble(const char* elementName, double& output) const
 {
-    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c)
-    {
-        return static_cast<unsigned char>(std::tolower(c));
-    });
-    return str;
-}
-
-bool qualisys_cpp_sdk::TryReadElementDouble(DeserializerApi& element, const char* elementName, double& output)
-{
-    if (auto childElem = element.FirstChildElement(elementName))
+    if (auto childElem = FirstChildElement(elementName))
     {
         return childElem.mPtr->QueryDoubleText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -175,9 +162,9 @@ bool qualisys_cpp_sdk::TryReadElementDouble(DeserializerApi& element, const char
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementFloat(DeserializerApi& element, const char* elementName, float& output)
+bool qualisys_cpp_sdk::DeserializerApi::TryReadElementFloat(const char* elementName, float& output) const
 {
-    if (auto childElem = element.FirstChildElement(elementName))
+    if (auto childElem = FirstChildElement(elementName))
     {
         return childElem.mPtr->QueryFloatText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -185,10 +172,10 @@ bool qualisys_cpp_sdk::TryReadElementFloat(DeserializerApi& element, const char*
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementUnsignedInt32(DeserializerApi& element, const char* elementName,
-                                                   std::uint32_t& output)
+bool qualisys_cpp_sdk::DeserializerApi::TryReadElementUnsignedInt32(const char* elementName,
+                                                   std::uint32_t& output) const
 {
-    if (auto childElem = element.FirstChildElement(elementName))
+    if (auto childElem = FirstChildElement(elementName))
     {
         return childElem.mPtr->QueryUnsignedText(&output) == tinyxml2::XML_SUCCESS;
     }
@@ -196,11 +183,11 @@ bool qualisys_cpp_sdk::TryReadElementUnsignedInt32(DeserializerApi& element, con
     return false;
 }
 
-bool qualisys_cpp_sdk::TryReadElementString(DeserializerApi& element, const char* elementName, std::string& output)
+bool qualisys_cpp_sdk::DeserializerApi::TryReadElementString(const char* elementName, std::string& output) const
 {
     output.clear();
 
-    if (auto childElem = element.FirstChildElement(elementName))
+    if (auto childElem = FirstChildElement(elementName))
     {
         if (auto charPtr = childElem.mPtr->GetText())
         {
@@ -227,9 +214,9 @@ namespace
     }
 }
 
-bool qualisys_cpp_sdk::TryReadElementBool(DeserializerApi xml, const std::string& element, bool& value)
+bool qualisys_cpp_sdk::DeserializerApi::TryReadElementBool(const std::string& element, bool& value) const
 {
-    auto xmlElem = xml.FirstChildElement(element.c_str());
+    auto xmlElem = FirstChildElement(element.c_str());
     if (!xmlElem)
     {
         return false;
@@ -254,4 +241,17 @@ bool qualisys_cpp_sdk::TryReadElementBool(DeserializerApi xml, const std::string
     }
 
     return true;
+}
+
+/// <summary>
+/// Helper functions
+/// </summary>
+/// names
+std::string qualisys_cpp_sdk::ToLowerXmlString(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c)
+        {
+            return static_cast<unsigned char>(std::tolower(c));
+        });
+    return str;
 }
