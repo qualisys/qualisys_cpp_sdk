@@ -636,122 +636,157 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
 
 std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
 {
-    //auto skeletonsElem = mSerializer
-    //    ->Element("QTM_Settings")
-    //    .Element("Skeletons");
+    auto skeletonsElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("Skeletons");
 
-    //for (const auto& skeleton : settingsSkeletons)
-    //{
-    //    auto skeletonElem = skeletonsElem.Element("Skeleton")
-    //        .AttributeString("Name", skeleton.name.c_str());
+    for (const auto& skeleton : settingsSkeletons)
+    {
+        auto skeletonElem = skeletonsElem.Element("Skeleton")
+            .AttributeString("Name", skeleton.name.c_str());
 
-    //    if (mMajorVersion == 1 && mMinorVersion < 22)
-    //    {
-    //        skeletonElem.ElementString("Solver", skeleton.rootSegment.solver.c_str());
-    //    }
+        if (mMajorVersion == 1 && mMinorVersion < 22)
+        {
+            skeletonElem.ElementString("Solver", skeleton.rootSegment.solver.c_str());
+        }
 
-    //    skeletonElem.ElementString("Scale", std::to_string(skeleton.scale).c_str());
-    //    auto segmentsElem = skeletonElem.Element("Segments");
+        skeletonElem.ElementString("Scale", std::to_string(skeleton.scale).c_str());
+        auto segmentsElem = skeletonElem.Element("Segments");
 
-    //    std::function<void(const SSettingsSkeletonSegmentHierarchical&, tinyxml2::XMLElement*)> recurseSegments;
-    //    recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, tinyxml2::XMLElement* parentElem)
-    //        {
-    //            auto segmentElem = segmentsElem.Element("Segment")
-    //                .AttributeString("Name", segment.name.c_str());
+        std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
+        recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, SerializerApi& parentElem)
+            {
+                auto segmentElem = segmentsElem.Element("Segment")
+                    .AttributeString("Name", segment.name.c_str());
 
-    //            if (mMajorVersion > 1 || mMinorVersion > 21)
-    //            {
-    //                segmentElem.ElementString("Solver", segment.solver.c_str());
-    //            }
+                if (mMajorVersion > 1 || mMinorVersion > 21)
+                {
+                    segmentElem.ElementString("Solver", segment.solver.c_str());
+                }
 
-    //            if (!std::isnan(segment.position.x))
-    //            {
-    //                auto transformElem = segmentElem.Element("Transform")
-    //                    .A
-    //                AddXMLElementTransform(document, *segmentElem, "Transform", segment.position, segment.rotation);
-    //            }
+                if (!std::isnan(segment.position.x))
+                {
+                    auto transformElem = segmentElem.Element("Transform");
+                    transformElem.Element("Position")
+                        .AttributeFloat("X", segment.position.x, 6)
+                        .AttributeFloat("Y", segment.position.y, 6)
+                        .AttributeFloat("Z", segment.position.z, 6);
+                    transformElem.Element("Rotation")
+                        .AttributeFloat("X", segment.rotation.x, 6)
+                        .AttributeFloat("Y", segment.rotation.y, 6)
+                        .AttributeFloat("Z", segment.rotation.z, 6)
+                        .AttributeFloat("W", segment.rotation.w, 6);
+                }
 
-    //            if (!std::isnan(segment.defaultPosition.x))
-    //            {
-    //                AddXMLElementTransform(document, *segmentElem, "DefaultTransform", segment.defaultPosition, segment.defaultRotation);
-    //            }
+                if (!std::isnan(segment.defaultPosition.x))
+                {
+                    auto transformElem = segmentElem.Element("DefaultTransform");
+                    transformElem.Element("Position")
+                        .AttributeFloat("X", segment.defaultPosition.x, 6)
+                        .AttributeFloat("Y", segment.defaultPosition.y, 6)
+                        .AttributeFloat("Z", segment.defaultPosition.z, 6);
+                    transformElem.Element("Rotation")
+                        .AttributeFloat("X", segment.defaultRotation.x, 6)
+                        .AttributeFloat("Y", segment.defaultRotation.y, 6)
+                        .AttributeFloat("Z", segment.defaultRotation.z, 6)
+                        .AttributeFloat("W", segment.defaultRotation.w, 6);
+                }
 
-    //            tinyxml2::XMLElement* dofElem = document.NewElement("DegreesOfFreedom");
-    //            segmentElem->InsertEndChild(dofElem);
-    //            for (const auto& dof : segment.degreesOfFreedom)
-    //            {
-    //                AddXMLElementDOF(document, *dofElem, SkeletonDofToStringSettings(dof.type), dof);
-    //            }
+                auto degreesOfFreedomElem = segmentElem.Element("DegreesOfFreedom");
 
-    //            tinyxml2::XMLElement* endpointElem = document.NewElement("Endpoint");
-    //            if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
-    //            {
-    //                endpointElem->SetAttribute("X", std::to_string(segment.endpoint.x).c_str());
-    //                endpointElem->SetAttribute("Y", std::to_string(segment.endpoint.y).c_str());
-    //                endpointElem->SetAttribute("Z", std::to_string(segment.endpoint.z).c_str());
-    //            }
-    //            segmentElem->InsertEndChild(endpointElem);
+                for (const auto& dof : segment.degreesOfFreedom)
+                {
+                    auto dofElem = degreesOfFreedomElem.Element(SkeletonDofToStringSettings(dof.type));
 
-    //            tinyxml2::XMLElement* markersElem = document.NewElement("Markers");
-    //            segmentElem->InsertEndChild(markersElem);
-    //            for (const auto& marker : segment.markers)
-    //            {
-    //                tinyxml2::XMLElement* markerElem = document.NewElement("Marker");
-    //                markerElem->SetAttribute("Name", marker.name.c_str());
-    //                markersElem->InsertEndChild(markerElem);
+                    if (!std::isnan(dof.lowerBound) && !std::isnan(dof.upperBound))
+                    {
+                        if (mMajorVersion > 1 || mMinorVersion > 21)
+                        {
+                            dofElem.Element("Constraint")
+                                .AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str())
+                                .AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                        }
+                        else
+                        {
+                            // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
+                            dofElem.AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str());
+                            dofElem.AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                        }
+                    }
 
-    //                tinyxml2::XMLElement* positionElem = document.NewElement("Position");
-    //                positionElem->SetAttribute("X", std::to_string(marker.position.x).c_str());
-    //                positionElem->SetAttribute("Y", std::to_string(marker.position.y).c_str());
-    //                positionElem->SetAttribute("Z", std::to_string(marker.position.z).c_str());
-    //                markerElem->InsertEndChild(positionElem);
+                    if (!dof.couplings.empty())
+                    {
+                        auto couplingsElem = dofElem.Element("Couplings");
+                        for (const auto& coupling : dof.couplings)
+                        {
+                            couplingsElem.Element("Coupling")
+                                .AttributeString("Segment", coupling.segment.c_str())
+                                .AttributeString("DegreeOfFreedom", SkeletonDofToStringSettings(coupling.degreeOfFreedom))
+                                .AttributeString("Coefficient", std::to_string(coupling.coefficient).c_str());
+                        }
+                    }
 
-    //                tinyxml2::XMLElement* weightElem = document.NewElement("Weight");
-    //                weightElem->SetText(std::to_string(marker.weight).c_str());
-    //                markerElem->InsertEndChild(weightElem);
-    //            }
+                    if (!std::isnan(dof.goalValue) && !std::isnan(dof.goalWeight))
+                    {
+                        dofElem.Element("Goal")
+                            .AttributeString("Value", std::to_string(dof.goalValue).c_str())
+                            .AttributeString("Weight", std::to_string(dof.goalWeight).c_str());
+                    }
+                }
 
-    //            tinyxml2::XMLElement* rigidBodiesElem = document.NewElement("RigidBodies");
-    //            segmentElem->InsertEndChild(rigidBodiesElem);
-    //            for (const auto& rigidBody : segment.bodies)
-    //            {
-    //                tinyxml2::XMLElement* rigidBodyElem = document.NewElement("RigidBody");
-    //                rigidBodyElem->SetAttribute("Name", rigidBody.name.c_str());
-    //                rigidBodiesElem->InsertEndChild(rigidBodyElem);
+                if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
+                {
+                    segmentElem.Element("Endpoint")
+                        .AttributeString("X", std::to_string(segment.endpoint.x).c_str())
+                        .AttributeString("Y", std::to_string(segment.endpoint.y).c_str())
+                        .AttributeString("Z", std::to_string(segment.endpoint.z).c_str());
+                }
+                else
+                {
+                    segmentElem.Element("Endpoint");
+                }
 
-    //                tinyxml2::XMLElement* transformElem = document.NewElement("Transform");
-    //                rigidBodyElem->InsertEndChild(transformElem);
+                auto markersElem = segmentElem.Element("Markers");
 
-    //                tinyxml2::XMLElement* positionElem = document.NewElement("Position");
-    //                positionElem->SetAttribute("X", std::to_string(rigidBody.position.x).c_str());
-    //                positionElem->SetAttribute("Y", std::to_string(rigidBody.position.y).c_str());
-    //                positionElem->SetAttribute("Z", std::to_string(rigidBody.position.z).c_str());
-    //                transformElem->InsertEndChild(positionElem);
+                for (const auto& marker : segment.markers)
+                {
+                    auto markerElem = markersElem.Element("Marker")
+                        .AttributeString("Name", marker.name.c_str())
+                        .AttributeString("Weight", std::to_string(marker.weight).c_str());
 
-    //                tinyxml2::XMLElement* rotationElem = document.NewElement("Rotation");
-    //                rotationElem->SetAttribute("X", std::to_string(rigidBody.rotation.x).c_str());
-    //                rotationElem->SetAttribute("Y", std::to_string(rigidBody.rotation.y).c_str());
-    //                rotationElem->SetAttribute("Z", std::to_string(rigidBody.rotation.z).c_str());
-    //                rotationElem->SetAttribute("W", std::to_string(rigidBody.rotation.w).c_str());
-    //                transformElem->InsertEndChild(rotationElem);
+                    markerElem.Element("Position")
+                        .AttributeString("X", std::to_string(marker.position.x).c_str())
+                        .AttributeString("Y", std::to_string(marker.position.y).c_str())
+                        .AttributeString("Z", std::to_string(marker.position.z).c_str());
+                }
 
-    //                tinyxml2::XMLElement* weightElem = document.NewElement("Weight");
-    //                weightElem->SetText(std::to_string(rigidBody.weight).c_str());
-    //                rigidBodyElem->InsertEndChild(weightElem);
-    //            }
+                auto rigidBodiesElem = segmentElem.Element("RigidBodies");
+                for (const auto& rigidBody : segment.bodies)
+                {
+                    auto rigidBodyElem = rigidBodiesElem.AttributeString("Name", rigidBody.name.c_str());
 
-    //            for (const auto& childSegment : segment.segments)
-    //            {
-    //                recurseSegments(childSegment, segmentElem);
-    //            }
-    //        };
+                    auto transformElem = rigidBodyElem.Element("Transform");
+                    transformElem.Element("Position")
+                        .AttributeString("X", std::to_string(rigidBody.position.x).c_str())
+                        .AttributeString("Y", std::to_string(rigidBody.position.x).c_str())
+                        .AttributeString("Z", std::to_string(rigidBody.position.x).c_str());
+                    transformElem.Element("Rotation")
+                        .AttributeString("X", std::to_string(rigidBody.rotation.x).c_str())
+                        .AttributeString("Y", std::to_string(rigidBody.rotation.y).c_str())
+                        .AttributeString("Z", std::to_string(rigidBody.rotation.z).c_str())
+                        .AttributeString("W", std::to_string(rigidBody.rotation.w).c_str());
 
-    //    recurseSegments(skeleton.rootSegment, segmentsElem);
-    //}
+                    transformElem.ElementFloat("Weight", rigidBody.weight, 6);
+                }
 
-    //tinyxml2::XMLPrinter printer;
-    //document.Print(&printer);
-    //return printer.CStr();
+                for (const auto& childSegment : segment.segments)
+                {
+                    recurseSegments(childSegment, segmentElem);
+                }
+            };
 
-return "true";
+        recurseSegments(skeleton.rootSegment, segmentsElem);
+    }
+
+    return mSerializer->ToString();
 }
