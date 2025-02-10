@@ -5,7 +5,7 @@ namespace qualisys_cpp_sdk::tests::data
 R"XMLDATA(<QTM_Settings>
     <General>
         <External_Time_Base>
-            <Enabled>True</Enabled>
+            <Enabled>true</Enabled>
             <Signal_Source>Video sync</Signal_Source>
             <Signal_Mode>Periodic</Signal_Mode>
             <Frequency_Multiplier>999</Frequency_Multiplier>

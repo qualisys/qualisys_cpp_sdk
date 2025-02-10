@@ -74,7 +74,7 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
             }
             else
             {
-                processingActionsElem.ElementBool("Tracking", false);
+                processingActionsElem.ElementString("Tracking", "false");
             }
 
             if (i != 1) // Not RtProcessingSettings
@@ -106,7 +106,66 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     const unsigned int* freqTolerance, const float* nominalFrequency, const bool* negativeEdge,
     const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
 {
-    return mSerializer->SetExtTimeBaseSettings(enabled, signalSource, signalModePeriodic, freqMultiplier, freqDivisor, freqTolerance, nominalFrequency, negativeEdge, signalShutterDelay, nonPeriodicTimeout);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto timeBaseElem = theGeneral.Element("External_Time_Base");
+
+    timeBaseElem.ElementBool("Enabled", enabled);
+
+    if (signalSource)
+    {
+        switch (*signalSource)
+        {
+        case SourceControlPort:
+            timeBaseElem.ElementString("Signal_Source", "Control_port");
+            break;
+        case SourceIRReceiver:
+            timeBaseElem.ElementString("Signal_Source", "IR receiver");
+            break;
+        case SourceSMPTE:
+            timeBaseElem.ElementString("Signal_Source", "SMPTE");
+            break;
+        case SourceVideoSync:
+            timeBaseElem.ElementString("Signal_Source", "Video sync");
+            break;
+        case SourceIRIG:
+            timeBaseElem.ElementString("Signal_Source", "IRIG");
+            break;
+        }
+    }
+
+    timeBaseElem.ElementString("Signal_Mode", (*signalModePeriodic ? "Periodic" : "Non-periodic"));
+
+    if (freqMultiplier)
+    {
+        timeBaseElem.ElementUnsignedInt("Frequency_Multiplier", *freqMultiplier);
+    }
+    if (freqDivisor)
+    {
+        timeBaseElem.ElementUnsignedInt("Frequency_Divisor", *freqDivisor);
+    }
+    if (freqTolerance)
+    {
+        timeBaseElem.ElementUnsignedInt("Frequency_Tolerance", *freqTolerance);
+    }
+
+    if (nominalFrequency)
+    {
+        if (*nominalFrequency < 0)
+        {
+            timeBaseElem.ElementString("Nominal_Frequency", "None");
+        }
+        else
+        {
+            timeBaseElem.ElementFloat("Nominal_Frequency", *nominalFrequency, 3);
+        }
+    }
+
+    timeBaseElem.ElementString("Signal_Edge", (*negativeEdge ? "Negative" : "Positive"));
+    timeBaseElem.ElementUnsignedInt("Signal_Shutter_Delay", *signalShutterDelay);
+    timeBaseElem.ElementFloat("Non_Periodic_Timeout", *nonPeriodicTimeout, 3);
+
+    return timeBaseElem.ToString();
 }
 
 
