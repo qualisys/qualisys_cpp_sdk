@@ -83,5 +83,5 @@ namespace qualisys_cpp_sdk
     bool TryReadElementFloat(DeserializerApi& element, const char* elementName, float& output);
     bool TryReadElementUnsignedInt32(DeserializerApi& element, const char* elementName, std::uint32_t& output);
     bool TryReadElementString(DeserializerApi& element, const char* elementName, std::string& output);
-    bool ReadXmlBool(DeserializerApi xml, const std::string& element, bool& value);
+    bool TryReadElementBool(DeserializerApi xml, const std::string& element, bool& value);
 }
