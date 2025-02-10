@@ -50,26 +50,17 @@ namespace qualisys_cpp_sdk
 
     struct ChildElementRange
     {
-        static constexpr std::size_t buffSize = 128;
-        using TElementNameGenerator = std::function<const char*(char (&buff)[buffSize], std::size_t bufferSize,
-                                                                std::size_t index)>;
-
     private:
-        DeserializerApi& parent;
-        TElementNameGenerator elementNameGenerator;
-
+        DeserializerApi& mParent;
+        const char* mElementName;
     public:
         ChildElementRange() = delete;
         ChildElementRange(DeserializerApi& parent, const char* elementName);
-        ChildElementRange(DeserializerApi& parent,
-                          TElementNameGenerator generator);
 
         struct Iterator
         {
-            char buffer[buffSize];
-            DeserializerApi current;
-            const ChildElementRange& range;
-            std::size_t index;
+            DeserializerApi mCurrent;
+            const ChildElementRange& mChildElementRange;
             explicit Iterator(const ChildElementRange& range);
             Iterator(const ChildElementRange& range, std::size_t index);
             DeserializerApi operator*() const;

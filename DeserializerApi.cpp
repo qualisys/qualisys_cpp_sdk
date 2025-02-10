@@ -105,41 +105,36 @@ std::string qualisys_cpp_sdk::DeserializerApi::ReadString() const
 /// <summary>
 /// ChildElementRange
 /// </summary>
-qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, const char* elementName) : parent(parent),
-    elementNameGenerator([elementName](auto& buff, std::size_t, std::size_t) { return elementName; })
+qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, const char* elementName)
+    : mParent(parent), mElementName(elementName)
 {
 }
 
-qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, TElementNameGenerator generator) :
-    parent(parent), elementNameGenerator(std::move(generator))
+qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range) : mCurrent(nullptr),
+    mChildElementRange(range)
 {
 }
 
-qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range) : buffer{}, current(nullptr),
-    range(range), index(std::numeric_limits<std::size_t>::max())
+qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range, std::size_t index)
+    : mCurrent(nullptr), mChildElementRange(range)
 {
-}
-
-qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range, std::size_t index) :
-    buffer{}, current(nullptr), range(range), index(index)
-{
-    current = range.parent.FindChild(range.elementNameGenerator(buffer, buffSize, index++));
+    mCurrent = range.mParent.FindChild(mChildElementRange.mElementName);
 }
 
 qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::ChildElementRange::Iterator::operator*() const
 {
-    return current;
+    return mCurrent;
 }
 
 qualisys_cpp_sdk::ChildElementRange::Iterator& qualisys_cpp_sdk::ChildElementRange::Iterator::operator++()
 {
-    current = current.FindNextSibling(range.elementNameGenerator(buffer, buffSize, index++));
+    mCurrent = mCurrent.FindNextSibling(mChildElementRange.mElementName);
     return *this;
 }
 
 bool qualisys_cpp_sdk::ChildElementRange::Iterator::operator!=(const Iterator& other) const
 {
-    return current != other.current;
+    return mCurrent != other.mCurrent;
 }
 
 qualisys_cpp_sdk::ChildElementRange::Iterator qualisys_cpp_sdk::ChildElementRange::begin() const
