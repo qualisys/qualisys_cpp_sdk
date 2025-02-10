@@ -34,7 +34,7 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
 
     if (captureTime)
     {
-        theGeneral.ElementFloat("Capture_Time", *captureTime, 3);
+        theGeneral.ElementFloat("Capture_Time", *captureTime);
     }
 
     // External Trigger and additional triggers
@@ -160,13 +160,13 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
         }
         else
         {
-            timeBaseElem.ElementFloat("Nominal_Frequency", *nominalFrequency, 3);
+            timeBaseElem.ElementFloat("Nominal_Frequency", *nominalFrequency);
         }
     }
 
     timeBaseElem.ElementString("Signal_Edge", (*negativeEdge ? "Negative" : "Positive"));
     timeBaseElem.ElementUnsignedInt("Signal_Shutter_Delay", *signalShutterDelay);
-    timeBaseElem.ElementFloat("Non_Periodic_Timeout", *nonPeriodicTimeout, 3);
+    timeBaseElem.ElementFloat("Non_Periodic_Timeout", *nonPeriodicTimeout);
 
     return timeBaseElem.ToString();
 }
@@ -230,11 +230,11 @@ std::string SettingsSerializer::SetCameraSettings(
 
     if (markerExposure)
     {
-        cameraElem.ElementFloat("Marker_Exposure", *markerExposure, 6);
+        cameraElem.ElementFloat("Marker_Exposure", *markerExposure);
     }
     if (markerThreshold)
     {
-        cameraElem.ElementFloat("Marker_Threshold", *markerThreshold, 6);
+        cameraElem.ElementFloat("Marker_Threshold", *markerThreshold);
     }
     if (orientation)
     {
@@ -303,11 +303,11 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
     }
     if (videoExposure)
     {
-        cameraElem.ElementFloat("Video_Exposure", *videoExposure, 6);
+        cameraElem.ElementFloat("Video_Exposure", *videoExposure);
     }
     if (videoFlashTime)
     {
-        cameraElem.ElementFloat("Video_Flash_Time", *videoFlashTime, 6);
+        cameraElem.ElementFloat("Video_Flash_Time", *videoFlashTime);
     }
 
     return mSerializer->ToString();
@@ -375,7 +375,7 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
                 }
                 if (syncOutDutyCycle)
                 {
-                    syncOutElem.ElementFloat("Duty_Cycle", *syncOutDutyCycle, 3);
+                    syncOutElem.ElementFloat("Duty_Cycle", *syncOutDutyCycle);
                 }
             }
         }
@@ -402,10 +402,10 @@ std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int 
     auto lensControlElem = cameraElem.Element("LensControl");
 
     lensControlElem.Element("Focus")
-        .AttributeFloat("Value", focus, 6);
+        .AttributeFloat("Value", focus);
 
     lensControlElem.Element("Aperture")
-        .AttributeFloat("Value", aperture, 6);
+        .AttributeFloat("Value", aperture);
 
     return mSerializer->ToString();
 }
@@ -425,7 +425,7 @@ std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int
     (void)snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
 
     lensControlElem.Element("AutoExposure")
-        .AttributeString("Enabled", (autoExposure ? "true" : "false"))
+        .AttributeBool("Enabled", autoExposure)
         .AttributeString("Compensation", compensationStr);
 
     return mSerializer->ToString();
@@ -494,19 +494,19 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     }
     if (leftCrop)
     {
-        cameraElem.ElementFloat("Left_Crop", *leftCrop, 6);
+        cameraElem.ElementFloat("Left_Crop", *leftCrop);
     }
     if (topCrop)
     {
-        cameraElem.ElementFloat("Top_Crop", *topCrop, 6);
+        cameraElem.ElementFloat("Top_Crop", *topCrop);
     }
     if (rightCrop)
     {
-        cameraElem.ElementFloat("Right_Crop", *rightCrop, 6);
+        cameraElem.ElementFloat("Right_Crop", *rightCrop);
     }
     if (bottomCrop)
     {
-        cameraElem.ElementFloat("Bottom_Crop", *bottomCrop, 6);
+        cameraElem.ElementFloat("Bottom_Crop", *bottomCrop);
     }
 
     return mSerializer->ToString();
@@ -537,15 +537,15 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
 
                 if (pCorner->fX)
                 {
-                    cornerElem.ElementFloat("X", pCorner->fX, 6);
+                    cornerElem.ElementFloat("X", pCorner->fX);
                 }
                 if (pCorner->fY)
                 {
-                    cornerElem.ElementFloat("Y", pCorner->fY, 6);
+                    cornerElem.ElementFloat("Y", pCorner->fY);
                 }
                 if (pCorner->fZ)
                 {
-                    cornerElem.ElementFloat("Z", pCorner->fZ, 6);
+                    cornerElem.ElementFloat("Z", pCorner->fZ);
                 }
             }
         };
@@ -576,9 +576,9 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
         colorElem.AttributeUnsignedInt("G", (body.color >> 8) & 0xff);
         colorElem.AttributeUnsignedInt("B", (body.color >> 16) & 0xff);
 
-        bodyElem.ElementFloat("MaximumResidual", body.maxResidual, 6);
+        bodyElem.ElementFloat("MaximumResidual", body.maxResidual);
         bodyElem.ElementUnsignedInt("MinimumMarkersInBody", body.minMarkersInBody);
-        bodyElem.ElementFloat("BoneLengthTolerance", body.boneLengthTolerance, 6);
+        bodyElem.ElementFloat("BoneLengthTolerance", body.boneLengthTolerance);
         bodyElem.Element("Filter").AttributeString("Preset", body.filterPreset.c_str());
 
         if (!body.mesh.name.empty())
@@ -587,17 +587,17 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
             meshElem.ElementString("Name", body.mesh.name.c_str());
 
             meshElem.Element("Position")
-                .AttributeFloat("X",body.mesh.position.fX,6)
-                .AttributeFloat("Y", body.mesh.position.fY, 6)
-                .AttributeFloat("Z", body.mesh.position.fZ, 6);
+                .AttributeFloat("X",body.mesh.position.fX)
+                .AttributeFloat("Y", body.mesh.position.fY)
+                .AttributeFloat("Z", body.mesh.position.fZ);
 
             meshElem.Element("Rotation")
-                .AttributeFloat("X", body.mesh.rotation.fX, 6)
-                .AttributeFloat("Y", body.mesh.rotation.fY, 6)
-                .AttributeFloat("Z", body.mesh.rotation.fZ, 6);
+                .AttributeFloat("X", body.mesh.rotation.fX)
+                .AttributeFloat("Y", body.mesh.rotation.fY)
+                .AttributeFloat("Z", body.mesh.rotation.fZ);
 
-            meshElem.ElementFloat("Scale", body.mesh.scale, 6);
-            meshElem.ElementFloat("Opacity", body.mesh.opacity, 6);
+            meshElem.ElementFloat("Scale", body.mesh.scale);
+            meshElem.ElementFloat("Opacity", body.mesh.opacity);
         }
 
         if (!body.points.empty())
@@ -606,9 +606,9 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
             for (const auto& point : body.points)
             {
                 pointsElem.Element("Point")
-                    .AttributeFloat("X", point.fX, 6)
-                    .AttributeFloat("Y", point.fY, 6)
-                    .AttributeFloat("Z", point.fZ, 6)
+                    .AttributeFloat("X", point.fX)
+                    .AttributeFloat("Y", point.fY)
+                    .AttributeFloat("Z", point.fZ)
                     .AttributeUnsignedInt("Virtual", point.virtual_ ? 1 : 0)
                     .AttributeUnsignedInt("PhysicalId", point.physicalId)
                     .AttributeString("Name", point.name.c_str());
@@ -616,9 +616,9 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
         }
 
         bodyElem.ElementUnsignedInt("Data_origin", body.origin.type)
-            .AttributeFloat("X", body.origin.position.fX, 6)
-            .AttributeFloat("Y", body.origin.position.fY, 6)
-            .AttributeFloat("Z", body.origin.position.fZ, 6)
+            .AttributeFloat("X", body.origin.position.fX)
+            .AttributeFloat("Y", body.origin.position.fY)
+            .AttributeFloat("Z", body.origin.position.fZ)
             .AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
 
         auto orientationElem = bodyElem.ElementUnsignedInt("Data_orientation", body.origin.type);
@@ -626,7 +626,7 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
         {
             char tmpStr[16];
             (void)sprintf_s(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
-            orientationElem.AttributeFloat(tmpStr, body.origin.rotation[i], 6);
+            orientationElem.AttributeFloat(tmpStr, body.origin.rotation[i]);
         }
         orientationElem.AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
     }
@@ -650,7 +650,7 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
             skeletonElem.ElementString("Solver", skeleton.rootSegment.solver.c_str());
         }
 
-        skeletonElem.ElementString("Scale", std::to_string(skeleton.scale).c_str());
+        skeletonElem.ElementDouble("Scale", skeleton.scale);
         auto segmentsElem = skeletonElem.Element("Segments");
 
         std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
@@ -668,28 +668,28 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                 {
                     auto transformElem = segmentElem.Element("Transform");
                     transformElem.Element("Position")
-                        .AttributeDouble("X", segment.position.x, 6)
-                        .AttributeDouble("Y", segment.position.y, 6)
-                        .AttributeDouble("Z", segment.position.z, 6);
+                        .AttributeDouble("X", segment.position.x)
+                        .AttributeDouble("Y", segment.position.y)
+                        .AttributeDouble("Z", segment.position.z);
                     transformElem.Element("Rotation")
-                        .AttributeDouble("X", segment.rotation.x, 6)
-                        .AttributeDouble("Y", segment.rotation.y, 6)
-                        .AttributeDouble("Z", segment.rotation.z, 6)
-                        .AttributeDouble("W", segment.rotation.w, 6);
+                        .AttributeDouble("X", segment.rotation.x)
+                        .AttributeDouble("Y", segment.rotation.y)
+                        .AttributeDouble("Z", segment.rotation.z)
+                        .AttributeDouble("W", segment.rotation.w);
                 }
 
                 if (!std::isnan(segment.defaultPosition.x))
                 {
                     auto transformElem = segmentElem.Element("DefaultTransform");
                     transformElem.Element("Position")
-                        .AttributeDouble("X", segment.defaultPosition.x, 6)
-                        .AttributeDouble("Y", segment.defaultPosition.y, 6)
-                        .AttributeDouble("Z", segment.defaultPosition.z, 6);
+                        .AttributeDouble("X", segment.defaultPosition.x)
+                        .AttributeDouble("Y", segment.defaultPosition.y)
+                        .AttributeDouble("Z", segment.defaultPosition.z);
                     transformElem.Element("Rotation")
-                        .AttributeDouble("X", segment.defaultRotation.x, 6)
-                        .AttributeDouble("Y", segment.defaultRotation.y, 6)
-                        .AttributeDouble("Z", segment.defaultRotation.z, 6)
-                        .AttributeDouble("W", segment.defaultRotation.w, 6);
+                        .AttributeDouble("X", segment.defaultRotation.x)
+                        .AttributeDouble("Y", segment.defaultRotation.y)
+                        .AttributeDouble("Z", segment.defaultRotation.z)
+                        .AttributeDouble("W", segment.defaultRotation.w);
                 }
 
                 auto degreesOfFreedomElem = segmentElem.Element("DegreesOfFreedom");
@@ -703,14 +703,14 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                         if (mMajorVersion > 1 || mMinorVersion > 21)
                         {
                             dofElem.Element("Constraint")
-                                .AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str())
-                                .AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                                .AttributeDouble("LowerBound", dof.lowerBound)
+                                .AttributeDouble("UpperBound", dof.upperBound);
                         }
                         else
                         {
                             // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
-                            dofElem.AttributeString("LowerBound", std::to_string(dof.lowerBound).c_str());
-                            dofElem.AttributeString("UpperBound", std::to_string(dof.upperBound).c_str());
+                            dofElem.AttributeDouble("LowerBound", dof.lowerBound);
+                            dofElem.AttributeDouble("UpperBound", dof.upperBound);
                         }
                     }
 
@@ -722,24 +722,24 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                             couplingsElem.Element("Coupling")
                                 .AttributeString("Segment", coupling.segment.c_str())
                                 .AttributeString("DegreeOfFreedom", SkeletonDofToStringSettings(coupling.degreeOfFreedom))
-                                .AttributeString("Coefficient", std::to_string(coupling.coefficient).c_str());
+                                .AttributeDouble("Coefficient", coupling.coefficient);
                         }
                     }
 
                     if (!std::isnan(dof.goalValue) && !std::isnan(dof.goalWeight))
                     {
                         dofElem.Element("Goal")
-                            .AttributeString("Value", std::to_string(dof.goalValue).c_str())
-                            .AttributeString("Weight", std::to_string(dof.goalWeight).c_str());
+                            .AttributeDouble("Value", dof.goalValue)
+                            .AttributeDouble("Weight", dof.goalWeight);
                     }
                 }
 
                 if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
                 {
                     segmentElem.Element("Endpoint")
-                        .AttributeString("X", std::to_string(segment.endpoint.x).c_str())
-                        .AttributeString("Y", std::to_string(segment.endpoint.y).c_str())
-                        .AttributeString("Z", std::to_string(segment.endpoint.z).c_str());
+                        .AttributeDouble("X", segment.endpoint.x)
+                        .AttributeDouble("Y", segment.endpoint.y)
+                        .AttributeDouble("Z", segment.endpoint.z);
                 }
                 else
                 {
@@ -754,31 +754,32 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                         .AttributeString("Name", marker.name.c_str());
 
                     markerElem.Element("Position")
-                        .AttributeString("X", std::to_string(marker.position.x).c_str())
-                        .AttributeString("Y", std::to_string(marker.position.y).c_str())
-                        .AttributeString("Z", std::to_string(marker.position.z).c_str());
+                        .AttributeDouble("X", marker.position.x)
+                        .AttributeDouble("Y", marker.position.y)
+                        .AttributeDouble("Z", marker.position.z);
 
-                    markerElem.ElementString("Weight", std::to_string(marker.weight).c_str());
+                    markerElem.ElementDouble("Weight", marker.weight);
                 }
 
                 auto rigidBodiesElem = segmentElem.Element("RigidBodies");
                 for (const auto& rigidBody : segment.bodies)
                 {
-                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody").AttributeString("Name", rigidBody.name.c_str());
+                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody")
+                        .AttributeString("Name", rigidBody.name.c_str());
 
                     auto transformElem = rigidBodyElem.Element("Transform");
 
                     transformElem.Element("Position")
-                        .AttributeString("X", std::to_string(rigidBody.position.x).c_str())
-                        .AttributeString("Y", std::to_string(rigidBody.position.y).c_str())
-                        .AttributeString("Z", std::to_string(rigidBody.position.z).c_str());
+                        .AttributeDouble("X", rigidBody.position.x)
+                        .AttributeDouble("Y", rigidBody.position.y)
+                        .AttributeDouble("Z", rigidBody.position.z);
                     transformElem.Element("Rotation")
-                        .AttributeString("X", std::to_string(rigidBody.rotation.x).c_str())
-                        .AttributeString("Y", std::to_string(rigidBody.rotation.y).c_str())
-                        .AttributeString("Z", std::to_string(rigidBody.rotation.z).c_str())
-                        .AttributeString("W", std::to_string(rigidBody.rotation.w).c_str());
+                        .AttributeDouble("X", rigidBody.rotation.x)
+                        .AttributeDouble("Y", rigidBody.rotation.y)
+                        .AttributeDouble("Z", rigidBody.rotation.z)
+                        .AttributeDouble("W", rigidBody.rotation.w);
 
-                    rigidBodyElem.ElementFloat("Weight", rigidBody.weight, 6);
+                    rigidBodyElem.ElementDouble("Weight", rigidBody.weight);
                 }
 
                 for (const auto& childSegment : segment.segments)
