@@ -1653,30 +1653,32 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
 
         if (auto calibrationMatrix = plateElem.FindChild("Calibration_Matrix"))
         {
+            forcePlate.nCalibrationMatrixRows = 0;
+            forcePlate.nCalibrationMatrixColumns = 0;
+
             if (mMajorVersion == 1 && mMinorVersion < 12)
             {
-                char charBuffer[128]{'\0'};
-                auto getRowStr = [&charBuffer](std::size_t index)-> const char* {
-                    sprintf_s(charBuffer, sizeof(charBuffer), "Row%zd", index + 1);
-                    return charBuffer;
-                };
+                auto getRowStr = [](std::size_t index) -> std::string {
+                        return "Row" + std::to_string(index + 1);
+                    };
 
-                auto getColStr = [&charBuffer](std::size_t index)-> const char* {
-                    sprintf_s(charBuffer, sizeof(charBuffer), "Col%zd", index + 1);
-                    return charBuffer;
-                };
+                auto getColStr = [](std::size_t index) -> std::string {
+                        return "Col" + std::to_string(index + 1);
+                    };
 
-                unsigned int iRow = 0;
-                for (auto rowElem =  calibrationMatrix.FindChild(getRowStr(iRow++)); rowElem; rowElem = rowElem.FindNextSibling(getRowStr(iRow++)))
+                std::size_t iRow = 0;
+                for (auto rowElem = calibrationMatrix.FindChild(getRowStr(iRow).c_str()); rowElem; rowElem = rowElem.FindNextSibling(getRowStr(++iRow).c_str()))
                 {
-                    unsigned int iCol = 0;
-                    for (auto colElem = rowElem.FindChild(getColStr(iCol++)); colElem; colElem = colElem.FindNextSibling(getColStr(iCol++)))
+                    std::size_t iCol = 0;
+                    for (auto colElem = rowElem.FindChild(getColStr(iCol).c_str()); colElem; colElem = colElem.FindNextSibling(getColStr(++iCol).c_str()))
                     {
-                        forcePlate.afCalibrationMatrix[iRow - 1][iCol - 1] = colElem.ReadFloat();
+                        forcePlate.afCalibrationMatrix[iRow][iCol] = colElem.ReadFloat();
                     }
-                    forcePlate.nCalibrationMatrixColumns = iCol;
+
+                    forcePlate.nCalibrationMatrixColumns = std::max(static_cast<unsigned int>(iCol),forcePlate.nCalibrationMatrixColumns);
                 }
-                forcePlate.nCalibrationMatrixRows = iRow;
+
+                forcePlate.nCalibrationMatrixRows = std::max(static_cast<unsigned int>(iRow), forcePlate.nCalibrationMatrixRows);
                 forcePlate.bValidCalibrationMatrix = true;
             }
             else
@@ -1695,11 +1697,13 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
                             {
                                 forcePlate.afCalibrationMatrix[iRow][iCol++] = col.ReadFloat();
                             }
-                            forcePlate.nCalibrationMatrixColumns = iCol;
+
+                            forcePlate.nCalibrationMatrixColumns = std::max(iCol, forcePlate.nCalibrationMatrixColumns);
                         }
                         iRow++;
                     }
-                    forcePlate.nCalibrationMatrixRows = iRow;
+
+                    forcePlate.nCalibrationMatrixRows = std::max(iRow, forcePlate.nCalibrationMatrixRows);
                     forcePlate.bValidCalibrationMatrix = true;
                 }
             }
