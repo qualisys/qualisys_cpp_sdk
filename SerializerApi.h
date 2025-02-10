@@ -1,9 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include "Settings.h"
-#include "tinyxml2.h"
 
 namespace tinyxml2
 {
@@ -13,10 +11,6 @@ namespace tinyxml2
 
 namespace qualisys_cpp_sdk
 {
-    struct SPosition;
-    struct SRotation;
-    struct SerializerApi;
-
     struct SerializerApi
     {
     private:
@@ -26,115 +20,37 @@ namespace qualisys_cpp_sdk
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
 
-        SerializerApi(const SerializerApi& src, tinyxml2::XMLElement* element)
-            : mDocument(src.mDocument), mCurrentElement(element), mMajorVersion(src.mMajorVersion), mMinorVersion(src.mMinorVersion)
-        {
-        }
+        SerializerApi(const SerializerApi& src, tinyxml2::XMLElement* element);
+
     public:
-
-        SerializerApi Element(const char* name)
-        {
-            if (mCurrentElement)
-            {
-                return SerializerApi{ *this, mCurrentElement->InsertNewChildElement(name) };
-            }
-
-            auto newElement = mDocument->NewElement(name);
-            mDocument->InsertFirstChild(newElement);
-            return SerializerApi{ *this, newElement};
-        }
-
-        SerializerApi ElementBool(const char* name, bool value)
-        {
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(value);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi ElementInt(const char* name, std::int32_t value)
-        {
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(value);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi ElementFloat(const char* name, float value, int decimals)
-        {
-            char formattedValue[32];
-            (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(formattedValue);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi ElementDouble(const char* name, double value)
-        {
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(value);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi ElementUnsignedInt(const char* name, std::uint32_t value)
-        {
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(value);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi ElementString(const char* name, const char* value)
-        {
-            auto newElement = Element(name);
-            newElement.mCurrentElement->SetText(value);
-            return SerializerApi{ *this, newElement.mCurrentElement };
-        }
-
-        SerializerApi AttributeBool(const char* name, bool value)
-        {
-            mCurrentElement->SetAttribute(name, value);
-            return *this;
-        }
-
-        SerializerApi AttributeInt(const char* name, std::int32_t value)
-        {
-            mCurrentElement->SetAttribute(name, value);
-            return *this;
-        }
-
-        SerializerApi AttributeFloat(const char* name, float value, int decimals)
-        {
-            char formattedValue[32];
-            (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
-            mCurrentElement->SetAttribute(name, formattedValue);
-            return *this;
-        }
-
-        SerializerApi AttributeDouble(const char* name, double value, int decimals)
-        {
-            char formattedValue[32];
-            (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
-            mCurrentElement->SetAttribute(name, formattedValue);
-            return *this;
-        }
-
-        SerializerApi AttributeUnsignedInt(const char* name, std::uint32_t value)
-        {
-            mCurrentElement->SetAttribute(name, value);
-            return *this;
-        }
-
-        SerializerApi AttributeString(const char* name, const char* value)
-        {
-            mCurrentElement->SetAttribute(name, value);
-            return *this;
-        }
-
-        std::string ToString() const
-        {
-            tinyxml2::XMLPrinter printer{};
-            mDocument->Print(&printer);
-            return printer.CStr();
-        }
-
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
+
+        SerializerApi Element(const char* name);
+
+        SerializerApi ElementBool(const char* name, bool value);
+
+        SerializerApi ElementInt(const char* name, std::int32_t value);
+
+        SerializerApi ElementFloat(const char* name, float value, int decimals);
+
+        SerializerApi ElementDouble(const char* name, double value);
+
+        SerializerApi ElementUnsignedInt(const char* name, std::uint32_t value);
+
+        SerializerApi ElementString(const char* name, const char* value);
+
+        SerializerApi AttributeBool(const char* name, bool value);
+
+        SerializerApi AttributeInt(const char* name, std::int32_t value);
+
+        SerializerApi AttributeFloat(const char* name, float value, int decimals);
+
+        SerializerApi AttributeDouble(const char* name, double value, int decimals);
+
+        SerializerApi AttributeUnsignedInt(const char* name, std::uint32_t value);
+
+        SerializerApi AttributeString(const char* name, const char* value);
+
+        std::string ToString() const;
     };
 }
