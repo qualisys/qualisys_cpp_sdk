@@ -148,9 +148,6 @@ namespace qualisys_cpp_sdk
 
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
 
-        std::string SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
-            const SPoint* corner3, const SPoint* corner4);
-
         std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons);
     };
 }

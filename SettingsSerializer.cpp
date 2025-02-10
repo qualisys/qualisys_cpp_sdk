@@ -484,8 +484,14 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
         }
     }
     
-    cameraElem.ElementUnsignedInt("Width", *width);
-    cameraElem.ElementUnsignedInt("Height", *height);
+    if (width)
+    {
+        cameraElem.ElementUnsignedInt("Width", *width);
+    }
+    if (height)
+    {
+        cameraElem.ElementUnsignedInt("Height", *height);
+    }
     if (leftCrop)
     {
         cameraElem.ElementFloat("Left_Crop", *leftCrop, 6);
@@ -523,33 +529,31 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
         plateElem.ElementUnsignedInt("Force_Plate_Index", plateId);
     }
 
-    auto addCorner = [&](const char* name, const SPoint pCorner, SerializerApi elem)
+    auto addCorner = [&](const char* name, const SPoint* pCorner)
         {
-            auto cornerElem = elem.Element(name);
-            cornerElem.ElementFloat("X", pCorner.fX, 6);
-            cornerElem.ElementFloat("Y", pCorner.fY, 6);
-            cornerElem.ElementFloat("Z", pCorner.fZ, 6);
+            if (pCorner)
+            {
+                auto cornerElem = plateElem.Element(name);
+
+                if (pCorner->fX)
+                {
+                    cornerElem.ElementFloat("X", pCorner->fX, 6);
+                }
+                if (pCorner->fY)
+                {
+                    cornerElem.ElementFloat("Y", pCorner->fY, 6);
+                }
+                if (pCorner->fZ)
+                {
+                    cornerElem.ElementFloat("Z", pCorner->fZ, 6);
+                }
+            }
         };
 
-    if (corner1)
-    {
-        addCorner("Corner1", *corner1, plateElem);
-    }
-
-    if (corner2)
-    {
-        addCorner("Corner2", *corner2, plateElem);
-    }
-
-    if (corner3)
-    {
-        addCorner("Corner3", *corner3, plateElem);
-    }
-
-    if (corner4)
-    {
-        addCorner("Corner4", *corner4, plateElem);
-    }
+    addCorner("Corner1", corner1);
+    addCorner("Corner2", corner2);
+    addCorner("Corner3", corner3);
+    addCorner("Corner4", corner4);
 
     return mSerializer->ToString();
 }

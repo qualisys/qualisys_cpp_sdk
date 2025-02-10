@@ -138,51 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
-    const SPoint* corner3, const SPoint* corner4)
-{
-    tinyxml2::XMLDocument document;
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* forceElem = document.NewElement("Force");
-    rootElem->InsertEndChild(forceElem);
-
-    tinyxml2::XMLElement* plateElem = document.NewElement("Plate");
-    forceElem->InsertEndChild(plateElem);
-
-    if (mMajorVersion > 1 || mMinorVersion > 7)
-    {
-        AddXMLElementUnsignedInt(*plateElem, "Plate_ID", &plateId, document);
-    }
-    else
-    {
-        AddXMLElementUnsignedInt(*plateElem, "Force_Plate_Index", &plateId, document);
-    }
-
-    auto addCorner = [&](const char* name, const SPoint* pCorner)
-        {
-            if (pCorner)
-            {
-                tinyxml2::XMLElement* cornerElem = document.NewElement(name);
-                plateElem->InsertEndChild(cornerElem);
-
-                AddXMLElementFloat(*cornerElem, "X", &(pCorner->fX), 6, document);
-                AddXMLElementFloat(*cornerElem, "Y", &(pCorner->fY), 6, document);
-                AddXMLElementFloat(*cornerElem, "Z", &(pCorner->fZ), 6, document);
-            }
-        };
-
-    addCorner("Corner1", corner1);
-    addCorner("Corner2", corner2);
-    addCorner("Corner3", corner3);
-    addCorner("Corner4", corner4);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
 {
     tinyxml2::XMLDocument document;
