@@ -138,30 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
-{
-    tinyxml2::XMLDocument document;
-
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* generalElem = document.NewElement("General");
-    rootElem->InsertEndChild(generalElem);
-
-    tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
-    generalElem->InsertEndChild(cameraElem);
-
-    AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
-
-    tinyxml2::XMLElement* autoWhiteBalanceElem = document.NewElement("AutoWhiteBalance");
-    autoWhiteBalanceElem->SetText(enable ? "true" : "false");
-    cameraElem->InsertEndChild(autoWhiteBalanceElem);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetImageSettings(const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
     const unsigned int* width, const unsigned int* height, const float* leftCrop,
     const float* topCrop, const float* rightCrop, const float* bottomCrop)

@@ -433,22 +433,15 @@ std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int
 
 std::string SettingsSerializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
 {
-    //auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
-    //auto cameraElem = theGeneral.Element("Camera");
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+    cameraElem.ElementString("AutoWhiteBalance", (enable ? "true" : "false"));
 
-    //cameraElem.ElementUnsignedInt("ID", cameraId);
-
-
-    //tinyxml2::XMLElement* autoWhiteBalanceElem = document.NewElement("AutoWhiteBalance");
-    //autoWhiteBalanceElem->SetText(enable ? "true" : "false");
-    //cameraElem->InsertEndChild(autoWhiteBalanceElem);
-
-    //tinyxml2::XMLPrinter printer;
-    //document.Print(&printer);
-    //return printer.CStr();
-
-    return "true";
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, const bool* enable,

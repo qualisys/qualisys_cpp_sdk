@@ -148,8 +148,6 @@ namespace qualisys_cpp_sdk
 
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
 
-        std::string SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable);
-
         std::string SetImageSettings(const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
             const unsigned int* width, const unsigned int* height, const float* leftCrop,
             const float* topCrop, const float* rightCrop, const float* bottomCrop);
