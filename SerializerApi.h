@@ -17,8 +17,6 @@ namespace qualisys_cpp_sdk
     struct SRotation;
     struct SerializerApi;
 
-
-
     struct SerializerApi
     {
     private:
