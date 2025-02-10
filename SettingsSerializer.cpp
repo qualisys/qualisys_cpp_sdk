@@ -23,7 +23,82 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
                                            const bool* startOnTrigSoftware, const EProcessingActions* processingActions,
                                            const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions)
 {
-    return mSerializer->SetGeneralSettings(captureFrequency, captureTime, startOnExtTrig, startOnTrigNO, startOnTrigNC, startOnTrigSoftware, processingActions, rtProcessingActions, reprocessingActions);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    if (captureFrequency)
+    {
+        theGeneral.ElementUnsignedInt("Frequency", *captureFrequency);
+    }
+
+    if (captureTime)
+    {
+        theGeneral.ElementFloat("Capture_Time", *captureTime, 3);
+    }
+
+    // External Trigger and additional triggers
+    if (startOnExtTrig)
+    {
+        theGeneral.ElementBool("Start_On_External_Trigger", startOnExtTrig);
+
+        if (mMajorVersion > 1 || mMinorVersion > 14)
+        {
+            theGeneral.ElementBool("Start_On_Trigger_NO", startOnTrigNO);
+            theGeneral.ElementBool("Start_On_Trigger_NC", startOnTrigNC);
+            theGeneral.ElementBool("Start_On_Trigger_Software", startOnTrigSoftware);
+        }
+    }
+
+    const char* processingActionTags[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
+    const EProcessingActions* processingActionSets[3] = { processingActions, rtProcessingActions, reprocessingActions };
+
+    auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
+
+    for (auto i = 0; i < actionsCount; i++)
+    {
+        if (processingActionSets[i])
+        {
+            auto processingActionsElem = theGeneral.Element(processingActionTags[i]);
+
+            if (mMajorVersion > 1 || mMinorVersion > 13)
+            {
+                processingActionsElem.ElementBool("PreProcessing2D", (*processingActionSets[i] & ProcessingPreProcess2D) != 0);
+            }
+
+            if (*processingActionSets[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
+            {
+                processingActionsElem.ElementString("Tracking", "2D");
+            }
+            else if (*processingActionSets[i] & ProcessingTracking3D)
+            {
+                processingActionsElem.ElementString("Tracking", "3D");
+            }
+            else
+            {
+                processingActionsElem.ElementBool("Tracking", false);
+            }
+
+            if (i != 1) // Not RtProcessingSettings
+            {
+                processingActionsElem.ElementBool("TwinSystemMerge", (*processingActionSets[i] & ProcessingTwinSystemMerge) != 0);
+                processingActionsElem.ElementBool("SplineFill", (*processingActionSets[i] & ProcessingSplineFill) != 0);
+            }
+
+            processingActionsElem.ElementBool("AIM", (*processingActionSets[i] & ProcessingAIM) != 0);
+            processingActionsElem.ElementBool("Track6DOF", (*processingActionSets[i] & Processing6DOFTracking) != 0);
+            processingActionsElem.ElementBool("ForceData", (*processingActionSets[i] & ProcessingForceData) != 0);
+            processingActionsElem.ElementBool("GazeVector", (*processingActionSets[i] & ProcessingGazeVector) != 0);
+
+            if (i != 1) // Not RtProcessingSettings
+            {
+                processingActionsElem.ElementBool("ExportTSV", (*processingActionSets[i] & ProcessingExportTSV) != 0);
+                processingActionsElem.ElementBool("ExportC3D", (*processingActionSets[i] & ProcessingExportC3D) != 0);
+                processingActionsElem.ElementBool("ExportMatlabFile", (*processingActionSets[i] & ProcessingExportMatlabFile) != 0);
+                processingActionsElem.ElementBool("ExportAviFile", (*processingActionSets[i] & ProcessingExportAviFile) != 0);
+            }
+        }
+    }
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource,
