@@ -316,16 +316,17 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
-    int port = portNumber - 1;
-    SerializerApi* syncOutElem = nullptr;
+    int port = static_cast<int>(portNumber) - 1;
     if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
     {
+        auto syncOutElem = [&port, &cameraElem](){
         if (port == 0)
-            syncOutElem = &cameraElem.Element("Sync_Out");       
+            return cameraElem.Element("Sync_Out");
         else if (port == 1)
-            syncOutElem = &cameraElem.Element("Sync_Out2");
+            return cameraElem.Element("Sync_Out2");
         else
-            syncOutElem = &cameraElem.Element("Sync_Out_MT");
+            return cameraElem.Element("Sync_Out_MT");
+            }();
 
         // Add Sync Out Mode
         if (port == 0 || port == 1)
@@ -333,25 +334,25 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
             switch (*syncOutMode)
             {
             case ModeShutterOut:
-                syncOutElem->ElementString("Mode", "Shutter out");
+                syncOutElem.ElementString("Mode", "Shutter out");
                 break;
             case ModeMultiplier:
-                syncOutElem->ElementString("Mode", "Multiplier");
+                syncOutElem.ElementString("Mode", "Multiplier");
                 break;
             case ModeDivisor:
-                syncOutElem->ElementString("Mode", "Divisor");
+                syncOutElem.ElementString("Mode", "Divisor");
                 break;
             case ModeIndependentFreq:
-                syncOutElem->ElementString("Mode", "Camera independent");
+                syncOutElem.ElementString("Mode", "Camera independent");
                 break;
             case ModeMeasurementTime:
-                syncOutElem->ElementString("Mode", "Measurement time");
+                syncOutElem.ElementString("Mode", "Measurement time");
                 break;
             case ModeFixed100Hz:
-                syncOutElem->ElementString("Mode", "Continous 100Hz");
+                syncOutElem.ElementString("Mode", "Continuous 100Hz");
                 break;
             case ModeSystemLiveTime:
-                syncOutElem->ElementString("Mode", "System live time");
+                syncOutElem.ElementString("Mode", "System live time");
                 break;
             default:
                 return "";
@@ -363,11 +364,11 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
             {
                 if (syncOutValue)
                 {
-                    syncOutElem->ElementUnsignedInt("Value", *syncOutValue);
+                    syncOutElem.ElementUnsignedInt("Value", *syncOutValue);
                 }
                 if (syncOutDutyCycle)
                 {
-                    syncOutElem->ElementFloat("Duty_Cycle", *syncOutDutyCycle, 3);
+                    syncOutElem.ElementFloat("Duty_Cycle", *syncOutDutyCycle, 3);
                 }
             }
         }
@@ -375,7 +376,7 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
         if (syncOutNegativePolarity && (port == 2 ||
             (syncOutMode && *syncOutMode != ModeFixed100Hz)))
         {
-            syncOutElem->ElementString("Signal_Polarity", (syncOutNegativePolarity ? "Negative" : "Positive"));
+            syncOutElem.ElementString("Signal_Polarity", (syncOutNegativePolarity ? "Negative" : "Positive"));
         }
     }
 
@@ -403,7 +404,22 @@ std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int 
 
 std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
 {
-    return mSerializer->SetCameraAutoExposureSettings(cameraId, autoExposure, compensation);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto cameraElem = theGeneral.Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+
+    auto lensControlElem = cameraElem.Element("LensControl");
+
+    char compensationStr[32];
+    snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
+
+    lensControlElem.Element("AutoExposure")
+        .AttributeString("Enabled", (autoExposure ? "true" : "false"))
+        .AttributeString("Compensation", compensationStr);
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
@@ -528,7 +544,7 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
         for (std::uint32_t i = 0; i < 9; i++)
         {
             char tmpStr[16];
-            sprintf_s(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            (void)sprintf_s(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
             orientationElem.AttributeFloat(tmpStr, body.origin.rotation[i], 6);
         }
         orientationElem.AttributeUnsignedInt("Relative_body", body.origin.relativeBody);

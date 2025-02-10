@@ -138,38 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
-{
-    tinyxml2::XMLDocument document;
-
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* generalElem = document.NewElement("General");
-    rootElem->InsertEndChild(generalElem);
-
-    tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
-    generalElem->InsertEndChild(cameraElem);
-
-    AddXMLElementUnsignedInt(*cameraElem, "ID", &cameraId, document);
-
-    tinyxml2::XMLElement* lensControlElem = document.NewElement("LensControl");
-    cameraElem->InsertEndChild(lensControlElem);
-
-    tinyxml2::XMLElement* autoExposureElem = document.NewElement("AutoExposure");
-    autoExposureElem->SetAttribute("Enabled", autoExposure ? "true" : "false");
-
-    char compensationStr[32];
-    snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
-    autoExposureElem->SetAttribute("Compensation", compensationStr);
-
-    lensControlElem->InsertEndChild(autoExposureElem);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
 {
     tinyxml2::XMLDocument document;
