@@ -148,9 +148,6 @@ namespace qualisys_cpp_sdk
 
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
 
-        std::string SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber, const ESyncOutFreqMode* syncOutMode,
-            const unsigned int* syncOutValue, const float* syncOutDutyCycle, const bool* syncOutNegativePolarity);
-
         std::string SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture);
 
         std::string SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation);

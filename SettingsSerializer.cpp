@@ -310,7 +310,76 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
 std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle, const bool* syncOutNegativePolarity)
 {
-    return mSerializer->SetCameraSyncOutSettings(cameraId, portNumber, syncOutMode, syncOutValue, syncOutDutyCycle, syncOutNegativePolarity);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto cameraElem = theGeneral.Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+
+    int port = portNumber - 1;
+    SerializerApi* syncOutElem = nullptr;
+    if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
+    {
+        if (port == 0)
+            syncOutElem = &cameraElem.Element("Sync_Out");       
+        else if (port == 1)
+            syncOutElem = &cameraElem.Element("Sync_Out2");
+        else
+            syncOutElem = &cameraElem.Element("Sync_Out_MT");
+
+        // Add Sync Out Mode
+        if (port == 0 || port == 1)
+        {
+            switch (*syncOutMode)
+            {
+            case ModeShutterOut:
+                syncOutElem->ElementString("Mode", "Shutter out");
+                break;
+            case ModeMultiplier:
+                syncOutElem->ElementString("Mode", "Multiplier");
+                break;
+            case ModeDivisor:
+                syncOutElem->ElementString("Mode", "Divisor");
+                break;
+            case ModeIndependentFreq:
+                syncOutElem->ElementString("Mode", "Camera independent");
+                break;
+            case ModeMeasurementTime:
+                syncOutElem->ElementString("Mode", "Measurement time");
+                break;
+            case ModeFixed100Hz:
+                syncOutElem->ElementString("Mode", "Continous 100Hz");
+                break;
+            case ModeSystemLiveTime:
+                syncOutElem->ElementString("Mode", "System live time");
+                break;
+            default:
+                return "";
+            }
+
+            if (*syncOutMode == ModeMultiplier ||
+                *syncOutMode == ModeDivisor ||
+                *syncOutMode == ModeIndependentFreq)
+            {
+                if (syncOutValue)
+                {
+                    syncOutElem->ElementUnsignedInt("Value", *syncOutValue);
+                }
+                if (syncOutDutyCycle)
+                {
+                    syncOutElem->ElementFloat("Duty_Cycle", *syncOutDutyCycle, 3);
+                }
+            }
+        }
+
+        if (syncOutNegativePolarity && (port == 2 ||
+            (syncOutMode && *syncOutMode != ModeFixed100Hz)))
+        {
+            syncOutElem->ElementString("Signal_Polarity", (syncOutNegativePolarity ? "Negative" : "Positive"));
+        }
+    }
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
