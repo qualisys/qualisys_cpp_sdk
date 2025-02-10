@@ -1655,20 +1655,19 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         {
             if (mMajorVersion == 1 && mMinorVersion < 12)
             {
-                char rowBuffer[128]{'\0'};
-                auto getRowStr = [&rowBuffer](std::size_t index)-> const char* {
-                    sprintf_s(rowBuffer, sizeof(rowBuffer), "Row%zd", index + 1);
-                    return rowBuffer;
+                char charBuffer[128]{'\0'};
+                auto getRowStr = [&charBuffer](std::size_t index)-> const char* {
+                    sprintf_s(charBuffer, sizeof(charBuffer), "Row%zd", index + 1);
+                    return charBuffer;
                 };
 
-                char colBuffer[128]{ '\0' };
-                auto getColStr = [&colBuffer](std::size_t index)-> const char* {
-                    sprintf_s(colBuffer, sizeof(colBuffer), "Col%zd", index + 1);
-                    return colBuffer;
+                auto getColStr = [&charBuffer](std::size_t index)-> const char* {
+                    sprintf_s(charBuffer, sizeof(charBuffer), "Col%zd", index + 1);
+                    return charBuffer;
                 };
 
                 unsigned int iRow = 0;
-                for (auto rowElem =  calibrationMatrix.FindChild(getRowStr(iRow++)); rowElem; rowElem= rowElem.FindNextSibling(getRowStr(iRow++)))
+                for (auto rowElem =  calibrationMatrix.FindChild(getRowStr(iRow++)); rowElem; rowElem = rowElem.FindNextSibling(getRowStr(iRow++)))
                 {
                     unsigned int iCol = 0;
                     for (auto colElem = rowElem.FindChild(getColStr(iCol++)); colElem; colElem = colElem.FindNextSibling(getColStr(iCol++)))
