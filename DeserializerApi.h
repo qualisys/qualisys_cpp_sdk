@@ -21,21 +21,28 @@ namespace qualisys_cpp_sdk
     public:
         tinyxml2::XMLElement* mPtr;
         DeserializerApi(const char* data);
+
         DeserializerApi FirstChildElement(const char* elementName) const;
+
         DeserializerApi NextSiblingElement(const char* elementName) const;
+
         double DoubleAttribute(const char* attributeName, double defaultValue = 0) const;
+
         std::uint32_t UnsignedAttribute(const char* attributeName, std::uint32_t defaultValue = 0) const;
         std::int32_t IntAttribute(const char* attributeName, std::int32_t defaultValue = 0) const;
+        std::string Attribute(const char* name) const;
+        float FloatAttribute(const char* name, float defaultValue = .0f) const;
         bool BoolAttribute(const char* attributeName, bool defaultValue = 0) const;
-        bool operator==(const DeserializerApi& other) const;
-        bool operator!=(const DeserializerApi& other) const;
-        explicit operator bool() const;
+
+        std::string GetText() const;
+
         int IntText(std::int32_t defaultValue = 0) const;
         unsigned int UnsignedText(std::int32_t defaultValue = 0) const;
         float FloatText(float defaultValue = .0f) const;
-        std::string Attribute(const char* name) const;
-        float FloatAttribute(const char* name, float defaultValue = .0f) const;
-        std::string GetText() const;
+
+        bool operator==(const DeserializerApi& other) const;
+        bool operator!=(const DeserializerApi& other) const;
+        explicit operator bool() const;
     };
 
     struct ChildElementRange

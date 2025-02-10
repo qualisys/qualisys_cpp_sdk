@@ -80,7 +80,7 @@ namespace qualisys_cpp_sdk
             return SerializerApi{ *this, newElement.mCurrentElement };
         }
 
-        SerializerApi ElementDouble(const char* name, float value)
+        SerializerApi ElementDouble(const char* name, double value)
         {
             auto newElement = Element(name);
             newElement.mCurrentElement->SetText(value);
@@ -99,6 +99,44 @@ namespace qualisys_cpp_sdk
             auto newElement = Element(name);
             newElement.mCurrentElement->SetText(value);
             return SerializerApi{ *this, newElement.mCurrentElement };
+        }
+
+        SerializerApi AttributeBool(const char* name, bool value)
+        {
+            mCurrentElement->SetAttribute(name, value);
+            return *this;
+        }
+
+        SerializerApi AttributeInt(const char* name, std::int32_t value)
+        {
+            mCurrentElement->SetAttribute(name, value);
+            return *this;
+        }
+
+        SerializerApi AttributeFloat(const char* name, float value, int decimals)
+        {
+            char formattedValue[32];
+            (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
+            mCurrentElement->SetAttribute(name, formattedValue);
+            return *this;
+        }
+
+        SerializerApi AttributeDouble(const char* name, double value)
+        {
+            mCurrentElement->SetAttribute(name, value);
+            return *this;
+        }
+
+        SerializerApi AttributeUnsignedInt(const char* name, std::uint32_t value)
+        {
+            mCurrentElement->SetAttribute(name, value);
+            return *this;
+        }
+
+        SerializerApi AttributeString(const char* name, const char* value)
+        {
+            mCurrentElement->SetAttribute(name, value);
+            return *this;
         }
 
         std::string ToString() const
@@ -141,8 +179,6 @@ namespace qualisys_cpp_sdk
 
         std::string SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
             const SPoint* corner3, const SPoint* corner4);
-
-        std::string Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs);
 
         std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons);
     };

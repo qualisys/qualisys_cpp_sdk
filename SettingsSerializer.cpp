@@ -86,9 +86,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
     const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
 {
-    auto settingsElem = mSerializer->Element("QTM_Settings");
-    auto forceElem = settingsElem.Element("Force");
-    auto plateElem = forceElem.Element("Plate");
+    auto plateElem = mSerializer->Element("QTM_Settings").Element("Force").Element("Plate");
 
     if (mMajorVersion > 1 || mMinorVersion > 7)
     {
@@ -132,7 +130,76 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
 
 std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
 {
-    return mSerializer->Set6DOFBodySettings(settings6Dofs);
+    auto the6D = mSerializer->Element("QTM_Settings").Element("The_6D");
+
+    for (const auto& body : settings6Dofs)
+    {
+        auto bodyElem = the6D.Element("Body");
+
+        bodyElem.ElementString("Name", body.name.c_str());
+        bodyElem.ElementBool("Enabled", body.enabled);
+
+        auto colorElem = bodyElem.Element("Color");
+        colorElem.AttributeUnsignedInt("R", body.color & 0xff);
+        colorElem.AttributeUnsignedInt("G", (body.color >> 8) & 0xff);
+        colorElem.AttributeUnsignedInt("B", (body.color >> 16) & 0xff);
+
+        bodyElem.ElementFloat("MaximumResidual", body.maxResidual, 6);
+        bodyElem.ElementUnsignedInt("MinimumMarkersInBody", body.minMarkersInBody);
+        bodyElem.ElementFloat("BoneLengthTolerance", body.boneLengthTolerance, 6);
+        bodyElem.Element("Filter").AttributeString("Preset", body.filterPreset.c_str());
+
+        if (!body.mesh.name.empty())
+        {
+            auto meshElem = bodyElem.Element("Mesh");
+            meshElem.ElementString("Name", body.mesh.name.c_str());
+
+            meshElem.Element("Position")
+                .AttributeFloat("X",body.mesh.position.fX,6)
+                .AttributeFloat("Y", body.mesh.position.fY, 6)
+                .AttributeFloat("Z", body.mesh.position.fZ, 6);
+
+            meshElem.Element("Rotation")
+                .AttributeFloat("X", body.mesh.rotation.fX, 6)
+                .AttributeFloat("Y", body.mesh.rotation.fY, 6)
+                .AttributeFloat("Z", body.mesh.rotation.fZ, 6);
+
+            meshElem.ElementFloat("Scale", body.mesh.scale, 6);
+            meshElem.ElementFloat("Opacity", body.mesh.opacity, 6);
+        }
+
+        if (!body.points.empty())
+        {
+            auto pointsElem = bodyElem.Element("Points");
+            for (const auto& point : body.points)
+            {
+                pointsElem.Element("Point")
+                    .AttributeFloat("X", point.fX, 6)
+                    .AttributeFloat("Y", point.fY, 6)
+                    .AttributeFloat("Z", point.fZ, 6)
+                    .AttributeUnsignedInt("Virtual", point.virtual_ ? 1 : 0)
+                    .AttributeUnsignedInt("PhysicalId", point.physicalId)
+                    .AttributeString("Name", point.name.c_str());
+            }
+        }
+
+        bodyElem.ElementUnsignedInt("Data_origin", body.origin.type)
+            .AttributeFloat("X", body.origin.position.fX, 6)
+            .AttributeFloat("Y", body.origin.position.fY, 6)
+            .AttributeFloat("Z", body.origin.position.fZ, 6)
+            .AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
+
+        auto orientationElem = bodyElem.ElementUnsignedInt("Data_orientation", body.origin.type);
+        for (std::uint32_t i = 0; i < 9; i++)
+        {
+            char tmpStr[16];
+            sprintf_s(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            orientationElem.AttributeFloat(tmpStr, body.origin.rotation[i], 6);
+        }
+        orientationElem.AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
+    }
+
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
