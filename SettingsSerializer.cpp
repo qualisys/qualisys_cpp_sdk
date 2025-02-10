@@ -448,7 +448,62 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     const CRTPacket::EImageFormat* format, const unsigned int* width, const unsigned int* height,
     const float* leftCrop, const float* topCrop, const float* rightCrop, const float* bottomCrop)
 {
-    return mSerializer->SetImageSettings(cameraId, enable, format, width, height, leftCrop, topCrop, rightCrop, bottomCrop);
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("Image")
+        .Element("Camera");
+
+    cameraElem.ElementUnsignedInt("ID", cameraId);
+    if (enable)
+    {
+        cameraElem.ElementBool("Enabled", *enable);
+    }
+
+    if (format)
+    {
+        const char* formatStr = nullptr;
+        switch (*format)
+        {
+        case CRTPacket::FormatRawGrayscale:
+            formatStr = "RAWGrayscale";
+            break;
+        case CRTPacket::FormatRawBGR:
+            formatStr = "RAWBGR";
+            break;
+        case CRTPacket::FormatJPG:
+            formatStr = "JPG";
+            break;
+        case CRTPacket::FormatPNG:
+            formatStr = "PNG";
+            break;
+        }
+
+        if (formatStr)
+        {
+            cameraElem.ElementString("Format", formatStr);
+        }
+    }
+    
+    cameraElem.ElementUnsignedInt("Width", *width);
+    cameraElem.ElementUnsignedInt("Height", *height);
+    if (leftCrop)
+    {
+        cameraElem.ElementFloat("Left_Crop", *leftCrop, 6);
+    }
+    if (topCrop)
+    {
+        cameraElem.ElementFloat("Top_Crop", *topCrop, 6);
+    }
+    if (rightCrop)
+    {
+        cameraElem.ElementFloat("Right_Crop", *rightCrop, 6);
+    }
+    if (bottomCrop)
+    {
+        cameraElem.ElementFloat("Bottom_Crop", *bottomCrop, 6);
+    }
+
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,

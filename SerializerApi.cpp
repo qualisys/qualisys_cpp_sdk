@@ -138,64 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetImageSettings(const unsigned int  cameraId, const bool* enable, const CRTPacket::EImageFormat* format,
-    const unsigned int* width, const unsigned int* height, const float* leftCrop,
-    const float* topCrop, const float* rightCrop, const float* bottomCrop)
-{
-    tinyxml2::XMLDocument document;
-
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* imageElem = document.NewElement("Image");
-    rootElem->InsertEndChild(imageElem);
-
-    tinyxml2::XMLElement* cameraElem = document.NewElement("Camera");
-    imageElem->InsertEndChild(cameraElem);
-
-    AddXMLElementUnsignedInt(*cameraElem, "ID", cameraId, document);
-
-    AddXMLElementBool(*cameraElem, "Enabled", enable, document);
-
-    if (format)
-    {
-        const char* formatStr = nullptr;
-        switch (*format)
-        {
-        case CRTPacket::FormatRawGrayscale:
-            formatStr = "RAWGrayscale";
-            break;
-        case CRTPacket::FormatRawBGR:
-            formatStr = "RAWBGR";
-            break;
-        case CRTPacket::FormatJPG:
-            formatStr = "JPG";
-            break;
-        case CRTPacket::FormatPNG:
-            formatStr = "PNG";
-            break;
-        }
-
-        if (formatStr)
-        {
-            tinyxml2::XMLElement* formatElem = document.NewElement("Format");
-            formatElem->SetText(formatStr);
-            cameraElem->InsertEndChild(formatElem);
-        }
-    }
-
-    AddXMLElementUnsignedInt(*cameraElem, "Width", width, document);
-    AddXMLElementUnsignedInt(*cameraElem, "Height", height, document);
-    AddXMLElementFloat(*cameraElem, "Left_Crop", leftCrop, 6, document);
-    AddXMLElementFloat(*cameraElem, "Top_Crop", topCrop, 6, document);
-    AddXMLElementFloat(*cameraElem, "Right_Crop", rightCrop, 6, document);
-    AddXMLElementFloat(*cameraElem, "Bottom_Crop", bottomCrop, 6, document);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetForceSettings(const unsigned int plateId, const SPoint* corner1, const SPoint* corner2,
     const SPoint* corner3, const SPoint* corner4)
 {
