@@ -1672,9 +1672,8 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
                     unsigned int iCol = 0;
                     for (auto colElem = rowElem.FindChild(getColStr(iCol++)); colElem; colElem = colElem.FindNextSibling(getColStr(iCol++)))
                     {
-                        forcePlate.afCalibrationMatrix[iRow][iCol++] = colElem.ReadFloat();
+                        forcePlate.afCalibrationMatrix[iRow - 1][iCol - 1] = colElem.ReadFloat();
                     }
-                    iRow++;
                     forcePlate.nCalibrationMatrixColumns = iCol;
                 }
                 forcePlate.nCalibrationMatrixRows = iRow;
