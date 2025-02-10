@@ -26,23 +26,23 @@ qualisys_cpp_sdk::DeserializerApi qualisys_cpp_sdk::DeserializerApi::NextSibling
     return {mDocument, mPtr->NextSiblingElement(elementName)};
 }
 
-double qualisys_cpp_sdk::DeserializerApi::DoubleAttribute(const char* attributeName, double defaultValue) const
+double qualisys_cpp_sdk::DeserializerApi::ReadAttributeDouble(const char* attributeName, double defaultValue) const
 {
     return mPtr->DoubleAttribute(attributeName, defaultValue);
 }
 
-std::uint32_t qualisys_cpp_sdk::DeserializerApi::UnsignedAttribute(const char* attributeName,
+std::uint32_t qualisys_cpp_sdk::DeserializerApi::ReadAttributeUnsignedInt(const char* attributeName,
                                                                 std::uint32_t defaultValue) const
 {
     return mPtr->UnsignedAttribute(attributeName, defaultValue);
 }
 
-std::int32_t qualisys_cpp_sdk::DeserializerApi::IntAttribute(const char* attributeName, std::int32_t defaultValue) const
+std::int32_t qualisys_cpp_sdk::DeserializerApi::ReadAttributeInt(const char* attributeName, std::int32_t defaultValue) const
 {
     return mPtr->IntAttribute(attributeName, defaultValue);
 }
 
-bool qualisys_cpp_sdk::DeserializerApi::BoolAttribute(const char* attributeName, bool defaultValue) const
+bool qualisys_cpp_sdk::DeserializerApi::ReadAttributeBool(const char* attributeName, bool defaultValue) const
 {
     return mPtr->BoolAttribute(attributeName, defaultValue);
 }
@@ -62,22 +62,22 @@ qualisys_cpp_sdk::DeserializerApi::operator bool() const
     return mPtr != nullptr;
 }
 
-int qualisys_cpp_sdk::DeserializerApi::IntText(std::int32_t defaultValue) const
+int qualisys_cpp_sdk::DeserializerApi::ReadInt(std::int32_t defaultValue) const
 {
     return mPtr->IntText(defaultValue);
 }
 
-unsigned int qualisys_cpp_sdk::DeserializerApi::UnsignedText(std::int32_t defaultValue) const
+unsigned int qualisys_cpp_sdk::DeserializerApi::ReadUnsignedInt(std::int32_t defaultValue) const
 {
     return mPtr->UnsignedText(defaultValue);
 }
 
-float qualisys_cpp_sdk::DeserializerApi::FloatText(float defaultValue) const
+float qualisys_cpp_sdk::DeserializerApi::ReadFloat(float defaultValue) const
 {
     return mPtr->FloatText(defaultValue);
 }
 
-std::string qualisys_cpp_sdk::DeserializerApi::Attribute(const char* name) const
+std::string qualisys_cpp_sdk::DeserializerApi::ReadAttributeString(const char* name) const
 {
     if (auto charPtr = mPtr->Attribute(name))
     {
@@ -87,12 +87,12 @@ std::string qualisys_cpp_sdk::DeserializerApi::Attribute(const char* name) const
     return {};
 }
 
-float qualisys_cpp_sdk::DeserializerApi::FloatAttribute(const char* name, float defaultValue) const
+float qualisys_cpp_sdk::DeserializerApi::ReadAttributeFloat(const char* name, float defaultValue) const
 {
     return mPtr->FloatAttribute(name, defaultValue);
 }
 
-std::string qualisys_cpp_sdk::DeserializerApi::GetText() const
+std::string qualisys_cpp_sdk::DeserializerApi::ReadString() const
 {
     if (auto charPtr = mPtr->GetText())
     {

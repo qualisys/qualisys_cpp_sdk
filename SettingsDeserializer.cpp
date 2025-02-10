@@ -44,7 +44,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
     if (auto frequencyElem = generalElem.FirstChildElement("Frequency"))
     {
-        generalSettings.nCaptureFrequency = frequencyElem.UnsignedText(0);
+        generalSettings.nCaptureFrequency = frequencyElem.ReadUnsignedInt(0);
     }
     else
     {
@@ -53,7 +53,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
     if (auto captureTimeElem = generalElem.FirstChildElement("Capture_Time"))
     {
-        generalSettings.fCaptureTime = captureTimeElem.FloatText(.0f);
+        generalSettings.fCaptureTime = captureTimeElem.ReadFloat(.0f);
     }
     else
     {
@@ -392,9 +392,9 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
     auto eulerElem = generalElem.FirstChildElement("EulerAngles");
     if (eulerElem)
     {
-        generalSettings.eulerRotations[0] = eulerElem.Attribute("First");
-        generalSettings.eulerRotations[1] = eulerElem.Attribute("Second");
-        generalSettings.eulerRotations[2] = eulerElem.Attribute("Third");
+        generalSettings.eulerRotations[0] = eulerElem.ReadAttributeString("First");
+        generalSettings.eulerRotations[1] = eulerElem.ReadAttributeString("Second");
+        generalSettings.eulerRotations[2] = eulerElem.ReadAttributeString("Third");
     }
 
     for (auto cameraElem : ChildElementRange{generalElem, "Camera"})
@@ -856,14 +856,14 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             auto focusElem = lensControlElem.FirstChildElement("Focus");
             if (focusElem)
             {
-                cameraSettings.fFocus = focusElem.FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
+                cameraSettings.fFocus = focusElem.ReadAttributeFloat("Value", std::numeric_limits<float>::quiet_NaN());
             }
 
             auto apertureElem = lensControlElem.FirstChildElement("Aperture");
             if (apertureElem)
             {
                 cameraSettings.fAperture = apertureElem.
-                    FloatAttribute("Value", std::numeric_limits<float>::quiet_NaN());
+                    ReadAttributeFloat("Value", std::numeric_limits<float>::quiet_NaN());
             }
         }
         else
@@ -874,8 +874,8 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
         if (auto autoExposureElem = cameraElem.FirstChildElement("AutoExposure"))
         {
-            cameraSettings.autoExposureEnabled = autoExposureElem.BoolAttribute("Enabled", false);
-            cameraSettings.autoExposureCompensation = autoExposureElem.FloatAttribute(
+            cameraSettings.autoExposureEnabled = autoExposureElem.ReadAttributeBool("Enabled", false);
+            cameraSettings.autoExposureCompensation = autoExposureElem.ReadAttributeFloat(
                 "Compensation", std::numeric_limits<float>::quiet_NaN());
         }
         else
@@ -919,7 +919,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
     if (auto axisUpwards = threeDElem.FirstChildElement("AxisUpwards"))
     {
-        auto str = ToLowerXmlString(axisUpwards.GetText());
+        auto str = ToLowerXmlString(axisUpwards.ReadString());
         if (str == "+x")
         {
             settings3D.eAxisUpwards = XPos;
@@ -956,7 +956,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
     if (auto calibrationTimeElem = threeDElem.FirstChildElement("CalibrationTime"))
     {
-        auto str = calibrationTimeElem.GetText();
+        auto str = calibrationTimeElem.ReadString();
         strcpy_s(settings3D.pCalibrationTime, 32, str.data());
     }
     else
@@ -967,7 +967,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     std::size_t labelCount;
     if (auto labelsElem = threeDElem.FirstChildElement("Labels"))
     {
-        labelCount = labelsElem.IntText(0);
+        labelCount = labelsElem.ReadInt(0);
     }
     else
     {
@@ -982,17 +982,17 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
         SSettings3DLabel label{};
         if (auto nameElem = labelElem.FirstChildElement("Name"))
         {
-            label.oName = nameElem.GetText();
+            label.oName = nameElem.ReadString();
         }
 
         if (auto colorElem = labelElem.FirstChildElement("RGBColor"))
         {
-            label.nRGBColor = colorElem.IntText(0);
+            label.nRGBColor = colorElem.ReadInt(0);
         }
 
         if (auto typeElem = labelElem.FirstChildElement("Trajectory_Type"))
         {
-            label.type = typeElem.GetText();
+            label.type = typeElem.ReadString();
         }
 
         settings3D.s3DLabels.push_back(label);
@@ -1008,9 +1008,9 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
         for (auto boneElem : ChildElementRange{bonesElem, "Bone"})
         {
             SSettingsBone bone{};
-            bone.fromName = boneElem.Attribute("From");
-            bone.toName = boneElem.Attribute("To");
-            bone.color = boneElem.UnsignedAttribute("Color", bone.color);
+            bone.fromName = boneElem.ReadAttributeString("From");
+            bone.toName = boneElem.ReadAttributeString("To");
+            bone.color = boneElem.ReadAttributeUnsignedInt("Color", bone.color);
             settings3D.sBones.push_back(bone);
         }
     }
@@ -1028,7 +1028,7 @@ namespace
         {
             if (auto enabledElem = deserializer.FirstChildElement("Enabled"))
             {
-                target = enabledElem.GetText() == "true";
+                target = enabledElem.ReadString() == "true";
                 return true;
             }
         }
@@ -1043,9 +1043,9 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("Color"))
         {
-            std::uint32_t colorR = elem.UnsignedAttribute("R");
-            std::uint32_t colorG = elem.UnsignedAttribute("G");
-            std::uint32_t colorB = elem.UnsignedAttribute("B");
+            std::uint32_t colorR = elem.ReadAttributeUnsignedInt("R");
+            std::uint32_t colorG = elem.ReadAttributeUnsignedInt("G");
+            std::uint32_t colorB = elem.ReadAttributeUnsignedInt("B");
             target = (colorR & 0xff) | ((colorG << 8) & 0xff00) | ((colorB << 16) & 0xff0000);
             return true;
         }
@@ -1058,7 +1058,7 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("Filter"))
         {
-            target = elem.Attribute("Preset");
+            target = elem.ReadAttributeString("Preset");
             return true;
         }
 
@@ -1069,9 +1069,9 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("Position"))
         {
-            targetX = elem.FloatAttribute("X");
-            targetY = elem.FloatAttribute("Y");
-            targetZ = elem.FloatAttribute("Z");
+            targetX = elem.ReadAttributeFloat("X");
+            targetY = elem.ReadAttributeFloat("Y");
+            targetZ = elem.ReadAttributeFloat("Z");
             return true;
         }
 
@@ -1083,9 +1083,9 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("Rotation"))
         {
-            targetX = elem.FloatAttribute("X");
-            targetY = elem.FloatAttribute("Y");
-            targetZ = elem.FloatAttribute("Z");
+            targetX = elem.ReadAttributeFloat("X");
+            targetY = elem.ReadAttributeFloat("Y");
+            targetZ = elem.ReadAttributeFloat("Z");
             return true;
         }
 
@@ -1102,13 +1102,13 @@ namespace
             {
                 SBodyPoint bodyPoint;
 
-                bodyPoint.fX = pointElem.FloatAttribute("X");
-                bodyPoint.fY = pointElem.FloatAttribute("Y");
-                bodyPoint.fZ = pointElem.FloatAttribute("Z");
+                bodyPoint.fX = pointElem.ReadAttributeFloat("X");
+                bodyPoint.fY = pointElem.ReadAttributeFloat("Y");
+                bodyPoint.fZ = pointElem.ReadAttributeFloat("Z");
 
-                bodyPoint.virtual_ = 0 != pointElem.UnsignedAttribute("Virtual");
-                bodyPoint.physicalId = pointElem.UnsignedAttribute("PhysicalId");
-                bodyPoint.name = pointElem.Attribute("Name");
+                bodyPoint.virtual_ = 0 != pointElem.ReadAttributeUnsignedInt("Virtual");
+                bodyPoint.physicalId = pointElem.ReadAttributeUnsignedInt("PhysicalId");
+                bodyPoint.name = pointElem.ReadAttributeString("Name");
                 target.push_back(bodyPoint);
             }
 
@@ -1122,11 +1122,11 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("Data_origin"))
         {
-            target.type = static_cast<EOriginType>(elem.UnsignedText());
-            target.position.fX = elem.FloatAttribute("X");
-            target.position.fY = elem.FloatAttribute("Y");
-            target.position.fZ = elem.FloatAttribute("Z");
-            target.relativeBody = elem.UnsignedAttribute("Relative_body");
+            target.type = static_cast<EOriginType>(elem.ReadUnsignedInt());
+            target.position.fX = elem.ReadAttributeFloat("X");
+            target.position.fY = elem.ReadAttributeFloat("Y");
+            target.position.fZ = elem.ReadAttributeFloat("Z");
+            target.relativeBody = elem.ReadAttributeUnsignedInt("Relative_body");
         }
         else
         {
@@ -1140,12 +1140,12 @@ namespace
             for (std::uint32_t i = 0; i < 9; i++)
             {
                 (void)sprintf_s(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
-                target.rotation[i] = elem.FloatAttribute(tmpStr);
+                target.rotation[i] = elem.ReadAttributeFloat(tmpStr);
             }
 
 
-            auto type = static_cast<EOriginType>(elem.UnsignedText());
-            auto body = static_cast<std::uint32_t>(elem.UnsignedAttribute("Relative_body"));
+            auto type = static_cast<EOriginType>(elem.ReadUnsignedInt());
+            auto body = static_cast<std::uint32_t>(elem.ReadAttributeUnsignedInt("Relative_body"));
 
             // Validation: type and relativeBody must be the same between orientation and origin
             return type == target.type && body == target.relativeBody;
@@ -1159,7 +1159,7 @@ namespace
     {
         if (auto elem = deserializer.FirstChildElement("RGBColor"))
         {
-            target = elem.IntText();
+            target = elem.ReadInt();
             return true;
         }
 
@@ -1346,7 +1346,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
         std::string name;
         if (auto nameElem = vectorElem.FirstChildElement("Name"))
         {
-            name = nameElem.GetText();
+            name = nameElem.ReadString();
         }
         else
         {
@@ -1356,7 +1356,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
         float frequency = 0;
         if (auto frequencyElem = vectorElem.FirstChildElement("Frequency"))
         {
-            frequency = frequencyElem.FloatText();
+            frequency = frequencyElem.ReadFloat();
         }
 
         bool hwSync = false;
@@ -1396,7 +1396,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         std::string name;
         if (auto nameElem = deviceElem.FirstChildElement("Name"))
         {
-            name = nameElem.GetText();
+            name = nameElem.ReadString();
         }
         else
         {
@@ -1406,7 +1406,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         float frequency = 0;
         if (auto frequencyElem = deviceElem.FirstChildElement("Frequency"))
         {
-            frequency = frequencyElem.FloatText();
+            frequency = frequencyElem.ReadFloat();
         }
 
         bool hwSync = false;
@@ -1671,7 +1671,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
                     unsigned int iCol = 0;
                     for (auto col : ChildElementRange{row, getColStr})
                     {
-                        forcePlate.afCalibrationMatrix[iRow][iCol++] = col.FloatText();
+                        forcePlate.afCalibrationMatrix[iRow][iCol++] = col.ReadFloat();
                     }
                     iRow++;
                     forcePlate.nCalibrationMatrixColumns = iCol;
@@ -1693,7 +1693,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
                             unsigned int iCol = 0;
                             for (const auto col : ChildElementRange{columns, "Column"})
                             {
-                                forcePlate.afCalibrationMatrix[iRow][iCol++] = col.FloatText();
+                                forcePlate.afCalibrationMatrix[iRow][iCol++] = col.ReadFloat();
                             }
                             forcePlate.nCalibrationMatrixColumns = iCol;
                         }
@@ -1800,9 +1800,9 @@ namespace
         if (positionElem)
         {
             return {
-                positionElem.DoubleAttribute("X"),
-                positionElem.DoubleAttribute("Y"),
-                positionElem.DoubleAttribute("Z"),
+                positionElem.ReadAttributeDouble("X"),
+                positionElem.ReadAttributeDouble("Y"),
+                positionElem.ReadAttributeDouble("Z"),
             };
         }
 
@@ -1815,10 +1815,10 @@ namespace
         if (rotationElem)
         {
             return {
-                rotationElem.DoubleAttribute("X"),
-                rotationElem.DoubleAttribute("Y"),
-                rotationElem.DoubleAttribute("Z"),
-                rotationElem.DoubleAttribute("W")
+                rotationElem.ReadAttributeDouble("X"),
+                rotationElem.ReadAttributeDouble("Y"),
+                rotationElem.ReadAttributeDouble("Z"),
+                rotationElem.ReadAttributeDouble("W")
             };
         }
 
@@ -1840,13 +1840,13 @@ namespace
 
         if (auto constraintElem = degreeOfFreedomElement.FirstChildElement("Constraint"))
         {
-            degreeOfFreedom.lowerBound = constraintElem.DoubleAttribute("LowerBound");
-            degreeOfFreedom.upperBound = constraintElem.DoubleAttribute("UpperBound");
+            degreeOfFreedom.lowerBound = constraintElem.ReadAttributeDouble("LowerBound");
+            degreeOfFreedom.upperBound = constraintElem.ReadAttributeDouble("UpperBound");
         }
         else
         {
-            degreeOfFreedom.lowerBound = degreeOfFreedomElement.DoubleAttribute("LowerBound");
-            degreeOfFreedom.upperBound = degreeOfFreedomElement.DoubleAttribute("UpperBound");
+            degreeOfFreedom.lowerBound = degreeOfFreedomElement.ReadAttributeDouble("LowerBound");
+            degreeOfFreedom.upperBound = degreeOfFreedomElement.ReadAttributeDouble("UpperBound");
         }
 
         if (auto couplingsElem = degreeOfFreedomElement.FirstChildElement("Couplings"))
@@ -1854,18 +1854,18 @@ namespace
             for (auto couplingElem : ChildElementRange{couplingsElem, "Coupling"})
             {
                 SCoupling coupling{};
-                coupling.segment = couplingElem.Attribute("Segment");
-                auto dof = couplingElem.Attribute("DegreeOfFreedom");
+                coupling.segment = couplingElem.ReadAttributeString("Segment");
+                auto dof = couplingElem.ReadAttributeString("DegreeOfFreedom");
                 coupling.degreeOfFreedom = SkeletonStringToDofSettings(dof);
-                coupling.coefficient = couplingElem.DoubleAttribute("Coefficient");
+                coupling.coefficient = couplingElem.ReadAttributeDouble("Coefficient");
                 degreeOfFreedom.couplings.push_back(coupling);
             }
         }
 
         if (auto goalElem = degreeOfFreedomElement.FirstChildElement("Goal"))
         {
-            degreeOfFreedom.goalValue = goalElem.DoubleAttribute("Value");
-            degreeOfFreedom.goalWeight = goalElem.DoubleAttribute("Weight");
+            degreeOfFreedom.goalValue = goalElem.ReadAttributeDouble("Value");
+            degreeOfFreedom.goalWeight = goalElem.ReadAttributeDouble("Weight");
         }
 
         degreesOfFreedom.push_back(degreeOfFreedom);
@@ -1906,7 +1906,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
             SSettingsSkeleton skeleton{};
             segmentIndex = 0;
 
-            skeletonHierarchical.name = skeletonElem.Attribute("Name");
+            skeletonHierarchical.name = skeletonElem.ReadAttributeString("Name");
             skeleton.name = skeletonHierarchical.name;
 
             skeletonElem.TryReadElementString("Solver", skeletonHierarchical.rootSegment.solver);
@@ -1920,7 +1920,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                     DeserializerApi& segmentElem, SSettingsSkeletonSegmentHierarchical& segmentHierarchical,
                     std::vector<SSettingsSkeletonSegment>& segments, std::uint32_t parentId)
                 {
-                    segmentHierarchical.name = segmentElem.Attribute("Name");
+                    segmentHierarchical.name = segmentElem.ReadAttributeString("Name");
 
                     segmentElem.TryReadElementUnsignedInt32("ID", segmentHierarchical.id);
                     segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
@@ -1963,7 +1963,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                         {
                             SMarker marker;
 
-                            marker.name = markerElem.Attribute("Name");
+                            marker.name = markerElem.ReadAttributeString("Name");
 
                             marker.position = ReadSPosition(markerElem, "Position");
 
@@ -1982,7 +1982,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                         {
                             SBody body;
 
-                            body.name = rigidBodyElem.Attribute("Name");
+                            body.name = rigidBodyElem.ReadAttributeString("Name");
 
                             auto rbodyTransformElem = rigidBodyElem.FirstChildElement("Transform");
                             if (rbodyTransformElem)
@@ -2041,14 +2041,14 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
     {
         SSettingsSkeleton skeleton{};
         segmentIndex = 0;
-        skeleton.name = skeletonElem.Attribute("Name");
+        skeleton.name = skeletonElem.ReadAttributeString("Name");
         for (auto segmentElem : ChildElementRange{skeletonElem, "Segment"})
         {
             SSettingsSkeletonSegment segment{};
-            segment.name = segmentElem.Attribute("Name");
-            segment.id = segmentElem.UnsignedAttribute("ID");
+            segment.name = segmentElem.ReadAttributeString("Name");
+            segment.id = segmentElem.ReadAttributeUnsignedInt("ID");
             segmentIdIndexMap[segment.id] = segmentIndex++;
-            segment.parentId = segmentElem.IntAttribute("Parent_ID", -1);
+            segment.parentId = segmentElem.ReadAttributeInt("Parent_ID", -1);
             segment.parentIndex = -1;
             if (segmentIdIndexMap.count(segment.parentId) > 0)
             {
@@ -2057,17 +2057,17 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
 
             if (auto positionElement = segmentElem.FirstChildElement("Position"))
             {
-                segment.positionX = positionElement.FloatAttribute("X");
-                segment.positionY = positionElement.FloatAttribute("Y");
-                segment.positionZ = positionElement.FloatAttribute("Z");
+                segment.positionX = positionElement.ReadAttributeFloat("X");
+                segment.positionY = positionElement.ReadAttributeFloat("Y");
+                segment.positionZ = positionElement.ReadAttributeFloat("Z");
             }
 
             if (auto rotationElement = segmentElem.FirstChildElement("Rotation"))
             {
-                segment.rotationX = rotationElement.FloatAttribute("X");
-                segment.rotationY = rotationElement.FloatAttribute("Y");
-                segment.rotationZ = rotationElement.FloatAttribute("Z");
-                segment.rotationW = rotationElement.FloatAttribute("W");
+                segment.rotationX = rotationElement.ReadAttributeFloat("X");
+                segment.rotationY = rotationElement.ReadAttributeFloat("Y");
+                segment.rotationZ = rotationElement.ReadAttributeFloat("Z");
+                segment.rotationW = rotationElement.ReadAttributeFloat("W");
             }
 
             skeleton.segments.push_back(segment);
@@ -2090,10 +2090,10 @@ namespace
             return false;
         }
 
-        fov.left = childElement.UnsignedAttribute("left");
-        fov.top = childElement.UnsignedAttribute("top");
-        fov.right = childElement.UnsignedAttribute("right");
-        fov.bottom = childElement.UnsignedAttribute("bottom");
+        fov.left = childElement.ReadAttributeUnsignedInt("left");
+        fov.top = childElement.ReadAttributeUnsignedInt("top");
+        fov.right = childElement.ReadAttributeUnsignedInt("right");
+        fov.bottom = childElement.ReadAttributeUnsignedInt("bottom");
 
         return true;
     }
@@ -2116,12 +2116,12 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
 
     try
     {
-        settings.calibrated = calibrationElem.BoolAttribute("calibrated");
-        settings.source = calibrationElem.Attribute("source");
-        settings.created = calibrationElem.Attribute("created");
-        settings.qtm_version = calibrationElem.Attribute("qtm-version");
+        settings.calibrated = calibrationElem.ReadAttributeBool("calibrated");
+        settings.source = calibrationElem.ReadAttributeString("source");
+        settings.created = calibrationElem.ReadAttributeString("created");
+        settings.qtm_version = calibrationElem.ReadAttributeString("qtm-version");
 
-        std::string typeStr = ToLowerXmlString(calibrationElem.Attribute("type"));
+        std::string typeStr = ToLowerXmlString(calibrationElem.ReadAttributeString("type"));
         if (typeStr == "regular")
         {
             settings.type = ECalibrationType::regular;
@@ -2137,16 +2137,16 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
 
         if (settings.type == ECalibrationType::refine)
         {
-            settings.refit_residual = calibrationElem.DoubleAttribute("refit-residual");
+            settings.refit_residual = calibrationElem.ReadAttributeDouble("refit-residual");
         }
 
         if (settings.type != ECalibrationType::fixed)
         {
-            settings.wand_length = calibrationElem.DoubleAttribute("wandLength");
-            settings.max_frames = calibrationElem.UnsignedAttribute("maximumFrames");
-            settings.short_arm_end = calibrationElem.DoubleAttribute("shortArmEnd");
-            settings.long_arm_end = calibrationElem.DoubleAttribute("longArmEnd");
-            settings.long_arm_middle = calibrationElem.DoubleAttribute("longArmMiddle");
+            settings.wand_length = calibrationElem.ReadAttributeDouble("wandLength");
+            settings.max_frames = calibrationElem.ReadAttributeUnsignedInt("maximumFrames");
+            settings.short_arm_end = calibrationElem.ReadAttributeDouble("shortArmEnd");
+            settings.long_arm_end = calibrationElem.ReadAttributeDouble("longArmEnd");
+            settings.long_arm_middle = calibrationElem.ReadAttributeDouble("longArmMiddle");
 
             auto resultsElem = calibrationElem.FirstChildElement("results");
             if (!resultsElem)
@@ -2154,13 +2154,13 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
                 return false;
             }
 
-            settings.result_std_dev = resultsElem.DoubleAttribute("std-dev");
-            settings.result_min_max_diff = resultsElem.DoubleAttribute("min-max-diff");
+            settings.result_std_dev = resultsElem.ReadAttributeDouble("std-dev");
+            settings.result_min_max_diff = resultsElem.ReadAttributeDouble("min-max-diff");
 
             if (settings.type == ECalibrationType::refine)
             {
-                settings.result_refit_residual = resultsElem.DoubleAttribute("refit-residual");
-                settings.result_consecutive = resultsElem.UnsignedAttribute("consecutive");
+                settings.result_refit_residual = resultsElem.ReadAttributeDouble("refit-residual");
+                settings.result_consecutive = resultsElem.ReadAttributeUnsignedInt("consecutive");
             }
         }
 
@@ -2173,15 +2173,15 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
         for (auto cameraElem : ChildElementRange{camerasElem, "camera"})
         {
             SCalibrationCamera camera{};
-            camera.active = cameraElem.UnsignedAttribute("active") != 0;
-            camera.calibrated = cameraElem.BoolAttribute("calibrated");
-            camera.message = cameraElem.Attribute("message");
+            camera.active = cameraElem.ReadAttributeUnsignedInt("active") != 0;
+            camera.calibrated = cameraElem.ReadAttributeBool("calibrated");
+            camera.message = cameraElem.ReadAttributeString("message");
 
-            camera.point_count = cameraElem.UnsignedAttribute("point-count");
-            camera.avg_residual = cameraElem.DoubleAttribute("avg-residual");
-            camera.serial = cameraElem.UnsignedAttribute("serial");
-            camera.model = cameraElem.Attribute("model");
-            camera.view_rotation = cameraElem.UnsignedAttribute("viewrotation");
+            camera.point_count = cameraElem.ReadAttributeUnsignedInt("point-count");
+            camera.avg_residual = cameraElem.ReadAttributeDouble("avg-residual");
+            camera.serial = cameraElem.ReadAttributeUnsignedInt("serial");
+            camera.model = cameraElem.ReadAttributeString("model");
+            camera.view_rotation = cameraElem.ReadAttributeUnsignedInt("viewrotation");
 
             if (!TryReadXmlFov("fov_marker", cameraElem, camera.fov_marker))
             {
@@ -2209,18 +2209,18 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
                 return false;
             }
 
-            camera.transform.x = transformElem.DoubleAttribute("x");
-            camera.transform.y = transformElem.DoubleAttribute("y");
-            camera.transform.z = transformElem.DoubleAttribute("z");
-            camera.transform.r11 = transformElem.DoubleAttribute("r11");
-            camera.transform.r12 = transformElem.DoubleAttribute("r12");
-            camera.transform.r13 = transformElem.DoubleAttribute("r13");
-            camera.transform.r21 = transformElem.DoubleAttribute("r21");
-            camera.transform.r22 = transformElem.DoubleAttribute("r22");
-            camera.transform.r23 = transformElem.DoubleAttribute("r23");
-            camera.transform.r31 = transformElem.DoubleAttribute("r31");
-            camera.transform.r32 = transformElem.DoubleAttribute("r32");
-            camera.transform.r33 = transformElem.DoubleAttribute("r33");
+            camera.transform.x = transformElem.ReadAttributeDouble("x");
+            camera.transform.y = transformElem.ReadAttributeDouble("y");
+            camera.transform.z = transformElem.ReadAttributeDouble("z");
+            camera.transform.r11 = transformElem.ReadAttributeDouble("r11");
+            camera.transform.r12 = transformElem.ReadAttributeDouble("r12");
+            camera.transform.r13 = transformElem.ReadAttributeDouble("r13");
+            camera.transform.r21 = transformElem.ReadAttributeDouble("r21");
+            camera.transform.r22 = transformElem.ReadAttributeDouble("r22");
+            camera.transform.r23 = transformElem.ReadAttributeDouble("r23");
+            camera.transform.r31 = transformElem.ReadAttributeDouble("r31");
+            camera.transform.r32 = transformElem.ReadAttributeDouble("r32");
+            camera.transform.r33 = transformElem.ReadAttributeDouble("r33");
 
             auto intrinsicElem = cameraElem.FirstChildElement("intrinsic");
             if (!intrinsicElem)
@@ -2228,21 +2228,21 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
                 return false;
             }
 
-            camera.intrinsic.focal_length = intrinsicElem.DoubleAttribute("focallength", 0);
-            camera.intrinsic.sensor_min_u = intrinsicElem.DoubleAttribute("sensorMinU");
-            camera.intrinsic.sensor_max_u = intrinsicElem.DoubleAttribute("sensorMaxU");
-            camera.intrinsic.sensor_min_v = intrinsicElem.DoubleAttribute("sensorMinV");
-            camera.intrinsic.sensor_max_v = intrinsicElem.DoubleAttribute("sensorMaxV");
-            camera.intrinsic.focal_length_u = intrinsicElem.DoubleAttribute("focalLengthU");
-            camera.intrinsic.focal_length_v = intrinsicElem.DoubleAttribute("focalLengthV");
-            camera.intrinsic.center_point_u = intrinsicElem.DoubleAttribute("centerPointU");
-            camera.intrinsic.center_point_v = intrinsicElem.DoubleAttribute("centerPointV");
-            camera.intrinsic.skew = intrinsicElem.DoubleAttribute("skew");
-            camera.intrinsic.radial_distortion_1 = intrinsicElem.DoubleAttribute("radialDistortion1");
-            camera.intrinsic.radial_distortion_2 = intrinsicElem.DoubleAttribute("radialDistortion2");
-            camera.intrinsic.radial_distortion_3 = intrinsicElem.DoubleAttribute("radialDistortion3");
-            camera.intrinsic.tangental_distortion_1 = intrinsicElem.DoubleAttribute("tangentalDistortion1");
-            camera.intrinsic.tangental_distortion_2 = intrinsicElem.DoubleAttribute("tangentalDistortion2");
+            camera.intrinsic.focal_length = intrinsicElem.ReadAttributeDouble("focallength", 0);
+            camera.intrinsic.sensor_min_u = intrinsicElem.ReadAttributeDouble("sensorMinU");
+            camera.intrinsic.sensor_max_u = intrinsicElem.ReadAttributeDouble("sensorMaxU");
+            camera.intrinsic.sensor_min_v = intrinsicElem.ReadAttributeDouble("sensorMinV");
+            camera.intrinsic.sensor_max_v = intrinsicElem.ReadAttributeDouble("sensorMaxV");
+            camera.intrinsic.focal_length_u = intrinsicElem.ReadAttributeDouble("focalLengthU");
+            camera.intrinsic.focal_length_v = intrinsicElem.ReadAttributeDouble("focalLengthV");
+            camera.intrinsic.center_point_u = intrinsicElem.ReadAttributeDouble("centerPointU");
+            camera.intrinsic.center_point_v = intrinsicElem.ReadAttributeDouble("centerPointV");
+            camera.intrinsic.skew = intrinsicElem.ReadAttributeDouble("skew");
+            camera.intrinsic.radial_distortion_1 = intrinsicElem.ReadAttributeDouble("radialDistortion1");
+            camera.intrinsic.radial_distortion_2 = intrinsicElem.ReadAttributeDouble("radialDistortion2");
+            camera.intrinsic.radial_distortion_3 = intrinsicElem.ReadAttributeDouble("radialDistortion3");
+            camera.intrinsic.tangental_distortion_1 = intrinsicElem.ReadAttributeDouble("tangentalDistortion1");
+            camera.intrinsic.tangental_distortion_2 = intrinsicElem.ReadAttributeDouble("tangentalDistortion2");
             settings.cameras.push_back(camera);
         }
     }
