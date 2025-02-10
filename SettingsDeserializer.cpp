@@ -1655,23 +1655,24 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         {
             if (mMajorVersion == 1 && mMinorVersion < 12)
             {
-                auto getRowStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
-                    sprintf_s(buff, buffSize, "Row%zd", index + 1);
-                    return buff;
+                char charBuffer[128]{'\0'};
+                auto getRowStr = [&charBuffer](std::size_t index)-> const char* {
+                    sprintf_s(charBuffer, sizeof(charBuffer), "Row%zd", index + 1);
+                    return charBuffer;
                 };
 
-                auto getColStr = [](auto& buff, std::size_t buffSize, std::size_t index)-> const char* {
-                    sprintf_s(buff, buffSize, "Col%zd", index + 1);
-                    return buff;
+                auto getColStr = [&charBuffer](std::size_t index)-> const char* {
+                    sprintf_s(charBuffer, sizeof(charBuffer), "Col%zd", index + 1);
+                    return charBuffer;
                 };
 
                 unsigned int iRow = 0;
-                for (auto row : ChildElementRange{calibrationMatrix, getRowStr})
+                for (auto rowElem =  calibrationMatrix.FindChild(getRowStr(iRow++)); rowElem; rowElem = rowElem.FindNextSibling(getRowStr(iRow++)))
                 {
                     unsigned int iCol = 0;
-                    for (auto col : ChildElementRange{row, getColStr})
+                    for (auto colElem = rowElem.FindChild(getColStr(iCol++)); colElem; colElem = colElem.FindNextSibling(getColStr(iCol++)))
                     {
-                        forcePlate.afCalibrationMatrix[iRow][iCol++] = col.ReadFloat();
+                        forcePlate.afCalibrationMatrix[iRow][iCol++] = colElem.ReadFloat();
                     }
                     iRow++;
                     forcePlate.nCalibrationMatrixColumns = iCol;
