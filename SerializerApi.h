@@ -149,7 +149,5 @@ namespace qualisys_cpp_sdk
         }
 
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
-
-        std::string SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons);
     };
 }

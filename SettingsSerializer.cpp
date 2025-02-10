@@ -656,7 +656,7 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
         std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
         recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, SerializerApi& parentElem)
             {
-                auto segmentElem = segmentsElem.Element("Segment")
+                auto segmentElem = parentElem.Element("Segment")
                     .AttributeString("Name", segment.name.c_str());
 
                 if (mMajorVersion > 1 || mMinorVersion > 21)
@@ -770,8 +770,8 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
 
                     transformElem.Element("Position")
                         .AttributeString("X", std::to_string(rigidBody.position.x).c_str())
-                        .AttributeString("Y", std::to_string(rigidBody.position.x).c_str())
-                        .AttributeString("Z", std::to_string(rigidBody.position.x).c_str());
+                        .AttributeString("Y", std::to_string(rigidBody.position.y).c_str())
+                        .AttributeString("Z", std::to_string(rigidBody.position.z).c_str());
                     transformElem.Element("Rotation")
                         .AttributeString("X", std::to_string(rigidBody.rotation.x).c_str())
                         .AttributeString("Y", std::to_string(rigidBody.rotation.y).c_str())
