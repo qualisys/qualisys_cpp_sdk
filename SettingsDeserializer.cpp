@@ -60,24 +60,24 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         return false;
     }
 
-    if (!ReadXmlBool(generalElem, "Start_On_External_Trigger", generalSettings.bStartOnExternalTrigger))
+    if (!TryReadElementBool(generalElem, "Start_On_External_Trigger", generalSettings.bStartOnExternalTrigger))
     {
         return false;
     }
 
     if (mMajorVersion > 1 || mMinorVersion > 14)
     {
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NO", generalSettings.bStartOnTrigNO))
+        if (!TryReadElementBool(generalElem, "Start_On_Trigger_NO", generalSettings.bStartOnTrigNO))
         {
             return false;
         }
 
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_NC", generalSettings.bStartOnTrigNC))
+        if (!TryReadElementBool(generalElem, "Start_On_Trigger_NC", generalSettings.bStartOnTrigNC))
         {
             return false;
         }
 
-        if (!ReadXmlBool(generalElem, "Start_On_Trigger_Software", generalSettings.bStartOnTrigSoftware))
+        if (!TryReadElementBool(generalElem, "Start_On_Trigger_Software", generalSettings.bStartOnTrigSoftware))
         {
             return false;
         }
@@ -85,7 +85,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
     if (auto extTimeBaseElem = generalElem.FirstChildElement("External_Time_Base"))
     {
-        if (!ReadXmlBool(extTimeBaseElem, "Enabled", generalSettings.sExternalTimebase.bEnabled))
+        if (!TryReadElementBool(extTimeBaseElem, "Enabled", generalSettings.sExternalTimebase.bEnabled))
         {
             return false;
         }
@@ -235,7 +235,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
     if (auto externalTimestampElem = generalElem.FirstChildElement("External_Timestamp"))
     {
-        if (!ReadXmlBool(externalTimestampElem, "Enabled", generalSettings.sTimestamp.bEnabled))
+        if (!TryReadElementBool(externalTimestampElem, "Enabled", generalSettings.sTimestamp.bEnabled))
         {
             return false;
         }
@@ -273,7 +273,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
                                          EProcessingActions& target) -> bool
     {
         bool value;
-        if (ReadXmlBool(parent, elementName, value))
+        if (TryReadElementBool(parent, elementName, value))
         {
             if (value)
             {
@@ -526,8 +526,8 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             cameraSettings.eModel = ModelUnknown;
         }
 
-        ReadXmlBool(cameraElem, "Underwater", cameraSettings.bUnderwater);
-        ReadXmlBool(cameraElem, "Supports_HW_Sync", cameraSettings.bSupportsHwSync);
+        TryReadElementBool(cameraElem, "Underwater", cameraSettings.bUnderwater);
+        TryReadElementBool(cameraElem, "Supports_HW_Sync", cameraSettings.bSupportsHwSync);
 
         if (!TryReadElementUnsignedInt32(cameraElem, "Serial", cameraSettings.nSerial))
         {
@@ -885,7 +885,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
 
         bool autoWhiteBalance;
-        if (ReadXmlBool(cameraElem, "AutoWhiteBalance", autoWhiteBalance))
+        if (TryReadElementBool(cameraElem, "AutoWhiteBalance", autoWhiteBalance))
         {
             cameraSettings.autoWhiteBalance = autoWhiteBalance ? 1 : 0;
         }
@@ -1360,10 +1360,10 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
         }
 
         bool hwSync = false;
-        ReadXmlBool(vectorElem, "Hardware_Sync", hwSync);
+        TryReadElementBool(vectorElem, "Hardware_Sync", hwSync);
 
         bool filter = false;
-        ReadXmlBool(vectorElem, "Filter", filter);
+        TryReadElementBool(vectorElem, "Filter", filter);
 
         gazeVectorSettings.push_back({name, frequency, hwSync, filter});
     }
@@ -1410,7 +1410,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
         }
 
         bool hwSync = false;
-        ReadXmlBool(deviceElem, "Hardware_Sync", hwSync);
+        TryReadElementBool(deviceElem, "Hardware_Sync", hwSync);
 
         eyeTrackerSettings.push_back({name, frequency, hwSync});
     }
@@ -1738,7 +1738,7 @@ bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& i
             return false;
         }
 
-        if (!ReadXmlBool(camera, "Enabled", imageCamera.bEnabled))
+        if (!TryReadElementBool(camera, "Enabled", imageCamera.bEnabled))
         {
             return false;
         }

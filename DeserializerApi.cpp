@@ -227,7 +227,7 @@ namespace
     }
 }
 
-bool qualisys_cpp_sdk::ReadXmlBool(DeserializerApi xml, const std::string& element, bool& value)
+bool qualisys_cpp_sdk::TryReadElementBool(DeserializerApi xml, const std::string& element, bool& value)
 {
     auto xmlElem = xml.FirstChildElement(element.c_str());
     if (!xmlElem)
