@@ -13,6 +13,7 @@
 #include <vector>
 #include <iterator>
 #include <functional>
+#include <cstring>
 
 #include "Network.h"
 #include "SettingsDeserializer.h"
