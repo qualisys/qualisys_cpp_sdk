@@ -148,8 +148,6 @@ namespace qualisys_cpp_sdk
 
         SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
 
-        std::string SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings);
-
         std::string SetCameraSettings(const unsigned int cameraId, const ECameraMode* mode, const float* markerExposure,
             const float* markerThreshold, const int* orientation);
 

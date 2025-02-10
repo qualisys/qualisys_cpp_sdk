@@ -138,45 +138,6 @@ void SerializerApi::AddXMLElementDOF(tinyxml2::XMLDocument& document, tinyxml2::
     }
 }
 
-std::string SerializerApi::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
-{
-    tinyxml2::XMLDocument document;
-
-    tinyxml2::XMLElement* rootElem = document.NewElement("QTM_Settings");
-    document.InsertFirstChild(rootElem);
-
-    tinyxml2::XMLElement* generalElem = document.NewElement("General");
-    rootElem->InsertEndChild(generalElem);
-
-    tinyxml2::XMLElement* timeStampElem = document.NewElement("External_Timestamp");
-    generalElem->InsertEndChild(timeStampElem);
-
-    AddXMLElementBool(*timeStampElem, "Enabled", timestampSettings.bEnabled, document);
-
-    tinyxml2::XMLElement* typeElem = document.NewElement("Type");
-    switch (timestampSettings.nType)
-    {
-    case ETimestampType::Timestamp_SMPTE:
-        typeElem->SetText("SMPTE");
-        break;
-    case ETimestampType::Timestamp_IRIG:
-        typeElem->SetText("IRIG");
-        break;
-    case ETimestampType::Timestamp_CameraTime:
-        typeElem->SetText("CameraTime");
-        break;
-    default:
-        break;
-    }
-    timeStampElem->InsertEndChild(typeElem);
-
-    AddXMLElementUnsignedInt(*timeStampElem, "Frequency", timestampSettings.nFrequency, document);
-
-    tinyxml2::XMLPrinter printer;
-    document.Print(&printer);
-    return printer.CStr();
-}
-
 std::string SerializerApi::SetCameraSettings(
     const unsigned int cameraId, const ECameraMode* mode,
     const float* markerExposure, const float* markerThreshold,

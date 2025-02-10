@@ -24,7 +24,7 @@ R"XMLDATA(<QTM_Settings>
 R"XMLDATA(<QTM_Settings>
     <General>
         <External_Timestamp>
-            <Enabled>True</Enabled>
+            <Enabled>true</Enabled>
             <Type>IRIG</Type>
             <Frequency>999</Frequency>
         </External_Timestamp>

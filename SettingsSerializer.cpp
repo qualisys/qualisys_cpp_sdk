@@ -168,10 +168,32 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     return timeBaseElem.ToString();
 }
 
-
 std::string SettingsSerializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    return mSerializer->SetExtTimestampSettings(timestampSettings);
+    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    auto timeStampElem = theGeneral.Element("External_Timestamp");
+
+    timeStampElem.ElementBool("Enabled", timestampSettings.bEnabled);
+
+    switch (timestampSettings.nType)
+    {
+    case ETimestampType::Timestamp_SMPTE:
+        timeStampElem.ElementString("Type", "SMPTE");
+        break;
+    case ETimestampType::Timestamp_IRIG:
+        timeStampElem.ElementString("Type", "IRIG");
+        break;
+    case ETimestampType::Timestamp_CameraTime:
+        timeStampElem.ElementString("Type", "CameraTime");
+        break;
+    default:
+        break;
+    }
+
+    timeStampElem.ElementUnsignedInt("Frequency", timestampSettings.nFrequency);
+
+    return theGeneral.ToString();
 }
 
 std::string SettingsSerializer::SetCameraSettings(
