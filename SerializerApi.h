@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "Settings.h"
 
 namespace tinyxml2
 {
@@ -31,7 +30,7 @@ namespace qualisys_cpp_sdk
 
         SerializerApi ElementInt(const char* name, std::int32_t value);
 
-        SerializerApi ElementFloat(const char* name, float value, int decimals);
+        SerializerApi ElementFloat(const char* name, float value);
 
         SerializerApi ElementDouble(const char* name, double value);
 
@@ -43,9 +42,9 @@ namespace qualisys_cpp_sdk
 
         SerializerApi AttributeInt(const char* name, std::int32_t value);
 
-        SerializerApi AttributeFloat(const char* name, float value, int decimals);
+        SerializerApi AttributeFloat(const char* name, float value);
 
-        SerializerApi AttributeDouble(const char* name, double value, int decimals);
+        SerializerApi AttributeDouble(const char* name, double value);
 
         SerializerApi AttributeUnsignedInt(const char* name, std::uint32_t value);
 

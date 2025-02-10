@@ -35,19 +35,17 @@ SerializerApi SerializerApi::ElementInt(const char* name, std::int32_t value)
     return SerializerApi{ *this, newElement.mCurrentElement };
 }
 
-SerializerApi SerializerApi::ElementFloat(const char* name, float value, int decimals)
+SerializerApi SerializerApi::ElementFloat(const char* name, float value)
 {
-    char formattedValue[32];
-    (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
     auto newElement = Element(name);
-    newElement.mCurrentElement->SetText(formattedValue);
+    newElement.mCurrentElement->SetText(std::to_string(value).c_str());
     return SerializerApi{ *this, newElement.mCurrentElement };
 }
 
 SerializerApi SerializerApi::ElementDouble(const char* name, double value)
 {
     auto newElement = Element(name);
-    newElement.mCurrentElement->SetText(value);
+    newElement.mCurrentElement->SetText(std::to_string(value).c_str());
     return SerializerApi{ *this, newElement.mCurrentElement };
 }
 
@@ -77,19 +75,15 @@ SerializerApi SerializerApi::AttributeInt(const char* name, std::int32_t value)
     return *this;
 }
 
-SerializerApi SerializerApi::AttributeFloat(const char* name, float value, int decimals)
+SerializerApi SerializerApi::AttributeFloat(const char* name, float value)
 {
-    char formattedValue[32];
-    (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
-    mCurrentElement->SetAttribute(name, formattedValue);
+    mCurrentElement->SetAttribute(name, std::to_string(value).c_str());
     return *this;
 }
 
-SerializerApi SerializerApi::AttributeDouble(const char* name, double value, int decimals)
+SerializerApi SerializerApi::AttributeDouble(const char* name, double value)
 {
-    char formattedValue[32];
-    (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
-    mCurrentElement->SetAttribute(name, formattedValue);
+    mCurrentElement->SetAttribute(name, std::to_string(value).c_str());
     return *this;
 }
 

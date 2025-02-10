@@ -11,10 +11,10 @@ R"XMLDATA(<QTM_Settings>
             <Frequency_Multiplier>999</Frequency_Multiplier>
             <Frequency_Divisor>998</Frequency_Divisor>
             <Frequency_Tolerance>997</Frequency_Tolerance>
-            <Nominal_Frequency>996.000</Nominal_Frequency>
+            <Nominal_Frequency>996.000000</Nominal_Frequency>
             <Signal_Edge>Negative</Signal_Edge>
             <Signal_Shutter_Delay>995</Signal_Shutter_Delay>
-            <Non_Periodic_Timeout>994.000</Non_Periodic_Timeout>
+            <Non_Periodic_Timeout>994.000000</Non_Periodic_Timeout>
         </External_Time_Base>
     </General>
 </QTM_Settings>
@@ -743,7 +743,7 @@ R"XMLDATA(
 <QTM_Settings>
     <General>
         <Frequency>1</Frequency>
-        <Capture_Time>999.000</Capture_Time>
+        <Capture_Time>999.000000</Capture_Time>
         <Start_On_External_Trigger>true</Start_On_External_Trigger>
         <Start_On_Trigger_NO>true</Start_On_Trigger_NO>
         <Start_On_Trigger_NC>true</Start_On_Trigger_NC>
