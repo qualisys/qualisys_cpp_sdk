@@ -121,9 +121,11 @@ namespace qualisys_cpp_sdk
             return *this;
         }
 
-        SerializerApi AttributeDouble(const char* name, double value)
+        SerializerApi AttributeDouble(const char* name, double value, int decimals)
         {
-            mCurrentElement->SetAttribute(name, value);
+            char formattedValue[32];
+            (void)snprintf(formattedValue, sizeof(formattedValue), "%.*f", decimals, value);
+            mCurrentElement->SetAttribute(name, formattedValue);
             return *this;
         }
 

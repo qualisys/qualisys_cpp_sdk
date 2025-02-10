@@ -668,28 +668,28 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                 {
                     auto transformElem = segmentElem.Element("Transform");
                     transformElem.Element("Position")
-                        .AttributeFloat("X", segment.position.x, 6)
-                        .AttributeFloat("Y", segment.position.y, 6)
-                        .AttributeFloat("Z", segment.position.z, 6);
+                        .AttributeDouble("X", segment.position.x, 6)
+                        .AttributeDouble("Y", segment.position.y, 6)
+                        .AttributeDouble("Z", segment.position.z, 6);
                     transformElem.Element("Rotation")
-                        .AttributeFloat("X", segment.rotation.x, 6)
-                        .AttributeFloat("Y", segment.rotation.y, 6)
-                        .AttributeFloat("Z", segment.rotation.z, 6)
-                        .AttributeFloat("W", segment.rotation.w, 6);
+                        .AttributeDouble("X", segment.rotation.x, 6)
+                        .AttributeDouble("Y", segment.rotation.y, 6)
+                        .AttributeDouble("Z", segment.rotation.z, 6)
+                        .AttributeDouble("W", segment.rotation.w, 6);
                 }
 
                 if (!std::isnan(segment.defaultPosition.x))
                 {
                     auto transformElem = segmentElem.Element("DefaultTransform");
                     transformElem.Element("Position")
-                        .AttributeFloat("X", segment.defaultPosition.x, 6)
-                        .AttributeFloat("Y", segment.defaultPosition.y, 6)
-                        .AttributeFloat("Z", segment.defaultPosition.z, 6);
+                        .AttributeDouble("X", segment.defaultPosition.x, 6)
+                        .AttributeDouble("Y", segment.defaultPosition.y, 6)
+                        .AttributeDouble("Z", segment.defaultPosition.z, 6);
                     transformElem.Element("Rotation")
-                        .AttributeFloat("X", segment.defaultRotation.x, 6)
-                        .AttributeFloat("Y", segment.defaultRotation.y, 6)
-                        .AttributeFloat("Z", segment.defaultRotation.z, 6)
-                        .AttributeFloat("W", segment.defaultRotation.w, 6);
+                        .AttributeDouble("X", segment.defaultRotation.x, 6)
+                        .AttributeDouble("Y", segment.defaultRotation.y, 6)
+                        .AttributeDouble("Z", segment.defaultRotation.z, 6)
+                        .AttributeDouble("W", segment.defaultRotation.w, 6);
                 }
 
                 auto degreesOfFreedomElem = segmentElem.Element("DegreesOfFreedom");
@@ -751,21 +751,23 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                 for (const auto& marker : segment.markers)
                 {
                     auto markerElem = markersElem.Element("Marker")
-                        .AttributeString("Name", marker.name.c_str())
-                        .AttributeString("Weight", std::to_string(marker.weight).c_str());
+                        .AttributeString("Name", marker.name.c_str());
 
                     markerElem.Element("Position")
                         .AttributeString("X", std::to_string(marker.position.x).c_str())
                         .AttributeString("Y", std::to_string(marker.position.y).c_str())
                         .AttributeString("Z", std::to_string(marker.position.z).c_str());
+
+                    markerElem.ElementString("Weight", std::to_string(marker.weight).c_str());
                 }
 
                 auto rigidBodiesElem = segmentElem.Element("RigidBodies");
                 for (const auto& rigidBody : segment.bodies)
                 {
-                    auto rigidBodyElem = rigidBodiesElem.AttributeString("Name", rigidBody.name.c_str());
+                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody").AttributeString("Name", rigidBody.name.c_str());
 
                     auto transformElem = rigidBodyElem.Element("Transform");
+
                     transformElem.Element("Position")
                         .AttributeString("X", std::to_string(rigidBody.position.x).c_str())
                         .AttributeString("Y", std::to_string(rigidBody.position.x).c_str())
@@ -776,7 +778,7 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
                         .AttributeString("Z", std::to_string(rigidBody.rotation.z).c_str())
                         .AttributeString("W", std::to_string(rigidBody.rotation.w).c_str());
 
-                    transformElem.ElementFloat("Weight", rigidBody.weight, 6);
+                    rigidBodyElem.ElementFloat("Weight", rigidBody.weight, 6);
                 }
 
                 for (const auto& childSegment : segment.segments)
