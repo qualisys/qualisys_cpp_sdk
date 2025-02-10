@@ -107,11 +107,26 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
             cornerElem.ElementFloat("Z", pCorner.fZ, 6);
         };
 
-    addCorner("Corner1", *corner1, plateElem);
-    addCorner("Corner2", *corner2, plateElem);
-    addCorner("Corner3", *corner3, plateElem);
-    addCorner("Corner4", *corner4, plateElem);
-    
+    if (corner1)
+    {
+        addCorner("Corner1", *corner1, plateElem);
+    }
+
+    if (corner2)
+    {
+        addCorner("Corner2", *corner2, plateElem);
+    }
+
+    if (corner3)
+    {
+        addCorner("Corner3", *corner3, plateElem);
+    }
+
+    if (corner4)
+    {
+        addCorner("Corner4", *corner4, plateElem);
+    }
+
     return mSerializer->ToString();
 }
 
