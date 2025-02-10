@@ -23,7 +23,9 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
                                            const bool* startOnTrigSoftware, const EProcessingActions* processingActions,
                                            const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+    auto theGeneral = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General");
 
     if (captureFrequency)
     {
@@ -98,7 +100,7 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
         }
     }
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource,
@@ -106,9 +108,10 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     const unsigned int* freqTolerance, const float* nominalFrequency, const bool* negativeEdge,
     const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto timeBaseElem = theGeneral.Element("External_Time_Base");
+    auto timeBaseElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("External_Time_Base");
 
     timeBaseElem.ElementBool("Enabled", enabled);
 
@@ -170,9 +173,10 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
 
 std::string SettingsSerializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto timeStampElem = theGeneral.Element("External_Timestamp");
+    auto timeStampElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("External_Timestamp");
 
     timeStampElem.ElementBool("Enabled", timestampSettings.bEnabled);
 
@@ -193,7 +197,7 @@ std::string SettingsSerializer::SetExtTimestampSettings(const SSettingsGeneralEx
 
     timeStampElem.ElementUnsignedInt("Frequency", timestampSettings.nFrequency);
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraSettings(
@@ -201,9 +205,10 @@ std::string SettingsSerializer::SetCameraSettings(
     const float* markerExposure, const float* markerThreshold,
     const int* orientation)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto cameraElem = theGeneral.Element("Camera");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -236,16 +241,17 @@ std::string SettingsSerializer::SetCameraSettings(
         cameraElem.ElementInt("Orientation", *orientation);
     }
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int cameraId,
     const EVideoResolution* videoResolution, const EVideoAspectRatio* videoAspectRatio,
     const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto cameraElem = theGeneral.Element("Camera");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -304,15 +310,16 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
         cameraElem.ElementFloat("Video_Flash_Time", *videoFlashTime, 6);
     }
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle, const bool* syncOutNegativePolarity)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto cameraElem = theGeneral.Element("Camera");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -380,14 +387,15 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
         }
     }
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto cameraElem = theGeneral.Element("Camera");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -399,32 +407,48 @@ std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int 
     lensControlElem.Element("Aperture")
         .AttributeFloat("Value", aperture, 6);
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
 {
-    auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
-
-    auto cameraElem = theGeneral.Element("Camera");
+    auto cameraElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("General")
+        .Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
     auto lensControlElem = cameraElem.Element("LensControl");
 
     char compensationStr[32];
-    snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
+    (void)snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
 
     lensControlElem.Element("AutoExposure")
         .AttributeString("Enabled", (autoExposure ? "true" : "false"))
         .AttributeString("Compensation", compensationStr);
 
-    return theGeneral.ToString();
+    return mSerializer->ToString();
 }
 
 std::string SettingsSerializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
 {
-    return mSerializer->SetCameraAutoWhiteBalance(cameraId, enable);
+    //auto theGeneral = mSerializer->Element("QTM_Settings").Element("General");
+
+    //auto cameraElem = theGeneral.Element("Camera");
+
+    //cameraElem.ElementUnsignedInt("ID", cameraId);
+
+
+    //tinyxml2::XMLElement* autoWhiteBalanceElem = document.NewElement("AutoWhiteBalance");
+    //autoWhiteBalanceElem->SetText(enable ? "true" : "false");
+    //cameraElem->InsertEndChild(autoWhiteBalanceElem);
+
+    //tinyxml2::XMLPrinter printer;
+    //document.Print(&printer);
+    //return printer.CStr();
+
+    return "true";
 }
 
 std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, const bool* enable,
@@ -437,7 +461,10 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
     const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
 {
-    auto plateElem = mSerializer->Element("QTM_Settings").Element("Force").Element("Plate");
+    auto plateElem = mSerializer
+        ->Element("QTM_Settings")
+        .Element("Force")
+        .Element("Plate");
 
     if (mMajorVersion > 1 || mMinorVersion > 7)
     {
@@ -481,7 +508,9 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
 
 std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
 {
-    auto the6D = mSerializer->Element("QTM_Settings").Element("The_6D");
+    auto the6D = mSerializer
+        ->Element("QTM_Settings")
+        .Element("The_6D");
 
     for (const auto& body : settings6Dofs)
     {
