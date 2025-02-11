@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <stdexcept>
+#include <cstring>
 
 using namespace qualisys_cpp_sdk;
 
@@ -919,7 +920,9 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
     if (auto axisUpwards = threeDElem.FindChild("AxisUpwards"))
     {
-        auto str = ToLowerXmlString(axisUpwards.ReadString());
+        std::string temp = axisUpwards.ReadString();
+        auto str = ToLowerXmlString(temp);
+
         if (str == "+x")
         {
             settings3D.eAxisUpwards = XPos;
@@ -957,7 +960,8 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     if (auto calibrationTimeElem = threeDElem.FindChild("CalibrationTime"))
     {
         auto str = calibrationTimeElem.ReadString();
-        strcpy_s(settings3D.pCalibrationTime, 32, str.data());
+        std::strncpy(settings3D.pCalibrationTime, str.data(), 31);
+        settings3D.pCalibrationTime[std::min(str.size(), size_t(31))] = '\0';
     }
     else
     {
@@ -2125,7 +2129,9 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
         settings.created = calibrationElem.ReadAttributeString("created");
         settings.qtm_version = calibrationElem.ReadAttributeString("qtm-version");
 
-        std::string typeStr = ToLowerXmlString(calibrationElem.ReadAttributeString("type"));
+        std::string temp = calibrationElem.ReadAttributeString("type");
+        auto typeStr = ToLowerXmlString(temp);
+
         if (typeStr == "regular")
         {
             settings.type = ECalibrationType::regular;

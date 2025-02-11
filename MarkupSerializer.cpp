@@ -9,6 +9,7 @@
 #include "Markup.h"
 #include <functional>
 #include <stdexcept>
+#include <cstring>
 
 using namespace qualisys_cpp_sdk;
 
@@ -3383,7 +3384,7 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
                 xmlDocument.AddElem("Mode", "System live time");
                 break;
             default:
-                return false; // Should never happen
+                return ""; // Should never happen
             }
 
             if (*peSyncOutMode == ModeMultiplier ||
