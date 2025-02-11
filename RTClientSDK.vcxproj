@@ -187,12 +187,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="external\tinyxml2\tinyxml2.cpp" />
-    <ClCompile Include="Markup.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="MarkupSerializer.cpp" />
     <ClCompile Include="SerializerApi.cpp" />
     <ClCompile Include="DeserializerApi.cpp" />
     <ClCompile Include="SettingsDeserializer.cpp" />
@@ -200,12 +198,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="external\tinyxml2\tinyxml2.h" />
-    <ClInclude Include="Markup.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="RTPacket.h" />
     <ClInclude Include="RTProtocol.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="MarkupSerializer.h" />
     <ClInclude Include="SerializerApi.h" />
     <ClInclude Include="DeserializerApi.h" />
     <ClInclude Include="SettingsDeserializer.h" />
