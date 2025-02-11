@@ -684,8 +684,10 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                     }
                     else
                     {
-                        std::string tmp = std::string("No packet received. ") + std::string(mErrorStr) + std::string(".");
-                        (void)snprintf(mErrorStr, sizeof(mErrorStr), tmp.c_str());
+                        std::string tmp = "No packet received. " + std::string(mErrorStr) + ".";
+                        std::strncpy(mErrorStr, tmp.c_str(), sizeof(mErrorStr) - 1);
+                        mErrorStr[sizeof(mErrorStr) - 1] = '\0';
+
                     }
                 }
                 else
