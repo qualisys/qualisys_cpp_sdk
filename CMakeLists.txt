@@ -26,13 +26,15 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 )
 
-target_link_libraries(${PROJECT_NAME}
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
         PUBLIC 
             $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib iphlpapi.lib>
             $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","GNU">:ws2_32 iphlpapi>
-        PRIVATE
-            tinyxml2::tinyxml2
-)
+    )
+endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2::tinyxml2)
+
 
 # Enable C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
