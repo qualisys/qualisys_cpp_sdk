@@ -9,6 +9,7 @@
 #include "Markup.h"
 #include <functional>
 #include <stdexcept>
+#include <cstring>
 
 using namespace qualisys_cpp_sdk;
 
@@ -1475,7 +1476,7 @@ bool CMarkupDeserializer::Deserialize3DSettings(SSettings3D& p3dSettings, bool& 
         return false;
     }
     str = xmlDocument.GetChildData();
-    strcpy(p3dSettings.pCalibrationTime, str.c_str());
+    std::strcpy(p3dSettings.pCalibrationTime, str.c_str());
 
     if (!xmlDocument.FindChildElem("Labels"))
     {
