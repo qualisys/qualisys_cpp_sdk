@@ -26,12 +26,6 @@
     <ClCompile Include="external\tinyxml2\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Deserializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Serializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SettingsDeserializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
