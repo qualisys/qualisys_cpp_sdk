@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "MarkupSerializer.h"
-
+#include <cstring>
 #include <algorithm>
 #include <map>
 
@@ -2833,7 +2833,7 @@ bool CMarkupDeserializer::DeserializeSkeletonSettings(bool pSkeletonGlobalData, 
     return true;
 } // ReadSkeletonSettings
 
-namespace 
+namespace
 {
     bool ReadXmlFov(std::string name, CMarkup& oXML, SCalibrationFov& fov)
     {
@@ -3188,7 +3188,7 @@ std::string CMarkupSerializer::SetExtTimeBaseSettings(const bool* pbEnabled, con
     AddXMLElementUnsignedInt(&oXML, "Signal_Shutter_Delay", pnSignalShutterDelay);
     AddXMLElementFloat(&oXML, "Non_Periodic_Timeout", pfNonPeriodicTimeout, 3);
 
-    oXML.OutOfElem(); // External_Time_Base            
+    oXML.OutOfElem(); // External_Time_Base
     oXML.OutOfElem(); // General
     oXML.OutOfElem(); // QTM_Settings
 
@@ -3383,7 +3383,7 @@ std::string CMarkupSerializer::SetCameraSyncOutSettings(const unsigned int pCame
                 oXML.AddElem("Mode", "System live time");
                 break;
             default:
-                return false; // Should never happen
+                return std::string(); // Should never happen
             }
 
             if (*peSyncOutMode == ModeMultiplier ||
