@@ -3,7 +3,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <cstdint>
 
 namespace tinyxml2
 {

@@ -9,7 +9,6 @@
 #include "Markup.h"
 #include <functional>
 #include <stdexcept>
-#include <cstring>
 
 using namespace qualisys_cpp_sdk;
 

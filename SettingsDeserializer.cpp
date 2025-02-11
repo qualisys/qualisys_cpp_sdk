@@ -5,8 +5,6 @@
 #include <functional>
 #include <map>
 #include <stdexcept>
-#include <cstring>
-#include <algorithm>
 
 using namespace qualisys_cpp_sdk;
 
