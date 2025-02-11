@@ -960,8 +960,10 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     if (auto calibrationTimeElem = threeDElem.FindChild("CalibrationTime"))
     {
         auto str = calibrationTimeElem.ReadString();
-        std::strncpy(settings3D.pCalibrationTime, str.data(), 31);
-        settings3D.pCalibrationTime[std::min(str.size(), size_t(31))] = '\0';
+        std::size_t length = std::min(str.size(), std::size_t(31));
+
+        std::copy_n(str.begin(), length, settings3D.pCalibrationTime);
+        settings3D.pCalibrationTime[length] = '\0';
     }
     else
     {
