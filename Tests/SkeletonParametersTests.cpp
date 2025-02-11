@@ -103,11 +103,11 @@ namespace
     {
         CHECK_EQ(expectedData.size(), actualData.size());
 
-        for (int i = 0; i < expectedData.size(); i++)
+        for (size_t i = 0; i < expectedData.size(); i++)
         {
             CHECK_EQ(expectedData[i].name, actualData[i].name);
             CHECK_EQ(expectedData[i].segments.size(), actualData[i].segments.size());
-            for (int j = 0; j < expectedData[i].segments.size(); j++)
+            for (size_t j = 0; j < expectedData[i].segments.size(); j++)
             {
                 CHECK_EQ(expectedData[i].segments[j].id, actualData[i].segments[j].id);
                 CHECK_EQ(expectedData[i].segments[j].positionX, actualData[i].segments[j].positionX);
