@@ -35,15 +35,13 @@
     <ClCompile Include="SettingsDeserializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-      <ClCompile Include="SettingsSerializer.cpp">
+    <ClCompile Include="SettingsSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    </ClCompile>
-      <ClCompile Include="SerializerApi.cpp">
+    <ClCompile Include="SerializerApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    </ClCompile>
-      <ClCompile Include="DeserializerApi.cpp">
+    <ClCompile Include="DeserializerApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,7 +67,7 @@
     <ClInclude Include="SerializerApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-      <ClInclude Include="SettingsSerializer.h">
+    <ClInclude Include="SettingsSerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsDeserializer.h">
