@@ -1559,7 +1559,7 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &eType, bool 
                         return CNetwork::ResponseType::disconnect;
                     }
 
-                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mFileBuffer) != (size_t)(response.received))
+                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mFileBuffer) != (std::size_t)(response.received))
                     {
                         strcpy(mErrorStr, "Failed to write file to disk.");
                         fclose(mFileBuffer);
