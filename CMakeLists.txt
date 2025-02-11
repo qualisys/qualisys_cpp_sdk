@@ -9,12 +9,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME}
-        Markup.cpp
+        
         Network.cpp
         RTPacket.cpp
         RTProtocol.cpp
         Settings.cpp
-        MarkupSerializer.cpp
         SerializerApi.cpp
         DeserializerApi.cpp
         SettingsDeserializer.cpp
