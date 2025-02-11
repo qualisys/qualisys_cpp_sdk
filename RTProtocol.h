@@ -24,8 +24,6 @@
 #define DLL_EXPORT
 #endif
 
-class CMarkup;
-
 class DLL_EXPORT CRTProtocol
 {
 public:
