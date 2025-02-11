@@ -13,10 +13,9 @@
 #include <cstdint>
 #include <memory>
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #pragma warning (disable : 4251)
 #endif
-
 
 #ifdef EXPORT_DLL
 #define DLL_EXPORT __declspec(dllexport)
