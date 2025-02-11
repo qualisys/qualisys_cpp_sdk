@@ -625,7 +625,7 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
         for (std::uint32_t i = 0; i < 9; i++)
         {
             char tmpStr[16];
-            (void)sprintf_s(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
+            (void)snprintf(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
             orientationElem.AttributeFloat(tmpStr, body.origin.rotation[i]);
         }
         orientationElem.AttributeUnsignedInt("Relative_body", body.origin.relativeBody);

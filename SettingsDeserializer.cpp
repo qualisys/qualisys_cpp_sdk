@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <stdexcept>
+#include <algorithm>
 
 using namespace qualisys_cpp_sdk;
 
@@ -770,7 +771,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         for (std::size_t port = 0; port < 3; port++)
         {
             char syncOutStr[16];
-            (void)sprintf_s(syncOutStr, 16, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
+            (void)snprintf(syncOutStr, 16, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
 
             auto syncOutElem = cameraElem.FindChild(syncOutStr);
             if (syncOutElem)
@@ -919,7 +920,9 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
     if (auto axisUpwards = threeDElem.FindChild("AxisUpwards"))
     {
-        auto str = ToLowerXmlString(axisUpwards.ReadString());
+        std::string temp = axisUpwards.ReadString();
+        auto str = ToLowerXmlString(temp);
+
         if (str == "+x")
         {
             settings3D.eAxisUpwards = XPos;
@@ -957,7 +960,10 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
     if (auto calibrationTimeElem = threeDElem.FindChild("CalibrationTime"))
     {
         auto str = calibrationTimeElem.ReadString();
-        strcpy_s(settings3D.pCalibrationTime, 32, str.data());
+        std::size_t length = std::min(str.size(), std::size_t(31));
+
+        std::copy_n(str.begin(), length, settings3D.pCalibrationTime);
+        settings3D.pCalibrationTime[length] = '\0';
     }
     else
     {
@@ -1139,7 +1145,7 @@ namespace
             char tmpStr[10];
             for (std::uint32_t i = 0; i < 9; i++)
             {
-                (void)sprintf_s(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+                (void)snprintf(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
                 target.rotation[i] = elem.ReadAttributeFloat(tmpStr);
             }
 
@@ -2125,7 +2131,9 @@ bool SettingsDeserializer::DeserializeCalibrationSettings(SCalibration& calibrat
         settings.created = calibrationElem.ReadAttributeString("created");
         settings.qtm_version = calibrationElem.ReadAttributeString("qtm-version");
 
-        std::string typeStr = ToLowerXmlString(calibrationElem.ReadAttributeString("type"));
+        std::string temp = calibrationElem.ReadAttributeString("type");
+        auto typeStr = ToLowerXmlString(temp);
+
         if (typeStr == "regular")
         {
             settings.type = ECalibrationType::regular;

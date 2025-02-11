@@ -103,11 +103,11 @@ namespace
     {
         CHECK_EQ(expectedData.size(), actualData.size());
 
-        for (int i = 0; i < expectedData.size(); i++)
+        for (std::size_t i = 0; i < expectedData.size(); i++)
         {
             CHECK_EQ(expectedData[i].name, actualData[i].name);
             CHECK_EQ(expectedData[i].segments.size(), actualData[i].segments.size());
-            for (int j = 0; j < expectedData[i].segments.size(); j++)
+            for (std::size_t j = 0; j < expectedData[i].segments.size(); j++)
             {
                 CHECK_EQ(expectedData[i].segments[j].id, actualData[i].segments[j].id);
                 CHECK_EQ(expectedData[i].segments[j].positionX, actualData[i].segments[j].positionX);
@@ -117,7 +117,7 @@ namespace
                 CHECK_EQ(expectedData[i].segments[j].rotationY, actualData[i].segments[j].rotationY);
                 CHECK_EQ(expectedData[i].segments[j].rotationZ, actualData[i].segments[j].rotationZ);
                 CHECK_EQ(expectedData[i].segments[j].rotationW, actualData[i].segments[j].rotationW);
-}
+            }
         }
     }
 }
@@ -195,7 +195,7 @@ TEST_CASE("GetSkeletonSettings")
 
         CHECK_EQ(expectedSegment.degreesOfFreedom.size(), actualSegment.degreesOfFreedom.size());
 
-        for (size_t i = 0; i < expectedSegment.degreesOfFreedom.size(); ++i)
+        for (std::size_t i = 0; i < expectedSegment.degreesOfFreedom.size(); ++i)
         {
             const auto& expectedDof = expectedSegment.degreesOfFreedom[i];
             const auto& actualDof = actualSegment.degreesOfFreedom[i];
@@ -207,7 +207,7 @@ TEST_CASE("GetSkeletonSettings")
 
             CHECK_EQ(expectedDof.couplings.size(), actualDof.couplings.size());
 
-            for (size_t j = 0; j < expectedDof.couplings.size(); ++j)
+            for (std::size_t j = 0; j < expectedDof.couplings.size(); ++j)
             {
                 const auto& expectedCoupling = expectedDof.couplings[j];
                 const auto& actualCoupling = actualDof.couplings[j];
@@ -227,7 +227,7 @@ TEST_CASE("GetSkeletonSettings")
 
     auto stack = std::stack<StackEntry>();
 
-    for (size_t i = 0; i < expectedSkeletons.size(); ++i)
+    for (std::size_t i = 0; i < expectedSkeletons.size(); ++i)
     {
         const auto& expectedSkeleton = expectedSkeletons[i];
         const auto& skeleton = actualSkeletons[i];
@@ -245,7 +245,7 @@ TEST_CASE("GetSkeletonSettings")
 
         testSegment(entry.expected, entry.actual);
 
-        for (size_t i = 0; i < entry.expected.segments.size(); ++i)
+        for (std::size_t i = 0; i < entry.expected.segments.size(); ++i)
         {
             stack.push({entry.expected.segments[i], entry.actual.segments[i]});
         }

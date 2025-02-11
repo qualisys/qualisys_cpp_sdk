@@ -684,9 +684,9 @@ bool CRTProtocol::GetCapture(const char* pFileName, bool bC3D)
                     }
                     else
                     {
-                        char tmp[sizeof(mErrorStr)];
-                        std::memcpy(tmp, mErrorStr, sizeof(mErrorStr));
-                        (void)snprintf(mErrorStr, sizeof(mErrorStr), "No packet received. %s.", tmp);
+                        std::string tmp = "No packet received. " + std::string(mErrorStr) + ".";
+                        std::strncpy(mErrorStr, tmp.c_str(), sizeof(mErrorStr) - 1);
+                        mErrorStr[sizeof(mErrorStr) - 1] = '\0';
                     }
                 }
                 else
@@ -1559,7 +1559,7 @@ CNetwork::ResponseType CRTProtocol::Receive(CRTPacket::EPacketType &eType, bool 
                         return CNetwork::ResponseType::disconnect;
                     }
 
-                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mFileBuffer) != (size_t)(response.received))
+                    if (fwrite(mDataBuff.data() + sizeof(int) * 2, 1, response.received, mFileBuffer) != (std::size_t)(response.received))
                     {
                         strcpy(mErrorStr, "Failed to write file to disk.");
                         fclose(mFileBuffer);
