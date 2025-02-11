@@ -649,7 +649,7 @@ void CInput::ReadExtTimeBaseSettings(bool         &bEnabled,            int     
             bNegativeEdge = ReadYesNo("Negative Edge (y/n)? ", true);
         }
 
-        nFrequencyTolerance = ReadInt("Enter Signal Shutter Delay (us) : ", 0);
+        nSignalShutterDelay = ReadInt("Enter Signal Shutter Delay (us) : ", 0);
 
         if ((nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3) && !bSignalModePeriodic)
         {
