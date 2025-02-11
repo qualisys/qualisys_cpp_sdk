@@ -260,7 +260,7 @@ namespace qualisys_cpp_sdk
         {
         }
         bool bEnabled;
-       std::uint32_t nFrequency;
+        std::uint32_t nFrequency;
         ETimestampType nType;
     };
 
@@ -341,7 +341,7 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT SOrigin
     {
         EOriginType type;
-       std::uint32_t    relativeBody;
+        std::uint32_t    relativeBody;
         SPoint      position;
         float       rotation[9];
     };
@@ -350,10 +350,10 @@ namespace qualisys_cpp_sdk
     {
         std::string           name;
         bool                  enabled;
-       std::uint32_t              color;
+        std::uint32_t              color;
         std::string           filterPreset;
         float                 maxResidual;
-       std::uint32_t              minMarkersInBody;
+        std::uint32_t              minMarkersInBody;
         float                 boneLengthTolerance;
         SSettings6DMesh       mesh;
         SOrigin               origin;
@@ -434,10 +434,10 @@ namespace qualisys_cpp_sdk
 
     struct DLL_EXPORT SCalibrationFov
     {
-       std::uint32_t left;
-       std::uint32_t top;
-       std::uint32_t right;
-       std::uint32_t bottom;
+        std::uint32_t left;
+        std::uint32_t top;
+        std::uint32_t right;
+        std::uint32_t bottom;
     };
 
     struct DLL_EXPORT SCalibrationTransform
@@ -480,11 +480,11 @@ namespace qualisys_cpp_sdk
         bool active;
         bool calibrated;
         std::string message;
-       std::uint32_t point_count;
+        std::uint32_t point_count;
         double avg_residual;
-       std::uint32_t serial;
+        std::uint32_t serial;
         std::string model;
-       std::uint32_t view_rotation;
+        std::uint32_t view_rotation;
         SCalibrationFov fov_marker;
         SCalibrationFov fov_marker_max;
         SCalibrationFov fov_video;
@@ -509,14 +509,14 @@ namespace qualisys_cpp_sdk
         ECalibrationType type = regular;
         double refit_residual = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
         double wand_length = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
-       std::uint32_t max_frames = 0;                                        // Not for fixed calibration.
+        std::uint32_t max_frames = 0;                                        // Not for fixed calibration.
         double short_arm_end = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double long_arm_end = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double long_arm_middle = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_std_dev = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_min_max_diff = std::numeric_limits<double>::quiet_NaN(); // Not for fixed calibration.
         double result_refit_residual = std::numeric_limits<double>::quiet_NaN(); // Only for refine calibration.
-       std::uint32_t result_consecutive = 0;    // Only for refine calibration.
+        std::uint32_t result_consecutive = 0;    // Only for refine calibration.
         std::vector<SCalibrationCamera> cameras;
     };
 
@@ -590,7 +590,7 @@ namespace qualisys_cpp_sdk
     struct DLL_EXPORT SSettingsSkeletonSegmentHierarchical
     {
         std::string name;
-       std::uint32_t id = 0;
+        std::uint32_t id = 0;
         std::string solver;
         SPosition position;
         SRotation rotation;
