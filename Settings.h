@@ -154,7 +154,7 @@ namespace qualisys_cpp_sdk
         float fY;
         float fZ;
         bool  virtual_;
-       std::uint32_t physicalId;
+        std::uint32_t physicalId;
     };
 
 
