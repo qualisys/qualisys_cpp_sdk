@@ -6,6 +6,7 @@
 #include <limits>
 #include <cmath>
 #include <stdexcept>
+#include <stdint.h>
 
 #ifdef EXPORT_DLL
 #define DLL_EXPORT __declspec(dllexport)
