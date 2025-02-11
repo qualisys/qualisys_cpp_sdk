@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <stdexcept>
+#include <algorithm>
 
 using namespace qualisys_cpp_sdk;
 
