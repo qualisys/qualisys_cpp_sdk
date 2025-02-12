@@ -8,7 +8,7 @@
 using namespace qualisys_cpp_sdk;
 
 SettingsSerializer::SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
-    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mSerializer(new SerializerApi(majorVersion, minorVersion))
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mSerializer(new SerializerApi(majorVersion, minorVersion, "QTM_Settings"))
 {
 }
 
@@ -23,9 +23,7 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
                                            const bool* startOnTrigSoftware, const EProcessingActions* processingActions,
                                            const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions)
 {
-    auto theGeneral = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General");
+    auto theGeneral = mSerializer->Element("General");
 
     if (captureFrequency)
     {
@@ -108,10 +106,7 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     const unsigned int* freqTolerance, const float* nominalFrequency, const bool* negativeEdge,
     const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
 {
-    auto timeBaseElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("External_Time_Base");
+    auto timeBaseElem = mSerializer->Element("General").Element("External_Time_Base");
 
     timeBaseElem.ElementBool("Enabled", enabled);
 
@@ -173,10 +168,7 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
 
 std::string SettingsSerializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
-    auto timeStampElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("External_Timestamp");
+    auto timeStampElem = mSerializer->Element("General").Element("External_Timestamp");
 
     timeStampElem.ElementBool("Enabled", timestampSettings.bEnabled);
 
@@ -205,10 +197,7 @@ std::string SettingsSerializer::SetCameraSettings(
     const float* markerExposure, const float* markerThreshold,
     const int* orientation)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -248,10 +237,7 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
     const EVideoResolution* videoResolution, const EVideoAspectRatio* videoAspectRatio,
     const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -316,10 +302,7 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
 std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
     const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle, const bool* syncOutNegativePolarity)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -392,10 +375,7 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
 
 std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -412,10 +392,7 @@ std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int 
 
 std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
 
@@ -433,10 +410,7 @@ std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int
 
 std::string SettingsSerializer::SetCameraAutoWhiteBalance(const unsigned int cameraId, const bool enable)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("General")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
     cameraElem.ElementString("AutoWhiteBalance", (enable ? "true" : "false"));
@@ -448,10 +422,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     const CRTPacket::EImageFormat* format, const unsigned int* width, const unsigned int* height,
     const float* leftCrop, const float* topCrop, const float* rightCrop, const float* bottomCrop)
 {
-    auto cameraElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("Image")
-        .Element("Camera");
+    auto cameraElem = mSerializer->Element("Image").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
     if (enable)
@@ -515,10 +486,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
     const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
 {
-    auto plateElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("Force")
-        .Element("Plate");
+    auto plateElem = mSerializer->Element("Force").Element("Plate");
 
     if (mMajorVersion > 1 || mMinorVersion > 7)
     {
@@ -560,9 +528,7 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
 
 std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6DOFBody>& settings6Dofs)
 {
-    auto the6D = mSerializer
-        ->Element("QTM_Settings")
-        .Element("The_6D");
+    auto the6D = mSerializer->Element("The_6D");
 
     for (const auto& body : settings6Dofs)
     {
@@ -636,9 +602,7 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
 
 std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsSkeletonHierarchical>& settingsSkeletons)
 {
-    auto skeletonsElem = mSerializer
-        ->Element("QTM_Settings")
-        .Element("Skeletons");
+    auto skeletonsElem = mSerializer->Element("Skeletons");
 
     for (const auto& skeleton : settingsSkeletons)
     {

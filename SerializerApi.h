@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 
 namespace tinyxml2
 {
@@ -14,16 +15,16 @@ namespace qualisys_cpp_sdk
     struct SerializerApi
     {
     private:
-        tinyxml2::XMLDocument* mDocument;
-        tinyxml2::XMLElement* mCurrentElement = nullptr;
+        std::shared_ptr<tinyxml2::XMLDocument> mDocument;
+        tinyxml2::XMLElement& mCurrentElement;
         
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
 
-        SerializerApi(const SerializerApi& src, tinyxml2::XMLElement* element);
+        SerializerApi(const SerializerApi& src, tinyxml2::XMLElement& element);
 
     public:
-        SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion);
+        SerializerApi(std::uint32_t majorVersion, std::uint32_t minorVersion, const char* rootElementName);
 
         SerializerApi Element(const char* name);
 
