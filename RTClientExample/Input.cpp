@@ -204,30 +204,31 @@ bool CInput::ReadStreamRate(CRTProtocol::EStreamRate &eRate, int &nArg)
 }
 
 
-bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnalogChannels, int selectedAnalogChannelsLen, bool &skeletonGlobalReferenceFrame)
+bool CInput::ReadDataComponents(unsigned int* nComponentType, char* selectedAnalogChannels, int selectedAnalogChannelsLen, bool& skeletonGlobalReferenceFrame)
 {
     bool bNoComponentSelected = true;
     
     while (bNoComponentSelected)
     {
-        nComponentType = ReadDataComponent(true, skeletonGlobalReferenceFrame);
+        nComponentType = new unsigned int;
+        *nComponentType = ReadDataComponent(true, skeletonGlobalReferenceFrame);
 
         // Check if user wants multiple types.
-        if (nComponentType == 0xffffffff)
+        if (*nComponentType == 0xffffffff)
         {
             unsigned int nAddType = 0;
-            nComponentType = 0;
+            *nComponentType = 0;
             printf("Add Component to multiple selection. Enter to stop selection.");
             do
             {
                 nAddType = ReadDataComponent(false, skeletonGlobalReferenceFrame);
-                nComponentType |= nAddType;
+                *nComponentType |= nAddType;
                 std::string tmpStr;
                 CRTProtocol::GetComponentString(tmpStr, nAddType);
                 printf("%s\n", tmpStr.c_str());
             } while (nAddType != 0);
 
-            if (nComponentType == 0)
+            if (*nComponentType == 0)
             {
                 printf("No components selected.\n\n\n");
             }
@@ -238,15 +239,15 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
         }
         else
         {
-            if (nComponentType == 0)
+            if (*nComponentType == 0)
             {
-                nComponentType = CRTProtocol::cComponent2d;
+                *nComponentType = CRTProtocol::cComponent2d;
             }
             bNoComponentSelected = false;
         }
     }
 
-    if ((nComponentType & CRTProtocol::cComponentAnalog) || (nComponentType & CRTProtocol::cComponentAnalogSingle))
+    if ((*nComponentType & CRTProtocol::cComponentAnalog) || (*nComponentType & CRTProtocol::cComponentAnalogSingle))
     {
         selectedAnalogChannels[0] = 0;
 
@@ -257,11 +258,11 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
         }
     }
 
-    return nComponentType != 0;
+    return *nComponentType != 0;
 } // ReadDataComponent
 
 
-unsigned int CInput::ReadDataComponent(bool printInstr, bool &skeletonGlobalReferenceFrame)
+unsigned int CInput::ReadDataComponent(bool printInstr, bool* skeletonGlobalReferenceFrame)
 {
     if (printInstr)
     {
@@ -372,11 +373,13 @@ unsigned int CInput::ReadDataComponent(bool printInstr, bool &skeletonGlobalRefe
             break;
         case 'j':
             nComponentType = CRTProtocol::cComponentSkeleton;
-            skeletonGlobalReferenceFrame = false;
+            skeletonGlobalReferenceFrame = new bool;
+            *skeletonGlobalReferenceFrame = false;
             break;
         case 'k':
             nComponentType = CRTProtocol::cComponentSkeleton;
-            skeletonGlobalReferenceFrame = true;
+            skeletonGlobalReferenceFrame = new bool;
+            *skeletonGlobalReferenceFrame = true;
             break;
         case 'l' :
             nComponentType = 0xffffffff;
@@ -395,14 +398,18 @@ bool CInput::Read2DNoiseTest()
 }
 
 
-bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP, bool &bLogToFile,
-                          bool &bOnlyTimeAndFrameNumber, unsigned short &nUDPPort, char *tUDPAddress, int nAddressLen)
+bool CInput::ReadDataTest(bool bLogSelection, bool* bStreamTCP, bool* bStreamUDP, bool* bLogToFile,
+                          bool* bOnlyTimeAndFrameNumber, unsigned short* nUDPPort, char* tUDPAddress, int nAddressLen)
 {
     int nSelection;
 
-    bStreamTCP              = false;
-    bStreamUDP              = false;
-    bLogToFile              = false;
+    bStreamTCP = new bool;
+    bStreamTCP = false;
+    bStreamUDP = new bool;
+    bStreamUDP = false;
+    bLogToFile = new bool;
+    bLogToFile = false;
+    bOnlyTimeAndFrameNumber = new bool;
     bOnlyTimeAndFrameNumber = false;
     tUDPAddress[0]          = 0;
 
@@ -418,11 +425,11 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
     {
         if (nSelection == 1)
         {
-            bStreamTCP = true;
+            *bStreamTCP = true;
         }
         if (nSelection == 2)
         {
-            bStreamUDP = true;
+            *bStreamUDP = true;
             printf("\n"
                 "1 : Stream to client address at random port (Default)\n"
                 "2 : Stream to different address and port\n"
@@ -431,13 +438,14 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
 
             if (nSelection >= 1 && nSelection <= 3)
             {
+                nUDPPort = new unsigned short;
                 switch (nSelection)
                 {
                     case 1 :
                         nUDPPort = 0;
                         break;
                     case 2 :
-                        nUDPPort = ReadPort(4545);
+                        *nUDPPort = ReadPort(4545);
                         printf("Enter UDP receiver address : ");
                         gets_s(tUDPAddress, nAddressLen);
                         break;
@@ -463,12 +471,12 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
             {
                 if (nSelection == 2)
                 {
-                    bLogToFile = true;
+                    *bLogToFile = true;
                 }
                 if (nSelection == 3)
                 {
-                    bLogToFile              = true;
-                    bOnlyTimeAndFrameNumber = true;
+                    *bLogToFile              = true;
+                    *bOnlyTimeAndFrameNumber = true;
                 }
                 return true;
             }
@@ -481,21 +489,27 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
     return false;
 }
 
-void CInput::ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware)
+void CInput::ReadGeneralSettings(unsigned int* nCaptureFrequency, float* fCaptureTime, bool* bExternalTrigger, bool* trigNO, bool* trigNC, bool* trigSoftware)
 {
-    nCaptureFrequency = ReadInt("Enter Capture Frequency (Hz) : ", 20);
+    nCaptureFrequency = new unsigned int;
+    *nCaptureFrequency = ReadInt("Enter Capture Frequency (Hz) : ", 20);
 
-    fCaptureTime = ReadFloat("Enter Capture Time (seconds) : ", 1.0);
+    fCaptureTime = new float;
+    *fCaptureTime = ReadFloat("Enter Capture Time (seconds) : ", 1.0);
     
     if (mnMajorVersion > 1 || mnMinorVersion > 14)
     {
-        trigNO = ReadYesNo("Enter Start on Trig NO (y/n)?\n", false);
-        trigNC = ReadYesNo("Enter Start Trig NC (y/n)?\n", false);
-        trigSoftware = ReadYesNo("Enter Start Software trigger (y/n)?\n", false);
+        trigNO = new bool;
+        *trigNO = ReadYesNo("Enter Start on Trig NO (y/n)?\n", false);
+        trigNC = new bool;
+        *trigNC = ReadYesNo("Enter Start Trig NC (y/n)?\n", false);
+        trigSoftware = new bool;
+        *trigSoftware = ReadYesNo("Enter Start Software trigger (y/n)?\n", false);
     }
     else
     {
-        bExternalTrigger = ReadYesNo("Enter Start on External Trigger (y/n)?\n", false);
+        bExternalTrigger = new bool;
+        *bExternalTrigger = ReadYesNo("Enter Start on External Trigger (y/n)?\n", false);
     }
 
 }
@@ -603,15 +617,16 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
     }
 }
 
-void CInput::ReadExtTimeBaseSettings(bool         &bEnabled,            int          &nSignalSource,
-                                     bool         &bSignalModePeriodic, unsigned int &nMultiplier,
-                                     unsigned int &nDivisor,            unsigned int &nFrequencyTolerance,
-                                     float        &fNominalFrequency,   bool         &bNegativeEdge,
-                                     unsigned int &nSignalShutterDelay, float        &fNonPeriodicTimeout)
+void CInput::ReadExtTimeBaseSettings(bool         *bEnabled,            int          *nSignalSource,
+                                     bool         *bSignalModePeriodic, unsigned int *nMultiplier,
+                                     unsigned int *nDivisor,            unsigned int *nFrequencyTolerance,
+                                     float        *fNominalFrequency,   bool         *bNegativeEdge,
+                                     unsigned int *nSignalShutterDelay, float        *fNonPeriodicTimeout)
 {
-    bEnabled = ReadYesNo("Enable External Time Base (y/n)? ", false);
+    bEnabled = new bool;
+    *bEnabled = ReadYesNo("Enable External Time Base (y/n)? ", false);
 
-    if (bEnabled)
+    if (*bEnabled)
     {
         printf("Enter Signal Source :\n");
         printf("  1 : Control Port\n");
@@ -619,41 +634,50 @@ void CInput::ReadExtTimeBaseSettings(bool         &bEnabled,            int     
         printf("  3 : SMPTE\n");
         printf("  4 : Video Sync\n");
         printf("Select 1 - 4 : ");
-        nSignalSource = ReadChar('1', true) - '0' - 1;
-        if (nSignalSource < 0 || nSignalSource > 3)
+        nSignalSource = new int;
+        *nSignalSource = ReadChar('1', true) - '0' - 1;
+        if (*nSignalSource < 0 || *nSignalSource > 3)
         {
-            nSignalSource = 0;
+            *nSignalSource = 0;
         }
 
-        if (nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3)
+        if (*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 3)
         {
-            bSignalModePeriodic = ReadYesNo("Signal Mode Periodic (y/n)? ", true);
+            bSignalModePeriodic = new bool;
+            *bSignalModePeriodic = ReadYesNo("Signal Mode Periodic (y/n)? ", true);
         }
 
-        if ((nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 2 || nSignalSource == 3) && bSignalModePeriodic)
+        if ((*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 2 || *nSignalSource == 3) && bSignalModePeriodic)
         {
-            nMultiplier = ReadInt("Enter Frequency Multiplier : ", 1);
+            nMultiplier = new unsigned int;
+            *nMultiplier = ReadInt("Enter Frequency Multiplier : ", 1);
 
-            nDivisor = ReadInt("Enter Frequency Divisor : ", 1);
+            nDivisor = new unsigned int;
+            *nDivisor = ReadInt("Enter Frequency Divisor : ", 1);
 
-            if (nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3)
+            if (*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 3)
             {
-                nFrequencyTolerance = ReadInt("Enter Frequency Tolerance (ppm): ", 1000);
+                nFrequencyTolerance = new unsigned int;
+                *nFrequencyTolerance = ReadInt("Enter Frequency Tolerance (ppm): ", 1000);
             }
 
-            fNominalFrequency = ReadFloat("Enter Nominal Frequency (Hz) : ", 0);
+            fNominalFrequency = new float;
+            *fNominalFrequency = ReadFloat("Enter Nominal Frequency (Hz) : ", 0);
         }
 
-        if (nSignalSource == 0 || nSignalSource == 3)
+        if (*nSignalSource == 0 || *nSignalSource == 3)
         {
-            bNegativeEdge = ReadYesNo("Negative Edge (y/n)? ", true);
+            bNegativeEdge = new bool;
+            *bNegativeEdge = ReadYesNo("Negative Edge (y/n)? ", true);
         }
 
-        nFrequencyTolerance = ReadInt("Enter Signal Shutter Delay (us) : ", 0);
+        nSignalShutterDelay = new unsigned int;
+        *nSignalShutterDelay = ReadInt("Enter Signal Shutter Delay (us) : ", 0);
 
-        if ((nSignalSource == 0 || nSignalSource == 1 || nSignalSource == 3) && !bSignalModePeriodic)
+        if ((*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 3) && !bSignalModePeriodic)
         {
-            fNonPeriodicTimeout = ReadFloat("Non Periodic Timeout (s) : ", 1);
+            fNonPeriodicTimeout = new float;
+            *fNonPeriodicTimeout = ReadFloat("Non Periodic Timeout (s) : ", 1);
         }
     }
 }
@@ -678,35 +702,43 @@ void CInput::ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestam
     }
 }
 
-void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,            CRTProtocol::EVideoResolution &videoResolution, CRTProtocol::EVideoAspectRatio &videoAspectRatio,
-                                unsigned int &nVideoFrequency,  float &fVideoExposure,   float &fVideoFlashTime,
-                                float        &fMarkerExposure,  float &fMarkerThreshold, int   &nRotation,
-                                float        &fFocus,           float &fAperture,        bool  &autoExposure,
-                                float        &exposureCompensation, bool &autoWhiteBalance)
+void CInput::ReadCameraSettings(unsigned int *nCameraId, int *nMode,
+                                CRTProtocol::EVideoResolution *videoResolution, CRTProtocol::EVideoAspectRatio *videoAspectRatio,
+                                unsigned int *nVideoFrequency,      float *fVideoExposure,   float *fVideoFlashTime,
+                                float        *fMarkerExposure,      float *fMarkerThreshold, int   *nRotation,
+                                float        *fFocus,               float *fAperture,        bool  *autoExposure,
+                                float        *exposureCompensation, bool  *autoWhiteBalance)
 {
-    nCameraId = ReadInt("\nEnter Camera ID : ", 1);
+    nCameraId = new unsigned int;
+    *nCameraId = ReadInt("\nEnter Camera ID : ", 1);
 
     printf("Enter Camera Mode :\n");
     printf("  1 : Marker\n");
     printf("  2 : Marker Intensity\n");
     printf("  3 : Video\n");
     printf("Select 1 - 3 : ");
-    nMode = ReadChar('1', true) - '0' - 1;
-    if (nMode < 0 || nMode > 2)
+    nMode = new int;
+    *nMode = ReadChar('1', true) - '0' - 1;
+    if (*nMode < 0 || *nMode > 2)
     {
-        nMode = 0;
+        *nMode = 0;
     }
 
-    if (nMode == 0 || nMode == 1)
+    if (*nMode == 0 || *nMode == 1)
     {
-        fMarkerExposure = ReadFloat("Enter Marker Exposure (us) (Default 300 us): ", 300);
-        fMarkerThreshold = ReadFloat("Enter Marker Threshold (50 - 900) (Default 150) : ", 150);
+        fMarkerExposure = new float;
+        *fMarkerExposure = ReadFloat("Enter Marker Exposure (us) (Default 300 us): ", 300);
+        fMarkerThreshold = new float;
+        *fMarkerThreshold = ReadFloat("Enter Marker Threshold (50 - 900) (Default 150) : ", 150);
     }
-    if (nMode == 2)
+    if (*nMode == 2)
     {
-        nVideoFrequency = ReadInt("Enter Video Frequency (Default 24 Hz) : ", 24);
-        fVideoExposure = ReadFloat("Enter Video Exposure (us) (Default 300 us) : ", 300);
-        fVideoFlashTime = ReadFloat("Enter Video Flash Time (us) (Default 300 us) : ", 300);
+        nVideoFrequency = new unsigned int;
+        *nVideoFrequency = ReadInt("Enter Video Frequency (Default 24 Hz) : ", 24);
+        fVideoExposure = new float;
+        *fVideoExposure = ReadFloat("Enter Video Exposure (us) (Default 300 us) : ", 300);
+        fVideoFlashTime = new float;
+        *fVideoFlashTime = ReadFloat("Enter Video Flash Time (us) (Default 300 us) : ", 300);
     }
 
     printf("Enter Video Resolution :\n");
@@ -718,13 +750,15 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
     printf("  6 : None (default)\n");
     printf("Select 1 - 6 : ");
     int tmpVideoRes = ReadChar('1', true) - '0' - 1;
+    
+    videoResolution = new CRTProtocol::EVideoResolution;
     if (tmpVideoRes >= 0 && tmpVideoRes <= 4)
     {
-        videoResolution = (CRTProtocol::EVideoResolution)tmpVideoRes;
+        *videoResolution = (CRTProtocol::EVideoResolution)tmpVideoRes;
     }
     else
     {
-        videoResolution = CRTProtocol::EVideoResolution::VideoResolutionNone;
+        *videoResolution = CRTProtocol::EVideoResolution::VideoResolutionNone;
     }
 
     printf("Enter Video AspectRatio :\n");
@@ -734,41 +768,51 @@ void CInput::ReadCameraSettings(unsigned int &nCameraId,        int   &nMode,   
     printf("  4 : None (default)\n");
     printf("Select 1 - 4 : ");
     int tmpVideoAsp = ReadChar('1', true) - '0' - 1;
+    videoAspectRatio = new CRTProtocol::EVideoAspectRatio;
     if (tmpVideoAsp >= 0 && tmpVideoAsp <= 2)
     {
-        videoAspectRatio = (CRTProtocol::EVideoAspectRatio)tmpVideoAsp;;
+        *videoAspectRatio = (CRTProtocol::EVideoAspectRatio)tmpVideoAsp;;
     }
     else
     {
-        videoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone;
+        *videoAspectRatio = CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone;
     }
 
-    nRotation = ReadInt("Enter Camera Rotation (degrees) (Default 0 degrees): ", 0);
-    nRotation = nRotation - (nRotation % 90);
-    if (nRotation < 0 || nRotation > 270)
+    nRotation = new int;
+    *nRotation = ReadInt("Enter Camera Rotation (degrees) (Default 0 degrees): ", 0);
+    *nRotation = *nRotation - (*nRotation % 90);
+    if (*nRotation < 0 || *nRotation > 270)
     {
-        nRotation = 0;
+        *nRotation = 0;
     }
 
-    fFocus = ReadFloat("Enter Lens Focus: ", 5);
-    fAperture = ReadFloat("Enter Lens Aperture: ", 5);
+    fFocus = new float;
+    *fFocus = ReadFloat("Enter Lens Focus: ", 5);
+    fAperture = new float;
+    *fAperture = ReadFloat("Enter Lens Aperture: ", 5);
 
-    autoExposure = ReadYesNo("Enable Auto Exposure? (y/n): ", false);
-    if (autoExposure)
+    autoExposure = new bool;
+    *autoExposure = ReadYesNo("Enable Auto Exposure? (y/n): ", false);
+    if (*autoExposure)
     {
-        exposureCompensation = ReadFloat("Enter Exposure Compensation: ", 0);
+        exposureCompensation = new float;
+        *exposureCompensation = ReadFloat("Enter Exposure Compensation: ", 0);
     }
-    autoWhiteBalance = ReadYesNo("Enable Auto White Balance? (y/n): ", true);
+    autoWhiteBalance = new bool;
+    *autoWhiteBalance = ReadYesNo("Enable Auto White Balance? (y/n): ", true);
 }
 
 
-void CInput::ReadCameraSyncOutSettings(unsigned int &nCameraId, int &portNumber, int   &nSyncOutMode, unsigned int &nSyncOutValue,
-                                        float &fSyncOutDutyCycle, bool  &bSyncOutNegativePolarity)
+void CInput::ReadCameraSyncOutSettings(unsigned int* nCameraId, int* portNumber, int* nSyncOutMode, unsigned int* nSyncOutValue,
+                                        float* fSyncOutDutyCycle, bool* bSyncOutNegativePolarity)
 {
-    nCameraId = ReadInt("\nEnter Camera ID : ", 1);
-    portNumber = ReadInt("Enter Sync out port number (1-3) ", 1);
+    nCameraId = new unsigned int;
+    *nCameraId = ReadInt("\nEnter Camera ID : ", 1);
+    portNumber = new int;
+    *portNumber = ReadInt("Enter Sync out port number (1-3) ", 1);
+    nSyncOutMode = new int;
 
-    if (portNumber > 0 && portNumber < 3)
+    if (*portNumber > 0 && *portNumber < 3)
     {
         printf("Enter Camera Mode :\n");
         printf("  1 : Shutter Out\n");
@@ -779,36 +823,41 @@ void CInput::ReadCameraSyncOutSettings(unsigned int &nCameraId, int &portNumber,
         printf("  6 : Fixed 100 Hz\n");
         printf("  7 : System Live Time\n");
         printf("Select 1 - 7 : ");
-        nSyncOutMode = ReadChar('1', true) - '0';
-        if (nSyncOutMode < 1 || nSyncOutMode > 7)
+        *nSyncOutMode = ReadChar('1', true) - '0';
+        if (*nSyncOutMode < 1 || *nSyncOutMode > 7)
         {
-            nSyncOutMode = 1;
+            *nSyncOutMode = 1;
         }
 
-        if (nSyncOutMode >= 2 && nSyncOutMode <= 4)
+        if (*nSyncOutMode >= 2 && *nSyncOutMode <= 4)
         {
-            printf("Enter %s : ", nSyncOutMode == 2 ? "Multiplier" : (nSyncOutMode == 3 ? "Divisor" : "Camera Independent Frequency"));
-            nSyncOutValue = ReadInt("", 1000);
+            printf("Enter %s : ", *nSyncOutMode == 2 ? "Multiplier" : (*nSyncOutMode == 3 ? "Divisor" : "Camera Independent Frequency"));
+            nSyncOutValue = new unsigned int;
+            *nSyncOutValue = ReadInt("", 1000);
 
-            fSyncOutDutyCycle = ReadFloat("Enter Sync Out Duty Cycle (%%) : ", 0.5);
+            fSyncOutDutyCycle = new float;
+            *fSyncOutDutyCycle = ReadFloat("Enter Sync Out Duty Cycle (%%) : ", 0.5);
         }
     }
 
-    if (nSyncOutMode < 6)
+    if (*nSyncOutMode < 6)
     {
-        bSyncOutNegativePolarity = ReadYesNo("Negative Polarity? (y/n): ", true);
+        bSyncOutNegativePolarity = new bool;
+        *bSyncOutNegativePolarity = ReadYesNo("Negative Polarity? (y/n): ", true);
     }
 }
 
 
-void CInput::ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFormat, unsigned int &nWidth,
-                               unsigned int &nHeight, float &fLeftCrop, float &fTopCrop, float &fRightCrop, float &fBottomCrop)
+void CInput::ReadImageSettings(unsigned int* nCameraId, bool* bEnable, int* nFormat, unsigned int* nWidth,
+    unsigned int* nHeight, float* fLeftCrop, float* fTopCrop, float* fRightCrop, float* fBottomCrop)
 {
     int c;
 
-    nCameraId = ReadInt("Enter Camera ID (Default 1): ", 1);
+    nCameraId = new unsigned int;
+    *nCameraId = ReadInt("Enter Camera ID (Default 1): ", 1);
 
-    bEnable = ReadYesNo("Enable Camera? (y/n): ", true);
+    bEnable = new bool;
+    *bEnable = ReadYesNo("Enable Camera? (y/n): ", true);
 
     printf("Enter Image format :\n");
     printf("  1 : RAW Grayscale\n");
@@ -817,44 +866,51 @@ void CInput::ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFor
     printf("  4 : PNG\n");
     printf("Select 1 - 4 : ");
 
-    nFormat = ReadChar('3', true) - '0' - 1;
-    if (nFormat < 1 || nFormat > 4)
+    nFormat = new int;
+    *nFormat = ReadChar('3', true) - '0' - 1;
+    if (*nFormat < 1 || *nFormat > 4)
     {
-        nFormat = 3;
+        *nFormat = 3;
     }
-    nWidth = ReadInt("Enter Image Width (Default 320): ", 320);
-    nHeight = ReadInt("Enter Image Height (Default 200) : ", 200);
+    nWidth = new unsigned int;
+    *nWidth = ReadInt("Enter Image Width (Default 320): ", 320);
+    nHeight = new unsigned int;
+    *nHeight = ReadInt("Enter Image Height (Default 200) : ", 200);
     
     c = ReadInt("Enter Image Left Crop (%% of Width, Default 0 %%) : ", 0);
     if (c < 0 || c > 100)
     {
         c = 0;
     }
-    fLeftCrop = (float)c / (float)100.0;
+    fLeftCrop = new float;
+    *fLeftCrop = (float)c / (float)100.0;
 
     c = ReadInt("Enter Image Top Crop (%% of Height, Default 0 %%) : ", 0);
     if (c < 0 || c > 100)
     {
         c = 0;
     }
-    fTopCrop = (float)c / (float)100.0;
+    fTopCrop = new float;
+    *fTopCrop = (float)c / (float)100.0;
 
     c = ReadInt("Enter Image Right Crop (%% of Width, Default 100 %%) : ", 100);
     if (c < 0 || c > 100)
     {
         c = 100;
     }
-    fRightCrop = (float)c / (float)100.0;
+    fRightCrop = new float;
+    *fRightCrop = (float)c / (float)100.0;
 
     c = ReadInt("Enter Image Bottom Crop (%% of Height, Default 100 %%) : ", 100);
     if (c < 0 || c > 100)
     {
         c = 100;
     }
-    fBottomCrop = (float)c / (float)100.0;
+    fBottomCrop = new float;
+    *fBottomCrop = (float)c / (float)100.0;
 }
 
-void CInput::ReadForceSettings(unsigned int &nForcePlateIndex, float afCorner[4][3])
+void CInput::ReadForceSettings(unsigned int* nForcePlateIndex, float afCorner[4][3])
 {
     nForcePlateIndex = ReadInt("Enter Force Plate Index : ", 1);
 

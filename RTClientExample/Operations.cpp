@@ -225,26 +225,27 @@ void COperations::ViewSettings()
 
 void COperations::ChangeSettings(CInput::EOperation eOperation)
 {
-    unsigned int              nCameraId;
-    bool                      bEnable;
-    int                       nImageFormat;
-    unsigned int              nWidth;
-    unsigned int              nHeight;
-    float                     fLeftCrop;
-    float                     fTopCrop;
-    float                     fRightCrop;
-    float                     fBottomCrop;
-    std::string               password;
-    bool                      bGotControl;
+    unsigned int*              nCameraId = nullptr;
+    bool*                      bEnable = nullptr;
+    int*                       nImageFormat = nullptr;
+    unsigned int*              nWidth = nullptr;
+    unsigned int*              nHeight = nullptr;
+    float*                     fLeftCrop = nullptr;
+    float*                     fTopCrop = nullptr;
+    float*                     fRightCrop = nullptr;
+    float*                     fBottomCrop = nullptr;
+    std::string*               password = nullptr;
+    bool*                      bGotControl = nullptr;
 
-    bGotControl  = false;
+    bGotControl = new(bool);
+    *bGotControl = false;
 
     do 
     {
         // Take control over QTM
-        if (mpoRTProtocol->TakeControl(password))
+        if (mpoRTProtocol->TakeControl(*password))
         {
-            bGotControl = true;
+            *bGotControl = true;
 
             if (eOperation == CInput::ChangeGeneralSystemSettings)
             {
@@ -271,16 +272,16 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
 
             if (eOperation == CInput::ChangeExtTimebaseSettings)
             {
-                bool         bEnabled;
-                int          nSignalSource;
-                bool         bSignalModePeriodic;
-                unsigned int nMultiplier;
-                unsigned int nDivisor;
-                unsigned int nFrequencyTolerance;
-                float        fNominalFrequency;
-                bool         bNegativeEdge;
-                unsigned int nSignalShutterDelay;
-                float        fNonPeriodicTimeout;
+                bool*         bEnabled;
+                int*          nSignalSource;
+                bool*         bSignalModePeriodic;
+                unsigned int* nMultiplier;
+                unsigned int* nDivisor;
+                unsigned int* nFrequencyTolerance;
+                float*        fNominalFrequency;
+                bool*         bNegativeEdge;
+                unsigned int* nSignalShutterDelay;
+                float*        fNonPeriodicTimeout;
 
                 printf("\n\nInput External Time Base Settings\n\n");
 
@@ -546,7 +547,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
         {
             if (strncmp("Wrong or missing password", mpoRTProtocol->GetErrorString(), 25) == 0)
             {
-                mpoInput->ReadClientControlPassword(password);
+                mpoInput->ReadClientControlPassword(*password);
                 printf("\n");
             }
             else
@@ -555,6 +556,18 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
             }
         }
     } while (!bGotControl && !password.empty());
+
+    delete nCameraId;
+    delete bEnable;
+    delete nImageFormat;
+    delete nWidth;
+    delete nHeight;
+    delete fLeftCrop;
+    delete fTopCrop;
+    delete fRightCrop;
+    delete fBottomCrop;
+    delete password;
+    delete bGotControl;
 
 } // ChangeSettings
 
