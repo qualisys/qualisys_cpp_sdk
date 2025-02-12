@@ -81,11 +81,11 @@ public:
     void ReadImageSettings(unsigned int* nCameraId, bool* bEnable, int* nFormat, unsigned int* nWidth,
                            unsigned int* nHeight, float* fLeftCrop, float* fTopCrop, float* fRightCrop, float* fBottomCrop);
     void ReadForceSettings(unsigned int* nForcePlateIndex, float afCorner[4][3]);
-    void Read6DSettings(unsigned int &color, float &maxResidual, unsigned int &minMarkersInBody, float &boneLengthTolerance, std::string &filterPreset);
+    void Read6DSettings(unsigned int* color, float* maxResidual, unsigned int* minMarkersInBody, float* boneLengthTolerance, std::string* filterPreset);
     void Read6DSettingsMesh(CRTProtocol::SSettings6DMesh &mesh);
     void Read6DSettingsOrigin(CRTProtocol::SOrigin &origin);
     void Read6DSettingsPoints(std::vector<CRTProtocol::SBodyPoint> &points);
-        bool ReadQTMCommand(EQTMCommand &eCommand);
+    bool ReadQTMCommand(EQTMCommand &eCommand);
 
     std::string ReadString(const std::string& text);
     float       ReadFloat(const std::string& text, float fDefault);

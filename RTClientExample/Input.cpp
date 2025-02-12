@@ -912,7 +912,8 @@ void CInput::ReadImageSettings(unsigned int* nCameraId, bool* bEnable, int* nFor
 
 void CInput::ReadForceSettings(unsigned int* nForcePlateIndex, float afCorner[4][3])
 {
-    nForcePlateIndex = ReadInt("Enter Force Plate Index : ", 1);
+    nForcePlateIndex = new unsigned int;
+    *nForcePlateIndex = ReadInt("Enter Force Plate Index : ", 1);
 
     // Read Force Plate Parameters
     for (int nCorner = 0; nCorner < 4; nCorner++)
@@ -924,30 +925,35 @@ void CInput::ReadForceSettings(unsigned int* nForcePlateIndex, float afCorner[4]
     }
 }
 
-void CInput::Read6DSettings(unsigned int &color, float &maxResidual, unsigned int &minMarkersInBody, float &boneLengthTolerance, std::string &filterPreset)
+void CInput::Read6DSettings(unsigned int* color, float* maxResidual, unsigned int* minMarkersInBody, float* boneLengthTolerance, std::string* filterPreset)
 {
     unsigned int colorTmp[3];
 
     colorTmp[0] = ReadInt("Enter color R (0-255): ", 0xff);
     colorTmp[1] = ReadInt("Enter color G (0-255): ", 0xff);
     colorTmp[2] = ReadInt("Enter color B (0-255): ", 0xff);
-    color = colorTmp[0] | (colorTmp[1] << 8) | (colorTmp[2] << 16);
-    maxResidual = ReadFloat("Enter max residual: ", 10);
-    minMarkersInBody = ReadInt("Enter min markers in body: ", 3);
-    boneLengthTolerance = ReadFloat("Enter bone length tolerance: ", 5);
+    color = new unsigned int;
+    *color = colorTmp[0] | (colorTmp[1] << 8) | (colorTmp[2] << 16);
+    maxResidual = new float;
+    *maxResidual = ReadFloat("Enter max residual: ", 10);
+    minMarkersInBody = new unsigned int;
+    *minMarkersInBody = ReadInt("Enter min markers in body: ", 3);
+    boneLengthTolerance = new float;
+    *boneLengthTolerance = ReadFloat("Enter bone length tolerance: ", 5);
     int preset = ReadInt("Enter filter preset(0-3):\n  0 - No filter\n  1 - Multi-purpose\n  2 - High stability\n  3 - Static pose\n", 0);
+    filterPreset = new std::string;
     switch (preset)
     {
-    case 0: filterPreset = "No filter";
+    case 0: *filterPreset = "No filter";
         break;
-    case 1: filterPreset = "Multi-purpose";
+    case 1: *filterPreset = "Multi-purpose";
         break;
-    case 2: filterPreset = "High stability";
+    case 2: *filterPreset = "High stability";
         break;
-    case 3: filterPreset = "Static pose";
+    case 3: *filterPreset = "Static pose";
         break;
     default:
-        filterPreset = "";
+        *filterPreset = "";
     }
 }
 
