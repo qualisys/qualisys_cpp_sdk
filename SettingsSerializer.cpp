@@ -38,13 +38,25 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
     // External Trigger and additional triggers
     if (startOnExtTrig)
     {
-        theGeneral.ElementBool("Start_On_External_Trigger", startOnExtTrig);
+        theGeneral.ElementBool("Start_On_External_Trigger", *startOnExtTrig);
 
         if (mMajorVersion > 1 || mMinorVersion > 14)
         {
-            theGeneral.ElementBool("Start_On_Trigger_NO", startOnTrigNO);
-            theGeneral.ElementBool("Start_On_Trigger_NC", startOnTrigNC);
-            theGeneral.ElementBool("Start_On_Trigger_Software", startOnTrigSoftware);
+            if (startOnTrigNO)
+            {
+                theGeneral.ElementBool("Start_On_Trigger_NO", *startOnTrigNO);
+            }
+
+            if (startOnTrigNC)
+            {
+                theGeneral.ElementBool("Start_On_Trigger_NC", *startOnTrigNC);
+            }
+
+            if (startOnTrigSoftware)
+            {
+                theGeneral.ElementBool("Start_On_Trigger_Software", *startOnTrigSoftware);
+            }
+            
         }
     }
 
@@ -108,7 +120,11 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
 {
     auto timeBaseElem = mSerializer->Element("General").Element("External_Time_Base");
 
-    timeBaseElem.ElementBool("Enabled", enabled);
+    if (enabled)
+    {
+        timeBaseElem.ElementBool("Enabled", *enabled);
+    }
+    
 
     if (signalSource)
     {
@@ -132,7 +148,10 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
         }
     }
 
-    timeBaseElem.ElementString("Signal_Mode", (*signalModePeriodic ? "Periodic" : "Non-periodic"));
+    if (signalModePeriodic)
+    {
+        timeBaseElem.ElementString("Signal_Mode", (*signalModePeriodic ? "Periodic" : "Non-periodic"));
+    }
 
     if (freqMultiplier)
     {
@@ -159,9 +178,20 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
         }
     }
 
-    timeBaseElem.ElementString("Signal_Edge", (*negativeEdge ? "Negative" : "Positive"));
-    timeBaseElem.ElementUnsignedInt("Signal_Shutter_Delay", *signalShutterDelay);
-    timeBaseElem.ElementFloat("Non_Periodic_Timeout", *nonPeriodicTimeout);
+    if (negativeEdge)
+    {
+        timeBaseElem.ElementString("Signal_Edge", (*negativeEdge ? "Negative" : "Positive"));
+    }
+
+    if (signalShutterDelay)
+    {
+        timeBaseElem.ElementUnsignedInt("Signal_Shutter_Delay", *signalShutterDelay);
+    }
+
+    if (nonPeriodicTimeout)
+    {
+        timeBaseElem.ElementFloat("Non_Periodic_Timeout", *nonPeriodicTimeout);
+    }
 
     return timeBaseElem.ToString();
 }
@@ -287,10 +317,12 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
     {
         cameraElem.ElementUnsignedInt("Video_Frequency", *videoFrequency);
     }
+
     if (videoExposure)
     {
         cameraElem.ElementFloat("Video_Exposure", *videoExposure);
     }
+
     if (videoFlashTime)
     {
         cameraElem.ElementFloat("Video_Flash_Time", *videoFlashTime);
@@ -310,12 +342,12 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
     if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
     {
         auto syncOutElem = [&port, &cameraElem](){
-        if (port == 0)
-            return cameraElem.Element("Sync_Out");
-        else if (port == 1)
-            return cameraElem.Element("Sync_Out2");
-        else
-            return cameraElem.Element("Sync_Out_MT");
+                if (port == 0)
+                    return cameraElem.Element("Sync_Out");
+                else if (port == 1)
+                    return cameraElem.Element("Sync_Out2");
+                else
+                    return cameraElem.Element("Sync_Out_MT");
             }();
 
         // Add Sync Out Mode
@@ -366,7 +398,7 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
         if (syncOutNegativePolarity && (port == 2 ||
             (syncOutMode && *syncOutMode != ModeFixed100Hz)))
         {
-            syncOutElem.ElementString("Signal_Polarity", (syncOutNegativePolarity ? "Negative" : "Positive"));
+            syncOutElem.ElementString("Signal_Polarity", (*syncOutNegativePolarity ? "Negative" : "Positive"));
         }
     }
 
@@ -425,6 +457,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     auto cameraElem = mSerializer->Element("Image").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
+
     if (enable)
     {
         cameraElem.ElementBool("Enabled", *enable);
@@ -459,22 +492,27 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
     {
         cameraElem.ElementUnsignedInt("Width", *width);
     }
+
     if (height)
     {
         cameraElem.ElementUnsignedInt("Height", *height);
     }
+
     if (leftCrop)
     {
         cameraElem.ElementFloat("Left_Crop", *leftCrop);
     }
+
     if (topCrop)
     {
         cameraElem.ElementFloat("Top_Crop", *topCrop);
     }
+
     if (rightCrop)
     {
         cameraElem.ElementFloat("Right_Crop", *rightCrop);
     }
+
     if (bottomCrop)
     {
         cameraElem.ElementFloat("Bottom_Crop", *bottomCrop);
@@ -497,31 +535,33 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
         plateElem.ElementUnsignedInt("Force_Plate_Index", plateId);
     }
 
-    auto addCorner = [&](const char* name, const SPoint* pCorner)
+    auto addCorner = [&](const char* name, const SPoint& pCorner)
         {
-            if (pCorner)
-            {
-                auto cornerElem = plateElem.Element(name);
-
-                if (pCorner->fX)
-                {
-                    cornerElem.ElementFloat("X", pCorner->fX);
-                }
-                if (pCorner->fY)
-                {
-                    cornerElem.ElementFloat("Y", pCorner->fY);
-                }
-                if (pCorner->fZ)
-                {
-                    cornerElem.ElementFloat("Z", pCorner->fZ);
-                }
-            }
+            auto cornerElem = plateElem.Element(name);
+            cornerElem.ElementFloat("X", pCorner.fX);
+            cornerElem.ElementFloat("Y", pCorner.fY);
+            cornerElem.ElementFloat("Z", pCorner.fZ);
         };
 
-    addCorner("Corner1", corner1);
-    addCorner("Corner2", corner2);
-    addCorner("Corner3", corner3);
-    addCorner("Corner4", corner4);
+    if (corner1)
+    {
+        addCorner("Corner1", *corner1);
+    }
+
+    if (corner2)
+    {
+        addCorner("Corner2", *corner2);
+    }
+
+    if (corner3)
+    {
+        addCorner("Corner3", *corner3);
+    }
+
+    if (corner4)
+    {
+        addCorner("Corner4", *corner4);
+    }
 
     return mSerializer->ToString();
 }
