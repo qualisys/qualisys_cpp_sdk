@@ -771,7 +771,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         for (std::size_t port = 0; port < 3; port++)
         {
             char syncOutStr[16];
-            (void)snprintf(syncOutStr, 16, "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
+            (void)snprintf(syncOutStr, sizeof(syncOutStr), "Sync_Out%s", port == 0 ? "" : (port == 1 ? "2" : "_MT"));
 
             auto syncOutElem = cameraElem.FindChild(syncOutStr);
             if (syncOutElem)
@@ -1141,10 +1141,10 @@ namespace
 
         if (auto elem = deserializer.FindChild("Data_orientation"))
         {
-            char tmpStr[10];
+            char tmpStr[16];
             for (std::uint32_t i = 0; i < 9; i++)
             {
-                (void)snprintf(tmpStr, 10, "R%u%u", (i / 3) + 1, (i % 3) + 1);
+                (void)snprintf(tmpStr, sizeof(tmpStr), "R%u%u", (i / 3) + 1, (i % 3) + 1);
                 target.rotation[i] = elem.ReadAttributeFloat(tmpStr);
             }
 
