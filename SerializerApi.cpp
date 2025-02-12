@@ -105,4 +105,3 @@ std::string SerializerApi::ToString() const
     mDocument->Print(&printer);
     return printer.CStr();
 }
-

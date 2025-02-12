@@ -1,5 +1,4 @@
 #include "Settings.h"
-#include "algorithm"
 
 const char* qualisys_cpp_sdk::SkeletonDofToStringSettings(EDegreeOfFreedom dof)
 {

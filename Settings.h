@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <cstdint>
+#include <algorithm>
 
 #ifdef EXPORT_DLL
 #define DLL_EXPORT __declspec(dllexport)

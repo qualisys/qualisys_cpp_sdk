@@ -56,7 +56,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 )
 
 include(CMakePackageConfigHelpers)
-        configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         INSTALL_DESTINATION ${ConfigPackageLocation}
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR
