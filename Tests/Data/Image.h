@@ -24,7 +24,7 @@ namespace qualisys_cpp_sdk::tests::data
 <Image>
     <Camera>
         <ID>1</ID>
-        <Enabled>True</Enabled>
+        <Enabled>true</Enabled>
         <Format>RAWGrayscale</Format>
         <Width>99</Width>
         <Height>98</Height>

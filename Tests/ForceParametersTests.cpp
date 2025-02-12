@@ -54,21 +54,17 @@ namespace
                   CRTProtocol::SForceChannel { 14, -512.557678f },
                   CRTProtocol::SForceChannel { 15, -513.083618f },
                   CRTProtocol::SForceChannel { 16, -513.347046f },
-                }, false,
+                }, true,
                 {
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-                 { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f }
-                }, 6, 6
+                    {1.996960f,-1.044330f,3.445170f,-2.529840f,0.122704f,-49.981499f,52.937000f,0.123107f},
+                    {52.937000f,0.123107f,-1.957380f,-2.063730f,0.611111f,2.067350f,49.304401f,0.559802f},
+                    {49.304401f,0.559802f,-0.592905f,49.466301f,-105.681999f,-103.581001f,-105.087997f,-105.438004f},
+                    {-105.087997f,-105.438004f,-0.596136f,-0.043322f,-0.245594f,-0.506804f,19.028299f,18.703899f},
+                    {19.028299f,18.703899f,-19.228001f,-19.119301f,0.000000f,0.000000f,0.000000f,0.000000f},
+                    {0.000000f,0.000000f,19.713499f,-18.906700f,19.650000f,-19.800900f,0.000000f,0.000000f}
+                },
+                6,
+                8
             }
         };
 
@@ -100,9 +96,9 @@ namespace
                 CHECK_EQ(expectedPlates[i].vChannels[j].fConversionFactor, forceSettings.vsForcePlates[i].vChannels[j].fConversionFactor);
             }
             CHECK_EQ(expectedPlates[i].bValidCalibrationMatrix, forceSettings.vsForcePlates[i].bValidCalibrationMatrix);
-            for (std::size_t j = 0; j < 12; j++)
+            for (std::size_t j = 0; j < expectedPlates[i].nCalibrationMatrixRows; j++)
             {
-                for (std::size_t k = 0; k < 12; k++)
+                for (std::size_t k = 0; k < expectedPlates[i].nCalibrationMatrixColumns; k++)
                 {
                     CHECK_EQ(expectedPlates[i].afCalibrationMatrix[j][k], forceSettings.vsForcePlates[i].afCalibrationMatrix[j][k]);
                 }
