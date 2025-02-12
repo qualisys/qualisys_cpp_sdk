@@ -1099,7 +1099,6 @@ namespace
         return false;
     }
 
-
     bool TryReadSetPoints(DeserializerApi& deserializer, std::vector<SBodyPoint>& target)
     {
         if (auto pointsElem = deserializer.FindChild("Points"))

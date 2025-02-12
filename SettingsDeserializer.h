@@ -9,6 +9,7 @@ namespace qualisys_cpp_sdk
     {
         SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion);
         ~SettingsDeserializer();
+
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings);
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable);
         bool DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings, bool& dataAvailable);
