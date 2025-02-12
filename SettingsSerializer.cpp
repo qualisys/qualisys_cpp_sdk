@@ -124,7 +124,6 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     {
         timeBaseElem.ElementBool("Enabled", *enabled);
     }
-    
 
     if (signalSource)
     {
@@ -157,10 +156,12 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
     {
         timeBaseElem.ElementUnsignedInt("Frequency_Multiplier", *freqMultiplier);
     }
+
     if (freqDivisor)
     {
         timeBaseElem.ElementUnsignedInt("Frequency_Divisor", *freqDivisor);
     }
+
     if (freqTolerance)
     {
         timeBaseElem.ElementUnsignedInt("Frequency_Tolerance", *freqTolerance);
@@ -251,10 +252,12 @@ std::string SettingsSerializer::SetCameraSettings(
     {
         cameraElem.ElementFloat("Marker_Exposure", *markerExposure);
     }
+
     if (markerThreshold)
     {
         cameraElem.ElementFloat("Marker_Threshold", *markerThreshold);
     }
+
     if (orientation)
     {
         cameraElem.ElementInt("Orientation", *orientation);
