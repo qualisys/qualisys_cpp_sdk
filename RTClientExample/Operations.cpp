@@ -367,12 +367,12 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 float         fFocus;
                 float         fAperture;
                 bool          autoExposure;
-                float*        pfExposureCompensation = nullptr;
+                float         fExposureCompensation = 0.0f;
                 bool          autoWhiteBalance;
 
                 mpoInput->ReadCameraSettings(nCameraId, nMode, pVideoResolution, pVideoAspectRatio, pnVideoFrequency,
                                              pfVideoExposure, pfVideoFlashTime, pfMarkerExposure,
-                                             pfMarkerThreshold, nRotation, fFocus, fAperture, autoExposure, pfExposureCompensation, autoWhiteBalance);
+                                             pfMarkerThreshold, nRotation, fFocus, fAperture, autoExposure, fExposureCompensation, autoWhiteBalance);
 
                 if (mpoRTProtocol->SetCameraSettings(nCameraId, (CRTProtocol::ECameraMode*)&nMode, 
                                                      pfMarkerExposure, pfMarkerThreshold, &nRotation))
@@ -402,7 +402,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                     printf("Change Camera Lens Control Settings Failed\n\n");
                 }
 
-                if (mpoRTProtocol->SetCameraAutoExposureSettings(nCameraId, autoExposure, *pfExposureCompensation))
+                if (mpoRTProtocol->SetCameraAutoExposureSettings(nCameraId, autoExposure, fExposureCompensation))
                 {
                     printf("Change Camera Lens Control Settings Succeeded\n\n");
                 }
@@ -427,7 +427,6 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 delete pfVideoFlashTime;
                 delete pfMarkerExposure;
                 delete pfMarkerThreshold;
-                delete pfExposureCompensation;
             }
 
             if (eOperation == CInput::ChangeCameraSyncOutSettings)

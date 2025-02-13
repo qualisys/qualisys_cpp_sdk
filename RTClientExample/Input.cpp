@@ -483,7 +483,7 @@ bool CInput::ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP
     return false;
 }
 
-void CInput::ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool* bExternalTrigger, bool* trigNO, bool* trigNC, bool* trigSoftware)
+void CInput::ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool*& bExternalTrigger, bool*& trigNO, bool*& trigNC, bool*& trigSoftware)
 {
     nCaptureFrequency = ReadInt("Enter Capture Frequency (Hz) : ", 20);
 
@@ -605,11 +605,11 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
     }
 }
 
-void CInput::ReadExtTimeBaseSettings(bool          &bEnabled,           int*          nSignalSource,
-                                     bool*         bSignalModePeriodic, unsigned int* nMultiplier,
-                                     unsigned int* nDivisor,            unsigned int* nFrequencyTolerance,
-                                     float*        fNominalFrequency,   bool*         bNegativeEdge,
-                                     unsigned int* nSignalShutterDelay, float*        fNonPeriodicTimeout)
+void CInput::ReadExtTimeBaseSettings(bool          &bEnabled,           int*&          nSignalSource,
+                                     bool*&         bSignalModePeriodic, unsigned int*& nMultiplier,
+                                     unsigned int*& nDivisor,            unsigned int*& nFrequencyTolerance,
+                                     float*&        fNominalFrequency,   bool*&         bNegativeEdge,
+                                     unsigned int*& nSignalShutterDelay, float*&        fNonPeriodicTimeout)
 {
     bEnabled = ReadYesNo("Enable External Time Base (y/n)? ", false);
 
@@ -633,7 +633,7 @@ void CInput::ReadExtTimeBaseSettings(bool          &bEnabled,           int*    
             bSignalModePeriodic = ReadNewYesNo("Signal Mode Periodic (y/n)? ", true);
         }
 
-        if ((*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 2 || *nSignalSource == 3) && *bSignalModePeriodic)
+        if ((*nSignalSource == 0 || *nSignalSource == 1 || *nSignalSource == 2 || *nSignalSource == 3) && bSignalModePeriodic)
         {
             nMultiplier = ReadNewUnsignedInt("Enter Frequency Multiplier : ", 1);
 
@@ -681,11 +681,11 @@ void CInput::ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestam
     }
 }
 
-void CInput::ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,            CRTProtocol::EVideoResolution* videoResolution, CRTProtocol::EVideoAspectRatio* videoAspectRatio,
-                                unsigned int* nVideoFrequency,     float* fVideoExposure,   float* fVideoFlashTime,
-                                float*        fMarkerExposure,     float* fMarkerThreshold, int&   nRotation,
+void CInput::ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,            CRTProtocol::EVideoResolution*& videoResolution, CRTProtocol::EVideoAspectRatio*& videoAspectRatio,
+                                unsigned int*& nVideoFrequency,     float*& fVideoExposure,   float*& fVideoFlashTime,
+                                float*&        fMarkerExposure,     float*& fMarkerThreshold, int&   nRotation,
                                 float&        fFocus,              float& fAperture,        bool&  autoExposure,
-                                float*        exposureCompensation, bool& autoWhiteBalance)
+                                float&        exposureCompensation, bool& autoWhiteBalance)
 {
     nCameraId = ReadInt("\nEnter Camera ID : ", 1);
 
@@ -751,19 +751,23 @@ void CInput::ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,
     autoExposure = ReadYesNo("Enable Auto Exposure? (y/n): ", false);
     if (autoExposure)
     {
-        exposureCompensation = ReadNewFloat("Enter Exposure Compensation: ", 0);
+        exposureCompensation = ReadFloat("Enter Exposure Compensation: ", 0);
+    }
+    else
+    {
+        exposureCompensation = 0.0f;
     }
     autoWhiteBalance = ReadYesNo("Enable Auto White Balance? (y/n): ", true);
 }
 
 
-void CInput::ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber, int* nSyncOutMode, unsigned int* nSyncOutValue,
-                                    float* fSyncOutDutyCycle, bool* bSyncOutNegativePolarity)
+void CInput::ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber, int*& nSyncOutMode, unsigned int*& nSyncOutValue,
+                                    float*& fSyncOutDutyCycle, bool*& bSyncOutNegativePolarity)
 {
     nCameraId = ReadInt("\nEnter Camera ID : ", 1);
-    portNumber = ReadInt("Enter Sync out port number (1-3) ", 1);
+    portNumber = ReadInt("Enter Sync out port number (1-3) : ", 1);
 
-    if (portNumber > 0 && portNumber < 3)
+    if (portNumber == 1 || portNumber == 2)
     {
         printf("Enter Camera Mode :\n");
         printf("  1 : Shutter Out\n");
@@ -774,7 +778,8 @@ void CInput::ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber,
         printf("  6 : Fixed 100 Hz\n");
         printf("  7 : System Live Time\n");
         printf("Select 1 - 7 : ");
-        nSyncOutMode = ReadNewCharAsInt('1', true) - '0';
+        nSyncOutMode = ReadNewCharAsInt('1', true);
+        *nSyncOutMode -= static_cast<int>('0');
         if (*nSyncOutMode < 1 || *nSyncOutMode > 7)
         {
             *nSyncOutMode = 1;
@@ -787,9 +792,13 @@ void CInput::ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber,
 
             fSyncOutDutyCycle = ReadNewFloat("Enter Sync Out Duty Cycle (%%) : ", 0.5);
         }
-    }
 
-    if (*nSyncOutMode < 6)
+        if (*nSyncOutMode < 6)
+        {
+            bSyncOutNegativePolarity = ReadNewYesNo("Negative Polarity? (y/n): ", true);
+        }
+    }
+    else if (portNumber == 3)
     {
         bSyncOutNegativePolarity = ReadNewYesNo("Negative Polarity? (y/n): ", true);
     }
