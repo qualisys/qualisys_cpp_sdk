@@ -578,7 +578,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
     unsigned int                nComponentType;
     char                        selectedAnalogChannels[256];
     CRTProtocol::EStreamRate    eStreamRate;
-    int                         nRateArgument;
+    int                         nRateArgument = 0;
     FILE*                       logfile = NULL;
     bool                        bStreamTCP, bStreamUDP, bLogToFile, bOnlyTimeAndFrameNumber;
     unsigned short              nUDPPort;
@@ -594,7 +594,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
         bStreamUDP = false;
         bLogToFile = false;
         bOnlyTimeAndFrameNumber = false;
-        nUDPPort;
+        nUDPPort = 0;
         tUDPAddress[0] = 0;
         eStreamRate = CRTProtocol::RateAllFrames;
 
