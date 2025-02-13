@@ -254,7 +254,7 @@ bool CInput::ReadDataComponents(unsigned int &nComponentType, char* selectedAnal
         if (!ReadYesNo("Read all channels (y/n)\n", true))
         {
             printf("Select analog channels: (Ex, 1,3,4-7,8)\n");
-            fgets(*selectedAnalogChannels, *selectedAnalogChannelsLen, stdin);
+            fgets(selectedAnalogChannels, selectedAnalogChannelsLen, stdin);
         }
     }
 
@@ -723,7 +723,7 @@ void CInput::ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,
     int tmpVideoRes = ReadChar('1', true) - '0' - 1;
     if (tmpVideoRes >= 0 && tmpVideoRes <= 4)
     {
-        videoResolution = new CRTProtocol::EVideoResolution(tmpVideoRes);
+        videoResolution = new CRTProtocol::EVideoResolution(static_cast<CRTProtocol::EVideoResolution>(tmpVideoRes));
     }
 
     printf("Enter Video AspectRatio :\n");
@@ -735,7 +735,7 @@ void CInput::ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,
     int tmpVideoAsp = ReadChar('1', true) - '0' - 1;
     if (tmpVideoAsp >= 0 && tmpVideoAsp <= 2)
     {
-        videoAspectRatio = new CRTProtocol::EVideoAspectRatio(tmpVideoAsp);
+        videoAspectRatio = new CRTProtocol::EVideoAspectRatio(static_cast<CRTProtocol::EVideoAspectRatio>(tmpVideoAsp));
     }
 
     nRotation = ReadInt("Enter Camera Rotation (degrees) (Default 0 degrees): ", 0);
