@@ -1148,7 +1148,6 @@ namespace
                 target.rotation[i] = elem.ReadAttributeFloat(tmpStr);
             }
 
-
             auto type = static_cast<EOriginType>(elem.ReadUnsignedInt());
             auto body = static_cast<std::uint32_t>(elem.ReadAttributeUnsignedInt("Relative_body"));
 
@@ -1256,7 +1255,6 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
                 // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
                 return false;
             }
-
 
             if (auto meshElem = bodyElem.FindChild("Mesh"))
             {
