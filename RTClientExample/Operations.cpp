@@ -252,14 +252,14 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
 
                 unsigned int nCaptureFrequency;
                 float fCaptureTime;
-                bool bExternalTrigger;
-                bool startOnTrigNO;
-                bool startOnTrigNC;
-                bool startOnTrigSoftware;
+                bool* bExternalTrigger = nullptr;
+                bool* startOnTrigNO = nullptr;
+                bool* startOnTrigNC = nullptr;
+                bool* startOnTrigSoftware = nullptr;
 
                 mpoInput->ReadGeneralSettings(nCaptureFrequency, fCaptureTime, bExternalTrigger, startOnTrigNO, startOnTrigNC, startOnTrigSoftware);
 
-                if (mpoRTProtocol->SetGeneralSettings(&nCaptureFrequency, &fCaptureTime, &bExternalTrigger, &startOnTrigNO, &startOnTrigNC, &startOnTrigSoftware, NULL, NULL, NULL))
+                if (mpoRTProtocol->SetGeneralSettings(&nCaptureFrequency, &fCaptureTime, bExternalTrigger, startOnTrigNO, startOnTrigNC, startOnTrigSoftware, NULL, NULL, NULL))
                 {
                     printf("Change General Settings Succeeded\n\n");
                 }
@@ -267,20 +267,25 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 {
                     printf("Change General Settings Failed\n\n");
                 }
+
+                delete bExternalTrigger;
+                delete startOnTrigNO;
+                delete startOnTrigNC;
+                delete startOnTrigSoftware;
             }
 
             if (eOperation == CInput::ChangeExtTimebaseSettings)
             {
-                bool         bEnabled;
-                int          nSignalSource;
-                bool         bSignalModePeriodic;
-                unsigned int nMultiplier;
-                unsigned int nDivisor;
-                unsigned int nFrequencyTolerance;
-                float        fNominalFrequency;
-                bool         bNegativeEdge;
-                unsigned int nSignalShutterDelay;
-                float        fNonPeriodicTimeout;
+                bool          bEnabled;
+                int*          nSignalSource = nullptr;
+                bool*         bSignalModePeriodic = nullptr;
+                unsigned int* nMultiplier = nullptr;
+                unsigned int* nDivisor = nullptr;
+                unsigned int* nFrequencyTolerance = nullptr;
+                float*        fNominalFrequency = nullptr;
+                bool*         bNegativeEdge = nullptr;
+                unsigned int* nSignalShutterDelay = nullptr;
+                float*        fNonPeriodicTimeout = nullptr;
 
                 printf("\n\nInput External Time Base Settings\n\n");
 
@@ -289,10 +294,10 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                                                          fNominalFrequency, bNegativeEdge, nSignalShutterDelay,
                                                          fNonPeriodicTimeout);
 
-                if (mpoRTProtocol->SetExtTimeBaseSettings(&bEnabled,            (CRTProtocol::ESignalSource*)&nSignalSource,
-                                                         &bSignalModePeriodic, &nMultiplier,       &nDivisor,      
-                                                         &nFrequencyTolerance, &fNominalFrequency, &bNegativeEdge,
-                                                         &nSignalShutterDelay, &fNonPeriodicTimeout))
+                if (mpoRTProtocol->SetExtTimeBaseSettings(&bEnabled,            (CRTProtocol::ESignalSource*)nSignalSource,
+                                                         bSignalModePeriodic, nMultiplier,       nDivisor,      
+                                                         nFrequencyTolerance, fNominalFrequency, bNegativeEdge,
+                                                         nSignalShutterDelay, fNonPeriodicTimeout))
                 {
                     printf("Change External Time Base Settings Succeeded\n\n");
                 }
@@ -300,6 +305,16 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 {
                     printf("Change External Time Base Settings Failed\n\n");
                 }
+
+                delete nSignalSource;
+                delete bSignalModePeriodic;
+                delete nMultiplier;
+                delete nDivisor;
+                delete nFrequencyTolerance;
+                delete fNominalFrequency;
+                delete bNegativeEdge;
+                delete nSignalShutterDelay;
+                delete fNonPeriodicTimeout;
             }
 
             if (eOperation == CInput::ChangeExtTimestampSettings)
@@ -341,38 +356,23 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 printf("\n\nInput Camera Settings\n\n");
 
                 int           nMode;
-                unsigned int  nVideoFrequency  = -1;
-                float         fVideoExposure   = -1;
-                float         fVideoFlashTime  = -1;
-                float         fMarkerExposure  = -1;
-                float         fMarkerThreshold = -1;
-                CRTProtocol::EVideoResolution videoResolution;
-                CRTProtocol::EVideoAspectRatio videoAspectRatio;
-                CRTProtocol::EVideoResolution* pVideoResolution;
-                CRTProtocol::EVideoAspectRatio* pVideoAspectRatio;
+                CRTProtocol::EVideoResolution* pVideoResolution = nullptr;
+                CRTProtocol::EVideoAspectRatio* pVideoAspectRatio = nullptr;
                 int           nRotation;
-                unsigned int* pnVideoFrequency;
-                float*        pfVideoExposure;
-                float*        pfVideoFlashTime;
-                float*        pfMarkerExposure;
-                float*        pfMarkerThreshold;
+                unsigned int* pnVideoFrequency = nullptr;
+                float*        pfVideoExposure = nullptr;
+                float*        pfVideoFlashTime = nullptr;
+                float*        pfMarkerExposure = nullptr;
+                float*        pfMarkerThreshold = nullptr;
                 float         fFocus;
                 float         fAperture;
                 bool          autoExposure;
-                float         exposureCompensation;
+                float         fExposureCompensation = 0.0f;
                 bool          autoWhiteBalance;
 
-                mpoInput->ReadCameraSettings(nCameraId, nMode, videoResolution, videoAspectRatio, nVideoFrequency, 
-                                             fVideoExposure, fVideoFlashTime, fMarkerExposure,
-                                             fMarkerThreshold, nRotation, fFocus, fAperture, autoExposure, exposureCompensation, autoWhiteBalance);
-
-                pnVideoFrequency  = (nVideoFrequency == -1) ? NULL : &nVideoFrequency;
-                pfVideoExposure   = (fVideoExposure == -1) ? NULL : &fVideoExposure;
-                pfVideoFlashTime  = (fVideoFlashTime == -1) ? NULL : &fVideoFlashTime;
-                pfMarkerExposure  = (fMarkerExposure == -1) ? NULL : &fMarkerExposure;
-                pfMarkerThreshold = (fMarkerThreshold == -1) ? NULL : &fMarkerThreshold;
-                pVideoResolution = (videoResolution == CRTProtocol::EVideoResolution::VideoResolutionNone) ? NULL : &videoResolution;
-                pVideoAspectRatio = (videoAspectRatio == CRTProtocol::EVideoAspectRatio::VideoAspectRatioNone) ? NULL : &videoAspectRatio;
+                mpoInput->ReadCameraSettings(nCameraId, nMode, pVideoResolution, pVideoAspectRatio, pnVideoFrequency,
+                                             pfVideoExposure, pfVideoFlashTime, pfMarkerExposure,
+                                             pfMarkerThreshold, nRotation, fFocus, fAperture, autoExposure, fExposureCompensation, autoWhiteBalance);
 
                 if (mpoRTProtocol->SetCameraSettings(nCameraId, (CRTProtocol::ECameraMode*)&nMode, 
                                                      pfMarkerExposure, pfMarkerThreshold, &nRotation))
@@ -402,7 +402,7 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                     printf("Change Camera Lens Control Settings Failed\n\n");
                 }
 
-                if (mpoRTProtocol->SetCameraAutoExposureSettings(nCameraId, autoExposure, exposureCompensation))
+                if (mpoRTProtocol->SetCameraAutoExposureSettings(nCameraId, autoExposure, fExposureCompensation))
                 {
                     printf("Change Camera Lens Control Settings Succeeded\n\n");
                 }
@@ -419,24 +419,32 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 {
                     printf("Change Camera Auto White Balance Settings Failed\n\n");
                 }
+
+                delete pVideoResolution;
+                delete pVideoAspectRatio;
+                delete pnVideoFrequency;
+                delete pfVideoExposure;
+                delete pfVideoFlashTime;
+                delete pfMarkerExposure;
+                delete pfMarkerThreshold;
             }
 
             if (eOperation == CInput::ChangeCameraSyncOutSettings)
             {
                 printf("\n\nInput Camera Sync Out Settings\n\n");
 
-                int          portNumber;
-                int          nSyncOutMode;
-                unsigned int nSyncOutValue;
-                float        fSyncOutDutyCycle;
-                bool         bSyncOutNegativePolarity;
+                int           portNumber;
+                int*          nSyncOutMode = nullptr;
+                unsigned int* nSyncOutValue = nullptr;
+                float*        fSyncOutDutyCycle = nullptr;
+                bool*         bSyncOutNegativePolarity = nullptr;
 
                 mpoInput->ReadCameraSyncOutSettings(nCameraId, portNumber, nSyncOutMode, nSyncOutValue, fSyncOutDutyCycle,
                                                      bSyncOutNegativePolarity);
 
-                if (mpoRTProtocol->SetCameraSyncOutSettings(nCameraId, portNumber, (CRTProtocol::ESyncOutFreqMode*)&nSyncOutMode,
-                                                           &nSyncOutValue, &fSyncOutDutyCycle,
-                                                           &bSyncOutNegativePolarity))
+                if (mpoRTProtocol->SetCameraSyncOutSettings(nCameraId, portNumber, (CRTProtocol::ESyncOutFreqMode*)nSyncOutMode,
+                                                           nSyncOutValue, fSyncOutDutyCycle,
+                                                           bSyncOutNegativePolarity))
                 {
                     printf("Change Camera Sync Out Settings Succeeded\n\n");
                 }
@@ -444,6 +452,11 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
                 {
                     printf("Change Camera Syn Out Settings Failed\n\n");
                 }
+
+                 delete nSyncOutMode;
+                 delete nSyncOutValue;
+                 delete fSyncOutDutyCycle;
+                 delete bSyncOutNegativePolarity;
             }
 
             if (eOperation == CInput::ChangeImageSettings)
@@ -555,7 +568,6 @@ void COperations::ChangeSettings(CInput::EOperation eOperation)
             }
         }
     } while (!bGotControl && !password.empty());
-
 } // ChangeSettings
 
 
