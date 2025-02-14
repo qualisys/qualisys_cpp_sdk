@@ -1,8 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
-
-
 #include <cctype>
 #include <thread>
 #include <string>
@@ -19,7 +17,6 @@
 #include "SettingsDeserializer.h"
 #include "SettingsSerializer.h"
 #include "RTProtocol.h"
-
 
 #ifdef _WIN32
 #include <iphlpapi.h>
