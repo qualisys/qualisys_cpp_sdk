@@ -102,9 +102,6 @@ std::string qualisys_cpp_sdk::DeserializerApi::ReadString() const
     return {};
 }
 
-/// <summary>
-/// ChildElementRange
-/// </summary>
 qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, const char* elementName)
     : mParent(parent), mElementName(elementName)
 {
@@ -238,10 +235,6 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementBool(const std::string& el
     return true;
 }
 
-/// <summary>
-/// Helper functions
-/// </summary>
-/// names
 std::string qualisys_cpp_sdk::ToLowerXmlString(std::string& str)
 {
     std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c)
