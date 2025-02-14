@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27.1)
+cmake_minimum_required(VERSION 3.8)
 
 project(qualisys_cpp_sdk_tests LANGUAGES CXX)
 
