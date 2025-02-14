@@ -10,7 +10,6 @@ set(tinyxml2_BUILD_TESTING OFF)
 add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME}
-        
         Network.cpp
         RTPacket.cpp
         RTProtocol.cpp
