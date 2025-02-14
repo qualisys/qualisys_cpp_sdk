@@ -6,6 +6,7 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+set(tinyxml2_BUILD_TESTING OFF)
 add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME}
