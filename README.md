@@ -28,7 +28,7 @@ cmake --build build
 ```
 
 ### Build & Run Tests
-```cmake
+```
 cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON
 cmake --build build
 ctest --test-dir build
