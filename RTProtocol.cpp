@@ -1687,7 +1687,7 @@ bool CRTProtocol::ReadCameraSystemSettings()
 
 bool CRTProtocol::ReadGeneralSettings()
 {
-    std::string             str;
+    std::string str;
 
     mGeneralSettings.vsCameras.clear();
 
