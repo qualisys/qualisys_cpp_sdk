@@ -107,8 +107,8 @@ qualisys_cpp_sdk::ChildElementRange::ChildElementRange(DeserializerApi& parent, 
 {
 }
 
-qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range) : mCurrent(nullptr),
-    mChildElementRange(range)
+qualisys_cpp_sdk::ChildElementRange::Iterator::Iterator(const ChildElementRange& range)
+    : mCurrent(nullptr), mChildElementRange(range)
 {
 }
 
