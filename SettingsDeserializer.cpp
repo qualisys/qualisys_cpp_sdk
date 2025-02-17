@@ -283,8 +283,6 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
     auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
     for (auto i = 0; i < actionsCount; i++)
     {
-        // ==================== Processing actions ====================
-
         auto processingElem = generalElem.FindChild(processingActionTags[i]);
         if (!processingElem)
         {
@@ -1017,7 +1015,7 @@ bool SettingsDeserializer::Deserialize3DSettings(SSettings3D& settings3D, bool& 
 
     dataAvailable = true;
     return true;
-} // Read3DSettings
+}
 
 namespace
 {
@@ -1218,13 +1216,10 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
         return true;
     }
 
-    //
-    // Read gaze vectors
-    //
     Deserializer sixDofElem = mDeserializer->FindChild("The_6D");
     if (!sixDofElem)
     {
-        return true; // NO eye tracker data available.
+        return true;
     }
 
     if (mMajorVersion > 1 || mMinorVersion > 20)
@@ -1235,7 +1230,6 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
 
             if (!bodyElem.TryReadElementString("Name", bodySettings6Dof.name))
             {
-                // Name --- REQUIRED
                 return false;
             }
 
@@ -1246,7 +1240,6 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
                 || !bodyElem.TryReadElementFloat("BoneLengthTolerance", bodySettings6Dof.boneLengthTolerance)
                 || !TryReadSetFilter(bodyElem, bodySettings6Dof.filterPreset))
             {
-                // Color, MaxResidual, MinMarkersInBody, BoneLengthTolerance, Filter --- REQUIRED
                 return false;
             }
 
@@ -1260,17 +1253,15 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
                     || !meshElem.TryReadElementFloat("Scale", bodySettings6Dof.mesh.scale)
                     || !meshElem.TryReadElementFloat("Opacity", bodySettings6Dof.mesh.opacity))
                 {
-                    // Name, Position, Rotation, Scale, Opacity --- REQUIRED
                     return false;
                 }
             }
-            // Points --- REQUIRED
+
             if (!TryReadSetPoints(bodyElem, bodySettings6Dof.points))
             {
                 return false;
             }
 
-            // Data Orientation, Origin --- REQUIRED
             if (!TryReadSetDataOrigin(bodyElem, bodySettings6Dof.origin))
             {
                 return false;
@@ -1291,7 +1282,6 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
         {
             SSettings6DOFBody bodySettings6Dof{};
 
-            // Name, RGBColor, Points(OLD) --- REQUIRED
             if (!bodyElem.TryReadElementString("Name", bodySettings6Dof.name)
                 || !TryReadElementRGBColor(bodyElem, bodySettings6Dof.color)
                 || !TryReadSetPointsOld(bodyElem, bodySettings6Dof.points))
@@ -1301,7 +1291,6 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
 
             if (mMajorVersion > 1 || mMinorVersion > 15)
             {
-                // Euler --- REQUIRED
                 if (!TryReadSetEuler(*mDeserializer, generalSettings.eulerRotations[0],
                                      generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
                 {
@@ -1315,7 +1304,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
     }
 
     return true;
-} // Read6DOFSettings
+}
 
 bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings,
                                                          bool& dataAvailable)
@@ -1329,9 +1318,6 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
         return true;
     }
 
-    //
-    // Read gaze vectors
-    //
     Deserializer gazeVectorElem = mDeserializer->FindChild("Gaze_Vector");
     if (!gazeVectorElem)
     {
@@ -1367,7 +1353,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
 
     dataAvailable = true;
     return true;
-} // ReadGazeVectorSettings
+}
 
 bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings,
                                                          bool& dataAvailable)
@@ -1414,7 +1400,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
 
     dataAvailable = true;
     return true;
-} // ReadEyeTrackerSettings
+}
 
 bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings,
                                                      bool& dataAvailable)
@@ -1430,7 +1416,6 @@ bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>&
     auto analogElem = mDeserializer->FindChild("Analog");
     if (!analogElem)
     {
-        // No analog data available.
         return true;
     }
 
@@ -1532,7 +1517,7 @@ bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>&
     }
 
     return true;
-} // ReadAnalogSettings
+}
 
 bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSettings, bool& dataAvailable)
 {
@@ -1548,7 +1533,6 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
     auto forceElem = mDeserializer->FindChild("Force");
     if (!forceElem)
     {
-        // No analog data available.
         return true;
     }
 
@@ -1717,7 +1701,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
     }
 
     return true;
-} // Read force settings
+}
 
 bool SettingsDeserializer::DeserializeImageSettings(std::vector<SImageCamera>& imageSettings, bool& dataAvailable)
 {
