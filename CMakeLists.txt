@@ -10,14 +10,6 @@ if(SUFFIX_SO_VERSION)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-target_compile_options(${PROJECT_NAME} 
-    PUBLIC 
-        $<$<BOOL:${UNIX}>:-fPIC>
-        $<$<BOOL:${MINGW}>:-fPIC>
-        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},GNU>:-fPIC>
-        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},Clang>:-fPIC>
-)
-
 set(tinyxml2_BUILD_TESTING OFF)
 add_subdirectory(external/tinyxml2)
 
@@ -30,6 +22,14 @@ add_library(${PROJECT_NAME}
         Deserializer.cpp
         SettingsDeserializer.cpp
         SettingsSerializer.cpp
+)
+
+target_compile_options(${PROJECT_NAME} 
+    PUBLIC 
+        $<$<BOOL:${UNIX}>:-fPIC>
+        $<$<BOOL:${MINGW}>:-fPIC>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},GNU>:-fPIC>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},Clang>:-fPIC>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
