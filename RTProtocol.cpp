@@ -1670,7 +1670,6 @@ retry:
         else
         {
             goto retry;
-            //sprintf(mErrorStr, "GetParameters %s returned wrong packet type. Got type %d expected type 2.", settingsType.c_str(), eType);
         }
     }
 
