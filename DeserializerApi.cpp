@@ -200,7 +200,7 @@ namespace
             // iscntrl: control codes(NUL, etc.), '\t', '\n', '\v', '\f', '\r', backspace (DEL)
             // isspace: some common checks but also 0x20 (SPACE)
             // return != 0 --> invalid char
-            return std::iscntrl(c) + std::isspace(c);
+            return std::iscntrl(c) != 0 ||  std::isspace(c) != 0;
         };
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
