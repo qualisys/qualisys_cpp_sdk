@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Settings.h"
 
 namespace qualisys_cpp_sdk
