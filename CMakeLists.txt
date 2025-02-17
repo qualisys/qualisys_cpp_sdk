@@ -5,8 +5,16 @@ option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
 if(SUFFIX_SO_VERSION)
-	  option(CMAKE_POSITION_INDEPENDENT_CODE "Use position independent code" ON)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
+
+target_compile_options(${PROJECT_NAME} 
+    PUBLIC 
+        $<$<BOOL:${UNIX}>:-fPIC>
+        $<$<BOOL:${MINGW}>:-fPIC>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},GNU>:-fPIC>
+        $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},Clang>:-fPIC>
+)
 
 add_library(${PROJECT_NAME}
         Markup.cpp
