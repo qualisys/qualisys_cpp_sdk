@@ -125,6 +125,7 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
                                                        const float* nonPeriodicTimeout)
 {
     Serializer serializer(mMajorVersion, mMinorVersion, "QTM_Settings");
+
     auto timeBaseElem = serializer.Element("General").Element("External_Time_Base");
 
     if (enabled)
@@ -207,6 +208,7 @@ std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, cons
 std::string SettingsSerializer::SetExtTimestampSettings(const SSettingsGeneralExternalTimestamp& timestampSettings)
 {
     Serializer serializer(mMajorVersion, mMinorVersion, "QTM_Settings");
+
     auto timeStampElem = serializer.Element("General").Element("External_Timestamp");
 
     timeStampElem.ElementBool("Enabled", timestampSettings.bEnabled);
@@ -283,6 +285,7 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
                                                        const float* videoFlashTime)
 {
     Serializer serializer(mMajorVersion, mMinorVersion, "QTM_Settings");
+
     auto cameraElem = serializer.Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
@@ -354,6 +357,7 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
                                                          const bool* syncOutNegativePolarity)
 {
     Serializer serializer(mMajorVersion, mMinorVersion, "QTM_Settings");
+
     auto cameraElem = serializer.Element("General").Element("Camera");
 
     cameraElem.ElementUnsignedInt("ID", cameraId);
