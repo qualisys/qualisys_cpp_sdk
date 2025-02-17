@@ -6,9 +6,6 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-if(SUFFIX_SO_VERSION)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 set(tinyxml2_BUILD_TESTING OFF)
 add_subdirectory(external/tinyxml2)
@@ -24,6 +21,9 @@ add_library(${PROJECT_NAME}
         SettingsSerializer.cpp
 )
 
+if(SUFFIX_SO_VERSION)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 target_compile_options(${PROJECT_NAME} 
     PUBLIC 
         $<$<BOOL:${UNIX}>:-fPIC>
