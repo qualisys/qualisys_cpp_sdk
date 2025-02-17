@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.8)
 project(qualisys_cpp_sdk)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
+option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 if(SUFFIX_SO_VERSION)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -16,20 +18,34 @@ target_compile_options(${PROJECT_NAME}
         $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},Clang>:-fPIC>
 )
 
+set(tinyxml2_BUILD_TESTING OFF)
+add_subdirectory(external/tinyxml2)
+
 add_library(${PROJECT_NAME}
-        Markup.cpp
         Network.cpp
         RTPacket.cpp
         RTProtocol.cpp
+        Settings.cpp
+        Serializer.cpp
+        Deserializer.cpp
+        SettingsDeserializer.cpp
+        SettingsSerializer.cpp
 )
+
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
 )
 
-target_link_libraries(${PROJECT_NAME}
-        PUBLIC $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
-)
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC 
+            $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib iphlpapi.lib>
+            $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","GNU">:ws2_32 iphlpapi>
+    )
+endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2::tinyxml2)
+
 
 # Enable C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
@@ -88,5 +104,11 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
     )
     target_link_libraries(RigidBodyStreaming
             qualisys_cpp_sdk
+            tinyxml2
     )
 endif ()
+
+if(${PROJECT_NAME}_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()

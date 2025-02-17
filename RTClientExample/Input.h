@@ -54,28 +54,28 @@ public:
     void ReadClientControlPassword(std::string& password);
     bool ReadDiscoverRTServers(bool &bDiscover, char* tServerAddress);
     bool ReadOperation(EOperation &eOperation);
-    bool ReadStreamRate(CRTProtocol::EStreamRate &eRate, int &nArg);
+    bool ReadStreamRate(CRTProtocol::EStreamRate &eRate, int& nArg);
     bool ReadDataComponents(unsigned int &nComponentType, char* selectedAnalogChannels, int selectedAnalogChannelsLen, bool &skeletonGlobalReferenceFrame);
-    unsigned int ReadDataComponent(bool printInstr, bool &skeletonGlobalReferenceFrame);
+    unsigned int ReadDataComponent(bool printInstr, bool& skeletonGlobalReferenceFrame);
     bool Read2DNoiseTest();
-    bool ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP, bool &bLogToFile, bool &bOnlyTimeAndFrameNumber, unsigned short &nUDPPort, char *tAddress, int nAddressLen);
-    void ReadGeneralSettings(unsigned int &nCaptureFrequency, float &fCaptureTime, bool &bExternalTrigger, bool& trigNO, bool& trigNC, bool& trigSoftware);
+    bool ReadDataTest(bool bLogSelection, bool &bStreamTCP, bool &bStreamUDP, bool &bLogToFile, bool &bOnlyTimeAndFrameNumber, unsigned short& nUDPPort, char *tAddress, int nAddressLen);
+    void ReadGeneralSettings(unsigned int& nCaptureFrequency, float& fCaptureTime, bool*& bExternalTrigger, bool*& trigNO, bool*& trigNC, bool*& trigSoftware);
     void ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &eProcessingActions,
                                        CRTProtocol::EProcessingActions &eRtProcessingActions,
                                        CRTProtocol::EProcessingActions &eReprocessingActions);
-    void ReadExtTimeBaseSettings(bool         &bEnabled,            int          &nSignalSource,
-                                 bool         &bSignalModePeriodic, unsigned int &nMultiplier,
-                                 unsigned int &nDivisor,            unsigned int &nFrequencyTolerance,
-                                 float        &fNominalFrequency,   bool         &bNegativeEdge,
-                                 unsigned int &nSignalShutterDelay, float        &fNonPeriodicTimeout);
+    void ReadExtTimeBaseSettings(bool          &bEnabled,           int*&          nSignalSource,
+                                 bool*&         bSignalModePeriodic, unsigned int*& nMultiplier,
+                                 unsigned int*& nDivisor,            unsigned int*& nFrequencyTolerance,
+                                 float*&        fNominalFrequency,   bool*&         bNegativeEdge,
+                                 unsigned int*& nSignalShutterDelay, float*&        fNonPeriodicTimeout);
     void ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestamp& timestampSettings);
-    void ReadCameraSettings(unsigned int &nCameraId,       int   &nMode,            CRTProtocol::EVideoResolution &videoResolution, CRTProtocol::EVideoAspectRatio &videoAspectRatio,
-                            unsigned int &nVideoFrequency, float &fVideoExposure,   float &fVideoFlashTime,
-                            float        &fMarkerExposure, float &fMarkerThreshold, int   &nRotation,
-                            float        &fFocus,          float &fAperture,        bool  &autoExposure,
-                            float        &exposureCompensation, bool &autoWhiteBalance);
-    void ReadCameraSyncOutSettings(unsigned int &nCameraId,         int &portNumber, int  &nSyncOutMode, unsigned int &nSyncOutValue,
-                                    float        &fSyncOutDutyCycle, bool &bSyncOutNegativePolarity);
+    void ReadCameraSettings(unsigned int& nCameraId,           int&   nMode,            CRTProtocol::EVideoResolution*& videoResolution, CRTProtocol::EVideoAspectRatio*& videoAspectRatio,
+                            unsigned int*& nVideoFrequency,     float*& fVideoExposure,   float*& fVideoFlashTime,
+                            float*&        fMarkerExposure,     float*& fMarkerThreshold, int&   nRotation,
+                            float&        fFocus,              float& fAperture,        bool&  autoExposure,
+                            float&        exposureCompensation, bool& autoWhiteBalance);
+    void ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber, int*& nSyncOutMode, unsigned int*& nSyncOutValue,
+                                    float*& fSyncOutDutyCycle, bool*& bSyncOutNegativePolarity);
 
     void ReadImageSettings(unsigned int &nCameraId, bool &bEnable, int &nFormat, unsigned int &nWidth,
                            unsigned int &nHeight, float &fLeftCrop, float &fTopCrop, float &fRightCrop, float &fBottomCrop);
@@ -88,10 +88,17 @@ public:
 
     std::string ReadString(const std::string& text);
     float       ReadFloat(const std::string& text, float fDefault);
+    float*      ReadNewFloat(const std::string& text, float fDefault);
     bool        ReadYesNo(const std::string& text, bool bDefault);
+    bool*       ReadNewYesNo(const std::string& text, bool bDefault);
     int         ReadInt(const std::string& text, int nDefault);
+    int*        ReadNewInt(const std::string& text, int nDefault);
+    unsigned int* ReadNewUnsignedInt(const std::string& text, int nDefault);
     char        ReadChar(char cDefault, bool bShowInput = false);
+    char*       ReadNewChar(char cDefault, bool bShowInput);
+    int*        ReadNewCharAsInt(char cDefault, bool bShowInput);
     unsigned short ReadPort(int nDefault);
+    unsigned short* ReadNewPort(int nDefault);
     bool        ReadUseScrolling(bool &bOutputModeScrolling);
 
 private:
