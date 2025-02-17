@@ -32,10 +32,10 @@
     <ClCompile Include="SettingsSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerializerApi.cpp">
+    <ClCompile Include="Serializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeserializerApi.cpp">
+    <ClCompile Include="Deserializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,10 +55,10 @@
     <ClInclude Include="external\tinyxml2\tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeserializerApi.h">
+    <ClInclude Include="Deserializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerializerApi.h">
+    <ClInclude Include="Serializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsSerializer.h">

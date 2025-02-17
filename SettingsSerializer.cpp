@@ -1,5 +1,5 @@
 #include "SettingsSerializer.h"
-#include "SerializerApi.h"
+#include "Serializer.h"
 #include "Settings.h"
 
 #include <functional>
@@ -9,7 +9,7 @@ using namespace qualisys_cpp_sdk;
 
 SettingsSerializer::SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
     : mMajorVersion(majorVersion), mMinorVersion(minorVersion),
-      mSerializer(new SerializerApi(majorVersion, minorVersion, "QTM_Settings"))
+      mSerializer(new Serializer(majorVersion, minorVersion, "QTM_Settings"))
 {
 }
 
@@ -680,8 +680,8 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
         skeletonElem.ElementDouble("Scale", skeleton.scale);
         auto segmentsElem = skeletonElem.Element("Segments");
 
-        std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
-        recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, SerializerApi& parentElem)
+        std::function<void(const SSettingsSkeletonSegmentHierarchical&, Serializer&)> recurseSegments;
+        recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, Serializer& parentElem)
         {
             auto segmentElem = parentElem.Element("Segment")
                                          .AttributeString("Name", segment.name.c_str());

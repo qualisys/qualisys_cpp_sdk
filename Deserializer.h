@@ -12,18 +12,18 @@ namespace tinyxml2
 
 namespace qualisys_cpp_sdk
 {
-    struct DeserializerApi
+    struct Deserializer
     {
     private:
         std::shared_ptr<tinyxml2::XMLDocument> mDocument;
-        DeserializerApi(std::shared_ptr<tinyxml2::XMLDocument> document, tinyxml2::XMLElement* element);
+        Deserializer(std::shared_ptr<tinyxml2::XMLDocument> document, tinyxml2::XMLElement* element);
         tinyxml2::XMLElement* mPtr;
 
     public:
-        DeserializerApi(const char* data);
+        Deserializer(const char* data);
 
-        DeserializerApi FindChild(const char* elementName) const;
-        DeserializerApi FindNextSibling(const char* elementName) const;
+        Deserializer FindChild(const char* elementName) const;
+        Deserializer FindNextSibling(const char* elementName) const;
 
         bool TryReadElementDouble(const char* elementName, double& output) const;
         bool TryReadElementFloat(const char* elementName, float& output) const;
@@ -43,28 +43,28 @@ namespace qualisys_cpp_sdk
         unsigned int ReadUnsignedInt(std::int32_t defaultValue = 0) const;
         float ReadFloat(float defaultValue = 0.0f) const;
 
-        bool operator==(const DeserializerApi& other) const;
-        bool operator!=(const DeserializerApi& other) const;
+        bool operator==(const Deserializer& other) const;
+        bool operator!=(const Deserializer& other) const;
         explicit operator bool() const;
     };
 
     struct ChildElementRange
     {
     private:
-        DeserializerApi& mParent;
+        Deserializer& mParent;
         const char* mElementName;
 
     public:
         ChildElementRange() = delete;
-        ChildElementRange(DeserializerApi& parent, const char* elementName);
+        ChildElementRange(Deserializer& parent, const char* elementName);
 
         struct Iterator
         {
-            DeserializerApi mCurrent;
+            Deserializer mCurrent;
             const ChildElementRange& mChildElementRange;
             explicit Iterator(const ChildElementRange& range);
             Iterator(const ChildElementRange& range, std::size_t index);
-            DeserializerApi operator*() const;
+            Deserializer operator*() const;
             Iterator& operator++();
             bool operator!=(const Iterator& other) const;
         };
