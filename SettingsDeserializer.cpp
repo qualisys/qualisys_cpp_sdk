@@ -54,7 +54,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
     if (auto captureTimeElem = generalElem.FindChild("Capture_Time"))
     {
-        generalSettings.fCaptureTime = captureTimeElem.ReadFloat(.0f);
+        generalSettings.fCaptureTime = captureTimeElem.ReadFloat(0.0f);
     }
     else
     {
@@ -1081,7 +1081,7 @@ namespace
             return true;
         }
 
-        targetZ = targetY = targetX = .0f;
+        targetZ = targetY = targetX = 0.0f;
         return false;
     }
 
@@ -1095,7 +1095,7 @@ namespace
             return true;
         }
 
-        targetZ = targetY = targetX = .0f;
+        targetZ = targetY = targetX = 0.0f;
         return false;
     }
 

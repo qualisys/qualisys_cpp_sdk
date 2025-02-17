@@ -36,13 +36,13 @@ namespace qualisys_cpp_sdk
         std::uint32_t ReadAttributeUnsignedInt(const char* attributeName, std::uint32_t defaultValue = 0) const;
         std::int32_t ReadAttributeInt(const char* attributeName, std::int32_t defaultValue = 0) const;
         std::string ReadAttributeString(const char* name) const;
-        float ReadAttributeFloat(const char* name, float defaultValue = .0f) const;
+        float ReadAttributeFloat(const char* name, float defaultValue = 0.0f) const;
         bool ReadAttributeBool(const char* attributeName, bool defaultValue = 0) const;
 
         std::string ReadString() const;
         int ReadInt(std::int32_t defaultValue = 0) const;
         unsigned int ReadUnsignedInt(std::int32_t defaultValue = 0) const;
-        float ReadFloat(float defaultValue = .0f) const;
+        float ReadFloat(float defaultValue = 0.0f) const;
 
         bool operator==(const DeserializerApi& other) const;
         bool operator!=(const DeserializerApi& other) const;
