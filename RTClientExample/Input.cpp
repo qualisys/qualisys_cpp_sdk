@@ -528,7 +528,7 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
         {
             if (ReadYesNo("\n2D pre-processing (y/n)? ", true))
             {
-                *processingActions[i] = CRTProtocol::ProcessingPreProcess2D;
+                *processingActions[i] = CRTProtocol::EProcessingActions::ProcessingPreProcess2D;
             }
         }
 
@@ -543,62 +543,62 @@ void CInput::ReadProcessingActionsSettings(CRTProtocol::EProcessingActions &ePro
         char nTracking = ReadChar('1', true);
         if (nTracking == '2' && i != 1) // i != 1 => Not RtProcessingSettings
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingTracking2D);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingTracking2D);
         }
         else if (nTracking == '3')
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingTracking3D);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingTracking3D);
         }
         else
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingNone);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingNone);
         }
 
         if (i != 1) //Not RtProcessingSettings
         {
             if (ReadYesNo("TwinSystem Merge (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingTwinSystemMerge);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge);
             }
             if (ReadYesNo("Spline Fill (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingSplineFill);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingSplineFill);
             }
         }
         if (ReadYesNo("AIM (y/n)? ", true))
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingAIM);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingAIM);
         }
         if (ReadYesNo("6DOF Tracking (y/n)? ", true))
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::Processing6DOFTracking);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::Processing6DOFTracking);
         }
         if (ReadYesNo("Force (y/n)? ", true))
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingForceData);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingForceData);
         }
         if (ReadYesNo("Gaze Vector (y/n)? ", true))
         {
-            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingGazeVector);
+            *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingGazeVector);
         }
 
         if (i != 1) // Not RtProcessingSettings
         {
             if (ReadYesNo("Export TSV (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportTSV);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingExportTSV);
             }
             if (ReadYesNo("Export C3D (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportC3D);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingExportC3D);
             }
             if (ReadYesNo("Export MATLAB File (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportMatlabFile);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingExportMatlabFile);
             }
             if (ReadYesNo("Export AVI File (y/n)? ", true))
             {
-                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::ProcessingExportAviFile);
+                *processingActions[i] = (CRTProtocol::EProcessingActions)(*processingActions[i] + CRTProtocol::EProcessingActions::ProcessingExportAviFile);
             }
         }
         printf("\n");
@@ -674,7 +674,7 @@ void CInput::ReadTimestampSettings(CRTProtocol::SSettingsGeneralExternalTimestam
         auto type = ReadChar('1', true) - '0' - 1;
         if (type < 0 || type > 2)
         {
-            type = CRTProtocol::Timestamp_SMPTE;
+            type = CRTProtocol::ETimestampType::Timestamp_SMPTE;
         }
         timestampSettings.nType = (CRTProtocol::ETimestampType)type;
         timestampSettings.nFrequency = ReadInt("Frequency: ", 30);
@@ -915,11 +915,11 @@ void CInput::Read6DSettingsMesh(CRTProtocol::SSettings6DMesh &mesh)
 void CInput::Read6DSettingsOrigin(CRTProtocol::SOrigin &origin)
 {
     origin.type = (CRTProtocol::EOriginType)ReadInt("Enter origin (0 = Global, 1 = Relative, 2 = Fixed)", 0);
-    if (origin.type == CRTProtocol::RelativeOrigin)
+    if (origin.type == CRTProtocol::EOriginType::RelativeOrigin)
     {
         origin.relativeBody = ReadInt("Enter relative body index: ", 0) + 1; // QTM body index starts at 1.
     }
-    else if (origin.type == CRTProtocol::FixedOrigin)
+    else if (origin.type == CRTProtocol::EOriginType::FixedOrigin)
     {
         origin.position.fX = ReadFloat("Enter origin position X: ", 0);
         origin.position.fY = ReadFloat("Enter origin position Y: ", 0);

@@ -595,7 +595,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
         bOnlyTimeAndFrameNumber = false;
         nUDPPort = 0;
         tUDPAddress[0] = 0;
-        eStreamRate = CRTProtocol::RateAllFrames;
+        eStreamRate = CRTProtocol::EStreamRate::RateAllFrames;
 
         mpoOutput->Reset2DNoiseCalc();
     }
@@ -612,7 +612,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
         }
         if (operation == CInput::Statistics)
         {
-            eStreamRate = CRTProtocol::RateAllFrames;
+            eStreamRate = CRTProtocol::EStreamRate::RateAllFrames;
         }
         else if (bStreamTCP || bStreamUDP)
         {
@@ -701,7 +701,7 @@ void COperations::DataTransfer(CInput::EOperation operation)
             if (TakeQTMControl())
             {
                 unsigned int nCameraId         = 1;
-                CRTProtocol::ECameraMode nMode = CRTProtocol::ModeVideo;
+                CRTProtocol::ECameraMode nMode = CRTProtocol::ECameraMode::ModeVideo;
 
                 CRTPacket::EEvent eEvent;
                 bool              bConnected = true;
