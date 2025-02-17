@@ -8,7 +8,8 @@
 using namespace qualisys_cpp_sdk;
 
 SettingsSerializer::SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion)
-    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mSerializer(new SerializerApi(majorVersion, minorVersion, "QTM_Settings"))
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion),
+      mSerializer(new SerializerApi(majorVersion, minorVersion, "QTM_Settings"))
 {
 }
 
@@ -18,10 +19,12 @@ SettingsSerializer::~SettingsSerializer()
 }
 
 std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFrequency,
-                                           const float* captureTime, const bool* startOnExtTrig,
-                                           const bool* startOnTrigNO, const bool* startOnTrigNC,
-                                           const bool* startOnTrigSoftware, const EProcessingActions* processingActions,
-                                           const EProcessingActions* rtProcessingActions, const EProcessingActions* reprocessingActions)
+                                                   const float* captureTime, const bool* startOnExtTrig,
+                                                   const bool* startOnTrigNO, const bool* startOnTrigNC,
+                                                   const bool* startOnTrigSoftware,
+                                                   const EProcessingActions* processingActions,
+                                                   const EProcessingActions* rtProcessingActions,
+                                                   const EProcessingActions* reprocessingActions)
 {
     auto theGeneral = mSerializer->Element("General");
 
@@ -56,12 +59,11 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
             {
                 theGeneral.ElementBool("Start_On_Trigger_Software", *startOnTrigSoftware);
             }
-            
         }
     }
 
-    const char* processingActionTags[3] = { "Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions" };
-    const EProcessingActions* processingActionSets[3] = { processingActions, rtProcessingActions, reprocessingActions };
+    const char* processingActionTags[3] = {"Processing_Actions", "RealTime_Processing_Actions", "Reprocessing_Actions"};
+    const EProcessingActions* processingActionSets[3] = {processingActions, rtProcessingActions, reprocessingActions};
 
     auto actionsCount = (mMajorVersion > 1 || mMinorVersion > 13) ? 3 : 1;
 
@@ -73,7 +75,8 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
 
             if (mMajorVersion > 1 || mMinorVersion > 13)
             {
-                processingActionsElem.ElementBool("PreProcessing2D", (*processingActionSets[i] & ProcessingPreProcess2D) != 0);
+                processingActionsElem.ElementBool("PreProcessing2D",
+                                                  (*processingActionSets[i] & ProcessingPreProcess2D) != 0);
             }
 
             if (*processingActionSets[i] & ProcessingTracking2D && i != 1) // i != 1 => Not RtProcessingSettings
@@ -91,7 +94,8 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
 
             if (i != 1) // Not RtProcessingSettings
             {
-                processingActionsElem.ElementBool("TwinSystemMerge", (*processingActionSets[i] & ProcessingTwinSystemMerge) != 0);
+                processingActionsElem.ElementBool("TwinSystemMerge",
+                                                  (*processingActionSets[i] & ProcessingTwinSystemMerge) != 0);
                 processingActionsElem.ElementBool("SplineFill", (*processingActionSets[i] & ProcessingSplineFill) != 0);
             }
 
@@ -104,8 +108,10 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
             {
                 processingActionsElem.ElementBool("ExportTSV", (*processingActionSets[i] & ProcessingExportTSV) != 0);
                 processingActionsElem.ElementBool("ExportC3D", (*processingActionSets[i] & ProcessingExportC3D) != 0);
-                processingActionsElem.ElementBool("ExportMatlabFile", (*processingActionSets[i] & ProcessingExportMatlabFile) != 0);
-                processingActionsElem.ElementBool("ExportAviFile", (*processingActionSets[i] & ProcessingExportAviFile) != 0);
+                processingActionsElem.ElementBool("ExportMatlabFile",
+                                                  (*processingActionSets[i] & ProcessingExportMatlabFile) != 0);
+                processingActionsElem.ElementBool("ExportAviFile",
+                                                  (*processingActionSets[i] & ProcessingExportAviFile) != 0);
             }
         }
     }
@@ -114,9 +120,13 @@ std::string SettingsSerializer::SetGeneralSettings(const unsigned int* captureFr
 }
 
 std::string SettingsSerializer::SetExtTimeBaseSettings(const bool* enabled, const ESignalSource* signalSource,
-    const bool* signalModePeriodic, const unsigned int* freqMultiplier, const unsigned int* freqDivisor,
-    const unsigned int* freqTolerance, const float* nominalFrequency, const bool* negativeEdge,
-    const unsigned int* signalShutterDelay, const float* nonPeriodicTimeout)
+                                                       const bool* signalModePeriodic,
+                                                       const unsigned int* freqMultiplier,
+                                                       const unsigned int* freqDivisor,
+                                                       const unsigned int* freqTolerance, const float* nominalFrequency,
+                                                       const bool* negativeEdge,
+                                                       const unsigned int* signalShutterDelay,
+                                                       const float* nonPeriodicTimeout)
 {
     auto timeBaseElem = mSerializer->Element("General").Element("External_Time_Base");
 
@@ -267,8 +277,10 @@ std::string SettingsSerializer::SetCameraSettings(
 }
 
 std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int cameraId,
-    const EVideoResolution* videoResolution, const EVideoAspectRatio* videoAspectRatio,
-    const unsigned int* videoFrequency, const float* videoExposure, const float* videoFlashTime)
+                                                       const EVideoResolution* videoResolution,
+                                                       const EVideoAspectRatio* videoAspectRatio,
+                                                       const unsigned int* videoFrequency, const float* videoExposure,
+                                                       const float* videoFlashTime)
 {
     auto cameraElem = mSerializer->Element("General").Element("Camera");
 
@@ -335,7 +347,10 @@ std::string SettingsSerializer::SetCameraVideoSettings(const unsigned int camera
 }
 
 std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int cameraId, const unsigned int portNumber,
-    const ESyncOutFreqMode* syncOutMode, const unsigned int* syncOutValue, const float* syncOutDutyCycle, const bool* syncOutNegativePolarity)
+                                                         const ESyncOutFreqMode* syncOutMode,
+                                                         const unsigned int* syncOutValue,
+                                                         const float* syncOutDutyCycle,
+                                                         const bool* syncOutNegativePolarity)
 {
     auto cameraElem = mSerializer->Element("General").Element("Camera");
 
@@ -344,14 +359,15 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
     int port = static_cast<int>(portNumber) - 1;
     if (((port == 0 || port == 1) && syncOutMode) || (port == 2))
     {
-        auto syncOutElem = [&port, &cameraElem](){
-                if (port == 0)
-                    return cameraElem.Element("Sync_Out");
-                else if (port == 1)
-                    return cameraElem.Element("Sync_Out2");
-                else
-                    return cameraElem.Element("Sync_Out_MT");
-            }();
+        auto syncOutElem = [&port, &cameraElem]()
+        {
+            if (port == 0)
+                return cameraElem.Element("Sync_Out");
+            else if (port == 1)
+                return cameraElem.Element("Sync_Out2");
+            else
+                return cameraElem.Element("Sync_Out_MT");
+        }();
 
         // Add Sync Out Mode
         if (port == 0 || port == 1)
@@ -408,7 +424,8 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
     return mSerializer->ToString();
 }
 
-std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus, const float aperture)
+std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int cameraId, const float focus,
+                                                             const float aperture)
 {
     auto cameraElem = mSerializer->Element("General").Element("Camera");
 
@@ -417,15 +434,16 @@ std::string SettingsSerializer::SetCameraLensControlSettings(const unsigned int 
     auto lensControlElem = cameraElem.Element("LensControl");
 
     lensControlElem.Element("Focus")
-        .AttributeFloat("Value", focus);
+                   .AttributeFloat("Value", focus);
 
     lensControlElem.Element("Aperture")
-        .AttributeFloat("Value", aperture);
+                   .AttributeFloat("Value", aperture);
 
     return mSerializer->ToString();
 }
 
-std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure, const float compensation)
+std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int cameraId, const bool autoExposure,
+                                                              const float compensation)
 {
     auto cameraElem = mSerializer->Element("General").Element("Camera");
 
@@ -437,8 +455,8 @@ std::string SettingsSerializer::SetCameraAutoExposureSettings(const unsigned int
     (void)snprintf(compensationStr, sizeof(compensationStr), "%.6f", compensation);
 
     lensControlElem.Element("AutoExposure")
-        .AttributeBool("Enabled", autoExposure)
-        .AttributeString("Compensation", compensationStr);
+                   .AttributeBool("Enabled", autoExposure)
+                   .AttributeString("Compensation", compensationStr);
 
     return mSerializer->ToString();
 }
@@ -454,8 +472,10 @@ std::string SettingsSerializer::SetCameraAutoWhiteBalance(const unsigned int cam
 }
 
 std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, const bool* enable,
-    const CRTPacket::EImageFormat* format, const unsigned int* width, const unsigned int* height,
-    const float* leftCrop, const float* topCrop, const float* rightCrop, const float* bottomCrop)
+                                                 const CRTPacket::EImageFormat* format, const unsigned int* width,
+                                                 const unsigned int* height,
+                                                 const float* leftCrop, const float* topCrop, const float* rightCrop,
+                                                 const float* bottomCrop)
 {
     auto cameraElem = mSerializer->Element("Image").Element("Camera");
 
@@ -490,7 +510,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
             cameraElem.ElementString("Format", formatStr);
         }
     }
-    
+
     if (width)
     {
         cameraElem.ElementUnsignedInt("Width", *width);
@@ -525,7 +545,7 @@ std::string SettingsSerializer::SetImageSettings(const unsigned int cameraId, co
 }
 
 std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, const SPoint* corner1,
-    const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
+                                                 const SPoint* corner2, const SPoint* corner3, const SPoint* corner4)
 {
     auto plateElem = mSerializer->Element("Force").Element("Plate");
 
@@ -539,12 +559,12 @@ std::string SettingsSerializer::SetForceSettings(const unsigned int plateId, con
     }
 
     auto addCorner = [&](const char* name, const SPoint& pCorner)
-        {
-            auto cornerElem = plateElem.Element(name);
-            cornerElem.ElementFloat("X", pCorner.fX);
-            cornerElem.ElementFloat("Y", pCorner.fY);
-            cornerElem.ElementFloat("Z", pCorner.fZ);
-        };
+    {
+        auto cornerElem = plateElem.Element(name);
+        cornerElem.ElementFloat("X", pCorner.fX);
+        cornerElem.ElementFloat("Y", pCorner.fY);
+        cornerElem.ElementFloat("Z", pCorner.fZ);
+    };
 
     if (corner1)
     {
@@ -596,14 +616,14 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
             meshElem.ElementString("Name", body.mesh.name.c_str());
 
             meshElem.Element("Position")
-                .AttributeFloat("X",body.mesh.position.fX)
-                .AttributeFloat("Y", body.mesh.position.fY)
-                .AttributeFloat("Z", body.mesh.position.fZ);
+                    .AttributeFloat("X", body.mesh.position.fX)
+                    .AttributeFloat("Y", body.mesh.position.fY)
+                    .AttributeFloat("Z", body.mesh.position.fZ);
 
             meshElem.Element("Rotation")
-                .AttributeFloat("X", body.mesh.rotation.fX)
-                .AttributeFloat("Y", body.mesh.rotation.fY)
-                .AttributeFloat("Z", body.mesh.rotation.fZ);
+                    .AttributeFloat("X", body.mesh.rotation.fX)
+                    .AttributeFloat("Y", body.mesh.rotation.fY)
+                    .AttributeFloat("Z", body.mesh.rotation.fZ);
 
             meshElem.ElementFloat("Scale", body.mesh.scale);
             meshElem.ElementFloat("Opacity", body.mesh.opacity);
@@ -615,20 +635,20 @@ std::string SettingsSerializer::Set6DOFBodySettings(const std::vector<SSettings6
             for (const auto& point : body.points)
             {
                 pointsElem.Element("Point")
-                    .AttributeFloat("X", point.fX)
-                    .AttributeFloat("Y", point.fY)
-                    .AttributeFloat("Z", point.fZ)
-                    .AttributeUnsignedInt("Virtual", point.virtual_ ? 1 : 0)
-                    .AttributeUnsignedInt("PhysicalId", point.physicalId)
-                    .AttributeString("Name", point.name.c_str());
+                          .AttributeFloat("X", point.fX)
+                          .AttributeFloat("Y", point.fY)
+                          .AttributeFloat("Z", point.fZ)
+                          .AttributeUnsignedInt("Virtual", point.virtual_ ? 1 : 0)
+                          .AttributeUnsignedInt("PhysicalId", point.physicalId)
+                          .AttributeString("Name", point.name.c_str());
             }
         }
 
         bodyElem.ElementUnsignedInt("Data_origin", body.origin.type)
-            .AttributeFloat("X", body.origin.position.fX)
-            .AttributeFloat("Y", body.origin.position.fY)
-            .AttributeFloat("Z", body.origin.position.fZ)
-            .AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
+                .AttributeFloat("X", body.origin.position.fX)
+                .AttributeFloat("Y", body.origin.position.fY)
+                .AttributeFloat("Z", body.origin.position.fZ)
+                .AttributeUnsignedInt("Relative_body", body.origin.relativeBody);
 
         auto orientationElem = bodyElem.ElementUnsignedInt("Data_orientation", body.origin.type);
         for (std::uint32_t i = 0; i < 9; i++)
@@ -650,7 +670,7 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
     for (const auto& skeleton : settingsSkeletons)
     {
         auto skeletonElem = skeletonsElem.Element("Skeleton")
-            .AttributeString("Name", skeleton.name.c_str());
+                                         .AttributeString("Name", skeleton.name.c_str());
 
         if (mMajorVersion == 1 && mMinorVersion < 22)
         {
@@ -662,138 +682,139 @@ std::string SettingsSerializer::SetSkeletonSettings(const std::vector<SSettingsS
 
         std::function<void(const SSettingsSkeletonSegmentHierarchical&, SerializerApi&)> recurseSegments;
         recurseSegments = [&](const SSettingsSkeletonSegmentHierarchical& segment, SerializerApi& parentElem)
+        {
+            auto segmentElem = parentElem.Element("Segment")
+                                         .AttributeString("Name", segment.name.c_str());
+
+            if (mMajorVersion > 1 || mMinorVersion > 21)
             {
-                auto segmentElem = parentElem.Element("Segment")
-                    .AttributeString("Name", segment.name.c_str());
+                segmentElem.ElementString("Solver", segment.solver.c_str());
+            }
 
-                if (mMajorVersion > 1 || mMinorVersion > 21)
+            if (!std::isnan(segment.position.x))
+            {
+                auto transformElem = segmentElem.Element("Transform");
+                transformElem.Element("Position")
+                             .AttributeDouble("X", segment.position.x)
+                             .AttributeDouble("Y", segment.position.y)
+                             .AttributeDouble("Z", segment.position.z);
+                transformElem.Element("Rotation")
+                             .AttributeDouble("X", segment.rotation.x)
+                             .AttributeDouble("Y", segment.rotation.y)
+                             .AttributeDouble("Z", segment.rotation.z)
+                             .AttributeDouble("W", segment.rotation.w);
+            }
+
+            if (!std::isnan(segment.defaultPosition.x))
+            {
+                auto transformElem = segmentElem.Element("DefaultTransform");
+                transformElem.Element("Position")
+                             .AttributeDouble("X", segment.defaultPosition.x)
+                             .AttributeDouble("Y", segment.defaultPosition.y)
+                             .AttributeDouble("Z", segment.defaultPosition.z);
+                transformElem.Element("Rotation")
+                             .AttributeDouble("X", segment.defaultRotation.x)
+                             .AttributeDouble("Y", segment.defaultRotation.y)
+                             .AttributeDouble("Z", segment.defaultRotation.z)
+                             .AttributeDouble("W", segment.defaultRotation.w);
+            }
+
+            auto degreesOfFreedomElem = segmentElem.Element("DegreesOfFreedom");
+
+            for (const auto& dof : segment.degreesOfFreedom)
+            {
+                auto dofElem = degreesOfFreedomElem.Element(SkeletonDofToStringSettings(dof.type));
+
+                if (!std::isnan(dof.lowerBound) && !std::isnan(dof.upperBound))
                 {
-                    segmentElem.ElementString("Solver", segment.solver.c_str());
-                }
-
-                if (!std::isnan(segment.position.x))
-                {
-                    auto transformElem = segmentElem.Element("Transform");
-                    transformElem.Element("Position")
-                        .AttributeDouble("X", segment.position.x)
-                        .AttributeDouble("Y", segment.position.y)
-                        .AttributeDouble("Z", segment.position.z);
-                    transformElem.Element("Rotation")
-                        .AttributeDouble("X", segment.rotation.x)
-                        .AttributeDouble("Y", segment.rotation.y)
-                        .AttributeDouble("Z", segment.rotation.z)
-                        .AttributeDouble("W", segment.rotation.w);
-                }
-
-                if (!std::isnan(segment.defaultPosition.x))
-                {
-                    auto transformElem = segmentElem.Element("DefaultTransform");
-                    transformElem.Element("Position")
-                        .AttributeDouble("X", segment.defaultPosition.x)
-                        .AttributeDouble("Y", segment.defaultPosition.y)
-                        .AttributeDouble("Z", segment.defaultPosition.z);
-                    transformElem.Element("Rotation")
-                        .AttributeDouble("X", segment.defaultRotation.x)
-                        .AttributeDouble("Y", segment.defaultRotation.y)
-                        .AttributeDouble("Z", segment.defaultRotation.z)
-                        .AttributeDouble("W", segment.defaultRotation.w);
-                }
-
-                auto degreesOfFreedomElem = segmentElem.Element("DegreesOfFreedom");
-
-                for (const auto& dof : segment.degreesOfFreedom)
-                {
-                    auto dofElem = degreesOfFreedomElem.Element(SkeletonDofToStringSettings(dof.type));
-
-                    if (!std::isnan(dof.lowerBound) && !std::isnan(dof.upperBound))
+                    if (mMajorVersion > 1 || mMinorVersion > 21)
                     {
-                        if (mMajorVersion > 1 || mMinorVersion > 21)
-                        {
-                            dofElem.Element("Constraint")
-                                .AttributeDouble("LowerBound", dof.lowerBound)
-                                .AttributeDouble("UpperBound", dof.upperBound);
-                        }
-                        else
-                        {
-                            // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
-                            dofElem.AttributeDouble("LowerBound", dof.lowerBound);
-                            dofElem.AttributeDouble("UpperBound", dof.upperBound);
-                        }
+                        dofElem.Element("Constraint")
+                               .AttributeDouble("LowerBound", dof.lowerBound)
+                               .AttributeDouble("UpperBound", dof.upperBound);
                     }
-
-                    if (!dof.couplings.empty())
+                    else
                     {
-                        auto couplingsElem = dofElem.Element("Couplings");
-                        for (const auto& coupling : dof.couplings)
-                        {
-                            couplingsElem.Element("Coupling")
-                                .AttributeString("Segment", coupling.segment.c_str())
-                                .AttributeString("DegreeOfFreedom", SkeletonDofToStringSettings(coupling.degreeOfFreedom))
-                                .AttributeDouble("Coefficient", coupling.coefficient);
-                        }
-                    }
-
-                    if (!std::isnan(dof.goalValue) && !std::isnan(dof.goalWeight))
-                    {
-                        dofElem.Element("Goal")
-                            .AttributeDouble("Value", dof.goalValue)
-                            .AttributeDouble("Weight", dof.goalWeight);
+                        // If not in a 'Constraint' block, add 'LowerBound' & 'UpperBound' directly to dofElem
+                        dofElem.AttributeDouble("LowerBound", dof.lowerBound);
+                        dofElem.AttributeDouble("UpperBound", dof.upperBound);
                     }
                 }
 
-                if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
+                if (!dof.couplings.empty())
                 {
-                    segmentElem.Element("Endpoint")
-                        .AttributeDouble("X", segment.endpoint.x)
-                        .AttributeDouble("Y", segment.endpoint.y)
-                        .AttributeDouble("Z", segment.endpoint.z);
-                }
-                else
-                {
-                    segmentElem.Element("Endpoint");
-                }
-
-                auto markersElem = segmentElem.Element("Markers");
-
-                for (const auto& marker : segment.markers)
-                {
-                    auto markerElem = markersElem.Element("Marker")
-                        .AttributeString("Name", marker.name.c_str());
-
-                    markerElem.Element("Position")
-                        .AttributeDouble("X", marker.position.x)
-                        .AttributeDouble("Y", marker.position.y)
-                        .AttributeDouble("Z", marker.position.z);
-
-                    markerElem.ElementDouble("Weight", marker.weight);
+                    auto couplingsElem = dofElem.Element("Couplings");
+                    for (const auto& coupling : dof.couplings)
+                    {
+                        couplingsElem.Element("Coupling")
+                                     .AttributeString("Segment", coupling.segment.c_str())
+                                     .AttributeString("DegreeOfFreedom",
+                                                      SkeletonDofToStringSettings(coupling.degreeOfFreedom))
+                                     .AttributeDouble("Coefficient", coupling.coefficient);
+                    }
                 }
 
-                auto rigidBodiesElem = segmentElem.Element("RigidBodies");
-                for (const auto& rigidBody : segment.bodies)
+                if (!std::isnan(dof.goalValue) && !std::isnan(dof.goalWeight))
                 {
-                    auto rigidBodyElem = rigidBodiesElem.Element("RigidBody")
-                        .AttributeString("Name", rigidBody.name.c_str());
-
-                    auto transformElem = rigidBodyElem.Element("Transform");
-
-                    transformElem.Element("Position")
-                        .AttributeDouble("X", rigidBody.position.x)
-                        .AttributeDouble("Y", rigidBody.position.y)
-                        .AttributeDouble("Z", rigidBody.position.z);
-                    transformElem.Element("Rotation")
-                        .AttributeDouble("X", rigidBody.rotation.x)
-                        .AttributeDouble("Y", rigidBody.rotation.y)
-                        .AttributeDouble("Z", rigidBody.rotation.z)
-                        .AttributeDouble("W", rigidBody.rotation.w);
-
-                    rigidBodyElem.ElementDouble("Weight", rigidBody.weight);
+                    dofElem.Element("Goal")
+                           .AttributeDouble("Value", dof.goalValue)
+                           .AttributeDouble("Weight", dof.goalWeight);
                 }
+            }
 
-                for (const auto& childSegment : segment.segments)
-                {
-                    recurseSegments(childSegment, segmentElem);
-                }
-            };
+            if (!std::isnan(segment.endpoint.x) && !std::isnan(segment.endpoint.y) && !std::isnan(segment.endpoint.z))
+            {
+                segmentElem.Element("Endpoint")
+                           .AttributeDouble("X", segment.endpoint.x)
+                           .AttributeDouble("Y", segment.endpoint.y)
+                           .AttributeDouble("Z", segment.endpoint.z);
+            }
+            else
+            {
+                segmentElem.Element("Endpoint");
+            }
+
+            auto markersElem = segmentElem.Element("Markers");
+
+            for (const auto& marker : segment.markers)
+            {
+                auto markerElem = markersElem.Element("Marker")
+                                             .AttributeString("Name", marker.name.c_str());
+
+                markerElem.Element("Position")
+                          .AttributeDouble("X", marker.position.x)
+                          .AttributeDouble("Y", marker.position.y)
+                          .AttributeDouble("Z", marker.position.z);
+
+                markerElem.ElementDouble("Weight", marker.weight);
+            }
+
+            auto rigidBodiesElem = segmentElem.Element("RigidBodies");
+            for (const auto& rigidBody : segment.bodies)
+            {
+                auto rigidBodyElem = rigidBodiesElem.Element("RigidBody")
+                                                    .AttributeString("Name", rigidBody.name.c_str());
+
+                auto transformElem = rigidBodyElem.Element("Transform");
+
+                transformElem.Element("Position")
+                             .AttributeDouble("X", rigidBody.position.x)
+                             .AttributeDouble("Y", rigidBody.position.y)
+                             .AttributeDouble("Z", rigidBody.position.z);
+                transformElem.Element("Rotation")
+                             .AttributeDouble("X", rigidBody.rotation.x)
+                             .AttributeDouble("Y", rigidBody.rotation.y)
+                             .AttributeDouble("Z", rigidBody.rotation.z)
+                             .AttributeDouble("W", rigidBody.rotation.w);
+
+                rigidBodyElem.ElementDouble("Weight", rigidBody.weight);
+            }
+
+            for (const auto& childSegment : segment.segments)
+            {
+                recurseSegments(childSegment, segmentElem);
+            }
+        };
 
         recurseSegments(skeleton.rootSegment, segmentsElem);
     }

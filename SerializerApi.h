@@ -17,7 +17,7 @@ namespace qualisys_cpp_sdk
     private:
         std::shared_ptr<tinyxml2::XMLDocument> mDocument;
         tinyxml2::XMLElement& mCurrentElement;
-        
+
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
 

@@ -144,25 +144,25 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
 
         if (!extTimeBaseElem.TryReadElementUnsignedInt32("Frequency_Multiplier",
-                                         generalSettings.sExternalTimebase.nFreqMultiplier))
+                                                         generalSettings.sExternalTimebase.nFreqMultiplier))
         {
             return false;
         }
 
         if (!extTimeBaseElem.TryReadElementUnsignedInt32("Frequency_Divisor",
-                                         generalSettings.sExternalTimebase.nFreqDivisor))
+                                                         generalSettings.sExternalTimebase.nFreqDivisor))
         {
             return false;
         }
 
         if (!extTimeBaseElem.TryReadElementUnsignedInt32("Frequency_Tolerance",
-                                         generalSettings.sExternalTimebase.nFreqTolerance))
+                                                         generalSettings.sExternalTimebase.nFreqTolerance))
         {
             return false;
         }
 
         if (!extTimeBaseElem.TryReadElementFloat("Nominal_Frequency",
-                                 generalSettings.sExternalTimebase.fNominalFrequency))
+                                                 generalSettings.sExternalTimebase.fNominalFrequency))
         {
             std::string nominalFrequency;
             if (extTimeBaseElem.TryReadElementString("Nominal_Frequency", nominalFrequency))
@@ -201,7 +201,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
 
         if (!extTimeBaseElem.TryReadElementFloat("Nominal_Frequency",
-                                 generalSettings.sExternalTimebase.fNominalFrequency))
+                                                 generalSettings.sExternalTimebase.fNominalFrequency))
         {
             std::string nominalFrequency;
             if (extTimeBaseElem.TryReadElementString("Nominal_Frequency", nominalFrequency))
@@ -218,13 +218,13 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         }
 
         if (!extTimeBaseElem.TryReadElementUnsignedInt32("Signal_Shutter_Delay",
-                                         generalSettings.sExternalTimebase.nSignalShutterDelay))
+                                                         generalSettings.sExternalTimebase.nSignalShutterDelay))
         {
             return false;
         }
 
         if (!extTimeBaseElem.TryReadElementFloat("Non_Periodic_Timeout",
-                                 generalSettings.sExternalTimebase.fNonPeriodicTimeout))
+                                                 generalSettings.sExternalTimebase.fNonPeriodicTimeout))
         {
             return false;
         }
@@ -1213,7 +1213,7 @@ namespace
 }
 
 bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody>& settings6Dof,
-                                                    SSettingsGeneral& generalSettings, bool& dataAvailable)
+                                                   SSettingsGeneral& generalSettings, bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -1324,7 +1324,7 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
 } // Read6DOFSettings
 
 bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector>& gazeVectorSettings,
-                                                          bool& dataAvailable)
+                                                         bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -1376,7 +1376,7 @@ bool SettingsDeserializer::DeserializeGazeVectorSettings(std::vector<SGazeVector
 } // ReadGazeVectorSettings
 
 bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker>& eyeTrackerSettings,
-                                                          bool& dataAvailable)
+                                                         bool& dataAvailable)
 {
     dataAvailable = false;
 
@@ -1423,7 +1423,7 @@ bool SettingsDeserializer::DeserializeEyeTrackerSettings(std::vector<SEyeTracker
 } // ReadEyeTrackerSettings
 
 bool SettingsDeserializer::DeserializeAnalogSettings(std::vector<SAnalogDevice>& analogDeviceSettings,
-                                                      bool& dataAvailable)
+                                                     bool& dataAvailable)
 {
     dataAvailable = false;
     analogDeviceSettings.clear();
@@ -1581,7 +1581,7 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
         if (!plateElem.TryReadElementUnsignedInt32("Plate_ID", forcePlate.nID))
         {
             if (!plateElem.TryReadElementUnsignedInt32("Force_Plate_Index", forcePlate.nID))
-                // Version 1.7 and earlier.
+            // Version 1.7 and earlier.
             {
                 return false;
             }
@@ -1661,27 +1661,33 @@ bool SettingsDeserializer::DeserializeForceSettings(SSettingsForce& forceSetting
 
             if (mMajorVersion == 1 && mMinorVersion < 12)
             {
-                auto getRowStr = [](std::size_t index) -> std::string {
-                        return "Row" + std::to_string(index + 1);
-                    };
+                auto getRowStr = [](std::size_t index) -> std::string
+                {
+                    return "Row" + std::to_string(index + 1);
+                };
 
-                auto getColStr = [](std::size_t index) -> std::string {
-                        return "Col" + std::to_string(index + 1);
-                    };
+                auto getColStr = [](std::size_t index) -> std::string
+                {
+                    return "Col" + std::to_string(index + 1);
+                };
 
                 std::size_t iRow = 0;
-                for (auto rowElem = calibrationMatrix.FindChild(getRowStr(iRow).c_str()); rowElem; rowElem = rowElem.FindNextSibling(getRowStr(++iRow).c_str()))
+                for (auto rowElem = calibrationMatrix.FindChild(getRowStr(iRow).c_str()); rowElem; rowElem = rowElem.
+                     FindNextSibling(getRowStr(++iRow).c_str()))
                 {
                     std::size_t iCol = 0;
-                    for (auto colElem = rowElem.FindChild(getColStr(iCol).c_str()); colElem; colElem = colElem.FindNextSibling(getColStr(++iCol).c_str()))
+                    for (auto colElem = rowElem.FindChild(getColStr(iCol).c_str()); colElem; colElem = colElem.
+                         FindNextSibling(getColStr(++iCol).c_str()))
                     {
                         forcePlate.afCalibrationMatrix[iRow][iCol] = colElem.ReadFloat();
                     }
 
-                    forcePlate.nCalibrationMatrixColumns = std::max(static_cast<unsigned int>(iCol),forcePlate.nCalibrationMatrixColumns);
+                    forcePlate.nCalibrationMatrixColumns = std::max(static_cast<unsigned int>(iCol),
+                                                                    forcePlate.nCalibrationMatrixColumns);
                 }
 
-                forcePlate.nCalibrationMatrixRows = std::max(static_cast<unsigned int>(iRow), forcePlate.nCalibrationMatrixRows);
+                forcePlate.nCalibrationMatrixRows = std::max(static_cast<unsigned int>(iRow),
+                                                             forcePlate.nCalibrationMatrixRows);
                 forcePlate.bValidCalibrationMatrix = true;
             }
             else
@@ -1882,10 +1888,10 @@ namespace
 }
 
 bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
-                                                        std::vector<SSettingsSkeletonHierarchical>&
-                                                        skeletonSettingsHierarchical,
-                                                        std::vector<SSettingsSkeleton>& skeletonSettings,
-                                                        bool& dataAvailable)
+                                                       std::vector<SSettingsSkeletonHierarchical>&
+                                                       skeletonSettingsHierarchical,
+                                                       std::vector<SSettingsSkeleton>& skeletonSettings,
+                                                       bool& dataAvailable)
 {
     dataAvailable = false;
     skeletonSettings.clear();

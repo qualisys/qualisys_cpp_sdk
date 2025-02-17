@@ -26,9 +26,9 @@ namespace qualisys_cpp_sdk
         DeserializerApi FindChild(const char* elementName) const;
         DeserializerApi FindNextSibling(const char* elementName) const;
 
-        bool TryReadElementDouble(const char* elementName, double& output)  const;
+        bool TryReadElementDouble(const char* elementName, double& output) const;
         bool TryReadElementFloat(const char* elementName, float& output) const;
-        bool TryReadElementUnsignedInt32(const char* elementName, std::uint32_t& output) const ;
+        bool TryReadElementUnsignedInt32(const char* elementName, std::uint32_t& output) const;
         bool TryReadElementString(const char* elementName, std::string& output) const;
         bool TryReadElementBool(const std::string& element, bool& value) const;
 
@@ -54,6 +54,7 @@ namespace qualisys_cpp_sdk
     private:
         DeserializerApi& mParent;
         const char* mElementName;
+
     public:
         ChildElementRange() = delete;
         ChildElementRange(DeserializerApi& parent, const char* elementName);

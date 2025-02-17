@@ -4,7 +4,7 @@
 #include <tinyxml2.h>
 
 qualisys_cpp_sdk::DeserializerApi::DeserializerApi(std::shared_ptr<tinyxml2::XMLDocument> document,
-                                             tinyxml2::XMLElement* element)
+                                                   tinyxml2::XMLElement* element)
     : mDocument(document), mPtr(element)
 {
 }
@@ -32,12 +32,13 @@ double qualisys_cpp_sdk::DeserializerApi::ReadAttributeDouble(const char* attrib
 }
 
 std::uint32_t qualisys_cpp_sdk::DeserializerApi::ReadAttributeUnsignedInt(const char* attributeName,
-                                                                std::uint32_t defaultValue) const
+                                                                          std::uint32_t defaultValue) const
 {
     return mPtr->UnsignedAttribute(attributeName, defaultValue);
 }
 
-std::int32_t qualisys_cpp_sdk::DeserializerApi::ReadAttributeInt(const char* attributeName, std::int32_t defaultValue) const
+std::int32_t qualisys_cpp_sdk::DeserializerApi::ReadAttributeInt(const char* attributeName,
+                                                                 std::int32_t defaultValue) const
 {
     return mPtr->IntAttribute(attributeName, defaultValue);
 }
@@ -165,7 +166,7 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementFloat(const char* elementN
 }
 
 bool qualisys_cpp_sdk::DeserializerApi::TryReadElementUnsignedInt32(const char* elementName,
-                                                   std::uint32_t& output) const
+                                                                    std::uint32_t& output) const
 {
     if (auto childElem = FindChild(elementName))
     {
@@ -200,7 +201,7 @@ namespace
             // iscntrl: control codes(NUL, etc.), '\t', '\n', '\v', '\f', '\r', backspace (DEL)
             // isspace: some common checks but also 0x20 (SPACE)
             // return != 0 --> invalid char
-            return std::iscntrl(c) != 0 ||  std::isspace(c) != 0;
+            return std::iscntrl(c) != 0 || std::isspace(c) != 0;
         };
         str.erase(std::remove_if(str.begin(), str.end(), isInvalidChar), str.end());
     }
@@ -238,8 +239,8 @@ bool qualisys_cpp_sdk::DeserializerApi::TryReadElementBool(const std::string& el
 std::string qualisys_cpp_sdk::ToLowerXmlString(std::string& str)
 {
     std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c)
-        {
-            return static_cast<unsigned char>(std::tolower(c));
-        });
+    {
+        return static_cast<unsigned char>(std::tolower(c));
+    });
     return str;
 }
