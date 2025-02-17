@@ -10,14 +10,8 @@
 using namespace qualisys_cpp_sdk;
 
 SettingsDeserializer::SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion)
-    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mDeserializer{nullptr}
+    : mMajorVersion(majorVersion), mMinorVersion(minorVersion), mDeserializer(std::make_shared<Deserializer>(data))
 {
-    mDeserializer = new Deserializer(data);
-}
-
-SettingsDeserializer::~SettingsDeserializer()
-{
-    delete mDeserializer;
 }
 
 namespace

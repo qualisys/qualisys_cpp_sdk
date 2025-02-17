@@ -11,7 +11,7 @@ qualisys_cpp_sdk::Deserializer::Deserializer(std::shared_ptr<tinyxml2::XMLDocume
 
 qualisys_cpp_sdk::Deserializer::Deserializer(const char* data)
 {
-    mDocument = std::make_unique<tinyxml2::XMLDocument>();
+    mDocument = std::make_shared<tinyxml2::XMLDocument>();
     mDocument->Parse(data);
     mPtr = mDocument->RootElement();
 }

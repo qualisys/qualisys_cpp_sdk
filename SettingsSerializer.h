@@ -4,12 +4,10 @@
 
 namespace qualisys_cpp_sdk
 {
-    struct Serializer;
-
     struct SettingsSerializer
     {
         SettingsSerializer(std::uint32_t majorVersion, std::uint32_t minorVersion);
-        ~SettingsSerializer();
+
         std::string SetGeneralSettings(const unsigned int* captureFrequency, const float* captureTime,
                                        const bool* startOnExtTrig, const bool* startOnTrigNO, const bool* startOnTrigNC,
                                        const bool* startOnTrigSoftware,
@@ -61,6 +59,5 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        Serializer* mSerializer;
     };
 }

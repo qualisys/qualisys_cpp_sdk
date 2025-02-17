@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Settings.h"
 
 namespace qualisys_cpp_sdk
@@ -9,7 +11,6 @@ namespace qualisys_cpp_sdk
     struct SettingsDeserializer
     {
         SettingsDeserializer(const char* data, std::uint32_t majorVersion, std::uint32_t minorVersion);
-        ~SettingsDeserializer();
 
         bool DeserializeGeneralSettings(SSettingsGeneral& generalSettings);
         bool Deserialize3DSettings(SSettings3D& settings3D, bool& dataAvailable);
@@ -28,6 +29,6 @@ namespace qualisys_cpp_sdk
     private:
         std::uint32_t mMajorVersion;
         std::uint32_t mMinorVersion;
-        Deserializer* mDeserializer;
+        std::shared_ptr<Deserializer> mDeserializer;
     };
 }
