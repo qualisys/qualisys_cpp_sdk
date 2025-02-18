@@ -28,9 +28,9 @@ endif()
 # TinyXML2
 set(tinyxml2_BUILD_TESTING OFF)
 if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
-    set(tinyxml2_SHARED ON)
+    set(tinyxml2_SHARED_LIBS ON)
 else()
-    set(tinyxml2_SHARED OFF)
+    set(tinyxml2_SHARED_LIBS OFF)
 endif()
 add_subdirectory(external/tinyxml2)
 
