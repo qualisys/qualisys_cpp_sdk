@@ -85,13 +85,13 @@ namespace
 
     std::vector<CRTProtocol::SSettingsSkeleton> CreateDummySkeletonsNonHierarchical()
     {
-        auto segmentsSkeleton1 = std::vector<CRTProtocol::SSettingsSkeletonSegment>{
+        auto segmentsSkeleton1 = std::vector<CRTProtocol::SSettingsSkeletonSegment>({
             { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, -0.707000017f, 0.0f, 0.0f, "segment1", -1, -1 },
             { 0, 3.0f, 4.0f, 5.0f, 0.707000017f, 0.707000017f, 0.0f, 0.0f, "segment3", 0, 1 }
-        };
-        auto segmentsSkeleton2 = std::vector<CRTProtocol::SSettingsSkeletonSegment>{
+        });
+        auto segmentsSkeleton2 = std::vector<CRTProtocol::SSettingsSkeletonSegment>({
             { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, 0.0f, 0.707000017f, 0.0f, "segment2", -1, -1 }
-        };
+        });
 
         CRTProtocol::SSettingsSkeleton skeleton1 = { "skeleton1", segmentsSkeleton1 };
         CRTProtocol::SSettingsSkeleton skeleton2 = { "skeleton2", segmentsSkeleton2 };
