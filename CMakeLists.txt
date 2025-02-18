@@ -15,6 +15,11 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+# Enable Position Independent Code for shared libraries
+if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # TinyXML2
 set(tinyxml2_BUILD_TESTING OFF)
 if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
@@ -23,11 +28,6 @@ else()
     set(tinyxml2_SHARED OFF)
 endif()
 add_subdirectory(external/tinyxml2)
-
-# Enable Position Independent Code for shared libraries
-if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 add_library(${PROJECT_NAME} ${LIB_TYPE}
         Network.cpp
