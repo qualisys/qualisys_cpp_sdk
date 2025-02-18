@@ -42,16 +42,16 @@ add_library(${PROJECT_NAME} ${LIB_TYPE}
 
 target_include_directories(${PROJECT_NAME} 
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>"
         PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/External/tinyxml2
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/External/tinyxml2"
 )
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC 
-        $<$<STREQUAL:$<PLATFORM_ID>,Windows>:ws2_32>
-        $<$<STREQUAL:$<PLATFORM_ID>,Windows>:iphlpapi>
+        "$<$<STREQUAL:$<PLATFORM_ID>,Windows>:ws2_32>"
+        "$<$<STREQUAL:$<PLATFORM_ID>,Windows>:iphlpapi>"
 )
 
 # Enable C++14
@@ -91,9 +91,17 @@ endif()
 
 # ----------- INSTALL & EXPORT -----------
 
-include(GNUInstallDirs)
-
 set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+
+# 'make install' to the correct locations (provided by GNUInstallDirs)
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" # This is for Windows
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
+)
 
 install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
@@ -109,16 +117,6 @@ configure_package_config_file(${PROJECT_NAME}Config.cmake.in
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         DESTINATION ${ConfigPackageLocation}
-)
-
-# 'make install' to the correct locations (provided by GNUInstallDirs).
-install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )
 
 # Copy along headers
