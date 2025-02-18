@@ -35,7 +35,6 @@ if(WIN32)
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2::tinyxml2)
 
-
 # Enable C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
 set_target_properties(${PROJECT_NAME}
