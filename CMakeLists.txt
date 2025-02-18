@@ -121,7 +121,6 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
     )
 endif ()
 
-# ----------- TESTS (Ensure Doctest is Not Broken) -----------
 if(${PROJECT_NAME}_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
