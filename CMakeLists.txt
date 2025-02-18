@@ -6,6 +6,11 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 option(${PROJECT_NAME}_BUILD_SHARED "Build shared library" OFF)
 option(${PROJECT_NAME}_BUILD_SHARED_VERSIONED "Build shared library with version suffix" OFF)
 
+# Default to Release if not set
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build: None, Debug, Release, RelWithDebInfo, MinSizeRel.")
+endif()
+
 # Define library type
 if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
     set(LIB_TYPE SHARED)
