@@ -58,57 +58,57 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
 
         if (majorVersion > 1 || minorVersion > 13)
         {
-            if (eProcessingActions[i] & CRTProtocol::ProcessingPreProcess2D)
+            if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingPreProcess2D)
             {
                 printf("2D pre-processing\n");
             }
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingTracking2D)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingTracking2D)
         {
             printf("2D Tracking\n");
         }
-        else if (eProcessingActions[i] & CRTProtocol::ProcessingTracking3D)
+        else if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingTracking3D)
         {
             printf("3D Tracking\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingTwinSystemMerge)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingTwinSystemMerge)
         {
             printf("Twin system merge\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingSplineFill)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingSplineFill)
         {
             printf("Spline Fill\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingAIM)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingAIM)
         {
             printf("AIM\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::Processing6DOFTracking)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::Processing6DOFTracking)
         {
             printf("6DOF Tracking\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingForceData)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingForceData)
         {
             printf("Force Calculation\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingGazeVector)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingGazeVector)
         {
             printf("Gaze Vector Calculation\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingExportTSV)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingExportTSV)
         {
             printf("Export TSV\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingExportC3D)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingExportC3D)
         {
             printf("Export C3D\n");
         }
-        if (eProcessingActions[i] & CRTProtocol::ProcessingExportMatlabFile)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingExportMatlabFile)
         {
             printf("Export MATLAB File\n");
         }
 
-        if (eProcessingActions[i] & CRTProtocol::ProcessingExportAviFile)
+        if (eProcessingActions[i] & CRTProtocol::EProcessingActions::ProcessingExportAviFile)
         {
             printf("Export AVI File\n");
         }
@@ -136,16 +136,16 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
         printf("Signal Source:        ");
         switch (eSignalSource)
         {
-        case CRTProtocol::SourceControlPort :
+        case CRTProtocol::ESignalSource::SourceControlPort :
             printf("Control Port\n");
             break;
-        case CRTProtocol::SourceIRReceiver :
+        case CRTProtocol::ESignalSource::SourceIRReceiver :
             printf("IR Receiver\n");
             break;
-        case CRTProtocol::SourceSMPTE :
+        case CRTProtocol::ESignalSource::SourceSMPTE :
             printf("SMPTE\n");
             break;
-        case CRTProtocol::SourceVideoSync :
+        case CRTProtocol::ESignalSource::SourceVideoSync :
             printf("Video Sync\n");
             break;
         }
@@ -154,7 +154,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
         {
             printf("Frequency Multiplier: %d\n", nFreqMultiplier);
             printf("Frequency Divisor:    %d\n", nFreqDivisor);
-            if (eSignalSource != CRTProtocol::SourceSMPTE)
+            if (eSignalSource != CRTProtocol::ESignalSource::SourceSMPTE)
             {
                 printf("Frequency Tolerance:  %d ppm\n", nFreqTolerance);
             }
@@ -167,13 +167,13 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                 printf("Nominal Frequency:    %f Hz\n", fNominalFrequency);
             }
         }
-        if (eSignalSource == CRTProtocol::SourceControlPort || eSignalSource == CRTProtocol::SourceVideoSync)
+        if (eSignalSource == CRTProtocol::ESignalSource::SourceControlPort || eSignalSource == CRTProtocol::ESignalSource::SourceVideoSync)
         {
             printf("Signal Edge:          %s\n", bNegativeEdge ? "Negative" : "Positive"); 
         }
         printf("Signal Shutter Delay: %d us\n", nSignalShutterDelay);
-        if ((eSignalSource == CRTProtocol::SourceControlPort || eSignalSource == CRTProtocol::SourceIRReceiver ||
-            eSignalSource == CRTProtocol::SourceVideoSync) && !bSignalModePeriodic)
+        if ((eSignalSource == CRTProtocol::ESignalSource::SourceControlPort || eSignalSource == CRTProtocol::ESignalSource::SourceIRReceiver ||
+            eSignalSource == CRTProtocol::ESignalSource::SourceVideoSync) && !bSignalModePeriodic)
         {
             printf("Non Periodic Timeout: %f s\n\n", fNonPeriodicTimeout);
         }
@@ -186,7 +186,7 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
     printf("Timestamp: %s\n", timestampSettings.bEnabled ? "Enabled" : "Disabled");
     if (timestampSettings.bEnabled)
     {
-        printf("Type:      %s\n", timestampSettings.nType == CRTProtocol::Timestamp_SMPTE ? "SMPTE" : timestampSettings.nType == CRTProtocol::Timestamp_IRIG ? "IRIG" : "CameraTime");
+        printf("Type:      %s\n", timestampSettings.nType == CRTProtocol::ETimestampType::Timestamp_SMPTE ? "SMPTE" : timestampSettings.nType == CRTProtocol::ETimestampType::Timestamp_IRIG ? "IRIG" : "CameraTime");
         printf("Frequency: %d Hz\n", timestampSettings.nFrequency);
     }    
     
@@ -221,85 +221,85 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             printf("Camera ID: %d\n", nID);
             switch (eModel)
             {
-            case CRTProtocol::ModelMacReflex :
+            case CRTProtocol::ECameraModel::ModelMacReflex :
                 printf("  Model: MacReflex  ");
                 break;
-            case CRTProtocol::ModelProReflex120 :
+            case CRTProtocol::ECameraModel::ModelProReflex120 :
                 printf("  Model: ProReflex 120  ");
                 break;
-            case CRTProtocol::ModelProReflex240 :
+            case CRTProtocol::ECameraModel::ModelProReflex240 :
                 printf("  Model: ProReflex 240  ");
                 break;
-            case CRTProtocol::ModelProReflex500 :
+            case CRTProtocol::ECameraModel::ModelProReflex500 :
                 printf("  Model: ProReflex 500  ");
                 break;
-            case CRTProtocol::ModelProReflex1000 :
+            case CRTProtocol::ECameraModel::ModelProReflex1000 :
                 printf("  Model: ProReflex 1000  ");
                 break;
-            case CRTProtocol::ModelOqus100 :
+            case CRTProtocol::ECameraModel::ModelOqus100 :
                 printf("  Model: Oqus 100  ");
                 break;
-            case CRTProtocol::ModelOqus200C :
+            case CRTProtocol::ECameraModel::ModelOqus200C :
                 printf("  Model: Oqus 200 C  ");
                 break;
-            case CRTProtocol::ModelOqus300 :
+            case CRTProtocol::ECameraModel::ModelOqus300 :
                 printf("  Model: Oqus 300  ");
                 break;
-            case CRTProtocol::ModelOqus300Plus :
+            case CRTProtocol::ECameraModel::ModelOqus300Plus :
                 printf("  Model: Oqus 300 Plus  ");
                 break;
-            case CRTProtocol::ModelOqus400 :
+            case CRTProtocol::ECameraModel::ModelOqus400 :
                 printf("  Model: Oqus 400  ");
                 break;
-            case CRTProtocol::ModelOqus500 :
+            case CRTProtocol::ECameraModel::ModelOqus500 :
                 printf("  Model: Oqus 500  ");
                 break;
-            case CRTProtocol::ModelOqus500Plus :
+            case CRTProtocol::ECameraModel::ModelOqus500Plus :
                 printf("  Model: Oqus 500 Plus  ");
                 break;
-            case CRTProtocol::ModelOqus700 :
+            case CRTProtocol::ECameraModel::ModelOqus700 :
                 printf("  Model: Oqus 700  ");
                 break;
-            case CRTProtocol::ModelOqus700Plus :
+            case CRTProtocol::ECameraModel::ModelOqus700Plus :
                 printf("  Model: Oqus 700 Plus  ");
                 break;
-            case CRTProtocol::ModelOqus600Plus:
+            case CRTProtocol::ECameraModel::ModelOqus600Plus:
                 printf("  Model: Oqus 600 Plus  ");
                 break;
-            case CRTProtocol::ModelMiqusM1:
+            case CRTProtocol::ECameraModel::ModelMiqusM1:
                 printf("  Model: Miqus M1  ");
                 break;
-            case CRTProtocol::ModelMiqusM3:
+            case CRTProtocol::ECameraModel::ModelMiqusM3:
                 printf("  Model: Miqus M3  ");
                 break;
-            case CRTProtocol::ModelMiqusM5:
+            case CRTProtocol::ECameraModel::ModelMiqusM5:
                 printf("  Model: Miqus M5  ");
                 break;
-            case CRTProtocol::ModelMiqusSyncUnit:
+            case CRTProtocol::ECameraModel::ModelMiqusSyncUnit:
                 printf("  Model: Miqus Sync Unit  ");
                 break;
-            case CRTProtocol::ModelMiqusVideo:
+            case CRTProtocol::ECameraModel::ModelMiqusVideo:
                 printf("  Model: Miqus Video   ");
                 break;
-            case CRTProtocol::ModelMiqusVideoColor:
+            case CRTProtocol::ECameraModel::ModelMiqusVideoColor:
                 printf("  Model: Miqus Video Color   ");
                 break;
-            case CRTProtocol::ModelMiqusHybrid:
+            case CRTProtocol::ECameraModel::ModelMiqusHybrid:
                 printf("  Model: Miqus Hybrid   ");
                 break;
-            case CRTProtocol::ModelMiqusVideoColorPlus:
+            case CRTProtocol::ECameraModel::ModelMiqusVideoColorPlus:
                 printf("  Model: Miqus Video Color Plus  ");
                 break;
-            case CRTProtocol::ModelArqusA5:
+            case CRTProtocol::ECameraModel::ModelArqusA5:
                 printf("  Model: Arqus A5   ");
                 break;
-            case CRTProtocol::ModelArqusA9:
+            case CRTProtocol::ECameraModel::ModelArqusA9:
                 printf("  Model: Arqus A9   ");
                 break;
-            case CRTProtocol::ModelArqusA12:
+            case CRTProtocol::ECameraModel::ModelArqusA12:
                 printf("  Model: Arqus A12   ");
                 break;
-            case CRTProtocol::ModelArqusA26:
+            case CRTProtocol::ECameraModel::ModelArqusA26:
                 printf("  Model: Arqus A26   ");
                 break;
             }
@@ -307,24 +307,24 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             printf("  Serial: %d\n", nSerial);
             printf("  Supports Hardware Sync: %s\n", bSupportsHwSync ? "True" : "False");
 
-            if (eModel != CRTProtocol::ModelMiqusSyncUnit)
+            if (eModel != CRTProtocol::ECameraModel::ModelMiqusSyncUnit)
             {
                 switch (eMode)
                 {
-                case CRTProtocol::ModeMarker:
+                case CRTProtocol::ECameraMode::ModeMarker:
                     printf("  Mode: Marker\n");
                     break;
-                case CRTProtocol::ModeMarkerIntensity:
+                case CRTProtocol::ECameraMode::ModeMarkerIntensity:
                     printf("  Mode: Marker Intensity\n");
                     break;
-                case CRTProtocol::ModeVideo:
+                case CRTProtocol::ECameraMode::ModeVideo:
                     printf("  Mode: Video\n");
                     break;
                 }
             }
         }
 
-        if (eModel != CRTProtocol::ModelMiqusSyncUnit)
+        if (eModel != CRTProtocol::ECameraModel::ModelMiqusSyncUnit)
         {
             if (poRTProtocol->GetCameraMarkerSettings(iCamera, nMarkerExposure, nMarkerExposureMin, nMarkerExposureMax,
                 nMarkerThreshold, nMarkerThresholdMin, nMarkerThresholdMax))
@@ -345,31 +345,31 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
             {
                 switch (videoResolution)
                 {
-                    case CRTProtocol::VideoResolution1440p:
+                    case CRTProtocol::EVideoResolution::VideoResolution1440p:
                         printf("  Video Resolution: 1440p\n");
                         break;
-                    case CRTProtocol::VideoResolution1080p :
+                    case CRTProtocol::EVideoResolution::VideoResolution1080p :
                         printf("  Video Resolution: 1080p\n");
                         break;
-                    case CRTProtocol::VideoResolution720p:
+                    case CRTProtocol::EVideoResolution::VideoResolution720p:
                         printf("  Video Resolution: 720p\n");
                         break;
-                    case CRTProtocol::VideoResolution540p:
+                    case CRTProtocol::EVideoResolution::VideoResolution540p:
                         printf("  Video Resolution: 540p\n");
                         break;
-                    case CRTProtocol::VideoResolution480p:
+                    case CRTProtocol::EVideoResolution::VideoResolution480p:
                         printf("  Video Resolution: 480p\n");
                         break;
                 }
                 switch (videoAspectRatio)
                 {
-                    case CRTProtocol::VideoAspectRatio16x9:
+                    case CRTProtocol::EVideoAspectRatio::VideoAspectRatio16x9:
                         printf("  Video Aspect Ratio: 16:9\n");
                         break;
-                    case CRTProtocol::VideoAspectRatio4x3:
+                    case CRTProtocol::EVideoAspectRatio::VideoAspectRatio4x3:
                         printf("  Video Aspect Ratio: 4:3\n");
                         break;
-                    case CRTProtocol::VideoAspectRatio1x1:
+                    case CRTProtocol::EVideoAspectRatio::VideoAspectRatio1x1:
                         printf("  Video Aspect Ratio: 1:1\n");
                         break;
                 }
@@ -440,33 +440,33 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                     {
                         switch (eSyncOutMode)
                         {
-                        case CRTProtocol::ModeShutterOut:
+                        case CRTProtocol::ESyncOutFreqMode::ModeShutterOut:
                             printf("  Sync Out%d Mode:   Shutter Out\n", portNumber);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeMultiplier:
+                        case CRTProtocol::ESyncOutFreqMode::ModeMultiplier:
                             printf("  Sync Out%d Mode:   Multiplier = %d\n", portNumber, nSyncOutValue);
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeDivisor:
+                        case CRTProtocol::ESyncOutFreqMode::ModeDivisor:
                             printf("  Sync Out%d Mode:   Divisor = %d\n", portNumber, nSyncOutValue);
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeIndependentFreq:
+                        case CRTProtocol::ESyncOutFreqMode::ModeIndependentFreq:
                             printf("  Sync Out%d Mode:   Actual Frequency = %d\n", portNumber, nSyncOutValue);
                             printf("   Duty Cycle:      %f %%\n", fSyncOutDutyCycle);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeMeasurementTime:
+                        case CRTProtocol::ESyncOutFreqMode::ModeMeasurementTime:
                             printf("  Sync Out%d Mode:   Measurement Time\n", portNumber);
                             printf("   Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                             break;
-                        case CRTProtocol::ModeFixed100Hz:
+                        case CRTProtocol::ESyncOutFreqMode::ModeFixed100Hz:
                             printf("  Sync Out%d Mode: Fixed 100 Hz\n", portNumber);
                             break;
-                        case CRTProtocol::ModeSystemLiveTime:
+                        case CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime:
                             printf("  Sync Out%d Mode: System Live Time\n", portNumber);
                             break;
                         }
@@ -522,7 +522,7 @@ void COutput::PrintCalibrationSettings(const CRTProtocol::SCalibration &calibrat
     printf("Source:                %s\n", calibrationResult.source.c_str());
     printf("Created:               %s\n", calibrationResult.created.c_str());
     printf("QTM version:           %s\n", calibrationResult.qtm_version.c_str());
-    printf("Type:                  %s\n", calibrationResult.type == CRTProtocol::regular ? "Regular" : (calibrationResult.type == CRTProtocol::refine ? "Refine" : "Fixed"));
+    printf("Type:                  %s\n", calibrationResult.type == CRTProtocol::ECalibrationType::regular ? "Regular" : (calibrationResult.type == CRTProtocol::ECalibrationType::refine ? "Refine" : "Fixed"));
     printf("Refit residual:        %f\n", calibrationResult.refit_residual);
     printf("Wand length:           %f\n", calibrationResult.wand_length);
     printf("Max frames:            %d\n", calibrationResult.max_frames);
@@ -568,22 +568,22 @@ void COutput::Print3DSettings(CRTProtocol* poRTProtocol)
 
     switch (poRTProtocol->Get3DUpwardAxis())
     {
-    case CRTProtocol::XPos :
+    case CRTProtocol::EAxis::XPos :
         printf("Axis upwards: +X\n");
         break;
-    case CRTProtocol::XNeg :
+    case CRTProtocol::EAxis::XNeg :
         printf("Axis upwards: -X\n");
         break;
-    case CRTProtocol::YPos :
+    case CRTProtocol::EAxis::YPos :
         printf("Axis upwards: +Y\n");
         break;
-    case CRTProtocol::YNeg :
+    case CRTProtocol::EAxis::YNeg :
         printf("Axis upwards: -Y\n");
         break;
-    case CRTProtocol::ZPos :
+    case CRTProtocol::EAxis::ZPos :
         printf("Axis upwards: +Z\n");
         break;
-    case CRTProtocol::ZNeg :
+    case CRTProtocol::EAxis::ZNeg :
         printf("Axis upwards: -Z\n");
         break;
     }
@@ -684,12 +684,12 @@ void COutput::Print6DOFSettings(CRTProtocol* poRTProtocol)
                     printf("  Filter preset:         %s\n", bodiesSettings[iBody].filterPreset.c_str());
                 }
 
-                if (bodiesSettings[iBody].origin.type == CRTProtocol::GlobalOrigin)
+                if (bodiesSettings[iBody].origin.type == CRTProtocol::EOriginType::GlobalOrigin)
                 {
                     printf("  Translation origin:    Global\n");
                     printf("  Rotation origin:       Global\n");
                 }
-                else if (bodiesSettings[iBody].origin.type == CRTProtocol::RelativeOrigin)
+                else if (bodiesSettings[iBody].origin.type == CRTProtocol::EOriginType::RelativeOrigin)
                 {
                     printf("  Translation origin:    Relative body #%d\n", bodiesSettings[iBody].origin.relativeBody - 1);
                     printf("  Rotation origin:       Relative body #%d\n", bodiesSettings[iBody].origin.relativeBody - 1);
