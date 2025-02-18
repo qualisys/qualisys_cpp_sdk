@@ -264,7 +264,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         &generalSettings.eReprocessingActions
     };
 
-    auto AddFlagFromBoolElement = [&](Deserializer& parent, const char* elementName, EProcessingActions flag,
+    auto AddFlagFromBoolElement = [](Deserializer& parent, const char* elementName, EProcessingActions flag,
                                          EProcessingActions& target) -> bool
     {
         bool value;
