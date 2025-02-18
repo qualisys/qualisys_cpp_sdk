@@ -5,7 +5,6 @@ include(GNUInstallDirs)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
 
-
 add_library(${PROJECT_NAME}
         Markup.cpp
         Network.cpp
@@ -14,12 +13,12 @@ add_library(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>"
 )
 
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib>
+        PUBLIC $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>:ws2_32.lib>
 )
 
 # Enable C++14
@@ -33,9 +32,17 @@ set_target_properties(${PROJECT_NAME}
 
 # ----------- INSTALL & EXPORT -----------
 
-include(GNUInstallDirs)
-
 set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME})
+
+# 'make install' to the correct locations (provided by GNUInstallDirs)
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" # This is for Windows
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
+)
 
 install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
@@ -51,16 +58,6 @@ configure_package_config_file(${PROJECT_NAME}Config.cmake.in
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         DESTINATION ${ConfigPackageLocation}
-)
-
-# 'make install' to the correct locations (provided by GNUInstallDirs).
-install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # This is for Windows
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )
 
 # Copy along headers
