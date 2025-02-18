@@ -264,7 +264,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
         &generalSettings.eReprocessingActions
     };
 
-    auto AddFlagFromBoolElement = [](Deserializer& parent, const char* elementName, EProcessingActions flag,
+    auto addFlagFromBoolElement = [](Deserializer& parent, const char* elementName, EProcessingActions flag,
                                          EProcessingActions& target) -> bool
     {
         bool value;
@@ -293,7 +293,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
         if (mMajorVersion > 1 || mMinorVersion > 13)
         {
-            if (!AddFlagFromBoolElement(processingElem, "PreProcessing2D", ProcessingPreProcess2D,
+            if (!addFlagFromBoolElement(processingElem, "PreProcessing2D", ProcessingPreProcess2D,
                                         *processingActions[i]))
             {
                 return false;
@@ -318,36 +318,36 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
         if (i != 1) //Not RtProcessingSettings
         {
-            if (!AddFlagFromBoolElement(processingElem, "TwinSystemMerge", ProcessingTwinSystemMerge,
+            if (!addFlagFromBoolElement(processingElem, "TwinSystemMerge", ProcessingTwinSystemMerge,
                                         *processingActions[i]))
             {
                 return false;
             }
 
-            if (!AddFlagFromBoolElement(processingElem, "SplineFill", ProcessingSplineFill, *processingActions[i]))
+            if (!addFlagFromBoolElement(processingElem, "SplineFill", ProcessingSplineFill, *processingActions[i]))
             {
                 return false;
             }
         }
 
-        if (!AddFlagFromBoolElement(processingElem, "AIM", ProcessingAIM, *processingActions[i]))
+        if (!addFlagFromBoolElement(processingElem, "AIM", ProcessingAIM, *processingActions[i]))
         {
             return false;
         }
 
-        if (!AddFlagFromBoolElement(processingElem, "Track6DOF", Processing6DOFTracking, *processingActions[i]))
+        if (!addFlagFromBoolElement(processingElem, "Track6DOF", Processing6DOFTracking, *processingActions[i]))
         {
             return false;
         }
 
-        if (!AddFlagFromBoolElement(processingElem, "ForceData", ProcessingForceData, *processingActions[i]))
+        if (!addFlagFromBoolElement(processingElem, "ForceData", ProcessingForceData, *processingActions[i]))
         {
             return false;
         }
 
         if (mMajorVersion > 1 || mMinorVersion > 11)
         {
-            if (!AddFlagFromBoolElement(processingElem, "GazeVector", ProcessingGazeVector, *processingActions[i]))
+            if (!addFlagFromBoolElement(processingElem, "GazeVector", ProcessingGazeVector, *processingActions[i]))
             {
                 return false;
             }
@@ -355,17 +355,17 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
         if (i != 1) //Not RtProcessingSettings
         {
-            if (!AddFlagFromBoolElement(processingElem, "ExportTSV", ProcessingExportTSV, *processingActions[i]))
+            if (!addFlagFromBoolElement(processingElem, "ExportTSV", ProcessingExportTSV, *processingActions[i]))
             {
                 return false;
             }
 
-            if (!AddFlagFromBoolElement(processingElem, "ExportC3D", ProcessingExportC3D, *processingActions[i]))
+            if (!addFlagFromBoolElement(processingElem, "ExportC3D", ProcessingExportC3D, *processingActions[i]))
             {
                 return false;
             }
 
-            if (!AddFlagFromBoolElement(processingElem, "ExportMatlabFile", ProcessingExportMatlabFile,
+            if (!addFlagFromBoolElement(processingElem, "ExportMatlabFile", ProcessingExportMatlabFile,
                                         *processingActions[i]))
             {
                 return false;
@@ -373,7 +373,7 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
 
             if (mMajorVersion > 1 || mMinorVersion > 11)
             {
-                if (!AddFlagFromBoolElement(processingElem, "ExportAviFile", ProcessingExportAviFile,
+                if (!addFlagFromBoolElement(processingElem, "ExportAviFile", ProcessingExportAviFile,
                                             *processingActions[i]))
                 {
                     return false;
