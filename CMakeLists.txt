@@ -15,7 +15,7 @@ add_library(${PROJECT_NAME}
         Deserializer.cpp
         SettingsDeserializer.cpp
         SettingsSerializer.cpp
-        external/tinyxml2/tinyxml2.cpp
+        External/tinyxml2/tinyxml2.cpp
 )
 
 target_include_directories(${PROJECT_NAME} 

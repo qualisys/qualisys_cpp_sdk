@@ -95,7 +95,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>External\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -120,7 +120,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>External\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -143,7 +143,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>External\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -170,13 +170,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>external\tinyxml2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>External\tinyxml2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
+      <OptimizeReferences>false</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
@@ -186,7 +186,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="external\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="External\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="RTPacket.cpp" />
     <ClCompile Include="RTProtocol.cpp" />
@@ -197,7 +197,7 @@
     <ClCompile Include="SettingsSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="external\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="External\tinyxml2\tinyxml2.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="RTPacket.h" />
     <ClInclude Include="RTProtocol.h" />

@@ -5,7 +5,7 @@ project(qualisys_cpp_sdk_tests LANGUAGES CXX)
 include(doctest)
 
 set(SOURCE_LIST
-    ${CMAKE_SOURCE_DIR}/external/tinyxml2/tinyxml2.cpp
+    ${CMAKE_SOURCE_DIR}/External/tinyxml2/tinyxml2.cpp
     ${PROJECT_SOURCE_DIR}/Main.cpp
     ${PROJECT_SOURCE_DIR}/CalibrationParametersTests.cpp
     ${PROJECT_SOURCE_DIR}/EyeTrackerParametersTests.cpp
@@ -28,7 +28,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC 
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>/external/tinyxml2
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>/External/tinyxml2
 )
 
 target_link_libraries(${PROJECT_NAME} 
