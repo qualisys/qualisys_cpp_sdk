@@ -624,16 +624,6 @@ namespace qualisys_cpp_sdk
         std::vector<SSettingsSkeletonSegment> segments;
     };
 
-    constexpr auto DEGREES_OF_FREEDOM =
-    {
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationX, "RotationX"),
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationY, "RotationY"),
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::RotationZ, "RotationZ"),
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationX, "TranslationX"),
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationY, "TranslationY"),
-        std::make_pair(qualisys_cpp_sdk::EDegreeOfFreedom::TranslationZ, "TranslationZ")
-    };
-
     DLL_EXPORT const char* SkeletonDofToStringSettings(EDegreeOfFreedom dof);
 
     DLL_EXPORT EDegreeOfFreedom SkeletonStringToDofSettings(const std::string& str);
