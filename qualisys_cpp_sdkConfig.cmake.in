@@ -3,5 +3,5 @@
 
 include(CMakeFindDependencyMacro)
 enable_language(C)
-find_package(tinyxml2 HINTS "${CMAKE_CURRENT_LIST_DIR}/../cmake/tinyxml2")
+
 include("${CMAKE_CURRENT_LIST_DIR}/qualisys_cpp_sdkTargets.cmake")
