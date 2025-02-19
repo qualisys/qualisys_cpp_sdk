@@ -1,0 +1,62 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          # Windows + MSVC
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+
+          # Ubuntu + GCC
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+
+          # Ubuntu + Clang
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+
+        # Exclude invalid combos (e.g., trying gcc on Windows)
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true  # Important: pulls in any Git submodules
+
+      - name: Configure CMake
+        # Single-line command works on both Windows (PowerShell) & Linux (Bash).
+        run: cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}  -Dqualisys_cpp_sdk_BUILD_TESTS=ON
+
+      - name: Build
+        # On Windows + MSVC (multi-config generator), --config picks Release/Debug.
+        # On Linux + Make/Ninja (single-config), --config is simply ignored, which is fine.
+        run: cmake --build build --config ${{ matrix.build_type }}
+
+      - name: Test
+        working-directory: build
+        # --build-config is needed for multi-config Windows. Linux ignores it, which is okay.
+        run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
