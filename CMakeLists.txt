@@ -27,11 +27,6 @@ endif()
 
 # TinyXML2
 set(tinyxml2_BUILD_TESTING OFF)
-if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
-    set(tinyxml2_SHARED_LIBS ON)
-else()
-    set(tinyxml2_SHARED_LIBS OFF)
-endif()
 add_subdirectory(external/tinyxml2)
 
 add_library(${PROJECT_NAME} ${LIB_TYPE}
@@ -68,6 +63,28 @@ set_target_properties(${PROJECT_NAME}
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
 )
+
+if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
+    if(WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+        )
+    endif()
+
+    if(NOT MSVC)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            CMAKE_CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON
+        )
+    endif()
+
+    if (UNIX)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            BUILD_RPATH "$ORIGIN"
+            INSTALL_RPATH "$ORIGIN"
+        )
+    endif()
+endif()
 
 # Apply versioning suffix if shared and requested
 if(${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
@@ -129,4 +146,6 @@ endif ()
 if(${PROJECT_NAME}_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
+    set(${PROJECT_NAME}_BUILD_SHARED ${qualisys_cpp_sdk_BUILD_SHARED} CACHE BOOL "Build shared library")
+    set(${PROJECT_NAME}_BUILD_SHARED_VERSIONED ${qualisys_cpp_sdk_BUILD_SHARED_VERSIONED} CACHE BOOL "Build shared library with version suffix")
 endif()
