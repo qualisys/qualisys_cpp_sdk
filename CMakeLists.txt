@@ -6,9 +6,6 @@ option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(tinyxml2_BUILD_TESTING OFF)
-add_subdirectory(external/tinyxml2)
-
 add_library(${PROJECT_NAME}
         Network.cpp
         RTPacket.cpp
@@ -18,11 +15,15 @@ add_library(${PROJECT_NAME}
         Deserializer.cpp
         SettingsDeserializer.cpp
         SettingsSerializer.cpp
+        external/tinyxml2/tinyxml2.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+target_include_directories(${PROJECT_NAME} 
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
+        PRIVATE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/external/tinyxml2
 )
 
 if(WIN32)
@@ -32,7 +33,6 @@ if(WIN32)
             $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","GNU">:ws2_32 iphlpapi>
     )
 endif()
-target_link_libraries(${PROJECT_NAME} PRIVATE tinyxml2::tinyxml2)
 
 
 # Enable C++14
@@ -92,7 +92,6 @@ if (${PROJECT_NAME}_BUILD_EXAMPLES)
     )
     target_link_libraries(RigidBodyStreaming
             qualisys_cpp_sdk
-            tinyxml2
     )
 endif ()
 
