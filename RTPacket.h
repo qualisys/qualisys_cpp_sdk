@@ -312,7 +312,6 @@ private:
     std::vector<char*> mpTimecodeData;
     std::vector<char*> mpSkeletonData;
     unsigned int   mnComponentCount;
-    EComponentType meComponentType;
     unsigned int   mn2DCameraCount;
     unsigned int   mn2DLinCameraCount;
     unsigned int   mnImageCameraCount;
