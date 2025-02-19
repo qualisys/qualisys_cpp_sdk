@@ -6,6 +6,14 @@ on:
   pull_request:
     branches: [ "*" ]
 
+
+env:
+  SOLUTION_FILE_PATH: RTClientSDK.sln
+  BUILD_CONFIGURATION: Release
+
+permissions:
+  contents: read
+
 jobs:
   cmake-build:
     runs-on: ${{ matrix.os }}
@@ -64,5 +72,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+          submodules: true  # Important: pulls in any Git submodules
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
     - name: Build VS projects
-      run: msbuild RTClientExample/RTClientExample.vcxproj /p:Configuration=Release /p:Platform=x64
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
