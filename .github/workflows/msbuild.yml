@@ -29,6 +29,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+          submodules: true  # Important: pulls in any Git submodules
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
