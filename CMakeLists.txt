@@ -49,8 +49,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 if(WIN32)
     target_link_libraries(${PROJECT_NAME}
         PUBLIC 
-            $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","MSVC">:ws2_32.lib iphlpapi.lib>
-            $<$<STREQUAL:"${CMAKE_CXX_COMPILER_ID}","GNU">:ws2_32 iphlpapi>
+            ws2_32 iphlpapi
     )
 endif()
 
