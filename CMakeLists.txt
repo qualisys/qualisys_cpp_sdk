@@ -23,7 +23,7 @@ target_include_directories(${PROJECT_NAME}
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>
         PRIVATE
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/external/tinyxml2
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/External/tinyxml2
 )
 
 if(WIN32)
