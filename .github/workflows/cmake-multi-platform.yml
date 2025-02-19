@@ -7,7 +7,7 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  cmake-build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -40,7 +40,6 @@ jobs:
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -60,3 +59,10 @@ jobs:
         working-directory: build
         # --build-config is needed for multi-config Windows. Linux ignores it, which is okay.
         run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
+
+  vs-build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build VS projects
+      run: msbuild RTClientExample/RTClientExample.vcxproj /p:Configuration=Release /p:Platform=x64
