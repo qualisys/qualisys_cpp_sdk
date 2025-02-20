@@ -1,4 +1,0 @@
-[submodule "external/tinyxml2"]
-    path = external/tinyxml2
-    url = https://github.com/leethomason/tinyxml2.git
-    branch = v10.0.0
