@@ -4,7 +4,7 @@ C++ package with SDK and examples
 
 ## Build with Visual Studio
 
-Build RTClientSDK solution in Visual Studio 2017.
+Build RTClientSDK solution in Visual Studio 2017 (or later version).
 
 ## Build with CMake (Windows & Linux)
 
@@ -14,9 +14,7 @@ Build RTClientSDK solution in Visual Studio 2017.
 
 ### Cloning the Repository
 
-This project uses Git submodules. Ensure submodules are initialized after cloning:
-
-`git clone <repository-url>`
+`git clone https://github.com/qualisys/qualisys_cpp_sdk.git`
 
 ### Build As Static
 ```
