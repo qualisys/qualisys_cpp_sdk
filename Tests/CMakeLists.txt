@@ -37,6 +37,29 @@ target_link_libraries(${PROJECT_NAME}
         doctest::doctest
 )
 
+# Ensure if shared library, that it's found at runtime
+if(NOT qualisys_cpp_sdk_OUTPUT_TYPE STREQUAL "STATIC")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE QUALISYS_SDK_SHARED)
+
+    if (UNIX)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            BUILD_RPATH "${CMAKE_BINARY_DIR}"
+            INSTALL_RPATH "$ORIGIN"
+        )
+    elseif(WIN32)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:qualisys_cpp_sdk>"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        )
+    else()
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            BUILD_RPATH "$ORIGIN"
+            INSTALL_RPATH "$ORIGIN"
+        )
+    endif()
+endif()
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if(MSVC)

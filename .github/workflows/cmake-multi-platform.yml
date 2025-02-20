@@ -24,6 +24,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
+        output_type: [STATIC, SHARED, SHARED_VERSIONED]
         include:
           # Windows + MSVC
           - os: windows-latest
@@ -56,7 +57,7 @@ jobs:
 
       - name: Configure CMake
         # Single-line command works on both Windows (PowerShell) & Linux (Bash).
-        run: cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}  -Dqualisys_cpp_sdk_BUILD_TESTS=ON
+        run: cmake -S . -B build -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -Dqualisys_cpp_sdk_OUTPUT_TYPE=${{ matrix.output_type}} -Dqualisys_cpp_sdk_BUILD_TESTS=ON
 
       - name: Build
         # On Windows + MSVC (multi-config generator), --config picks Release/Debug.
