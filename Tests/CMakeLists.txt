@@ -38,7 +38,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 # Ensure if shared library, that it's found at runtime
-if(qualisys_cpp_sdk_BUILD_SHARED OR qualisys_cpp_sdk_BUILD_SHARED_VERSIONED)
+if(NOT qualisys_cpp_sdk_OUTPUT_TYPE STREQUAL "STATIC")
     target_compile_definitions(${PROJECT_NAME} PRIVATE QUALISYS_SDK_SHARED)
 
     if (UNIX)
