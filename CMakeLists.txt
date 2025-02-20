@@ -3,27 +3,30 @@ project(qualisys_cpp_sdk VERSION 1.0.0)
 
 option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" OFF)
 option(${PROJECT_NAME}_BUILD_TESTS "Build tests" OFF)
-option(${PROJECT_NAME}_BUILD_SHARED "Build shared library" OFF)
-option(${PROJECT_NAME}_BUILD_SHARED_VERSIONED "Build shared library with version suffix" OFF)
 
-# Default to Release if not set
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build: None, Debug, Release, RelWithDebInfo, MinSizeRel.")
+if(NOT DEFINED ${PROJECT_NAME}_OUTPUT_TYPE)
+    set(${PROJECT_NAME}_OUTPUT_TYPE "STATIC")
 endif()
 
-# Define library type
-if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
-    set(LIB_TYPE SHARED)
-else()
+if(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "STATIC")
+    message(STATUS "Building a static library.")
     set(LIB_TYPE STATIC)
+    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+elseif(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "SHARED")
+    message(STATUS "Building a shared library.")
+    set(LIB_TYPE SHARED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+elseif(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "SHARED_VERSIONED")
+    message(STATUS "Building a versioned shared library.")
+    set(LIB_TYPE SHARED)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+else()
+    message(FATAL_ERROR "Invalid ${PROJECT_NAME}_OUTPUT_TYPE " ${${PROJECT_NAME}_OUTPUT_TYPE})
 endif()
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-# Enable Position Independent Code for shared libraries
-if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
 
 add_library(${PROJECT_NAME} ${LIB_TYPE}
         Network.cpp
@@ -61,7 +64,7 @@ set_target_properties(${PROJECT_NAME}
         CXX_EXTENSIONS OFF
 )
 
-if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
+if(LIB_TYPE STREQUAL SHARED)
     if(WIN32)
         set_target_properties(${PROJECT_NAME} PROPERTIES
             WINDOWS_EXPORT_ALL_SYMBOLS ON
@@ -84,7 +87,7 @@ if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
 endif()
 
 # Apply versioning suffix if shared and requested
-if(${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
+if(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "SHARED_VERSIONED")
     set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 endif()
 
@@ -142,6 +145,5 @@ endif ()
 if(${PROJECT_NAME}_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Tests)
-    set(${PROJECT_NAME}_BUILD_SHARED ${qualisys_cpp_sdk_BUILD_SHARED} CACHE BOOL "Build shared library")
-    set(${PROJECT_NAME}_BUILD_SHARED_VERSIONED ${qualisys_cpp_sdk_BUILD_SHARED_VERSIONED} CACHE BOOL "Build shared library with version suffix")
+    set(${PROJECT_NAME}_OUTPUT_TYPE ${qualisys_cpp_sdk_OUTPUT_TYPE} CACHE BOOL "qualisys_cpp_sdk build type")
 endif()
