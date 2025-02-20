@@ -26,6 +26,8 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+include(GNUInstallDirs)
+
 add_library(${PROJECT_NAME} ${LIB_TYPE}
         Network.cpp
         RTPacket.cpp
@@ -40,7 +42,7 @@ add_library(${PROJECT_NAME} ${LIB_TYPE}
 
 target_include_directories(${PROJECT_NAME} 
         PUBLIC
-            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
             "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}>"
         PRIVATE
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/External/tinyxml2"
