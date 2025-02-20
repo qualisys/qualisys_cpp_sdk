@@ -10,15 +10,15 @@ endif()
 
 if(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "STATIC")
     message(STATUS "Building a static library.")
-    set(LIB_TYPE STATIC)
+    set(LIB_TYPE "STATIC")
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 elseif(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "SHARED")
     message(STATUS "Building a shared library.")
-    set(LIB_TYPE SHARED)
+    set(LIB_TYPE "SHARED")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 elseif(${PROJECT_NAME}_OUTPUT_TYPE STREQUAL "SHARED_VERSIONED")
     message(STATUS "Building a versioned shared library.")
-    set(LIB_TYPE SHARED)
+    set(LIB_TYPE "SHARED")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 else()
     message(FATAL_ERROR "Invalid ${PROJECT_NAME}_OUTPUT_TYPE " ${${PROJECT_NAME}_OUTPUT_TYPE})
@@ -64,7 +64,7 @@ set_target_properties(${PROJECT_NAME}
         CXX_EXTENSIONS OFF
 )
 
-if(LIB_TYPE STREQUAL SHARED)
+if(LIB_TYPE STREQUAL "SHARED")
     if(WIN32)
         set_target_properties(${PROJECT_NAME} PROPERTIES
             WINDOWS_EXPORT_ALL_SYMBOLS ON
