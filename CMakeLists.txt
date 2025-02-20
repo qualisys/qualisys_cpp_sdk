@@ -49,12 +49,11 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Windows-specific linking
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME}
-        PUBLIC 
-            ws2_32 iphlpapi
-    )
-endif()
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC 
+        $<$<BOOL:WIN32>:ws2_32>
+        $<$<BOOL:WIN32>:iphlpapi>
+)
 
 # Enable C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
