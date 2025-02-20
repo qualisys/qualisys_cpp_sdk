@@ -25,10 +25,6 @@ if(${PROJECT_NAME}_BUILD_SHARED OR ${PROJECT_NAME}_BUILD_SHARED_VERSIONED)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-# TinyXML2
-set(tinyxml2_BUILD_TESTING OFF)
-add_subdirectory(external/tinyxml2)
-
 add_library(${PROJECT_NAME} ${LIB_TYPE}
         Network.cpp
         RTPacket.cpp
