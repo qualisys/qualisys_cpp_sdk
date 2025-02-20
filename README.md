@@ -43,8 +43,13 @@ ctest --test-dir build
 ```
 
 ### Install (After Build)
+Default:
 ```
 cmake --install build --config Release
+```
+Specify Target Path:
+```
+cmake --install build --prefix <install_path> --config Release
 ```
 
 ## Usage
