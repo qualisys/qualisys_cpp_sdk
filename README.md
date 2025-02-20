@@ -18,28 +18,33 @@ Build RTClientSDK solution in Visual Studio 2017 (or later version).
 
 ### Build As Static
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=STATIC && cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=STATIC && cmake --build build --config Release
 ```
 
 ### Build As Shared/Dynamic
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED && cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED && cmake --build build --config Release
 ```
 
 ### Build As Shared/Dynamic (With Versioning)
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED_VERSIONED && cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED_VERSIONED && cmake --build build --config Release
 ```
 
 ### Build Examples
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON && cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON && cmake --build build --config Release
 ```
 
 ### Build & Run Tests
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON && cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON && cmake --build build --config Release
 ctest --test-dir build
+```
+
+### Install (After Build)
+```
+cmake --install build --config Release
 ```
 
 ## Usage
