@@ -24,9 +24,7 @@ else()
     message(FATAL_ERROR "Invalid ${PROJECT_NAME}_OUTPUT_TYPE " ${${PROJECT_NAME}_OUTPUT_TYPE})
 endif()
 
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
 
 add_library(${PROJECT_NAME} ${LIB_TYPE}
         Network.cpp
@@ -48,11 +46,10 @@ target_include_directories(${PROJECT_NAME}
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/External/tinyxml2
 )
 
-# Windows-specific linking
 target_link_libraries(${PROJECT_NAME}
     PUBLIC 
-        $<$<BOOL:WIN32>:ws2_32>
-        $<$<BOOL:WIN32>:iphlpapi>
+        $<$<STREQUAL:$<PLATFORM_ID>,Windows>:ws2_32>
+        $<$<STREQUAL:$<PLATFORM_ID>,Windows>:iphlpapi>
 )
 
 # Enable C++14
