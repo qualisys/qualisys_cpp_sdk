@@ -770,38 +770,38 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             {
                 if (port < 2)
                 {
-                    std::string mode;
-                    if (!syncOutElem.TryReadElementString("Mode", mode))
+                    std::string syncOutMode;
+                    if (!syncOutElem.TryReadElementString("Mode", syncOutMode))
                     {
                         return false;
                     }
 
-                    mode = ToLowerXmlString(mode);
-                    if (mode == "shutter out")
+                    syncOutMode = ToLowerXmlString(syncOutMode);
+                    if (syncOutMode == "shutter out")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeShutterOut;
                     }
-                    else if (mode == "multiplier")
+                    else if (syncOutMode == "multiplier")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeMultiplier;
                     }
-                    else if (mode == "divisor")
+                    else if (syncOutMode == "divisor")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeDivisor;
                     }
-                    else if (mode == "camera independent")
+                    else if (syncOutMode == "camera independent")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
                     }
-                    else if (mode == "measurement time")
+                    else if (syncOutMode == "measurement time")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
                     }
-                    else if (mode == "continuous 100hz")
+                    else if (syncOutMode == "continuous 100hz")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeFixed100Hz;
                     }
-                    else if (mode == "system live time")
+                    else if (syncOutMode == "system live time")
                     {
                         cameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
                     }
