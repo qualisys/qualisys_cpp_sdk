@@ -8,30 +8,48 @@ Build RTClientSDK solution in Visual Studio 2017.
 
 ## Build with CMake (Windows & Linux)
 
-* Tested with GCC 7.
-* Tested with VS 2017.
+* Tested with GCC 13.3.0
+* Tested with Clang 18.1.3
+* Tested with VS 2017 / MSVC 19.42
 
 ### Cloning the Repository
 
-This project uses Git submodules. Ensure submodules are initialized after cloning:
+`git clone https://github.com/qualisys/qualisys_cpp_sdk.git`
 
-`git clone --recursive <repository-url>`
+### Build As Static
+```
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=STATIC && cmake --build build --config Release
+```
 
-If already cloned, initialize and update submodules:
+### Build As Shared/Dynamic
+```
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED && cmake --build build --config Release
+```
 
-`git submodule update --init --recursive`
+### Build As Shared/Dynamic (With Versioning)
+```
+cmake -S . -B build -Dqualisys_cpp_sdk_OUTPUT_TYPE=SHARED_VERSIONED && cmake --build build --config Release
+```
 
 ### Build Examples
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON
-cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_EXAMPLES=ON && cmake --build build --config Release
 ```
 
 ### Build & Run Tests
 ```
-cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON
-cmake --build build
+cmake -S . -B build -Dqualisys_cpp_sdk_BUILD_TESTS=ON && cmake --build build --config Release
 ctest --test-dir build
+```
+
+### Install (After Build)
+Default:
+```
+cmake --install build --config Release
+```
+Specify Target Path:
+```
+cmake --install build --prefix <install_path> --config Release
 ```
 
 ## Usage
