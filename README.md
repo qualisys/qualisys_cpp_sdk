@@ -4,7 +4,7 @@ C++ package with SDK and examples
 
 ## Build with Visual Studio
 
-Build RTClientSDK solution in Visual Studio 2017 (or later version).
+Build RTClientSDK solution in Visual Studio 2017.
 
 ## Build with CMake (Windows & Linux)
 
