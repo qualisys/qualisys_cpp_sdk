@@ -446,18 +446,18 @@ bool CRTProtocol::GetDiscoverResponse(unsigned int nIndex, unsigned int &nAddr, 
 
 bool CRTProtocol::GetCurrentFrame(const std::string& components)
 {
-    std::string cmdStr = "GetCurrentFrame ";
-    cmdStr += components;
+    std::string cmdStr = "GetCurrentFrame " + components;
 
     if (SendCommand(cmdStr.c_str()))
     {
         return true;
     }
-    strcpy(mErrorStr, "GetCurrentFrame failed.");
+
+    strncpy(mErrorStr, "GetCurrentFrame failed.", sizeof(mErrorStr) - 1);
+    mErrorStr[sizeof(mErrorStr) - 1] = '\0';
 
     return false;
 }
-
 
 bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentOptions& componentOptions)
 {
@@ -467,10 +467,10 @@ bool CRTProtocol::GetCurrentFrame(unsigned int nComponentType, const SComponentO
     {
         return GetCurrentFrame(components);
     }
-    else
-    {
-        strcpy(mErrorStr, "DataComponent missing.");
-    }
+
+    strncpy(mErrorStr, "DataComponent missing.", sizeof(mErrorStr) - 1);
+    mErrorStr[sizeof(mErrorStr) - 1] = '\0';
+
     return false;
 }
 
@@ -1005,39 +1005,38 @@ bool CRTProtocol::LoadCapture(const std::string& fileName)
 bool CRTProtocol::SaveCapture(const std::string& fileName, bool bOverwrite, std::string* pNewFileName, int nSizeOfNewFileName)
 {
     std::string responseStr;
-    std::string tempNewFileNameStr;
-    std::string tempStr = "Save ";
-
-    tempStr += fileName;
-    tempStr += (bOverwrite ? " Overwrite" : "");
+    std::string tempStr = "Save " + fileName + (bOverwrite ? " Overwrite" : "");
 
     if (SendCommand(tempStr, responseStr))
     {
         if (responseStr == "Measurement saved")
         {
-            if (pNewFileName && !pNewFileName->empty())
+            if (pNewFileName)
             {
                 pNewFileName->clear();
             }
             return true;
         }
-        tempNewFileNameStr.resize(responseStr.size());
-        if (sscanf(responseStr.c_str(), "Measurement saved as '%[^']'", &tempNewFileNameStr[0]) == 1)
+
+        std::vector<char> tempNewFileNameStr(responseStr.size() + 1, '\0'); // Ensure null-termination
+        if (sscanf(responseStr.c_str(), "Measurement saved as '%[^']'", tempNewFileNameStr.data()) == 1)
         {
             if (pNewFileName)
             {
-                *pNewFileName = tempNewFileNameStr;
+                *pNewFileName = tempNewFileNameStr.data();
             }
             return true;
         }
     }
+
     if (!responseStr.empty())
     {
-        sprintf(mErrorStr, "%s.", responseStr.c_str());
+        snprintf(mErrorStr, sizeof(mErrorStr), "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(mErrorStr, "Save failed.");
+        strncpy(mErrorStr, "Save failed.", sizeof(mErrorStr) - 1);
+        mErrorStr[sizeof(mErrorStr) - 1] = '\0';
     }
 
     return false;
@@ -1047,9 +1046,7 @@ bool CRTProtocol::SaveCapture(const std::string& fileName, bool bOverwrite, std:
 bool CRTProtocol::LoadProject(const std::string& fileName)
 {
     std::string responseStr;
-    std::string tempStr = "LoadProject ";
-
-    tempStr += fileName;
+    std::string tempStr = "LoadProject " + fileName;
 
     if (SendCommand(tempStr, responseStr, 20000000)) // Timeout 20 s
     {
@@ -1058,13 +1055,15 @@ bool CRTProtocol::LoadProject(const std::string& fileName)
             return true;
         }
     }
+
     if (!responseStr.empty())
     {
-        sprintf(mErrorStr, "%s.", responseStr.c_str());
+        snprintf(mErrorStr, sizeof(mErrorStr), "%s.", responseStr.c_str());
     }
     else
     {
-        strcpy(mErrorStr, "Load project failed.");
+        strncpy(mErrorStr, "Load project failed.", sizeof(mErrorStr) - 1);
+        mErrorStr[sizeof(mErrorStr) - 1] = '\0';
     }
 
     return false;
