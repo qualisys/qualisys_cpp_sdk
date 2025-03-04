@@ -86,11 +86,11 @@ namespace
     std::vector<CRTProtocol::SSettingsSkeleton> CreateDummySkeletonsNonHierarchical()
     {
         auto segmentsSkeleton1 = std::vector<CRTProtocol::SSettingsSkeletonSegment>({
-            { { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, -0.707000017f, 0.0f, 0.0f }, "segment1", -1, -1 },
-            { { 0, 3.0f, 4.0f, 5.0f, 0.707000017f, 0.707000017f, 0.0f, 0.0f }, "segment3", 0, 1 }
+            { { 1, 0.0f, 1.0f, 2.0f, 0.707000017f, -0.707000017f, 0.0f, 0.0f }, "segment1", -1, -1 },
+            { { 3, 3.0f, 4.0f, 5.0f, 0.707000017f, 0.707000017f, 0.0f, 0.0f }, "segment3", 0, 1 }
         });
         auto segmentsSkeleton2 = std::vector<CRTProtocol::SSettingsSkeletonSegment>({
-            { { 0, 0.0f, 1.0f, 2.0f, 0.707000017f, 0.0f, 0.707000017f, 0.0f }, "segment2", -1, -1 }
+            { { 2, 0.0f, 1.0f, 2.0f, 0.707000017f, 0.0f, 0.707000017f, 0.0f }, "segment2", -1, -1 }
         });
 
         CRTProtocol::SSettingsSkeleton skeleton1 = { "skeleton1", segmentsSkeleton1 };
@@ -144,7 +144,7 @@ TEST_CASE("GetSkeletonSettings")
 {
     auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsSet,
+    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsGet,
                              CRTPacket::PacketXML);
 
     using namespace qualisys_cpp_sdk::tests;
@@ -166,6 +166,7 @@ TEST_CASE("GetSkeletonSettings")
                           const CRTProtocol::SSettingsSkeletonSegmentHierarchical& actualSegment)
     {
         CHECK_EQ(expectedSegment.name, actualSegment.name);
+        CHECK_EQ(expectedSegment.id, actualSegment.id);
 
         CHECK_EQ(expectedSegment.segments.size(), actualSegment.segments.size());
 
@@ -256,7 +257,7 @@ TEST_CASE("GetSkeletonSettingsNonHierarchical")
 {
     auto [protocol, network] = utils::CreateTestContext();
 
-    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsSet,
+    network->PrepareResponse("GetParameters Skeleton", data::SkeletonSettingsGet,
         CRTPacket::PacketXML);
 
     using namespace qualisys_cpp_sdk::tests;
