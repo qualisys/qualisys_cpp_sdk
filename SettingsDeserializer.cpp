@@ -1913,7 +1913,7 @@ bool SettingsDeserializer::DeserializeSkeletonSettings(bool skeletonGlobalData,
                 {
                     segmentHierarchical.name = segmentElem.ReadAttributeString("Name");
 
-                    segmentElem.TryReadElementUnsignedInt32("ID", segmentHierarchical.id);
+                    segmentHierarchical.id = segmentElem.ReadAttributeInt("ID");
                     segmentIdIndexMap[segmentHierarchical.id] = segmentIndex++;
 
                     segmentElem.TryReadElementString("Solver", segmentHierarchical.solver);
