@@ -2072,6 +2072,11 @@ bool CRTProtocol::GetCameraSyncOutSettings(
             nSyncOutValue = mGeneralSettings.vsCameras[nCameraIndex].nSyncOutValue[portNumber - 1];
             fSyncOutDutyCycle = mGeneralSettings.vsCameras[nCameraIndex].fSyncOutDutyCycle[portNumber - 1];
         }
+        else if (portNumber == 3)
+        {
+            // Measurement Time port: only the mode (ModeMeasurementTime or ModeSystemLiveTime) and polarity apply.
+            eSyncOutMode = mGeneralSettings.vsCameras[nCameraIndex].eSyncOutMode[portNumber - 1];
+        }
         if (portNumber > 0 && portNumber < 4)
         {
             bSyncOutNegativePolarity = mGeneralSettings.vsCameras[nCameraIndex].bSyncOutNegativePolarity[portNumber - 1];

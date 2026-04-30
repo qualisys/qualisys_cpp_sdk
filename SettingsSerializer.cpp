@@ -419,6 +419,21 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
                 }
             }
         }
+        else if (port == 2 && syncOutMode)
+        {
+            // Measurement Time port only accepts ModeMeasurementTime or ModeSystemLiveTime.
+            switch (*syncOutMode)
+            {
+            case ModeMeasurementTime:
+                syncOutElem.ElementString("Mode", "Measurement time");
+                break;
+            case ModeSystemLiveTime:
+                syncOutElem.ElementString("Mode", "System live time");
+                break;
+            default:
+                return "";
+            }
+        }
 
         if (syncOutNegativePolarity && (port == 2 ||
             (syncOutMode && *syncOutMode != ModeFixed100Hz)))
