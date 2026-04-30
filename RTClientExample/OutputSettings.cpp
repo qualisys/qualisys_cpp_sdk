@@ -473,6 +473,17 @@ void COutput::PrintGeneralSettings(CRTProtocol* poRTProtocol)
                     }
                     if (portNumber == 3)
                     {
+                        switch (eSyncOutMode)
+                        {
+                        case CRTProtocol::ESyncOutFreqMode::ModeMeasurementTime:
+                            printf("  Sync Out MT Mode: Measurement Time\n");
+                            break;
+                        case CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime:
+                            printf("  Sync Out MT Mode: System Live Time\n");
+                            break;
+                        default:
+                            break;
+                        }
                         printf("  Sync Out MT Signal Polarity: %s\n", bSyncOutNegativePolarity ? "Negative" : "Positive");
                     }
                 }
