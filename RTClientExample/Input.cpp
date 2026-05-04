@@ -800,6 +800,21 @@ void CInput::ReadCameraSyncOutSettings(unsigned int& nCameraId, int& portNumber,
     }
     else if (portNumber == 3)
     {
+        printf("Enter Mode :\n");
+        printf("  1 : Measurement Time\n");
+        printf("  2 : System Live Time\n");
+        printf("Select 1 - 2 : ");
+        nSyncOutMode = ReadNewCharAsInt('1', true);
+        *nSyncOutMode -= static_cast<int>('0');
+        if (*nSyncOutMode == 2)
+        {
+            *nSyncOutMode = static_cast<int>(CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime);
+        }
+        else
+        {
+            *nSyncOutMode = static_cast<int>(CRTProtocol::ESyncOutFreqMode::ModeMeasurementTime);
+        }
+
         bSyncOutNegativePolarity = ReadNewYesNo("Negative Polarity? (y/n): ", true);
     }
 }

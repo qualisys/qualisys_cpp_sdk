@@ -821,6 +821,30 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
                         }
                     }
                 }
+                else  // Measurement Time port
+                {
+                    std::string syncOutMode;
+                    if (syncOutElem.TryReadElementString("Mode", syncOutMode))  // <Mode> is optional (back-compatability with QTM <= 1.27
+                    {
+                        syncOutMode = ToLowerXmlString(syncOutMode);
+                        if (syncOutMode == "measurement time")
+                        {
+                            cameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
+                        }
+                        else if (syncOutMode == "system live time")
+                        {
+                            cameraSettings.eSyncOutMode[port] = ModeSystemLiveTime;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        cameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
+                    }
+                }
 
                 if (port == 2 || (cameraSettings.eSyncOutMode[port] != ModeFixed100Hz))
                 {
@@ -837,9 +861,16 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
             }
             else
             {
-                cameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
-                cameraSettings.nSyncOutValue[port] = 0;
-                cameraSettings.fSyncOutDutyCycle[port] = 0;
+                if (port < 2)
+                {
+                    cameraSettings.eSyncOutMode[port] = ModeIndependentFreq;
+                    cameraSettings.nSyncOutValue[port] = 0;
+                    cameraSettings.fSyncOutDutyCycle[port] = 0;
+                }
+                else
+                {
+                    cameraSettings.eSyncOutMode[port] = ModeMeasurementTime;
+                }
                 cameraSettings.bSyncOutNegativePolarity[port] = false;
             }
         }

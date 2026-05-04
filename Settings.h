@@ -206,7 +206,7 @@ namespace qualisys_cpp_sdk
         unsigned int nVideoFOVTop;             // Pixels
         unsigned int nVideoFOVRight;           // Pixels
         unsigned int nVideoFOVBottom;          // Pixels
-        ESyncOutFreqMode eSyncOutMode[2];
+        ESyncOutFreqMode eSyncOutMode[3];
         unsigned int nSyncOutValue[2];
         float        fSyncOutDutyCycle[2];     // Percent
         bool         bSyncOutNegativePolarity[3];
