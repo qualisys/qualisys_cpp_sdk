@@ -206,7 +206,7 @@ namespace qualisys_cpp_sdk
         unsigned int nVideoFOVTop;             // Pixels
         unsigned int nVideoFOVRight;           // Pixels
         unsigned int nVideoFOVBottom;          // Pixels
-        ESyncOutFreqMode eSyncOutMode[3];       // Index 2 (Measurement Time port) only takes ModeMeasurementTime or ModeSystemLiveTime
+        ESyncOutFreqMode eSyncOutMode[3];
         unsigned int nSyncOutValue[2];
         float        fSyncOutDutyCycle[2];     // Percent
         bool         bSyncOutNegativePolarity[3];

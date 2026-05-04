@@ -823,9 +823,8 @@ bool SettingsDeserializer::DeserializeGeneralSettings(SSettingsGeneral& generalS
                 }
                 else  // Measurement Time port
                 {
-                    // <Mode> is optional for back-compat with QTM <= 1.27 (older QTM omits this element).
                     std::string syncOutMode;
-                    if (syncOutElem.TryReadElementString("Mode", syncOutMode))
+                    if (syncOutElem.TryReadElementString("Mode", syncOutMode))  // <Mode> is optional (back-compatability with QTM <= 1.27
                     {
                         syncOutMode = ToLowerXmlString(syncOutMode);
                         if (syncOutMode == "measurement time")

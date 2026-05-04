@@ -2074,7 +2074,7 @@ bool CRTProtocol::GetCameraSyncOutSettings(
         }
         else if (portNumber == 3)
         {
-            // Measurement Time port: only the mode (ModeMeasurementTime or ModeSystemLiveTime) and polarity apply.
+            // Measurement Time port only supports mode and polarity
             eSyncOutMode = mGeneralSettings.vsCameras[nCameraIndex].eSyncOutMode[portNumber - 1];
         }
         if (portNumber > 0 && portNumber < 4)

@@ -421,7 +421,6 @@ std::string SettingsSerializer::SetCameraSyncOutSettings(const unsigned int came
         }
         else if (port == 2 && syncOutMode)
         {
-            // Measurement Time port only accepts ModeMeasurementTime or ModeSystemLiveTime.
             switch (*syncOutMode)
             {
             case ModeMeasurementTime:
