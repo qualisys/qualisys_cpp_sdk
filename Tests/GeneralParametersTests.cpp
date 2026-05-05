@@ -385,7 +385,7 @@ TEST_CASE("GetCameraSyncOutSettingsTest")
     CHECK_EQ(true, bSyncOutNegativePolarity);
 
     // Measurement Time port (port 3) — fixture omits <Mode>, so the deserializer
-    // must default to ModeMeasurementTime (back-compat with QTM <= 1.27).
+    // must default to ModeMeasurementTime (backwards-compatibility with QTM <= 1.27).
     portNumber = 3u;
     eSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
     bSyncOutNegativePolarity = false;
