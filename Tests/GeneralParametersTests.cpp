@@ -311,6 +311,50 @@ TEST_CASE("SetCameraSyncOutSettingsTest")
     CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsTest, network->ReadSentData().data()));
 }
 
+TEST_CASE("SetCameraSyncOutSettingsMTMeasurementTimeTest")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 7u;
+    const unsigned int portNumber = 3u;
+    const CRTProtocol::ESyncOutFreqMode peSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeMeasurementTime;
+    const bool pbSyncOutNegativePolarity = false;
+
+    if (!protocol->SetCameraSyncOutSettings(
+        nCameraID, portNumber, &peSyncOutMode,
+        nullptr, nullptr,
+        &pbSyncOutNegativePolarity))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsMTMeasurementTimeTest, network->ReadSentData().data()));
+}
+
+TEST_CASE("SetCameraSyncOutSettingsMTSystemLiveTimeTest")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    network->PrepareResponse("<QTM_Settings>", "Setting parameters succeeded", CRTPacket::PacketCommand);
+
+    const unsigned int nCameraID = 7u;
+    const unsigned int portNumber = 3u;
+    const CRTProtocol::ESyncOutFreqMode peSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime;
+    const bool pbSyncOutNegativePolarity = true;
+
+    if (!protocol->SetCameraSyncOutSettings(
+        nCameraID, portNumber, &peSyncOutMode,
+        nullptr, nullptr,
+        &pbSyncOutNegativePolarity))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CHECK(utils::CompareXmlIgnoreWhitespace(qualisys_cpp_sdk::tests::data::SetCameraSyncOutSettingsMTSystemLiveTimeTest, network->ReadSentData().data()));
+}
+
 TEST_CASE("GetCameraSyncOutSettingsTest")
 {
     auto [protocol, network] = utils::CreateTestContext();
@@ -339,6 +383,63 @@ TEST_CASE("GetCameraSyncOutSettingsTest")
     CHECK_EQ(1, nSyncOutValue);
     CHECK_EQ(50.0f, fSyncOutDutyCycle);
     CHECK_EQ(true, bSyncOutNegativePolarity);
+
+    // Measurement Time port (port 3) — fixture omits <Mode>, so the deserializer
+    // must default to ModeMeasurementTime (backwards-compatibility with QTM <= 1.27).
+    portNumber = 3u;
+    eSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
+    bSyncOutNegativePolarity = false;
+
+    protocol->GetCameraSyncOutSettings(
+        nCameraIndex, portNumber, eSyncOutMode,
+        nSyncOutValue, fSyncOutDutyCycle,
+        bSyncOutNegativePolarity
+    );
+
+    CHECK_EQ(CRTProtocol::ESyncOutFreqMode::ModeMeasurementTime, eSyncOutMode);
+    CHECK_EQ(true, bSyncOutNegativePolarity);
+}
+
+TEST_CASE("GetCameraSyncOutSettingsMTSystemLiveTimeTest")
+{
+    auto [protocol, network] = utils::CreateTestContext();
+
+    std::string xml = qualisys_cpp_sdk::tests::data::GetGeneralSettingsTest;
+    const std::string oldBlock =
+        "<Sync_Out_MT>\n"
+        "                <Signal_Polarity>Negative</Signal_Polarity>\n"
+        "            </Sync_Out_MT>";
+    const std::string newBlock =
+        "<Sync_Out_MT>\n"
+        "                <Mode>System live time</Mode>\n"
+        "                <Signal_Polarity>Positive</Signal_Polarity>\n"
+        "            </Sync_Out_MT>";
+    auto pos = xml.find(oldBlock);
+    REQUIRE(pos != std::string::npos);
+    xml.replace(pos, oldBlock.length(), newBlock);
+
+    network->PrepareResponse("GetParameters General", xml.c_str(), CRTPacket::PacketXML);
+
+    if (!protocol->ReadGeneralSettings())
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    unsigned int nCameraIndex = 7u;
+    unsigned int portNumber = 3u;
+    CRTProtocol::ESyncOutFreqMode eSyncOutMode = CRTProtocol::ESyncOutFreqMode::ModeDivisor;
+    unsigned int nSyncOutValue = 99u;
+    float fSyncOutDutyCycle = 99.0f;
+    bool bSyncOutNegativePolarity = true;
+
+    protocol->GetCameraSyncOutSettings(
+        nCameraIndex, portNumber, eSyncOutMode,
+        nSyncOutValue, fSyncOutDutyCycle,
+        bSyncOutNegativePolarity
+    );
+
+    CHECK_EQ(CRTProtocol::ESyncOutFreqMode::ModeSystemLiveTime, eSyncOutMode);
+    CHECK_EQ(false, bSyncOutNegativePolarity);
 }
 
 TEST_CASE("SetCameraLensControlSettingsTest")

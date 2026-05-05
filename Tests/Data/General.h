@@ -88,6 +88,34 @@ R"XMLDATA(<QTM_Settings>
 </QTM_Settings>
 )XMLDATA";
 
+    inline const char* SetCameraSyncOutSettingsMTMeasurementTimeTest =
+R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>7</ID>
+            <Sync_Out_MT>
+                <Mode>Measurement time</Mode>
+                <Signal_Polarity>Positive</Signal_Polarity>
+            </Sync_Out_MT>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
+    inline const char* SetCameraSyncOutSettingsMTSystemLiveTimeTest =
+R"XMLDATA(<QTM_Settings>
+    <General>
+        <Camera>
+            <ID>7</ID>
+            <Sync_Out_MT>
+                <Mode>System live time</Mode>
+                <Signal_Polarity>Negative</Signal_Polarity>
+            </Sync_Out_MT>
+        </Camera>
+    </General>
+</QTM_Settings>
+)XMLDATA";
+
     inline const char* SetCameraLensControlSettingsTest =
 R"XMLDATA(<QTM_Settings>
     <General>
