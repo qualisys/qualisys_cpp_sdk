@@ -1197,9 +1197,9 @@ namespace
     bool TryReadSetPointsOld(Deserializer& deserializer, std::vector<SBodyPoint>& target)
     {
         target.clear();
-        for (auto pointElem : ChildElementRange{deserializer, "Bone"})
+        for (auto pointElem : ChildElementRange{deserializer, "Point"})
         {
-            SBodyPoint point;
+            SBodyPoint point{};
 
             if (!pointElem.TryReadElementFloat("X", point.fX))
             {
@@ -1231,7 +1231,8 @@ namespace
                 && elem.TryReadElementString("Third", targetThird);
         }
 
-        return false;
+        // Optional element; complete or absent.
+        return true;
     }
 }
 
@@ -1304,12 +1305,12 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
     }
     else
     {
-        if (!mDeserializer->FindChild("Bodies"))
+        if (!sixDofElem.FindChild("Bodies"))
         {
             return false;
         }
 
-        for (auto bodyElem : ChildElementRange{*mDeserializer, "Body"})
+        for (auto bodyElem : ChildElementRange{sixDofElem, "Body"})
         {
             SSettings6DOFBody bodySettings6Dof{};
 
@@ -1320,18 +1321,19 @@ bool SettingsDeserializer::Deserialize6DOFSettings(std::vector<SSettings6DOFBody
                 return false;
             }
 
-            if (mMajorVersion > 1 || mMinorVersion > 15)
-            {
-                if (!TryReadSetEuler(*mDeserializer, generalSettings.eulerRotations[0],
-                                     generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
-                {
-                    return false;
-                }
-            }
-
             settings6Dof.push_back(bodySettings6Dof);
-            dataAvailable = true;
         }
+
+        if (mMajorVersion > 1 || mMinorVersion > 15)
+        {
+            if (!TryReadSetEuler(sixDofElem, generalSettings.eulerRotations[0],
+                                 generalSettings.eulerRotations[1], generalSettings.eulerRotations[2]))
+            {
+                return false;
+            }
+        }
+
+        dataAvailable = true;
     }
 
     return true;

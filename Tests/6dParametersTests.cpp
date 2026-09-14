@@ -196,3 +196,67 @@ TEST_CASE("GetSettings6DOFTest")
 
     CHECK(VerifySettings6DOF(settings6DOF));
 }
+
+TEST_CASE("GetSettings6DOFLegacyTest")
+{
+    auto [protocol, network] = utils::CreateTestContext(1, 17);
+
+    network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::tests::data::Get6DSettingsLegacyTest,
+                             CRTPacket::PacketXML);
+
+    bool dataAvailable = false;
+    if (!protocol->Read6DOFSettings(dataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    CHECK(dataAvailable);
+
+    REQUIRE_EQ(2, protocol->Get6DOFBodyCount());
+    CHECK_EQ("test", std::string(protocol->Get6DOFBodyName(0)));
+    CHECK_EQ("TestTwo", std::string(protocol->Get6DOFBodyName(1)));
+
+    // Get6DOFBodySettings is gated to 1.21+, hence the per-field accessors.
+    CHECK_EQ(65280, protocol->Get6DOFBodyColor(0));
+    CHECK_EQ(255, protocol->Get6DOFBodyColor(1));
+
+    REQUIRE_EQ(2, protocol->Get6DOFBodyPointCount(0));
+    REQUIRE_EQ(1, protocol->Get6DOFBodyPointCount(1));
+
+    CRTProtocol::SPoint point{};
+    REQUIRE(protocol->Get6DOFBodyPoint(0, 0, point));
+    CHECK_EQ(-67.9271545f, point.fX);
+    CHECK_EQ(29.8100796f, point.fY);
+    CHECK_EQ(-1.59297097f, point.fZ);
+
+    REQUIRE(protocol->Get6DOFBodyPoint(0, 1, point));
+    CHECK_EQ(-95.0230560f, point.fX);
+
+    REQUIRE(protocol->Get6DOFBodyPoint(1, 0, point));
+    CHECK_EQ(68.3161087f, point.fX);
+
+    // Below 1.21 the Euler angles arrive with the 6D settings, not the general ones.
+    std::string first, second, third;
+    protocol->GetEulerAngles(first, second, third);
+    CHECK_EQ("Roll", first);
+    CHECK_EQ("Pitch", second);
+    CHECK_EQ("Yaw", third);
+}
+
+TEST_CASE("GetSettings6DOFLegacyNoBodiesTest")
+{
+    auto [protocol, network] = utils::CreateTestContext(1, 17);
+
+    network->PrepareResponse("GetParameters 6D", qualisys_cpp_sdk::tests::data::Get6DSettingsLegacyNoBodiesTest,
+                             CRTPacket::PacketXML);
+
+    bool dataAvailable = false;
+    if (!protocol->Read6DOFSettings(dataAvailable))
+    {
+        FAIL(protocol->GetErrorString());
+    }
+
+    // An empty list, not a failure.
+    CHECK(dataAvailable);
+    CHECK_EQ(0, protocol->Get6DOFBodyCount());
+}

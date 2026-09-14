@@ -30,12 +30,14 @@ namespace qualisys_cpp_sdk::tests::utils
         std::stringstream stringStream;
         std::stringstream outputStream;
         std::vector<MessageFilter> messageAndResponses;
+        int majorVersion = MAJOR_VERSION;
+        int minorVersion = MINOR_VERSION;
 
         bool Connect(const char*, unsigned short) override
         {
             QueueResponse("QTM RT Interface connected", CRTPacket::EPacketType::PacketCommand);
             PrepareResponse("Version ", std::string{
-                                "Version set to " + std::to_string(MAJOR_VERSION) + "." + std::to_string(MINOR_VERSION)
+                                "Version set to " + std::to_string(majorVersion) + "." + std::to_string(minorVersion)
                             }, CRTPacket::EPacketType::PacketCommand);
             connected = true;
             return connected;
@@ -121,6 +123,13 @@ namespace qualisys_cpp_sdk::tests::utils
         }
 
     public:
+        // Must be called before Connect, which triggers the handshake.
+        void SetProtocolVersion(int major, int minor)
+        {
+            majorVersion = major;
+            minorVersion = minor;
+        }
+
         void QueueResponse(const char* str, CRTPacket::EPacketType p)
         {
             auto dataSize = static_cast<long long>(strlen(str) + 1);
@@ -192,15 +201,17 @@ namespace qualisys_cpp_sdk::tests::utils
         DummyXmlNetwork* mNetwork;
     };
 
-    inline TestContext CreateTestContext()
+    inline TestContext CreateTestContext(int majorVersion = MAJOR_VERSION, int minorVersion = MINOR_VERSION)
     {
         auto networkDummy = new DummyXmlNetwork{};
+        networkDummy->SetProtocolVersion(majorVersion, minorVersion);
 
         auto protocol = std::make_unique<CRTProtocol>();
 
         protocol->OverrideNetwork(networkDummy->GetInterfacePtr());
 
-        if (!protocol->Connect(""))
+        // Negotiation off, so the requested version is the one actually used.
+        if (!protocol->Connect("", CRTProtocol::cDefaultBasePort, nullptr, majorVersion, minorVersion, false, false))
         {
             FAIL(protocol->GetErrorString());
         }
