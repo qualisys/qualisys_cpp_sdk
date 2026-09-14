@@ -155,64 +155,6 @@ namespace qualisys_cpp_sdk::tests::data
 </QTM_Parameters_Ver_1.25>
 )XMLDATA";
 
-    // Pre-1.21 wire format, as QTM's legacy 6D writer emits it.
-    inline const char* Get6DSettingsLegacyTest = R"XMLDATA(
-<QTM_Parameters_Ver_1.17>
-    <The_6D>
-        <Bodies>2</Bodies>
-        <Body>
-            <Name>test</Name>
-            <Enabled>true</Enabled>
-            <RGBColor>65280</RGBColor>
-            <Point>
-                <X>-67.927157</X>
-                <Y>29.810079</Y>
-                <Z>-1.592971</Z>
-                <Virtual>0</Virtual>
-                <PhysicalId>0</PhysicalId>
-            </Point>
-            <Point>
-                <X>-95.023059</X>
-                <Y>1.742391</Y>
-                <Z>-19.541355</Z>
-                <Virtual>0</Virtual>
-                <PhysicalId>0</PhysicalId>
-            </Point>
-        </Body>
-        <Body>
-            <Name>TestTwo</Name>
-            <Enabled>true</Enabled>
-            <RGBColor>255</RGBColor>
-            <Point>
-                <X>68.316106</X>
-                <Y>29.173523</Y>
-                <Z>-1.829020</Z>
-                <Virtual>0</Virtual>
-                <PhysicalId>0</PhysicalId>
-            </Point>
-        </Body>
-        <Euler>
-            <First>Roll</First>
-            <Second>Pitch</Second>
-            <Third>Yaw</Third>
-        </Euler>
-    </The_6D>
-</QTM_Parameters_Ver_1.17>
-)XMLDATA";
-
-    inline const char* Get6DSettingsLegacyNoBodiesTest = R"XMLDATA(
-<QTM_Parameters_Ver_1.17>
-    <The_6D>
-        <Bodies>0</Bodies>
-        <Euler>
-            <First>Roll</First>
-            <Second>Pitch</Second>
-            <Third>Yaw</Third>
-        </Euler>
-    </The_6D>
-</QTM_Parameters_Ver_1.17>
-)XMLDATA";
-
     inline const char* Set6DSettingsTest = R"XMLDATA(
 <QTM_Settings>
     <The_6D>
