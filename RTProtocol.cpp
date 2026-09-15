@@ -1742,7 +1742,13 @@ bool CRTProtocol::Read6DOFSettings(bool& bDataAvailable)
     }
 
     SettingsDeserializer deserializer(data, mMajorVersion, mMinorVersion);
-    return deserializer.Deserialize6DOFSettings(m6DOFSettings, mGeneralSettings, bDataAvailable);
+    if (!deserializer.Deserialize6DOFSettings(m6DOFSettings, mGeneralSettings, bDataAvailable))
+    {
+        sprintf(mErrorStr, "Failed to parse 6D settings for protocol version %d.%d.", mMajorVersion, mMinorVersion);
+        return false;
+    }
+
+    return true;
 }
 
 bool CRTProtocol::ReadGazeVectorSettings(bool& bDataAvailable)
